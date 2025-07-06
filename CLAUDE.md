@@ -2,6 +2,41 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## User Shortcuts
+
+When users type these commands, execute the associated actions:
+
+### `cleanup`
+Run complete code quality checks and fix all issues:
+1. **Run ruff linting**: `uv run ruff check . --fix`
+2. **Run ruff formatting**: `uv run ruff format .`
+3. **Run mypy type checking**: `uv run mypy .` (fix any errors found)
+4. **Run pytest**: `uv run pytest` (fix any failing tests)
+5. **Review and update**: Check all TODO.md files for recent changes and update them
+6. **Commit changes**: Make detailed commit with all fixes and push to current branch
+
+### `publish`
+Prepare and trigger a new release:
+1. **Run cleanup first**: Execute all cleanup steps
+2. **Check version**: Verify version in pyproject.toml and __init__.py match
+3. **Build test**: Run `uv build` to ensure package builds correctly
+4. **Create release**: Use `gh release create` with appropriate version and notes
+5. **Monitor**: Track the publishing workflow with `gh run list`
+
+### `test`
+Run comprehensive testing:
+1. **Run all tests**: `uv run pytest`
+2. **Run excluding slow**: `uv run pytest -m "not slow"`
+3. **Run integration tests**: `uv run pytest -m integration` (if credentials available)
+4. **Report results**: Show test coverage and any failures
+
+### `check`
+Quick status check:
+1. **Git status**: Show current branch and uncommitted changes
+2. **Recent commits**: Show last 3 commits with `git log --oneline -3`
+3. **Workflow status**: Check latest GitHub Actions with `gh run list --limit=3`
+4. **Package status**: Check if package builds with `uv build`
+
 ## Project Overview
 
 This is an MCP (Model Context Protocol) Server that provides access to stock market data through open-source APIs, particularly Robin Stocks. The server uses FastMCP for simplified MCP server development.
