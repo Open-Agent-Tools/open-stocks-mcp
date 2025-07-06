@@ -72,8 +72,11 @@ Run the test suite before submitting:
 # Run all tests
 uv run pytest
 
-# Run tests with coverage
-uv run pytest --cov=src/open_stocks_mcp --cov-report=term-missing
+# Run tests excluding slow ones
+uv run pytest -m "not slow"
+
+# Run only integration tests (may require credentials)
+uv run pytest -m integration
 
 # Run specific test file
 uv run pytest tests/test_specific.py

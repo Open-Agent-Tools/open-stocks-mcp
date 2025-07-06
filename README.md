@@ -98,7 +98,14 @@ def analyze_stock_prompt(symbol: str) -> str:
 ### Running Tests
 
 ```bash
+# Run all tests
 pytest
+
+# Run tests excluding slow ones
+pytest -m "not slow"
+
+# Run only integration tests
+pytest -m integration
 ```
 
 ### Linting and Type Checking

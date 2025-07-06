@@ -126,10 +126,25 @@ Test tools with the MCP Inspector:
 uv run mcp dev src/open_stocks_mcp/server/app.py
 ```
 
-Or write unit tests:
+Or write unit tests with pytest:
 ```python
 def test_stock_tool():
     result = get_stock_price("AAPL")
     assert "symbol" in result
     assert "price" in result
+
+@pytest.mark.integration
+def test_live_stock_data():
+    # Test requiring real API access
+    pass
+
+@pytest.mark.slow  
+def test_performance():
+    # Test that might take longer
+    pass
 ```
+
+Available test markers:
+- `slow`: Tests that take longer to run
+- `integration`: Tests requiring credentials/live APIs  
+- `live_market`: Tests requiring live market data
