@@ -6,7 +6,7 @@ import sys
 
 from open_stocks_mcp.server.app import create_mcp_server, server
 
-__version__ = "0.1.0"
+__version__ = "0.0.2"
 __author__ = "Wes Etheredge"
 __email__ = "jwesleye@gmail.com"
 __all__ = ["__version__", "create_mcp_server", "server"]

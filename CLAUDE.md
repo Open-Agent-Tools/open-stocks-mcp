@@ -206,13 +206,13 @@ gh run rerun <run-id>
 ### Releases and Publishing
 ```bash
 # Create a release (triggers PyPI publishing workflow)
-gh release create v0.1.0 --title "v0.1.0 - Initial Release" --notes "Initial MCP server setup"
+gh release create v0.0.2 --title "v0.0.2 - Initial Release" --notes "Initial MCP server setup"
 
 # List releases
 gh release list
 
 # View release details
-gh release view v0.1.0
+gh release view v0.0.2
 ```
 
 ### Issues and Pull Requests
@@ -253,7 +253,7 @@ This project is configured for automated PyPI publishing via GitHub Actions with
 #### 1. Trigger Publishing via Release
 ```bash
 # Create a new release to trigger publishing workflow
-gh release create v0.1.0 --title "v0.1.0 - Feature Description" --notes "Release notes here"
+gh release create v0.0.2 --title "v0.0.2 - Feature Description" --notes "Release notes here"
 
 # View the triggered workflow
 gh run list --workflow=publish.yml

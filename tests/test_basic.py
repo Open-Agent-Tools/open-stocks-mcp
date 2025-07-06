@@ -8,7 +8,7 @@ from open_stocks_mcp.tools.echo import echo
 
 def test_version() -> None:
     """Test that version is defined."""
-    assert __version__ == "0.1.0"
+    assert __version__ == "0.0.2"
 
 
 def test_echo_basic() -> None:
