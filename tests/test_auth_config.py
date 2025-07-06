@@ -74,8 +74,7 @@ class TestRobinhoodConfig:
         config = RobinhoodConfig(username="test@example.com", password="test_password")
 
         # Should be True when both username and password provided
-        with pytest.raises(NotImplementedError):
-            config.has_credentials()
+        assert config.has_credentials() is True
 
     def test_get_password_extraction(self) -> None:
         """Test password extraction from SecretStr."""

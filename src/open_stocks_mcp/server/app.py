@@ -10,6 +10,9 @@ from mcp.server.fastmcp import FastMCP
 from open_stocks_mcp.config import ServerConfig, load_config
 from open_stocks_mcp.logging_config import logger, setup_logging
 from open_stocks_mcp.tools.echo import echo
+from open_stocks_mcp.tools.robinhood_tools import (
+    login_robinhood,
+)
 
 
 def create_mcp_server(config: ServerConfig | None = None) -> FastMCP:
@@ -38,6 +41,16 @@ def register_tools(mcp_server: FastMCP) -> None:
     def echo_tool(text: str, transform: str | None = None) -> types.TextContent:
         """Wrapper around the echo tool implementation"""
         return echo(text, transform)
+
+    @mcp_server.tool(
+        name="login_robinhood",
+        description="Login to Robinhood API with username, password, and SMS MFA code",
+    )
+    async def login_robinhood_tool(
+        username: str, password: str, mfa_code: str
+    ) -> types.TextContent:
+        """Login to Robinhood API"""
+        return await login_robinhood(username, password, mfa_code)
 
 
 # Create a server instance that can be imported by the MCP CLI

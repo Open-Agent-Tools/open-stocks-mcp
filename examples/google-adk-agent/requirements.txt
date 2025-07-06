@@ -1,0 +1,9 @@
+# Google ADK Stock Trading Agent Requirements
+google-adk>=0.1.0
+python-dotenv>=1.0.0
+pytest>=8.0.0
+pytest-asyncio>=0.23.0
+
+# MCP server should be available via:
+# uv add open-stocks-mcp
+# or pip install open-stocks-mcp
