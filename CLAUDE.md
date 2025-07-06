@@ -148,3 +148,63 @@ Available test markers:
 - `slow`: Tests that take longer to run
 - `integration`: Tests requiring credentials/live APIs  
 - `live_market`: Tests requiring live market data
+
+## GitHub CLI Usage
+
+This project has GitHub CLI (gh) available and authenticated. Use it for repository operations:
+
+### Repository Management
+```bash
+# View repository info
+gh repo view
+
+# Check workflow status
+gh run list
+
+# View latest workflow run
+gh run view
+
+# Re-run failed workflows
+gh run rerun <run-id>
+```
+
+### Releases and Publishing
+```bash
+# Create a release (triggers PyPI publishing workflow)
+gh release create v0.1.0 --title "v0.1.0 - Initial Release" --notes "Initial MCP server setup"
+
+# List releases
+gh release list
+
+# View release details
+gh release view v0.1.0
+```
+
+### Issues and Pull Requests
+```bash
+# Create an issue
+gh issue create --title "Add Robin Stocks integration" --body "Implement stock price tools"
+
+# List issues
+gh issue list
+
+# Create a pull request
+gh pr create --title "feat: add stock price tool" --body "Implements get_stock_price tool using Robin Stocks API"
+
+# View PR status
+gh pr list
+```
+
+### Workflow Operations
+```bash
+# Trigger a workflow manually (if configured)
+gh workflow run tests.yml
+
+# View workflow runs
+gh run list --workflow=tests.yml
+
+# Download workflow artifacts
+gh run download <run-id>
+```
+
+Always prefer `gh` commands over manual GitHub web interface operations for consistency and automation.
