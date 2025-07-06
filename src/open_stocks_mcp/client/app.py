@@ -21,7 +21,7 @@ async def echo_message(message: str, transform: str | None = None) -> str:
     """
     # Create server parameters for stdio connection
     server_params = StdioServerParameters(
-        command="open_stocks_mcp-server",  # Use the installed script
+        command="open-stocks-mcp-server",  # Use the installed script
         args=[],  # No additional args needed
         env=None,  # Optional environment variables
     )
@@ -39,10 +39,12 @@ async def echo_message(message: str, transform: str | None = None) -> str:
             arguments["transform"] = transform
 
         result = await session.call_tool("echo", arguments=arguments)
-        if isinstance(result, TextContent):
-            return result.text
-        else:
-            return str(result)
+        # Extract text from the result content
+        if result.content and len(result.content) > 0:
+            first_content = result.content[0]
+            if isinstance(first_content, TextContent):
+                return first_content.text
+        return str(result)
 
 
 @click.command()
