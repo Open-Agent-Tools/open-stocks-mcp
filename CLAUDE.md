@@ -206,13 +206,13 @@ gh run rerun <run-id>
 ### Releases and Publishing
 ```bash
 # Create a release (triggers PyPI publishing workflow)
-gh release create v0.0.2 --title "v0.0.2 - Initial Release" --notes "Initial MCP server setup"
+gh release create v0.0.3 --title "v0.0.3 - Feature Description" --notes "Release notes here"
 
 # List releases
 gh release list
 
 # View release details
-gh release view v0.0.2
+gh release view v0.0.2  # or latest version
 ```
 
 ### Issues and Pull Requests

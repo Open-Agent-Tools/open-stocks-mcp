@@ -67,8 +67,9 @@
 
 ## Release Planning
 
-### v0.1.x - Foundation
+### v0.0.x - Foundation
 - ✅ v0.0.1 - Base MCP server (published)
+- ✅ v0.0.2 - Client/server communication fixes (published)
 - [ ] v0.1.0 - First Robin Stocks integration with basic tools
 
 ### v0.2.x - Enhanced Features  
