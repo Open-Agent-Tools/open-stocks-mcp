@@ -11,22 +11,50 @@
 ## Immediate Tasks (Next Sprint)
 
 ### Robin Stocks Integration
-- [ ] **Research Robin Stocks API**: Study available endpoints and data structures
-- [ ] **Authentication Setup**: Implement secure credential handling for Robin Stocks
-- [ ] **Basic Stock Tools**: Create MCP tools for fundamental stock operations
-  - [ ] `get_stock_price(symbol)` - Current stock price
-  - [ ] `get_stock_info(symbol)` - Company information and metrics
-  - [ ] `search_stocks(query)` - Search for stocks by symbol or name
 
-### Core MCP Tools Development
-- [ ] **Portfolio Tools**: If Robin Stocks supports portfolio access
-  - [ ] `get_portfolio()` - Portfolio overview and holdings
-  - [ ] `get_positions()` - Current stock positions
-- [ ] **Market Data Tools**:
+#### Phase 1: Foundation (v0.1.0) - READY TO IMPLEMENT
+- [ ] **Authentication & Session Management**
+  - [ ] Create Robin Stocks configuration module (`robinhood_config.py`)
+  - [ ] Implement environment-based credential handling
+  - [ ] Add 2FA/MFA support with `pyotp`
+  - [ ] Create `login()` and `logout()` MCP tools for session management
+  - [ ] Add session timeout and re-authentication handling
+  
+- [ ] **Core Market Data Tools** (Read-only operations)
+  - [ ] `get_stock_price(symbol)` - Current stock price and basic metrics
+  - [ ] `get_stock_info(symbol)` - Company information and fundamentals
+  - [ ] `search_stocks(query)` - Search for stocks by symbol or company name
   - [ ] `get_market_hours()` - Trading hours and market status
+  - [ ] `get_price_history(symbol, period)` - Historical price data
+
+- [ ] **Infrastructure**
+  - [ ] Add async wrapper for Robin Stocks synchronous API
+  - [ ] Implement error handling for API failures and rate limits
+  - [ ] Create Robin Stocks specific logging and monitoring
+  - [ ] Add integration tests (marked with `@pytest.mark.live_market`)
+
+#### Phase 2: Portfolio Management (v0.2.0)
+- [ ] **Portfolio Tools**
+  - [ ] `get_portfolio()` - Portfolio overview and total value
+  - [ ] `get_positions()` - Current stock/crypto/options positions
+  - [ ] `get_dividends()` - Dividend history and payments
+  - [ ] `get_orders()` - Order history and status
+  
+- [ ] **Advanced Market Data**
   - [ ] `get_trending_stocks()` - Popular/trending stocks
-- [ ] **Historical Data Tools**:
-  - [ ] `get_historical_prices(symbol, period)` - Price history
+  - [ ] `get_fundamentals(symbol)` - Detailed company fundamentals
+  - [ ] `get_earnings(symbol)` - Earnings data and estimates
+
+#### Phase 3: Advanced Features (v0.3.0)
+- [ ] **Multi-Platform Support**
+  - [ ] Add Gemini API integration for crypto data
+  - [ ] Add TD Ameritrade API support
+  - [ ] Unified interface across platforms
+  
+- [ ] **Trading Capabilities** (Optional - requires explicit user consent)
+  - [ ] `place_order(symbol, quantity, side, type)` - Order placement
+  - [ ] `cancel_order(order_id)` - Order cancellation
+  - [ ] `get_buying_power()` - Available funds for trading
 
 ### Testing & Quality
 - [ ] **Integration Tests**: Add tests requiring live market data (marked with `@pytest.mark.live_market`)
@@ -60,25 +88,42 @@
 - [ ] **Performance Testing**: Load testing for high-frequency data requests
 - [ ] **Logging Enhancement**: Structured logging with correlation IDs
 
-## Dependencies to Monitor
-- [ ] **Robin Stocks**: Monitor for API changes and new features
+## Dependencies & API Status
+- [ ] **Robin Stocks v3.4.0**: ✅ Installed - Monitor for API changes and new features
+- [ ] **PyOTP v2.9.0**: ✅ Installed - 2FA/MFA authentication support  
 - [ ] **FastMCP**: Track updates to the MCP SDK
 - [ ] **Python**: Consider Python 3.12+ features and compatibility
+
+## Security & Authentication Notes
+- 🔐 **Environment Variables**: Use `.env` for credentials (never commit secrets)
+- 🔐 **2FA Support**: Optional MFA with TOTP codes via `pyotp`
+- 🔐 **Session Management**: 24-hour token expiration, auto re-authentication
+- 🔐 **Read-Only First**: Start with market data tools, trading tools optional
+- 🔐 **Error Handling**: Graceful handling of auth failures and rate limits
 
 ## Release Planning
 
 ### v0.0.x - Foundation
 - ✅ v0.0.1 - Base MCP server (published)
 - ✅ v0.0.2 - Client/server communication fixes (published)
-- [ ] v0.1.0 - First Robin Stocks integration with basic tools
 
-### v0.2.x - Enhanced Features  
-- [ ] v0.2.0 - Portfolio management tools
-- [ ] v0.2.1 - Historical data and caching
-
-### v0.3.x - Advanced Capabilities
-- [ ] v0.3.0 - Technical analysis and alerts
-- [ ] v0.3.1 - News and sentiment integration
+### v0.1.x - Robin Stocks Integration
+- [ ] v0.1.0 - **Authentication & Core Market Data** 
+  - Authentication setup with login/logout tools
+  - Basic market data tools (price, info, search, hours, history)
+  - Read-only operations with error handling
+  
+### v0.2.x - Portfolio Management
+- [ ] v0.2.0 - **Portfolio & Account Tools**
+  - Portfolio viewing and position tracking
+  - Order history and dividend information
+  - Advanced market data and fundamentals
+  
+### v0.3.x - Advanced Capabilities  
+- [ ] v0.3.0 - **Multi-Platform & Trading**
+  - Gemini and TD Ameritrade integration
+  - Optional trading capabilities
+  - Advanced analytics and technical indicators
 
 ## Notes
 - **Rate Limiting**: Robin Stocks may have rate limits - implement respectful usage
@@ -95,3 +140,9 @@
 - Improved client output parsing for cleaner text display
 - Verified end-to-end MCP communication working
 - All code quality checks passing (ruff, mypy, pytest)
+- **Planning Complete**: Robin Stocks integration architecture designed
+- **Dependencies Ready**: robin-stocks v3.4.0 and pyotp v2.9.0 available
+- **Phase 1 Defined**: Authentication + core market data tools for v0.1.0
+- **Authentication Scaffolding**: Created auth modules with comprehensive tests
+- **MCP Tools Scaffolding**: Added login/logout/status/account_info tools with stubs
+- **Updated Design**: Changed to user-supplied credentials with mandatory MFA
