@@ -6,7 +6,6 @@ import os
 import platform
 import sys
 from pathlib import Path
-from typing import Optional
 
 from open_stocks_mcp.config import ServerConfig
 
@@ -28,14 +27,14 @@ def get_default_log_dir() -> Path:
         return Path.home() / ".mcp-servers" / "logs"
 
 
-def setup_logging(server_config: Optional[ServerConfig] = None) -> None:
+def setup_logging(server_config: ServerConfig | None = None) -> None:
     """Configure logging for the Open Stocks MCP MCP server"""
     # Get log level from server config, environment, or default to INFO
     log_level = "INFO"
     if server_config and hasattr(server_config, "log_level"):
         log_level = server_config.log_level.upper()
-    elif os.getenv("LOG_LEVEL"):
-        log_level = os.getenv("LOG_LEVEL").upper()
+    elif env_log_level := os.getenv("LOG_LEVEL"):
+        log_level = env_log_level.upper()
 
     valid_levels = {
         "DEBUG": logging.DEBUG,

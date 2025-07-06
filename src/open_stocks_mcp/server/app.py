@@ -2,25 +2,24 @@
 
 import asyncio
 import sys
-import click
-from typing import Optional
 
+import click
 from mcp import types
 from mcp.server.fastmcp import FastMCP
 
 from open_stocks_mcp.config import ServerConfig, load_config
-from open_stocks_mcp.logging_config import setup_logging, logger
+from open_stocks_mcp.logging_config import logger, setup_logging
 from open_stocks_mcp.tools.echo import echo
 
 
-def create_mcp_server(config: Optional[ServerConfig] = None) -> FastMCP:
+def create_mcp_server(config: ServerConfig | None = None) -> FastMCP:
     """Create and configure the MCP server instance"""
     if config is None:
         config = load_config()
-    
+
     # Set up logging first
     setup_logging(config)
-    
+
     server = FastMCP(config.name)
 
     # Register all tools with the server
@@ -36,7 +35,7 @@ def register_tools(mcp_server: FastMCP) -> None:
         name="echo",
         description="Echo back the input text with optional case transformation",
     )
-    def echo_tool(text: str, transform: Optional[str] = None) -> types.TextContent:
+    def echo_tool(text: str, transform: str | None = None) -> types.TextContent:
         """Wrapper around the echo tool implementation"""
         return echo(text, transform)
 

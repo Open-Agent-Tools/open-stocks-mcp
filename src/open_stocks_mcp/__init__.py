@@ -3,14 +3,16 @@
 import asyncio
 import logging
 import sys
-from open_stocks_mcp.server.app import server, create_mcp_server
+
+from open_stocks_mcp.server.app import create_mcp_server, server
 
 __version__ = "0.1.0"
 __author__ = "Wes Etheredge"
 __email__ = "jwesleye@gmail.com"
-__all__ = ["server", "create_mcp_server", "__version__"]
+__all__ = ["__version__", "create_mcp_server", "server"]
 
-def main(transport: str = "stdio"):
+
+def main(transport: str = "stdio") -> None:
     """Entry point for MCP server
 
     Args:
@@ -28,5 +30,6 @@ def main(transport: str = "stdio"):
         logger.error(f"Failed to start MCP server: {e}", exc_info=True)
         sys.exit(1)
 
+
 if __name__ == "__main__":
-    main() 
+    main()
