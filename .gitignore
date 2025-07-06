@@ -168,12 +168,64 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
-# PyCharm
-#  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
-#  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
-#  and can be added to the global gitignore or merged into this file.  For a more nuclear
-#  option (not recommended) you can uncomment the following to ignore the entire idea folder.
-#.idea/
+# IDEs and Editors
+# PyCharm / IntelliJ
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Atom
+.atom/
+
+# Vim
+*.swp
+*.swo
+*~
+.vimrc.local
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# Nano
+*.save
+*.backup
+
+# Eclipse
+.project
+.pydevproject
+.metadata/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.settings/
+.loadpath
+.recommenders
+
+# NetBeans
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
 
 # Abstra
 # Abstra is an AI-powered process automation framework.
@@ -194,14 +246,126 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
-# Cursor
-#  Cursor is an AI-powered code editor. `.cursorignore` specifies files/directories to
-#  exclude from AI features like autocomplete and code analysis. Recommended for sensitive data
-#  refer to https://docs.cursor.com/context/ignore-files
+# AI Development Tools and Artifacts
+# Cursor AI
 .cursorignore
 .cursorindexingignore
+.cursor/
+*.cursor-*
+
+# GitHub Copilot
+.github/copilot-instructions.md
+
+# Claude Dev / AI Artifacts
+.claude/
+claude-artifacts/
+ai-artifacts/
+*.ai-session
+*.claude-session
+
+# Continue.dev
+.continue/
+continue-session.json
+
+# Tabnine
+.tabnine/
+
+# CodeWhisperer
+.aws-sam/
+.codewhisperer/
+
+# Replit AI
+.replit/
+replit.nix
+
+# AI Generated Files (common patterns)
+*generated*.py
+*_generated.py
+ai_temp/
+temp_ai/
+.ai_temp/
+.temp/
+
+# LLM Conversation Logs
+conversation*.json
+chat*.json
+llm*.log
+ai*.log
+
+# Model Files (if any)
+*.model
+*.ckpt
+*.pt
+*.pth
+*.h5
+*.pkl
+*.joblib
+
+# AI Training Data
+data/raw/
+data/processed/
+datasets/
+*.jsonl
+*.parquet
 
 # Marimo
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# Temporary Files
+*.log
+*.tmp
+*.temp
+*.cache
+*~
+.#*
+
+# Environment and Configuration
+.env.local
+.env.*.local
+secrets.json
+credentials.json
+config.local.*
+
+# API Keys and Secrets (extra safety)
+*api_key*
+*secret*
+*token*
+*password*
+.secrets/
+secrets/
+
+# Development Database Files
+*.sqlite
+*.sqlite3
+*.db
+*.database
+
+# Documentation Build
+docs/_build/
+docs/build/
+site/
+_site/
+
+# Jupyter Notebooks (if any)
+.ipynb_checkpoints/
+*.ipynb
+
+# Lock Files (depending on preference)
+# Uncomment if you don't want to track lock files
+# uv.lock
+# poetry.lock
+# Pipfile.lock
+# package-lock.json
+# yarn.lock
