@@ -102,7 +102,7 @@ The package includes:
 - Entry points for CLI commands:
   - `open-stocks-mcp`: Main server command
   - `open-stocks-mcp-server`: Server-specific command
-  - `open-stocks-mcp-client`: Client command
+  - `open-stocks-mcp-client`: Testing client for calling MCP tools directly
 - All dependencies specified in pyproject.toml
 
 ## Testing Installation

@@ -1,5 +1,6 @@
 """Integration tests for server login flow using real credentials from .env file."""
 
+import asyncio
 from pathlib import Path
 
 import pytest
@@ -25,10 +26,6 @@ class TestServerLoginFlow:
     def test_placeholder(self):
         """Placeholder test to keep the test file valid."""
         assert True
-
-
-# Helper function to run async functions in tests
-import asyncio
 
 
 def run_async(coro):

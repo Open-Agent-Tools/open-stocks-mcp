@@ -141,23 +141,23 @@
 
 ---
 *Last Updated: 2025-07-07*
-*Status: Authentication and core portfolio tools implemented, auth module needs completion*
+*Status: Authentication and core portfolio tools implemented, documentation cleaned up*
 
 ## Recent Updates (2025-07-07)
 - **Major Authentication Progress**: Implemented server-side authentication flow
-  - Server app now handles login with username/password prompts
+  - Server app now handles login with environment-based credentials
   - Added session verification via user profile API calls
   - Session storage for reuse across server restarts
   - Graceful error handling for authentication failures
 - **Core Tools Implementation**: Added working Robin Stocks tools:
-  - `account_info()` - Retrieves basic account information
-  - `portfolio()` - Shows portfolio overview with market value, equity, buying power
-  - `stock_orders()` - Displays recent stock order history with status and details
-  - `options_orders()` - Stub created for future options implementation
+  - `get_account_info()` - Retrieves basic account information
+  - `get_portfolio()` - Shows portfolio overview with market value, equity, buying power
+  - `get_stock_orders()` - Displays recent stock order history with status and details
+  - `get_options_orders()` - Stub created for future options implementation
 - **Code Quality**: All linting, formatting, type checking, and tests passing
-- **Architecture Progress**: 
-  - Auth module structure created (config.py, robinhood_auth.py) but needs implementation
-  - Server/client separation maintained with server-side credential handling
-  - Error handling and logging integrated throughout tools
-  - Removed deprecated MFA references from codebase
+- **Documentation Cleanup**: 
+  - Removed all client-side auth references from docs and examples
+  - Updated README with verified installation and setup instructions
+  - Fixed tool names to match actual implementation (get_portfolio, get_stock_orders)
+  - Cleaned up outdated MFA and SMS references throughout codebase
 - **Next Steps**: Complete auth module implementation and add market data tools

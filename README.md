@@ -26,9 +26,113 @@ This project aims to create a standardized interface for LLM applications to acc
 
 ## Installation
 
+Install the Open Stocks MCP server via pip:
+
 ```bash
 pip install open-stocks-mcp
 ```
+
+For development installation from source:
+
+```bash
+git clone https://github.com/Open-Agent-Tools/open-stocks-mcp.git
+cd open-stocks-mcp
+uv pip install -e .
+```
+
+## Credential Management
+
+The Open Stocks MCP server uses Robin Stocks for market data access, which requires Robinhood account credentials.
+
+### Setting Up Credentials
+
+1. Create a `.env` file in your project root:
+
+```bash
+ROBINHOOD_USERNAME=your_email@example.com
+ROBINHOOD_PASSWORD=your_password
+```
+
+2. Secure your credentials:
+   - Never commit the `.env` file to version control
+   - Ensure proper file permissions: `chmod 600 .env`
+   - Consider using a password manager or secure credential storage
+
+### Multi-Factor Authentication (MFA)
+
+If your Robinhood account has MFA enabled you will have a pop up in the mobile app, 
+it is recommended to have your app open during login.
+
+## Starting the MCP Server Locally
+
+### Via Command Line
+
+Start the server in stdio transport mode (for MCP clients):
+
+```bash
+# Using the installed package
+open-stocks-mcp-server --transport stdio
+
+# For development with auto-reload
+uv run open-stocks-mcp-server --transport stdio
+```
+
+### Testing the Server
+
+Use the MCP Inspector for interactive testing:
+
+```bash
+# Run the inspector with the server (mcp CLI required)
+uv run mcp dev src/open_stocks_mcp/server/app.py
+```
+
+Note: The `mcp` command is installed with the `mcp[cli]` package dependency.
+
+## Adding the MCP Client to an ADK Agent
+
+To integrate Open Stocks MCP with your ADK (Agent Development Kit) agent:
+
+### 1. Update MCP Settings
+
+Add the server to your MCP settings configuration (typically in `mcp_settings.json` or similar):
+
+```json
+{
+  "mcpServers": {
+    "open-stocks": {
+      "command": "open-stocks-mcp-server",
+      "args": ["--transport", "stdio"],
+      "env": {}
+    }
+  }
+}
+```
+
+### 2. Claude Desktop Integration
+
+For Claude Desktop app, add to your configuration:
+
+**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "open-stocks": {
+      "command": "open-stocks-mcp-server",
+      "args": ["--transport", "stdio"]
+    }
+  }
+}
+```
+
+
+### 3. Available Tools
+
+Once connected, your agent will have access to tools like:
+- `get_portfolio` - Retrieve current portfolio holdings and values
+- `get_stock_orders` - Get list of stock orders and their status
+- (More tools coming in future versions)
 
 ## Current Functionality (v0.0.3)
 
@@ -36,21 +140,8 @@ The package currently includes:
 
 ### Robin Stocks Authentication
 - **Environment-based login**: Stores credentials in `.env` file
-- **SMS MFA support**: Interactive MFA token flow
-- **Auto-login flow**: Automatic credential detection and MFA triggering
-
-```bash
-# Set up credentials in .env file:
-ROBINHOOD_USERNAME=your_email@example.com
-ROBINHOOD_PASSWORD=your_password
-
-# Test login flow
-uv run open-stocks-mcp-client auto_login
-uv run open-stocks-mcp-client "pass_through_mfa mfa_code=123456"
-
-# Start server (for MCP client integration)
-uv run open-stocks-mcp-server --transport stdio
-```
+- **Auto-login flow**: Automatic credential detection and login on server startup
+- **MFA Support**: Mobile app notification for accounts with MFA enabled
 
 ## Testing
 

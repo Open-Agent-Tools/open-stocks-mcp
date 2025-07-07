@@ -7,13 +7,15 @@ from pydantic_settings import BaseSettings
 class RobinhoodConfig(BaseSettings):
     """Configuration settings for Robinhood authentication."""
 
-    username: str | None = Field(default=None, env="ROBINHOOD_USERNAME")
-    password: SecretStr | None = Field(default=None, env="ROBINHOOD_PASSWORD")
-    expires_in: int = Field(default=86400, env="ROBINHOOD_EXPIRES_IN")  # 24 hours
+    username: str | None = Field(default=None)
+    password: SecretStr | None = Field(default=None)
+    expires_in: int = Field(default=86400)  # 24 hours
 
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
+    model_config = {
+        "env_file": ".env",
+        "env_file_encoding": "utf-8",
+        "env_prefix": "ROBINHOOD_",
+    }
 
     def has_credentials(self) -> bool:
         """Check if required credentials are provided."""

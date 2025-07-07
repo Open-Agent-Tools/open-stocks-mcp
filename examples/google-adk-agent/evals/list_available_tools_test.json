@@ -19,7 +19,7 @@
           "final_response": {
             "parts": [
               {
-                "text": "• auto_login\n• pass_through_mfa"
+                "text": "• get_portfolio\n• get_stock_orders"
               }
             ],
             "role": "model"

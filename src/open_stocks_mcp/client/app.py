@@ -52,9 +52,9 @@ def main(message: str) -> None:
     Message format: 'tool_name' or 'tool_name arg1=value1 arg2=value2'
 
     Examples:
-        account_info
-        portfolio
-        stock_orders
+        get_portfolio
+        get_stock_orders
+        get_stock_orders status=pending
     """
     # Parse the message to extract tool name and arguments
     parts = message.split()

@@ -75,7 +75,7 @@ This file contains the test case for listing available MCP tools:
           "final_response": {
             "parts": [
               {
-                "text": "• echo\n• login_robinhood"
+                "text": "• get_portfolio\n• get_stock_orders"
               }
             ],
             "role": "model"
@@ -181,8 +181,8 @@ agent_tools = [
 
 Currently available through the open-stocks-mcp server:
 
-- **`echo`**: Test connectivity with optional case transformation
-- **`login_robinhood`**: Authenticate with Robinhood using SMS MFA
+- **`get_portfolio`**: Retrieve current portfolio holdings and values
+- **`get_stock_orders`**: Get list of stock orders and their status
 
 ## Running Evaluations
 
@@ -264,8 +264,8 @@ Here's the complete implementation for the Stock Trading agent:
 
 2. **Expected Response** - The test expects the agent to list MCP tools:
    ```
-   • echo
-   • login_robinhood
+   • get_portfolio
+   • get_stock_orders
    ```
 
 3. **Running the Test**:
@@ -312,8 +312,8 @@ Here's the complete implementation for the Stock Trading agent:
    - Test tools individually with MCP client
 
 2. **Authentication Issues**
-   - SMS MFA codes expire quickly - use fresh codes
-   - Validate Robinhood credentials separately
+   - Authentication is handled server-side automatically
+   - Ensure valid credentials are in your .env file
    - Check rate limiting from Robin Stocks API
 
 ## Best Practices
@@ -330,4 +330,4 @@ Here's the complete implementation for the Stock Trading agent:
 
 6. **MCP Server Stability** - Test MCP server independently before running agent evaluations
 
-7. **Authentication Flow** - For login tests, use test credentials or mock responses to avoid real API calls
+7. **Server Authentication** - Authentication is handled automatically by the MCP server using environment credentials

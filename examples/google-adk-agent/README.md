@@ -29,28 +29,28 @@ A specialized stock trading agent that uses Google ADK to connect with our open-
 from examples.google_adk_agent import root_agent
 
 # The agent will automatically connect to the MCP server
-# and have access to auto_login and pass_through_mfa tools
+# and have access to stock trading tools
 
 # Example interaction:
-# User: "Help me login to Robinhood"
-# Agent: Will guide through username, password, and SMS MFA process
+# User: "Show me my portfolio"
+# Agent: Will retrieve and display portfolio information
 ```
 
 ## Available Tools
 
 Currently available through the MCP server:
 
-- **`auto_login`**: Automatically initiate login process (checks environment credentials and triggers SMS)
-- **`pass_through_mfa`**: Complete login with MFA code from SMS
+- **`get_portfolio`**: Retrieve current portfolio holdings and values
+- **`get_stock_orders`**: Get list of stock orders and their status
 
 ## Agent Capabilities
 
 The Stock_Trader agent specializes in:
 
-**Authentication:**
-- Guide users through Robinhood login process
-- Handle SMS MFA authentication
-- Manage session state
+**Portfolio Management:**
+- View portfolio holdings and performance
+- Track order history and status
+- Monitor account values
 
 **Testing:**
 - Validate tool functionality
@@ -63,10 +63,10 @@ The Stock_Trader agent specializes in:
 
 ## Example Interactions
 
-1. **Automatic Login:**
-   - **User:** "Login to my Robinhood account"
-   - **Agent:** *Uses auto_login to check environment credentials and trigger SMS, then asks user for MFA code*
+1. **Portfolio Overview:**
+   - **User:** "Show me my current holdings"
+   - **Agent:** *Uses get_portfolio to retrieve and display current positions*
 
-2. **Account Status:**
-   - **User:** "Check my account status"
-   - **Agent:** *Uses available tools to verify authentication state*
+2. **Order History:**
+   - **User:** "What orders do I have pending?"
+   - **Agent:** *Uses get_stock_orders to show order status and history*
