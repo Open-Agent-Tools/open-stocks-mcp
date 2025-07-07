@@ -5,7 +5,7 @@ This directory contains a complete example of how to run the Open Stocks MCP ser
 ## Architecture
 
 This setup uses a production-ready approach:
-1. **Dockerfile**: Creates a secure base image with the `open-stocks-mcp` library (v0.1.5) installed and verified
+1. **Dockerfile**: Creates a secure base image with the `open-stocks-mcp` library (v0.1.6) installed and verified
 2. **docker-compose.yml**: Orchestrates the server deployment with proper configuration and security settings
 3. **Enhanced Authentication**: Automatic device verification and MFA support for seamless Robinhood integration
 

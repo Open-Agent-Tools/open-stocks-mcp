@@ -19,7 +19,7 @@ This project aims to create a standardized interface for LLM applications to acc
 
 - ✅ **Foundation**: MCP server scaffolding complete
 - ✅ **Infrastructure**: CI/CD, testing, and publishing pipeline established
-- ✅ **Package**: Published to PyPI as `open-stocks-mcp` (v0.1.5)
+- ✅ **Package**: Published to PyPI as `open-stocks-mcp` (v0.1.6)
 - ✅ **Authentication**: Robin Stocks authentication with device verification support
 - ✅ **Containerization**: Production-ready Docker deployment with security features
 - ✅ **Communication**: Server/client MCP communication verified working
@@ -216,7 +216,7 @@ docker-compose down
 
 **See the [Docker Example README](examples/Docker/README.md) for complete documentation.**
 
-## Current Functionality (v0.1.5)
+## Current Functionality (v0.1.6)
 
 ### Enhanced Authentication System
 - **Device Verification**: Automatic handling of Robinhood device verification workflows
