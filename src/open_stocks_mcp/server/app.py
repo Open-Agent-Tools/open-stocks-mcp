@@ -1,18 +1,25 @@
 """MCP server implementation for Robin Stocks trading"""
 
 import asyncio
+import os
 import sys
 
 import click
+import robin_stocks.robinhood as rh
+from dotenv import load_dotenv
 from mcp import types
 from mcp.server.fastmcp import FastMCP
 
 from open_stocks_mcp.config import ServerConfig, load_config
 from open_stocks_mcp.logging_config import logger, setup_logging
 from open_stocks_mcp.tools.robinhood_tools import (
-    auto_login,
-    pass_through_mfa,
+    get_account_info,
+    get_orders,
+    get_portfolio,
 )
+
+# Load environment variables from .env file
+load_dotenv()
 
 
 def create_mcp_server(config: ServerConfig | None = None) -> FastMCP:
@@ -20,39 +27,58 @@ def create_mcp_server(config: ServerConfig | None = None) -> FastMCP:
     if config is None:
         config = load_config()
 
-    # Set up logging first
     setup_logging(config)
-
     server = FastMCP(config.name)
-
-    # Register all tools with the server
     register_tools(server)
-
     return server
 
 
 def register_tools(mcp_server: FastMCP) -> None:
     """Register all MCP tools with the server"""
 
-    @mcp_server.tool(
-        name="auto_login",
-        description="Automatically initiate Robinhood login (checks credentials and triggers MFA)",
-    )
-    async def auto_login_tool() -> types.TextContent:
-        """Auto-initiate Robinhood login process"""
-        return await auto_login()
+    @mcp_server.tool()
+    async def account_info() -> types.TextContent:
+        """Gets basic Robinhood account information."""
+        return await get_account_info()
 
-    @mcp_server.tool(
-        name="pass_through_mfa",
-        description="Complete Robinhood login with environment credentials and user-provided MFA code",
-    )
-    async def pass_through_mfa_tool(mfa_code: str) -> types.TextContent:
-        """Login to Robinhood using environment credentials and MFA code from user"""
-        return await pass_through_mfa(mfa_code)
+    @mcp_server.tool()
+    async def portfolio() -> types.TextContent:
+        """Provides a high-level overview of the portfolio."""
+        return await get_portfolio()
+
+    @mcp_server.tool()
+    async def orders() -> types.TextContent:
+        """Retrieves a list of recent order history and their statuses."""
+        return await get_orders()
 
 
-# Create a server instance that can be imported by the MCP CLI
-server = create_mcp_server()
+def attempt_login(username, password):
+    """
+    Attempt to log in to Robinhood.
+
+    This function will prompt for MFA if required by the Robinhood API.
+    It verifies success by fetching the user profile.
+    """
+    try:
+        logger.info(f"Attempting login for user: {username}")
+        # Let robin-stocks handle the MFA prompt internally
+        rh.login(
+            username=username,
+            password=password,
+            store_session=True,
+        )
+
+        # Verify login by making a test API call
+        user_profile = rh.load_user_profile()
+        if user_profile:
+            logger.info(f"✅ Successfully logged into Robinhood for user: {username}")
+        else:
+            logger.error("❌ Login failed: Could not retrieve user profile after login.")
+            sys.exit(1)
+
+    except Exception as e:
+        logger.error(f"❌ An unexpected error occurred during login: {e}")
+        sys.exit(1)
 
 
 @click.command()
@@ -63,8 +89,20 @@ server = create_mcp_server()
     default="stdio",
     help="Transport type (stdio or sse)",
 )
-def main(port: int, transport: str) -> int:
-    """Run the server with specified transport."""
+@click.option("--username", help="Robinhood username.", default=os.getenv("ROBINHOOD_USERNAME"))
+@click.option("--password", help="Robinhood password.", default=os.getenv("ROBINHOOD_PASSWORD"))
+def main(port: int, transport: str, username, password) -> int:
+    """Run the server with specified transport and handle authentication."""
+    if not username:
+        username = click.prompt("Please enter your Robinhood username")
+    if not password:
+        password = click.prompt("Please enter your Robinhood password", hide_input=True)
+
+    # The login function will now handle MFA prompts internally when needed.
+    attempt_login(username, password)
+
+    server = create_mcp_server()
+
     try:
         if transport == "stdio":
             asyncio.run(server.run_stdio_async())
@@ -74,6 +112,7 @@ def main(port: int, transport: str) -> int:
         return 0
     except KeyboardInterrupt:
         logger.info("Server stopped by user")
+        rh.logout()
         return 0
     except Exception as e:
         logger.error(f"Failed to start server: {e}", exc_info=True)

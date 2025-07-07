@@ -36,11 +36,9 @@ def create_agent() -> Agent:
         Agent: Configured Stock Trading agent with appropriate tools and settings.
     """
 
-    # Create environment for MCP server with current environment + credentials
+    # Create environment for MCP server
     mcp_env = os.environ.copy()
     mcp_env.update({
-        "ROBINHOOD_USERNAME": os.environ.get("ROBINHOOD_USERNAME", ""),
-        "ROBINHOOD_PASSWORD": os.environ.get("ROBINHOOD_PASSWORD", ""),
         "LOG_LEVEL": os.environ.get("LOG_LEVEL", "INFO"),
     })
 

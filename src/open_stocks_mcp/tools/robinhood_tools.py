@@ -1,186 +1,90 @@
-"""MCP tools for Robin Stocks authentication and session management."""
+"""MCP tools for Robin Stocks."""
 
-import os
 import robin_stocks.robinhood as rh
 from mcp import types
 
 from open_stocks_mcp.logging_config import logger
 
 
-async def auto_login() -> types.TextContent:
+async def get_account_info() -> types.TextContent:
     """
-    Automatically attempt to login to Robinhood and request MFA if needed.
-    
-    This should be called first by the agent to initiate the login process.
-    It checks for environment credentials and either:
-    1. Reports missing credentials, or
-    2. Initiates login and requests MFA from user
-    
+    Retrieves basic information about the Robinhood account.
+
     Returns:
-        TextContent: Either credential setup instructions or MFA request
+        A TextContent object containing account details.
     """
-    # Get credentials from environment
-    username = os.getenv("ROBINHOOD_USERNAME")
-    password = os.getenv("ROBINHOOD_PASSWORD")
-    
-    # Check if credentials are available
-    if not username or not password:
-        missing = []
-        if not username:
-            missing.append("ROBINHOOD_USERNAME")
-        if not password:
-            missing.append("ROBINHOOD_PASSWORD")
-            
-        logger.warning(f"Missing credentials: {', '.join(missing)}")
-        return types.TextContent(
-            type="text",
-            text=f"❌ No Robinhood credentials found\n\n"
-                 f"Missing: {', '.join(missing)}\n\n"
-                 f"Please set these in your .env file:\n"
-                 f"ROBINHOOD_USERNAME=your_email@example.com\n"
-                 f"ROBINHOOD_PASSWORD=your_password\n\n"
-                 f"Once set, I can help you login to Robinhood."
-        )
-    
-    logger.info(f"Auto-login initiated for user: {username}")
-    
     try:
-        # Try to login without MFA to trigger SMS
-        # This will fail but should trigger Robinhood to send SMS
-        try:
-            rh.login(username=username, password=password, store_session=False)
-        except Exception:
-            # Expected to fail - this triggers the SMS
-            pass
-            
-        return types.TextContent(
-            type="text",
-            text=f"🔐 Robinhood Login Initiated\n"
-                 f"User: {username}\n\n"
-                 f"📱 An SMS with a 6-digit verification code has been sent to your phone.\n\n"
-                 f"Please provide the 6-digit MFA code to complete your login."
+        # Corrected function to load user profile
+        account_info = rh.load_user_profile()
+        info_text = (
+            f"Account Info:\n"
+            f"- User: {account_info.get('username', 'N/A')}\n"
+            f"- Created At: {account_info.get('created_at', 'N/A')}"
         )
-            
+        logger.info("Successfully retrieved account info.")
+        return types.TextContent(type="text", text=info_text)
     except Exception as e:
-        logger.error(f"Error during auto-login for {username}: {e!s}")
-        return types.TextContent(
-            type="text", 
-            text=f"❌ Login initiation failed: {e!s}\n\n"
-                 f"This could be due to:\n"
-                 f"• Invalid credentials in .env file\n"
-                 f"• Network connectivity issues\n" 
-                 f"• Robinhood API issues\n\n"
-                 f"Please check your credentials and try again."
-        )
+        logger.error(f"Failed to retrieve account info: {e}")
+        return types.TextContent(type="text", text=f"❌ Error: {e}")
 
 
-async def pass_through_mfa(mfa_code: str) -> types.TextContent:
+async def get_portfolio() -> types.TextContent:
     """
-    Complete Robinhood login using environment credentials and user-provided MFA.
-    
-    Use this after calling request_mfa() and receiving the SMS code.
-    
-    Args:
-        mfa_code: 6-digit MFA code received via SMS from Robinhood
-        
+    Provides a high-level overview of the portfolio.
+
     Returns:
-        TextContent: Login status message
+        A TextContent object containing the portfolio overview.
     """
-    # Get credentials from environment
-    username = os.getenv("ROBINHOOD_USERNAME")
-    password = os.getenv("ROBINHOOD_PASSWORD")
-    
-    # Check if credentials are available
-    if not username:
-        logger.warning("ROBINHOOD_USERNAME not found in environment")
-        return types.TextContent(
-            type="text",
-            text="❌ Missing credentials: Please set ROBINHOOD_USERNAME in your .env file\n"
-                 "Example: ROBINHOOD_USERNAME=your_email@example.com"
-        )
-    
-    if not password:
-        logger.warning("ROBINHOOD_PASSWORD not found in environment")
-        return types.TextContent(
-            type="text", 
-            text="❌ Missing credentials: Please set ROBINHOOD_PASSWORD in your .env file\n"
-                 "Example: ROBINHOOD_PASSWORD=your_password"
-        )
-    
-    logger.info(f"Attempting login for user: {username}")
-    
     try:
-        # Attempt login with robin-stocks using environment credentials and provided MFA
-        login_response = rh.login(
-            username=username,
-            password=password,
-            mfa_code=mfa_code,
-            store_session=False,  # Don't store in pickle file
+        portfolio = rh.load_portfolio_profile()
+        # Added graceful handling for potentially missing values
+        market_value = portfolio.get('market_value', 'N/A')
+        equity = portfolio.get('equity', 'N/A')
+        buying_power = portfolio.get('buying_power', 'N/A')
+
+        portfolio_text = (
+            f"Portfolio Overview:\n"
+            f"- Market Value: ${market_value}\n"
+            f"- Equity: ${equity}\n"
+            f"- Buying Power: ${buying_power}"
         )
-        
-        if login_response:
-            logger.info(f"Successfully logged in user: {username}")
-            return types.TextContent(
-                type="text",
-                text=f"✅ Successfully logged into Robinhood\n"
-                     f"User: {username}\n"
-                     f"Session expires in 24 hours\n"
-                     f"You can now use other Robinhood tools."
-            )
-        else:
-            logger.error(f"Login failed for user: {username}")
-            return types.TextContent(
-                type="text",
-                text="❌ Login failed: Invalid MFA code or authentication error\n"
-                     "Please check that:\n"
-                     "• Your MFA code is correct (6 digits from SMS)\n"
-                     "• Your environment credentials are correct\n"
-                     "• The MFA code hasn't expired (they expire quickly)"
-            )
-            
+        logger.info("Successfully retrieved portfolio overview.")
+        return types.TextContent(type="text", text=portfolio_text)
     except Exception as e:
-        logger.error(f"Login error for {username}: {e!s}")
-        return types.TextContent(
-            type="text", 
-            text=f"❌ Login error: {e!s}\n"
-                 "This could be due to:\n"
-                 "• Network connectivity issues\n"
-                 "• Invalid credentials in environment\n" 
-                 "• Robinhood API issues"
-        )
+        logger.error(f"Failed to retrieve portfolio overview: {e}")
+        return types.TextContent(type="text", text=f"❌ Error: {e}")
 
 
-async def logout_robinhood() -> types.TextContent:
+async def get_orders() -> types.TextContent:
     """
-    Logout from Robinhood API.
+    Retrieves a list of recent order history and their statuses.
 
     Returns:
-        TextContent: Logout status message
+        A TextContent object containing recent orders.
     """
-    # TODO: Implement logout tool
-    logger.info("Logout tool called")
-    raise NotImplementedError("Logout tool not implemented")
+    try:
+        # Corrected function to get stock orders
+        orders = rh.get_all_stock_orders()
+        if not orders:
+            return types.TextContent(type="text", text="No recent orders found.")
 
+        orders_text = "Recent Orders:\n"
+        # Limit to the 5 most recent orders and handle potential missing data
+        for order in orders[:5]:
+            instrument_url = order.get('instrument')
+            symbol = rh.get_symbol_by_url(instrument_url) if instrument_url else 'N/A'
+            created_at = order.get('last_transaction_at', order.get('created_at', 'N/A'))
+            side = order.get('side', 'N/A').upper()
+            quantity = order.get('quantity', 'N/A')
+            avg_price = order.get('average_price', 'N/A')
+            state = order.get('state', 'N/A')
 
-async def auth_status() -> types.TextContent:
-    """
-    Check Robinhood authentication status.
-
-    Returns:
-        TextContent: Authentication status information
-    """
-    # TODO: Implement auth status tool
-    logger.info("Auth status tool called")
-    raise NotImplementedError("Auth status tool not implemented")
-
-
-async def account_info() -> types.TextContent:
-    """
-    Get Robinhood account information.
-
-    Returns:
-        TextContent: Account information or error message
-    """
-    # TODO: Implement account info tool
-    logger.info("Account info tool called")
-    raise NotImplementedError("Account info tool not implemented")
+            orders_text += (
+                f"- {created_at} | {side} {symbol} | "
+                f"Qty: {quantity} @ ${avg_price} | Status: {state}\n"
+            )
+        logger.info("Successfully retrieved recent orders.")
+        return types.TextContent(type="text", text=orders_text)
+    except Exception as e:
+        logger.error(f"Failed to retrieve recent orders: {e}", exc_info=True)
+        return types.TextContent(type="text", text=f"❌ Error: {e}")
