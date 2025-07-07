@@ -135,12 +135,15 @@
 - ✅ v0.0.3 - Stock/options order separation and MFA removal (published)
 
 ### v0.1.x - Robin Stocks Integration
-- [ ] v0.1.0 - **Authentication & Essential Account Tools** (In Progress)
+- [x] v0.1.0 - **Authentication & Essential Account Tools** (✅ **COMPLETE**)
   - ✅ Server-side authentication with session storage
   - ✅ Basic account tools (portfolio, stock_orders, account_info)
-  - [ ] Essential account tools (account_details, positions, portfolio_history)
-  - [ ] Complete auth module implementation
-  - [ ] Implement proper error handling and logging
+  - ✅ Essential account tools (account_details, positions, portfolio_history)
+  - ✅ Complete auth module implementation
+  - ✅ Implement proper error handling and logging
+  - ✅ Core market data tools (stock_price, stock_info, search_stocks, market_hours, price_history)
+  - ✅ Advanced infrastructure (rate limiting, monitoring, session management)
+  - ✅ Production-ready with 17 fully functional MCP tools
   
 - [ ] v0.1.1 - **Core Market Data**
   - [ ] Stock price and info tools
