@@ -16,7 +16,7 @@ WORKDIR /usr/src/app
 
 # Install the open-stocks-mcp package from PyPI
 # Use the latest version and install without cache to reduce image size
-RUN pip install --no-cache-dir open-stocks-mcp==0.1.1
+RUN pip install --no-cache-dir open-stocks-mcp==0.1.2
 
 # Verify that the package and its dependencies are installed correctly
 RUN pip check && \
