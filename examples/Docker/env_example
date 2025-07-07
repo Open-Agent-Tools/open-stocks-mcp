@@ -1,6 +1,0 @@
-# This is an example environment file.
-# Copy this to a new file named .env and fill in your credentials.
-
-# Robinhood Credentials
-ROBINHOOD_USERNAME=
-ROBINHOOD_PASSWORD=

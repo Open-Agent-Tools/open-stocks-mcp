@@ -1,57 +1,223 @@
 # Docker Example for Open Stocks MCP
 
-This directory contains a working example of how to run the Open Stocks MCP server using Docker and Docker Compose.
+This directory contains a complete example of how to run the Open Stocks MCP server using Docker and Docker Compose.
+
+## Architecture
 
 This setup uses a two-stage approach:
-1.  A `Dockerfile` that creates a base image with the `open-stocks-mcp` library installed and verified.
-2.  A `docker-compose.yml` file that runs the server using the base image and injects your credentials at runtime.
+1. **Dockerfile**: Creates a secure base image with the `open-stocks-mcp` library (v0.1.1) installed and verified
+2. **docker-compose.yml**: Orchestrates the server deployment with proper configuration and security settings
 
 ## Prerequisites
 
-- [Docker](httpss://docs.docker.com/get-docker/)
-- [Docker Compose](httpss://docs.docker.com/compose/install/)
+- [Docker](https://docs.docker.com/get-docker/) (version 20.10 or later)
+- [Docker Compose](https://docs.docker.com/compose/install/) (version 2.0 or later)
+- Valid Robinhood account credentials
 
-## Setup
+## Quick Start
 
 ### 1. Build the Base Image
 
-First, build the base image that contains the verified library installation.
+First, build the base image that contains the verified library installation:
 
 ```bash
 docker build . -t open-stocks-mcp-base:latest
 ```
 
-### 2. Create an Environment File
-
-You need to provide your Robinhood credentials to the server.
-
-1.  Create a file named `.env` in this directory (`examples/Docker`).
-2.  Add your credentials to the file like this:
-
-    ```env
-    # .env
-    ROBINHOOD_USERNAME=your_robinhood_username
-    ROBINHOOD_PASSWORD=your_robinhood_password
-    ```
-
-### 3. Run the Server
-
-With the base image built and the `.env` file in place, you can start the server using Docker Compose.
+Or let Docker Compose build it automatically:
 
 ```bash
+docker-compose build
+```
+
+### 2. Create Environment File
+
+Copy the example environment file and add your credentials:
+
+```bash
+cp .env.example .env
+```
+
+Edit the `.env` file with your Robinhood credentials:
+
+```env
+# .env
+ROBINHOOD_USERNAME=your_robinhood_username
+ROBINHOOD_PASSWORD=your_robinhood_password
+```
+
+⚠️ **Security Note**: Never commit the `.env` file to version control. It's already included in `.gitignore`.
+
+### 3. Start the Server
+
+Run the server using Docker Compose:
+
+```bash
+# Foreground (see logs)
 docker-compose up
+
+# Background (detached mode)
+docker-compose up -d
 ```
 
-You can add the `-d` flag (`docker-compose up -d`) to run the container in detached mode.
+### 4. Verify Server Health
 
-### 4. Accessing the Server
-
-The MCP server will be running and accessible via Server-Sent Events (SSE) on port `3001`. You can connect with any MCP client, such as `mcp-cli`:
+Check that the server is running properly:
 
 ```bash
-mcp-cli --url http://localhost:3001
+# Check container status
+docker-compose ps
+
+# View logs
+docker-compose logs -f
+
+# Check health status
+docker inspect open-stocks-mcp-server --format='{{.State.Health.Status}}'
 ```
 
-### 5. Stopping the Server
+## Usage
 
-To stop the server, press `Ctrl+C` in the terminal where `docker-compose up` is running, or use `docker-compose down` if running in detached mode.
+### Connecting to the Server
+
+The MCP server runs on port `3001` using Server-Sent Events (SSE) transport. You can connect with any MCP-compatible client:
+
+```bash
+# Using mcp CLI tool
+mcp --transport sse --url http://localhost:3001
+
+# Using curl to test connection
+curl -N -H "Accept: text/event-stream" http://localhost:3001/sse
+```
+
+### Available Tools
+
+The server provides 17 MCP tools across 5 categories:
+
+- **Account Management**: `account_info`, `portfolio`, `account_details`, `positions`, `portfolio_history`
+- **Market Data**: `stock_price`, `stock_info`, `search_stocks_tool`, `market_hours`, `price_history`
+- **Order History**: `stock_orders`, `options_orders`
+- **System Management**: `session_status`, `rate_limit_status`, `metrics_summary`, `health_check`
+- **Utility**: `list_tools`
+
+## Management
+
+### Stop the Server
+
+```bash
+# Graceful shutdown
+docker-compose down
+
+# Force stop (if needed)
+docker-compose down --timeout 10
+```
+
+### Update to Latest Version
+
+```bash
+# Pull latest version and rebuild
+docker-compose down
+docker-compose build --no-cache
+docker-compose up -d
+```
+
+### View Logs
+
+```bash
+# Follow logs in real-time
+docker-compose logs -f
+
+# View last 100 lines
+docker-compose logs --tail=100
+
+# View logs for specific timeframe
+docker-compose logs --since="1h"
+```
+
+## Configuration
+
+### Environment Variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `ROBINHOOD_USERNAME` | Yes | Your Robinhood account username |
+| `ROBINHOOD_PASSWORD` | Yes | Your Robinhood account password |
+
+### Resource Limits
+
+The Docker Compose configuration includes resource limits:
+- **Memory**: 512MB limit, 256MB reservation
+- **CPU**: 0.5 cores limit, 0.25 cores reservation
+
+Adjust these in `docker-compose.yml` based on your needs.
+
+## Security Features
+
+- **Non-root user**: Container runs as user ID 1001 for security
+- **Health checks**: Automatic container health monitoring
+- **Environment isolation**: Credentials passed via environment variables
+- **Resource limits**: Prevents resource exhaustion
+- **Log rotation**: Automatic log file management
+
+## Troubleshooting
+
+### Common Issues
+
+**Container won't start:**
+```bash
+# Check logs for errors
+docker-compose logs
+
+# Verify environment file exists and has correct format
+cat .env
+```
+
+**Connection refused:**
+```bash
+# Verify container is running and healthy
+docker-compose ps
+docker inspect open-stocks-mcp-server --format='{{.State.Health.Status}}'
+
+# Check if port is accessible
+curl -v http://localhost:3001
+```
+
+**Authentication errors:**
+```bash
+# Verify credentials in .env file
+# Check Robinhood account status
+# Ensure no 2FA is enabled (not currently supported)
+```
+
+### Debug Mode
+
+Run with debug logging:
+
+```bash
+# Add debug environment variable
+echo "LOG_LEVEL=DEBUG" >> .env
+docker-compose restart
+docker-compose logs -f
+```
+
+## Production Considerations
+
+For production deployments, consider:
+
+1. **Secrets Management**: Use Docker Secrets or external secret management
+2. **Reverse Proxy**: Add NGINX or Traefik for SSL termination
+3. **Monitoring**: Integrate with Prometheus/Grafana
+4. **Backup**: Implement session data backup if persistence is needed
+5. **Network Security**: Use Docker networks and firewall rules
+
+## Development
+
+To modify the container for development:
+
+```bash
+# Mount local code for development
+docker run -v $(pwd)/../../:/app open-stocks-mcp-base:latest bash
+
+# Or create a development docker-compose override
+cp docker-compose.yml docker-compose.override.yml
+# Edit override file for development settings
+```

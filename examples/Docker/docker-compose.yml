@@ -4,6 +4,10 @@ services:
   open-stocks-mcp:
     # Use the base image we built and verified
     image: open-stocks-mcp-base:latest
+    # Build the image if it doesn't exist (optional)
+    build:
+      context: .
+      dockerfile: Dockerfile
     # Name the container for easier identification
     container_name: open-stocks-mcp-server
     # Restart the container automatically if it stops
@@ -15,12 +19,36 @@ services:
     # Map the container's port 3001 to the host's port 3001
     ports:
       - "3001:3001"
+    # Health check configuration
+    healthcheck:
+      test: ["CMD", "python", "-c", "import open_stocks_mcp; print('OK')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    # Security configuration
+    user: "1001:1001"  # Run as non-root user
+    # Resource limits (optional but recommended for production)
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
     # Define the command to run the application
     # This overrides any CMD in the base Dockerfile
     command: >
       open-stocks-mcp-server
       --transport sse
       --port 3001
+    # Add logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 # Note:
 # Create a .env file in this directory with your Robinhood credentials:
