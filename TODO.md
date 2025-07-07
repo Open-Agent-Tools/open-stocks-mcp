@@ -14,7 +14,7 @@
 
 ### Robin Stocks Integration
 
-#### Phase 1: Foundation (v0.1.0) - ✅ COMPLETE
+#### Phase 1: Foundation (v0.1.1) - ✅ COMPLETE
 - [x] **Authentication & Session Management** (Server-side implementation)
   - [x] Server-side login flow with environment-based credentials
   - [x] Session verification via user profile API call
@@ -133,9 +133,10 @@
 - ✅ v0.0.1 - Base MCP server (published)
 - ✅ v0.0.2 - Client/server communication fixes (published)
 - ✅ v0.0.3 - Stock/options order separation and MFA removal (published)
+- ✅ v0.1.1 - Phase 1 Complete: Full Robin Stocks Integration (published)
 
 ### v0.1.x - Robin Stocks Integration
-- [x] v0.1.0 - **Authentication & Essential Account Tools** (✅ **COMPLETE**)
+- [x] v0.1.1 - **Authentication & Essential Account Tools** (✅ **COMPLETE**)
   - ✅ Server-side authentication with session storage
   - ✅ Basic account tools (portfolio, stock_orders, account_info)
   - ✅ Essential account tools (account_details, positions, portfolio_history)

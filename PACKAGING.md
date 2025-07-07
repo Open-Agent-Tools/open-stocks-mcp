@@ -11,8 +11,8 @@ This document describes how to package and distribute the open-stocks-mcp projec
 uv build
 
 # Output will be in dist/
-# - open_stocks_mcp-0.0.3-py3-none-any.whl (wheel)
-# - open_stocks_mcp-0.0.3.tar.gz (source distribution)
+# - open_stocks_mcp-0.1.1-py3-none-any.whl (wheel)
+# - open_stocks_mcp-0.1.1.tar.gz (source distribution)
 ```
 
 ### Using pip-tools
@@ -41,10 +41,10 @@ pip install open-stocks-mcp
 
 ```bash
 # Using UV
-uv pip install dist/open_stocks_mcp-0.0.3-py3-none-any.whl
+uv pip install dist/open_stocks_mcp-0.1.1-py3-none-any.whl
 
 # Using pip
-pip install dist/open_stocks_mcp-0.0.3-py3-none-any.whl
+pip install dist/open_stocks_mcp-0.1.1-py3-none-any.whl
 ```
 
 ### Development Installation
@@ -84,15 +84,15 @@ UV may add publishing support in the future. Check the UV documentation for upda
 The version is defined in `src/open_stocks_mcp/__init__.py`:
 
 ```python
-__version__ = "0.0.3"
+__version__ = "0.1.1"
 ```
 
 To bump the version:
 1. Update `__version__` in `src/open_stocks_mcp/__init__.py`
 2. Update `version` in `pyproject.toml`
 3. Commit the changes
-4. Tag the release: `git tag v0.0.3`
-5. Push the tag: `git push origin v0.0.3`
+4. Tag the release: `git tag v0.1.1`
+5. Push the tag: `git push origin v0.1.1`
 
 ## Package Structure
 
@@ -115,7 +115,7 @@ uv venv test-env
 source test-env/bin/activate
 
 # Install the wheel
-uv pip install dist/open_stocks_mcp-0.0.3-py3-none-any.whl
+uv pip install dist/open_stocks_mcp-0.1.1-py3-none-any.whl
 
 # Test the command
 open-stocks-mcp --help

@@ -19,7 +19,7 @@ This project aims to create a standardized interface for LLM applications to acc
 
 - ✅ **Foundation**: MCP server scaffolding complete
 - ✅ **Infrastructure**: CI/CD, testing, and publishing pipeline established
-- ✅ **Package**: Published to PyPI as `open-stocks-mcp` (v0.0.3)
+- ✅ **Package**: Published to PyPI as `open-stocks-mcp` (v0.1.1)
 - ✅ **Communication**: Server/client MCP communication verified working
 - 🔄 **In Progress**: Robin Stocks API integration
 - 📋 **Next**: Core stock market tools implementation
@@ -251,7 +251,7 @@ gh run rerun <run-id>
 ### Releases and Publishing
 ```bash
 # Create a release (triggers PyPI publishing workflow)
-gh release create v0.0.3 --title "v0.0.3 - Feature Description" --notes "Release notes here"
+gh release create v0.1.1 --title "v0.1.1 - Feature Description" --notes "Release notes here"
 
 # List releases
 gh release list
