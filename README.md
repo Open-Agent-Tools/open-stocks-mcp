@@ -19,7 +19,7 @@ This project aims to create a standardized interface for LLM applications to acc
 
 - ✅ **Foundation**: MCP server scaffolding complete
 - ✅ **Infrastructure**: CI/CD, testing, and publishing pipeline established
-- ✅ **Package**: Published to PyPI as `open-stocks-mcp` (v0.0.2)
+- ✅ **Package**: Published to PyPI as `open-stocks-mcp` (v0.0.3)
 - ✅ **Communication**: Server/client MCP communication verified working
 - 🔄 **In Progress**: Robin Stocks API integration
 - 📋 **Next**: Core stock market tools implementation
@@ -30,7 +30,7 @@ This project aims to create a standardized interface for LLM applications to acc
 pip install open-stocks-mcp
 ```
 
-## Current Functionality (v0.0.2)
+## Current Functionality (v0.0.3)
 
 The package currently includes:
 

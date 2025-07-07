@@ -15,9 +15,10 @@ Run complete code quality checks and fix all issues:
 5. **Review and update**: Check all TODO.md files for recent changes and update them
 6. **Commit changes**: Make detailed commit with all fixes and push to current branch
 
-### `publish`
+### `publish <version number>`
 Prepare and trigger a new release:
 1. **Run cleanup first**: Execute all cleanup steps
+2. **Update version in docs** : Update all references to the next version based on user input
 2. **Check version**: Verify version in pyproject.toml and __init__.py match
 3. **Build test**: Run `uv build` to ensure package builds correctly
 4. **Create release**: Use `gh release create` with appropriate version and notes

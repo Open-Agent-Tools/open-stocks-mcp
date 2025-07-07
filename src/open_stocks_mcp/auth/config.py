@@ -24,4 +24,3 @@ class RobinhoodConfig(BaseSettings):
         """Get password as string (safely extracting from SecretStr)."""
         # TODO: Implement safe password extraction
         raise NotImplementedError("Password extraction not implemented")
-

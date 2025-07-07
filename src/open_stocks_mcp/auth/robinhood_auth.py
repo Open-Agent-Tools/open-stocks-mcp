@@ -64,7 +64,6 @@ class RobinhoodAuth:
         raise NotImplementedError("Account info retrieval not implemented")
 
 
-
 # Global authentication instance
 _robinhood_auth: RobinhoodAuth | None = None
 

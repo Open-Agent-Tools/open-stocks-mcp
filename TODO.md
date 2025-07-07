@@ -110,6 +110,7 @@
 ### v0.0.x - Foundation
 - ✅ v0.0.1 - Base MCP server (published)
 - ✅ v0.0.2 - Client/server communication fixes (published)
+- ✅ v0.0.3 - Stock/options order separation and MFA removal (published)
 
 ### v0.1.x - Robin Stocks Integration
 - [ ] v0.1.0 - **Authentication & Core Market Data** (In Progress)
