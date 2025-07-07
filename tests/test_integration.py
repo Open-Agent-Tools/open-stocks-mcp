@@ -7,12 +7,14 @@ import pytest
 import robin_stocks.robinhood as rh
 from dotenv import load_dotenv
 
-from open_stocks_mcp.tools.robinhood_tools import (
+from open_stocks_mcp.tools.robinhood_account_tools import (
     get_account_details,
     get_account_info,
     get_portfolio,
     get_portfolio_history,
     get_positions,
+)
+from open_stocks_mcp.tools.robinhood_order_tools import (
     get_stock_orders,
 )
 
@@ -167,27 +169,27 @@ class TestMockIntegration:
         # Mock all robin_stocks calls to return empty/None data
         with (
             patch(
-                "open_stocks_mcp.tools.robinhood_tools.rh.load_user_profile",
+                "open_stocks_mcp.tools.robinhood_account_tools.rh.load_user_profile",
                 return_value={},
             ),
             patch(
-                "open_stocks_mcp.tools.robinhood_tools.rh.load_portfolio_profile",
+                "open_stocks_mcp.tools.robinhood_account_tools.rh.load_portfolio_profile",
                 return_value={},
             ),
             patch(
-                "open_stocks_mcp.tools.robinhood_tools.rh.get_all_stock_orders",
+                "open_stocks_mcp.tools.robinhood_order_tools.rh.get_all_stock_orders",
                 return_value=[],
             ),
             patch(
-                "open_stocks_mcp.tools.robinhood_tools.rh.load_phoenix_account",
+                "open_stocks_mcp.tools.robinhood_account_tools.rh.load_phoenix_account",
                 return_value=None,
             ),
             patch(
-                "open_stocks_mcp.tools.robinhood_tools.rh.get_open_stock_positions",
+                "open_stocks_mcp.tools.robinhood_account_tools.rh.get_open_stock_positions",
                 return_value=[],
             ),
             patch(
-                "open_stocks_mcp.tools.robinhood_tools.rh.get_historical_portfolio",
+                "open_stocks_mcp.tools.robinhood_account_tools.rh.get_historical_portfolio",
                 return_value=None,
             ),
         ):
@@ -219,27 +221,27 @@ class TestMockIntegration:
             # Mock to raise exception
             with (
                 patch(
-                    "open_stocks_mcp.tools.robinhood_tools.rh.load_user_profile",
+                    "open_stocks_mcp.tools.robinhood_account_tools.rh.load_user_profile",
                     side_effect=Exception("Test Error"),
                 ),
                 patch(
-                    "open_stocks_mcp.tools.robinhood_tools.rh.load_portfolio_profile",
+                    "open_stocks_mcp.tools.robinhood_account_tools.rh.load_portfolio_profile",
                     side_effect=Exception("Test Error"),
                 ),
                 patch(
-                    "open_stocks_mcp.tools.robinhood_tools.rh.get_all_stock_orders",
+                    "open_stocks_mcp.tools.robinhood_order_tools.rh.get_all_stock_orders",
                     side_effect=Exception("Test Error"),
                 ),
                 patch(
-                    "open_stocks_mcp.tools.robinhood_tools.rh.load_phoenix_account",
+                    "open_stocks_mcp.tools.robinhood_account_tools.rh.load_phoenix_account",
                     side_effect=Exception("Test Error"),
                 ),
                 patch(
-                    "open_stocks_mcp.tools.robinhood_tools.rh.get_open_stock_positions",
+                    "open_stocks_mcp.tools.robinhood_account_tools.rh.get_open_stock_positions",
                     side_effect=Exception("Test Error"),
                 ),
                 patch(
-                    "open_stocks_mcp.tools.robinhood_tools.rh.get_historical_portfolio",
+                    "open_stocks_mcp.tools.robinhood_account_tools.rh.get_historical_portfolio",
                     side_effect=Exception("Test Error"),
                 ),
             ):

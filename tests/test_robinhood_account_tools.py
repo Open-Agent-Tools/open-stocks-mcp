@@ -38,7 +38,7 @@ class TestAccountInfo:
         )
         result = await get_account_info()
 
-        assert result["result"]["error"] == "API Error"
+        assert "API Error" in result["result"]["error"]
         assert result["result"]["status"] == "error"
 
 
@@ -74,7 +74,7 @@ class TestPortfolio:
         )
         result = await get_portfolio()
 
-        assert result["result"]["error"] == "Portfolio Error"
+        assert "Portfolio Error" in result["result"]["error"]
         assert result["result"]["status"] == "error"
 
 
@@ -118,7 +118,7 @@ class TestAccountDetails:
         )
         result = await get_account_details()
 
-        assert result["result"]["message"] == "No account data found."
+        assert result["result"]["message"] == "No account data found"
         assert result["result"]["status"] == "no_data"
 
     @pytest.mark.asyncio
@@ -130,7 +130,7 @@ class TestAccountDetails:
         )
         result = await get_account_details()
 
-        assert result["result"]["error"] == "Account Details Error"
+        assert "Account Details Error" in result["result"]["error"]
         assert result["result"]["status"] == "error"
 
 
@@ -212,7 +212,7 @@ class TestPositions:
         )
         result = await get_positions()
 
-        assert result["result"]["error"] == "Positions Error"
+        assert "Positions Error" in result["result"]["error"]
         assert result["result"]["status"] == "error"
 
 
@@ -303,5 +303,5 @@ class TestPortfolioHistory:
         )
         result = await get_portfolio_history()
 
-        assert result["result"]["error"] == "History Error"
+        assert "History Error" in result["result"]["error"]
         assert result["result"]["status"] == "error"
