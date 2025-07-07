@@ -95,7 +95,6 @@
 
 ## Dependencies & API Status
 - [ ] **Robin Stocks v3.4.0**: ✅ Installed - Monitor for API changes and new features
-- [ ] **PyOTP v2.9.0**: ✅ Installed - Available for future authentication features  
 - [ ] **FastMCP**: Track updates to the MCP SDK
 - [ ] **Python**: Consider Python 3.12+ features and compatibility
 
