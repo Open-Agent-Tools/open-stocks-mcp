@@ -19,7 +19,7 @@ This project aims to create a standardized interface for LLM applications to acc
 
 - ✅ **Foundation**: MCP server scaffolding complete
 - ✅ **Infrastructure**: CI/CD, testing, and publishing pipeline established
-- ✅ **Package**: Published to PyPI as `open-stocks-mcp` (v0.1.4)
+- ✅ **Package**: Published to PyPI as `open-stocks-mcp` (v0.1.5)
 - ✅ **Communication**: Server/client MCP communication verified working
 - 🔄 **In Progress**: Robin Stocks API integration
 - 📋 **Next**: Core stock market tools implementation
@@ -134,7 +134,7 @@ Once connected, your agent will have access to tools like:
 - `get_stock_orders` - Get list of stock orders and their status
 - (More tools coming in future versions)
 
-## Current Functionality (v0.1.4)
+## Current Functionality (v0.1.5)
 
 The package currently includes:
 
