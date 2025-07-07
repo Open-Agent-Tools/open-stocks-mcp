@@ -7,8 +7,34 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      package-version: ${{ steps.get-version.outputs.version }}
+      tag-version: ${{ steps.get-tag.outputs.version }}
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Fetch all history for proper tag resolution
+    
+    - name: Get tag version
+      id: get-tag
+      run: |
+        TAG_VERSION=${GITHUB_REF#refs/tags/v}
+        echo "version=$TAG_VERSION" >> $GITHUB_OUTPUT
+        echo "🏷️ Release tag version: $TAG_VERSION"
+    
+    - name: Verify tag points to current commit
+      run: |
+        CURRENT_COMMIT=$(git rev-parse HEAD)
+        TAG_COMMIT=$(git rev-list -n 1 ${{ github.ref }})
+        echo "🔍 Current commit: $CURRENT_COMMIT"
+        echo "🔍 Tag commit: $TAG_COMMIT"
+        if [ "$CURRENT_COMMIT" != "$TAG_COMMIT" ]; then
+          echo "❌ ERROR: Tag ${{ github.ref }} does not point to current commit!"
+          echo "   Tag points to: $TAG_COMMIT"
+          echo "   HEAD points to: $CURRENT_COMMIT"
+          exit 1
+        fi
+        echo "✅ Tag points to correct commit"
     
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -20,8 +46,63 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install build
     
+    - name: Get package version
+      id: get-version
+      run: |
+        PACKAGE_VERSION=$(python -c "import sys; sys.path.insert(0, 'src'); from open_stocks_mcp import __version__; print(__version__)")
+        echo "version=$PACKAGE_VERSION" >> $GITHUB_OUTPUT
+        echo "📦 Package version: $PACKAGE_VERSION"
+    
+    - name: Verify version consistency
+      run: |
+        TAG_VERSION="${{ steps.get-tag.outputs.version }}"
+        PACKAGE_VERSION="${{ steps.get-version.outputs.version }}"
+        
+        echo "🔍 Verifying version consistency:"
+        echo "   Tag version: $TAG_VERSION"
+        echo "   Package version: $PACKAGE_VERSION"
+        
+        if [ "$TAG_VERSION" != "$PACKAGE_VERSION" ]; then
+          echo "❌ ERROR: Version mismatch!"
+          echo "   Release tag: v$TAG_VERSION"
+          echo "   Package version: $PACKAGE_VERSION"
+          echo ""
+          echo "📋 To fix this:"
+          echo "   1. Update version in pyproject.toml and src/open_stocks_mcp/__init__.py"
+          echo "   2. Commit the changes"
+          echo "   3. Delete and recreate the release with the correct tag"
+          exit 1
+        fi
+        echo "✅ Version consistency verified"
+    
     - name: Build package
-      run: python -m build
+      run: |
+        echo "🔨 Building package..."
+        python -m build
+        echo "📦 Built packages:"
+        ls -la dist/
+    
+    - name: Verify built package version
+      run: |
+        echo "🔍 Verifying built package version..."
+        WHEEL_FILE=$(ls dist/*.whl | head -n1)
+        if [ -z "$WHEEL_FILE" ]; then
+          echo "❌ ERROR: No wheel file found in dist/"
+          exit 1
+        fi
+        
+        WHEEL_VERSION=$(echo "$WHEEL_FILE" | sed -n 's/.*-\([0-9]\+\.[0-9]\+\.[0-9]\+\).*/\1/p')
+        EXPECTED_VERSION="${{ steps.get-version.outputs.version }}"
+        
+        echo "   Wheel file: $WHEEL_FILE"
+        echo "   Wheel version: $WHEEL_VERSION"
+        echo "   Expected version: $EXPECTED_VERSION"
+        
+        if [ "$WHEEL_VERSION" != "$EXPECTED_VERSION" ]; then
+          echo "❌ ERROR: Built wheel version doesn't match expected version!"
+          exit 1
+        fi
+        echo "✅ Built package version verified"
     
     - name: Store the distribution packages
       uses: actions/upload-artifact@v4
@@ -47,6 +128,67 @@ jobs:
         name: python-package-distributions
         path: dist/
     
+    - name: Verify downloaded artifacts
+      run: |
+        echo "🔍 Verifying downloaded artifacts..."
+        echo "📦 Contents of dist/:"
+        ls -la dist/
+        
+        WHEEL_COUNT=$(ls dist/*.whl 2>/dev/null | wc -l)
+        SDIST_COUNT=$(ls dist/*.tar.gz 2>/dev/null | wc -l)
+        
+        echo "   Wheel files: $WHEEL_COUNT"
+        echo "   Source distributions: $SDIST_COUNT"
+        
+        if [ "$WHEEL_COUNT" -eq 0 ]; then
+          echo "❌ ERROR: No wheel files found!"
+          exit 1
+        fi
+        
+        if [ "$SDIST_COUNT" -eq 0 ]; then
+          echo "❌ ERROR: No source distribution files found!"
+          exit 1
+        fi
+        
+        # Verify the wheel contains the expected version
+        WHEEL_FILE=$(ls dist/*.whl | head -n1)
+        WHEEL_VERSION=$(echo "$WHEEL_FILE" | sed -n 's/.*-\([0-9]\+\.[0-9]\+\.[0-9]\+\).*/\1/p')
+        EXPECTED_VERSION="${{ needs.build.outputs.package-version }}"
+        
+        echo "   Wheel version: $WHEEL_VERSION"
+        echo "   Expected version: $EXPECTED_VERSION"
+        
+        if [ "$WHEEL_VERSION" != "$EXPECTED_VERSION" ]; then
+          echo "❌ ERROR: Wheel version mismatch!"
+          echo "   Expected: $EXPECTED_VERSION"
+          echo "   Found in wheel: $WHEEL_VERSION"
+          exit 1
+        fi
+        
+        echo "✅ Artifacts verified successfully"
+    
+    - name: Display release information
+      run: |
+        echo "🚀 Publishing to PyPI:"
+        echo "   Package: open-stocks-mcp"
+        echo "   Version: ${{ needs.build.outputs.package-version }}"
+        echo "   Tag: v${{ needs.build.outputs.tag-version }}"
+        echo "   Files to upload:"
+        for file in dist/*; do
+          echo "     - $(basename "$file") ($(du -h "$file" | cut -f1))"
+        done
+    
     - name: Publish distribution to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        print-hash: true
+        verbose: true
+    
+    - name: Verify publication success
+      run: |
+        echo "🎉 Publication completed!"
+        echo "📦 Package available at: https://pypi.org/project/open-stocks-mcp/${{ needs.build.outputs.package-version }}/"
+        echo ""
+        echo "🔧 Installation command:"
+        echo "   pip install open-stocks-mcp==${{ needs.build.outputs.package-version }}"
 
