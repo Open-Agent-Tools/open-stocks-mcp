@@ -20,9 +20,11 @@ This project aims to create a standardized interface for LLM applications to acc
 - ✅ **Foundation**: MCP server scaffolding complete
 - ✅ **Infrastructure**: CI/CD, testing, and publishing pipeline established
 - ✅ **Package**: Published to PyPI as `open-stocks-mcp` (v0.1.5)
+- ✅ **Authentication**: Robin Stocks authentication with device verification support
+- ✅ **Containerization**: Production-ready Docker deployment with security features
 - ✅ **Communication**: Server/client MCP communication verified working
-- 🔄 **In Progress**: Robin Stocks API integration
-- 📋 **Next**: Core stock market tools implementation
+- 🔄 **In Progress**: Core stock market tools implementation
+- 📋 **Next**: Enhanced trading features and market analysis tools
 
 ## Installation
 
@@ -58,10 +60,25 @@ ROBINHOOD_PASSWORD=your_password
    - Ensure proper file permissions: `chmod 600 .env`
    - Consider using a password manager or secure credential storage
 
-### Multi-Factor Authentication (MFA)
+### Device Verification and MFA
 
-If your Robinhood account has MFA enabled you will have a pop up in the mobile app, 
-it is recommended to have your app open during login.
+The Open Stocks MCP server includes enhanced authentication that handles Robinhood's device verification requirements:
+
+**Device Verification Process:**
+- When logging in for the first time, Robinhood may require device verification
+- Check your Robinhood mobile app for verification prompts
+- Approve the device when prompted
+- The server will automatically handle the verification workflow
+
+**Multi-Factor Authentication (MFA):**
+- If your account has MFA enabled, you'll receive a push notification in the Robinhood mobile app
+- Keep your mobile app accessible during the login process
+- The server supports both SMS and app-based verification methods
+
+**Troubleshooting Authentication:**
+- **"Device verification required"**: Check your mobile app and approve the device
+- **"Interactive verification required"**: Ensure you have access to your mobile device
+- **Session persistence**: Authentication sessions are cached to reduce verification frequency
 
 ## Starting the MCP Server Locally
 
@@ -129,19 +146,90 @@ For Claude Desktop app, add to your configuration:
 
 ### 3. Available Tools
 
-Once connected, your agent will have access to tools like:
-- `get_portfolio` - Retrieve current portfolio holdings and values
-- `get_stock_orders` - Get list of stock orders and their status
-- (More tools coming in future versions)
+Once connected, your agent will have access to 17 MCP tools across 5 categories:
+
+**Account Management:**
+- `account_info` - Get account information and status
+- `portfolio` - Retrieve current portfolio holdings and values  
+- `account_details` - Detailed account information
+- `positions` - Current stock positions
+- `portfolio_history` - Historical portfolio performance
+
+**Market Data:**
+- `stock_price` - Get current stock prices
+- `stock_info` - Detailed stock information
+- `search_stocks_tool` - Search for stocks by symbol or name
+- `market_hours` - Current market hours and status
+- `price_history` - Historical price data
+
+**Order History:**
+- `stock_orders` - Get list of stock orders and their status
+- `options_orders` - Options trading order history
+
+**System Management:**
+- `session_status` - Authentication session information
+- `rate_limit_status` - API rate limiting status
+- `metrics_summary` - Server performance metrics
+- `health_check` - Server health status
+
+**Utility:**
+- `list_tools` - List all available MCP tools
+
+## Docker Deployment
+
+The Open Stocks MCP server includes production-ready Docker containerization with enhanced security features.
+
+### Quick Start with Docker
+
+```bash
+# Clone the repository
+git clone https://github.com/Open-Agent-Tools/open-stocks-mcp.git
+cd open-stocks-mcp/examples/Docker
+
+# Create credentials file
+cp .env.example .env
+# Edit .env with your Robinhood credentials
+
+# Start the server
+docker-compose up -d
+
+# Check logs
+docker-compose logs -f
+
+# Stop the server
+docker-compose down
+```
+
+### Docker Features
+
+**Security:**
+- Non-root user execution (UID 1001)
+- Health checks with automatic restart
+- Resource limits and reservations
+- Environment variable isolation
+
+**Production Ready:**
+- Automatic session persistence
+- Device verification handling
+- Comprehensive logging
+- Port exposure (3001) for MCP clients
+
+**See the [Docker Example README](examples/Docker/README.md) for complete documentation.**
 
 ## Current Functionality (v0.1.5)
 
-The package currently includes:
+### Enhanced Authentication System
+- **Device Verification**: Automatic handling of Robinhood device verification workflows
+- **Environment-based login**: Secure credential storage via `.env` files
+- **Session persistence**: Cached authentication sessions to reduce verification frequency
+- **MFA Support**: Full support for SMS, email, and mobile app verification methods
+- **Error handling**: Intelligent error classification and user guidance
 
-### Robin Stocks Authentication
-- **Environment-based login**: Stores credentials in `.env` file
-- **Auto-login flow**: Automatic credential detection and login on server startup
-- **MFA Support**: Mobile app notification for accounts with MFA enabled
+### Robin Stocks Integration
+- **17 MCP Tools**: Complete suite of account, market data, and system management tools
+- **Async Support**: Non-blocking API calls using asyncio
+- **Rate limiting**: Built-in protection against API rate limits
+- **Error recovery**: Automatic session refresh and retry logic
 
 ## Testing
 

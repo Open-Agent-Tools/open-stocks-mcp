@@ -4,9 +4,10 @@ This directory contains a complete example of how to run the Open Stocks MCP ser
 
 ## Architecture
 
-This setup uses a two-stage approach:
+This setup uses a production-ready approach:
 1. **Dockerfile**: Creates a secure base image with the `open-stocks-mcp` library (v0.1.5) installed and verified
 2. **docker-compose.yml**: Orchestrates the server deployment with proper configuration and security settings
+3. **Enhanced Authentication**: Automatic device verification and MFA support for seamless Robinhood integration
 
 ## Prerequisites
 
@@ -48,7 +49,36 @@ ROBINHOOD_PASSWORD=your_robinhood_password
 
 ⚠️ **Security Note**: Never commit the `.env` file to version control. It's already included in `.gitignore`.
 
-### 3. Start the Server
+### 3. Device Verification Setup
+
+**IMPORTANT**: The first time you start the container, Robinhood may require device verification:
+
+1. **Have your mobile app ready**: Keep the Robinhood mobile app accessible on your phone
+2. **Watch the logs**: Monitor container logs for verification prompts
+3. **Approve the device**: When prompted, approve the new device in your mobile app
+4. **Wait for completion**: The server will automatically handle the verification workflow
+
+```bash
+# Monitor logs during first startup
+docker-compose logs -f
+```
+
+Look for messages like:
+```
+INFO - Device verification prompt: Check robinhood app for device approvals method...
+INFO - Login successful with device verification
+INFO - Successfully authenticated user: your_username
+INFO - ✅ Successfully logged into Robinhood for user: your_username
+INFO - Uvicorn running on http://127.0.0.1:3001 (Press CTRL+C to quit)
+```
+
+**Success Indicators:**
+- ✅ Container status shows `healthy`
+- ✅ Logs show "Login successful with device verification"
+- ✅ Logs show "Uvicorn running on http://127.0.0.1:3001"
+- ✅ Session file created at `/home/mcp/.tokens/robinhood.pickle`
+
+### 4. Start the Server
 
 Run the server using Docker Compose:
 
@@ -60,7 +90,7 @@ docker-compose up
 docker-compose up -d
 ```
 
-### 4. Verify Server Health
+### 5. Verify Server Health
 
 Check that the server is running properly:
 
@@ -114,11 +144,20 @@ docker-compose down --timeout 10
 ### Update to Latest Version
 
 ```bash
-# Pull latest version and rebuild
+# Stop current container
 docker-compose down
+
+# Pull latest version from PyPI and rebuild
 docker-compose build --no-cache
+
+# Start with latest version
 docker-compose up -d
+
+# Verify update
+docker-compose logs | grep "open-stocks-mcp"
 ```
+
+**Note**: Device verification may be required again after major updates if the session cache is cleared.
 
 ### View Logs
 
@@ -181,11 +220,45 @@ docker inspect open-stocks-mcp-server --format='{{.State.Health.Status}}'
 curl -v http://localhost:3001
 ```
 
-**Authentication errors:**
+**Authentication Issues:**
+
+*Device Verification Required:*
 ```bash
-# Verify credentials in .env file
-# Check Robinhood account status
-# Ensure no 2FA is enabled (not currently supported)
+# Check logs for device verification prompts
+docker-compose logs | grep -i "verification\|device"
+
+# Look for these messages:
+# "Device verification prompt: Check robinhood app..."
+# "Waiting for device approval..."
+
+# Solution:
+# 1. Open Robinhood mobile app
+# 2. Look for device approval notifications
+# 3. Approve the new device
+# 4. Wait for "Login successful with device verification"
+```
+
+*Authentication Failed:*
+```bash
+# Verify credentials are correct
+cat .env
+
+# Check for common .env formatting issues:
+# ✓ ROBINHOOD_USERNAME=your_email@example.com
+# ✓ ROBINHOOD_PASSWORD=your_password
+# ✗ ROBINHOOD_USERNAME="your_email@example.com" (avoid quotes)
+
+# Restart after fixing credentials
+docker-compose restart
+```
+
+*MFA/2FA Issues:*
+```bash
+# The server now supports MFA via mobile app notifications
+# If you see MFA prompts, check your mobile app for:
+# - Push notifications
+# - SMS verification codes (if applicable)
+# - Email verification codes (if applicable)
 ```
 
 ### Debug Mode
