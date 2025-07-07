@@ -1,4 +1,4 @@
-"""MCP server implementation with Echo tool"""
+"""MCP server implementation for Robin Stocks trading"""
 
 import asyncio
 import sys
@@ -9,9 +9,9 @@ from mcp.server.fastmcp import FastMCP
 
 from open_stocks_mcp.config import ServerConfig, load_config
 from open_stocks_mcp.logging_config import logger, setup_logging
-from open_stocks_mcp.tools.echo import echo
 from open_stocks_mcp.tools.robinhood_tools import (
-    login_robinhood,
+    auto_login,
+    pass_through_mfa,
 )
 
 
@@ -35,22 +35,20 @@ def register_tools(mcp_server: FastMCP) -> None:
     """Register all MCP tools with the server"""
 
     @mcp_server.tool(
-        name="echo",
-        description="Echo back the input text with optional case transformation",
+        name="auto_login",
+        description="Automatically initiate Robinhood login (checks credentials and triggers MFA)",
     )
-    def echo_tool(text: str, transform: str | None = None) -> types.TextContent:
-        """Wrapper around the echo tool implementation"""
-        return echo(text, transform)
+    async def auto_login_tool() -> types.TextContent:
+        """Auto-initiate Robinhood login process"""
+        return await auto_login()
 
     @mcp_server.tool(
-        name="login_robinhood",
-        description="Login to Robinhood API with username, password, and SMS MFA code",
+        name="pass_through_mfa",
+        description="Complete Robinhood login with environment credentials and user-provided MFA code",
     )
-    async def login_robinhood_tool(
-        username: str, password: str, mfa_code: str
-    ) -> types.TextContent:
-        """Login to Robinhood API"""
-        return await login_robinhood(username, password, mfa_code)
+    async def pass_through_mfa_tool(mfa_code: str) -> types.TextContent:
+        """Login to Robinhood using environment credentials and MFA code from user"""
+        return await pass_through_mfa(mfa_code)
 
 
 # Create a server instance that can be imported by the MCP CLI

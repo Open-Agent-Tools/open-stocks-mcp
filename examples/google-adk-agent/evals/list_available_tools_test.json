@@ -19,7 +19,7 @@
           "final_response": {
             "parts": [
               {
-                "text": "• echo\n• login_robinhood"
+                "text": "• auto_login\n• pass_through_mfa"
               }
             ],
             "role": "model"

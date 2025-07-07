@@ -18,7 +18,10 @@ from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset, StdioServerParamet
 from .prompts import agent_instruction
 
 # Initialize environment and logging
-load_dotenv()  # or load_dotenv(dotenv_path="/env_path")
+# Load .env from project root (two levels up from this file)
+project_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+dotenv_path = os.path.join(project_root, ".env")
+load_dotenv(dotenv_path)
 logging.basicConfig(level=logging.ERROR)
 warnings.filterwarnings("ignore")
 
@@ -33,21 +36,22 @@ def create_agent() -> Agent:
         Agent: Configured Stock Trading agent with appropriate tools and settings.
     """
 
+    # Create environment for MCP server with current environment + credentials
+    mcp_env = os.environ.copy()
+    mcp_env.update({
+        "ROBINHOOD_USERNAME": os.environ.get("ROBINHOOD_USERNAME", ""),
+        "ROBINHOOD_PASSWORD": os.environ.get("ROBINHOOD_PASSWORD", ""),
+        "LOG_LEVEL": os.environ.get("LOG_LEVEL", "INFO"),
+    })
+
     agent_tools = [
         MCPToolset(
             connection_params=StdioServerParameters(
                 command="uv",
                 args=["run", "open-stocks-mcp-server", "--transport", "stdio"],
-                # Optional: Set working directory to the MCP server location
-                # cwd="/path/to/open-stocks-mcp",
-                env={
-                    # Environment variables for the MCP server if needed
-                    # "LOG_LEVEL": "INFO",
-                    # "DEBUG": "false",
-                },
+                cwd=project_root,  # Set working directory to project root
+                env=mcp_env,
             ),
-            # Optional: Filter which tools from the MCP server are exposed
-            # tool_filter=['login_robinhood', 'echo']
         ),
     ]
 

@@ -119,6 +119,7 @@ markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "integration: marks tests as integration tests (may require credentials)",
     "live_market: marks tests that require live market data",
+    "login_flow: marks tests for the complete login flow with real credentials",
 ]
 
 [tool.uv]

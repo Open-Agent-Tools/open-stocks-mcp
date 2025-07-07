@@ -32,15 +32,60 @@ pip install open-stocks-mcp
 
 ## Current Functionality (v0.0.2)
 
-The package currently includes a working MCP server/client with echo functionality for testing:
+The package currently includes:
+
+### Robin Stocks Authentication
+- **Environment-based login**: Stores credentials in `.env` file
+- **SMS MFA support**: Interactive MFA token flow
+- **Auto-login flow**: Automatic credential detection and MFA triggering
 
 ```bash
-# Test server/client communication
-uv run open-stocks-mcp-client "hello world" --transform upper
-# Output: HELLO WORLD
+# Set up credentials in .env file:
+ROBINHOOD_USERNAME=your_email@example.com
+ROBINHOOD_PASSWORD=your_password
+
+# Test login flow
+uv run open-stocks-mcp-client auto_login
+uv run open-stocks-mcp-client "pass_through_mfa mfa_code=123456"
 
 # Start server (for MCP client integration)
 uv run open-stocks-mcp-server --transport stdio
+```
+
+## Testing
+
+### Basic Tests
+Run the basic test suite:
+
+```bash
+uv run pytest
+```
+
+### Login Flow Integration Tests
+Test the complete login flow with real credentials from `.env`:
+
+```bash
+# Run all tests including integration tests
+uv run pytest -m integration
+
+# Run specific login flow tests
+uv run pytest tests/test_server_login_flow.py -v
+
+# Run without integration tests (no credentials needed)
+uv run pytest -m "not integration"
+```
+
+**Note**: Integration tests require valid `ROBINHOOD_USERNAME` and `ROBINHOOD_PASSWORD` in your `.env` file. These tests mock the actual Robin Stocks API calls to avoid real authentication attempts.
+
+### Test Categories
+- **Unit tests**: Basic functionality without external dependencies
+- **Integration tests**: Login flow tests using real credentials (but mocked API calls)
+- **Slow tests**: Performance and stress tests (marked with `@pytest.mark.slow`)
+
+For development with auto-reloading:
+
+```bash
+uv run pytest --watch
 ```
 
 ## License
