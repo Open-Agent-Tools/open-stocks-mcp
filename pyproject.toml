@@ -1,6 +1,6 @@
 [project]
 name = "open-stocks-mcp"
-version = "0.1.3"
+version = "0.1.4"
 description = "MCP Server based on open stock API packages like Robin Stocks"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -135,7 +135,6 @@ dev = [
 ]
 
 [tool.hatch.build]
-only-include = ["src/open_stocks_mcp"]
 
 [tool.hatch.build.sources]
 "src" = ""
