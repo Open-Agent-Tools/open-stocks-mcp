@@ -15,14 +15,15 @@ class RobinhoodConfig(BaseSettings):
         "env_file": ".env",
         "env_file_encoding": "utf-8",
         "env_prefix": "ROBINHOOD_",
+        "extra": "ignore",  # Ignore extra environment variables
     }
 
     def has_credentials(self) -> bool:
         """Check if required credentials are provided."""
-        # TODO: Implement credential validation
-        raise NotImplementedError("Credential validation not implemented")
+        return self.username is not None and self.password is not None
 
     def get_password(self) -> str | None:
         """Get password as string (safely extracting from SecretStr)."""
-        # TODO: Implement safe password extraction
-        raise NotImplementedError("Password extraction not implemented")
+        if self.password is None:
+            return None
+        return self.password.get_secret_value()

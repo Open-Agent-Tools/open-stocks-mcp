@@ -7,20 +7,74 @@ import sys
 import click
 import robin_stocks.robinhood as rh
 from dotenv import load_dotenv
-from mcp import types
 from mcp.server.fastmcp import FastMCP
 
 from open_stocks_mcp.config import ServerConfig, load_config
 from open_stocks_mcp.logging_config import logger, setup_logging
-from open_stocks_mcp.tools.robinhood_tools import (
+from open_stocks_mcp.tools.robinhood_account_tools import (
+    get_account_details,
     get_account_info,
-    get_options_orders,
     get_portfolio,
+    get_portfolio_history,
+    get_positions,
+)
+from open_stocks_mcp.tools.robinhood_order_tools import (
+    get_options_orders,
     get_stock_orders,
 )
 
 # Load environment variables from .env file
 load_dotenv()
+
+# Create global MCP server instance for Inspector
+mcp = FastMCP("Open Stocks MCP")
+
+
+# Register tools at module level for Inspector
+@mcp.tool()
+async def account_info() -> dict:
+    """Gets basic Robinhood account information."""
+    return await get_account_info()
+
+
+@mcp.tool()
+async def portfolio() -> dict:
+    """Provides a high-level overview of the portfolio."""
+    return await get_portfolio()
+
+
+@mcp.tool()
+async def stock_orders() -> dict:
+    """Retrieves a list of recent stock order history and their statuses."""
+    return await get_stock_orders()
+
+
+@mcp.tool()
+async def options_orders() -> dict:
+    """Retrieves a list of recent options order history and their statuses."""
+    return await get_options_orders()
+
+
+@mcp.tool()
+async def account_details() -> dict:
+    """Gets comprehensive account details including buying power and cash balances."""
+    return await get_account_details()
+
+
+@mcp.tool()
+async def positions() -> dict:
+    """Gets current stock positions with quantities and values."""
+    return await get_positions()
+
+
+@mcp.tool()
+async def portfolio_history(span: str = "week") -> dict:
+    """Gets historical portfolio performance data.
+
+    Args:
+        span: Time span ('day', 'week', 'month', '3month', 'year', '5year', 'all')
+    """
+    return await get_portfolio_history(span)
 
 
 def create_mcp_server(config: ServerConfig | None = None) -> FastMCP:
@@ -29,33 +83,7 @@ def create_mcp_server(config: ServerConfig | None = None) -> FastMCP:
         config = load_config()
 
     setup_logging(config)
-    server = FastMCP(config.name)
-    register_tools(server)
-    return server
-
-
-def register_tools(mcp_server: FastMCP) -> None:
-    """Register all MCP tools with the server"""
-
-    @mcp_server.tool()
-    async def account_info() -> types.TextContent:
-        """Gets basic Robinhood account information."""
-        return await get_account_info()
-
-    @mcp_server.tool()
-    async def portfolio() -> types.TextContent:
-        """Provides a high-level overview of the portfolio."""
-        return await get_portfolio()
-
-    @mcp_server.tool()
-    async def stock_orders() -> types.TextContent:
-        """Retrieves a list of recent stock order history and their statuses."""
-        return await get_stock_orders()
-
-    @mcp_server.tool()
-    async def options_orders() -> types.TextContent:
-        """Retrieves a list of recent options order history and their statuses."""
-        return await get_options_orders()
+    return mcp
 
 
 def attempt_login(username: str, password: str) -> None:

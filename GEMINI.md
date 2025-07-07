@@ -1,46 +1,28 @@
-# CLAUDE.md
+# GEMINI.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
-## User Shortcuts
-
-When users type these commands, execute the associated actions:
-
-### `cleanup`
-Run complete code quality checks and fix all issues:
-1. **Run ruff linting**: `uv run ruff check . --fix`
-2. **Run ruff formatting**: `uv run ruff format .`
-3. **Run mypy type checking**: `uv run mypy .` (fix any errors found)
-4. **Run pytest**: `uv run pytest` (fix any failing tests)
-5. **Review and update**: Check all TODO.md files for recent changes and update them
-6. **Commit changes**: Make detailed commit with all fixes and push to current branch
-
-### `publish <version number>`
-Prepare and trigger a new release:
-1. **Run cleanup first**: Execute all cleanup steps
-2. **Update version in docs** : Update all references to the next version based on user input
-2. **Check version**: Verify version in pyproject.toml and __init__.py match
-3. **Build test**: Run `uv build` to ensure package builds correctly
-4. **Create release**: Use `gh release create` with appropriate version and notes
-5. **Monitor**: Track the publishing workflow with `gh run list`
-
-### `test`
-Run comprehensive testing:
-1. **Run all tests**: `uv run pytest`
-2. **Run excluding slow**: `uv run pytest -m "not slow"`
-3. **Run integration tests**: `uv run pytest -m integration` (if credentials available)
-4. **Report results**: Show test coverage and any failures
-
-### `check`
-Quick status check:
-1. **Git status**: Show current branch and uncommitted changes
-2. **Recent commits**: Show last 3 commits with `git log --oneline -3`
-3. **Workflow status**: Check latest GitHub Actions with `gh run list --limit=3`
-4. **Package status**: Check if package builds with `uv build`
+This file provides guidance to Gemini when working with code in this repository.
 
 ## Project Overview
 
 This is an MCP (Model Context Protocol) Server that provides access to stock market data through open-source APIs, particularly Robin Stocks. The server uses FastMCP for simplified MCP server development.
+
+This project aims to create a standardized interface for LLM applications to access stock market data, portfolio information, and trading capabilities through the Model Context Protocol.
+
+### Planned Features
+- Real-time stock price data
+- Portfolio management tools  
+- Market analysis capabilities
+- Historical data access
+- Trading alerts and notifications
+
+## Status
+
+- ✅ **Foundation**: MCP server scaffolding complete
+- ✅ **Infrastructure**: CI/CD, testing, and publishing pipeline established
+- ✅ **Package**: Published to PyPI as `open-stocks-mcp` (v0.0.3)
+- ✅ **Communication**: Server/client MCP communication verified working
+- 🔄 **In Progress**: Robin Stocks API integration
+- 📋 **Next**: Core stock market tools implementation
 
 ## Development Commands
 
@@ -60,15 +42,14 @@ uv pip install -e ".[dev]"  # Install with dev dependencies
 
 ### Running Tests
 ```bash
-pytest
+uv run pytest
 ```
 
 ### Linting and Type Checking
 ```bash
-ruff check .  # Linting
-ruff format .  # Formatting
-black .  # Alternative formatting
-mypy .  # Type checking
+uv run ruff check .  # Linting
+uv run ruff format .  # Formatting
+uv run mypy .  # Type checking
 ```
 
 ### Adding Dependencies
@@ -310,159 +291,7 @@ Always prefer `gh` commands over manual GitHub web interface operations for cons
 
 ## Package Publishing
 
-This project is configured for automated PyPI publishing via GitHub Actions with trusted publishing.
-
-### Publishing Process
-
-#### 1. Trigger Publishing via Release
-```bash
-# Create a new release to trigger publishing workflow
-gh release create v0.0.2 --title "v0.0.2 - Feature Description" --notes "Release notes here"
-
-# View the triggered workflow
-gh run list --workflow=publish.yml
-
-# Monitor specific run
-gh run view <run-id>
-```
-
-#### 2. Manual Publishing (if needed)
-```bash
-# Build package locally
-uv build
-
-# Check package contents
-ls dist/
-# Should show: open_stocks_mcp-X.Y.Z.tar.gz and open_stocks_mcp-X.Y.Z-py3-none-any.whl
-
-# Test package installation locally
-uv pip install dist/open_stocks_mcp-*.whl
-```
-
-### Publishing Workflow
-
-The GitHub Actions workflow (`publish.yml`) automatically:
-
-1. **Build**: Creates wheel and source distribution
-2. **Publish**: Uploads to PyPI using trusted publishing
-3. **Artifacts**: Stores build artifacts for debugging
-
-### Troubleshooting Publishing Issues
-
-#### Common Workflow Failures
-
-**Build Failures:**
-```bash
-# Check build job logs
-gh run view <run-id> --job=build --log
-
-# Common issues:
-# - Missing dependencies in pyproject.toml
-# - Import errors in package code
-# - Version conflicts
-```
-
-**Publishing Failures:**
-```bash
-# Check publish job logs  
-gh run view <run-id> --job="Publish to PyPI" --log
-
-# Common issues:
-# - PyPI trusted publishing not configured
-# - Package name already exists
-# - Version already published
-# - Missing required metadata
-```
-
-#### Version Management Issues
-
-**Version Already Exists:**
-```bash
-# Check current PyPI version
-pip index versions open-stocks-mcp
-
-# Update version in pyproject.toml and __init__.py
-# Then create new release with updated version tag
-```
-
-**Version Mismatch:**
-```bash
-# Ensure version consistency between:
-# - pyproject.toml [project] version
-# - src/open_stocks_mcp/__init__.py __version__
-# - git tag (should match)
-```
-
-#### PyPI Trusted Publishing Setup
-
-If publishing fails with authentication errors:
-
-1. **Go to PyPI.org** → Account → Publishing
-2. **Add Pending Publisher:**
-   - PyPI project name: `open-stocks-mcp`
-   - Owner: `Open-Agent-Tools`
-   - Repository: `open-stocks-mcp` 
-   - Workflow: `publish.yml`
-   - Environment: `pypi`
-
-#### Local Testing Before Release
-
-```bash
-# Test package builds correctly
-uv build
-
-# Test installation from wheel
-uv pip install --force-reinstall dist/open_stocks_mcp-*.whl
-
-# Test CLI commands work
-open-stocks-mcp --help
-uv run pytest
-
-# Test import works
-python -c "import open_stocks_mcp; print(open_stocks_mcp.__version__)"
-```
-
-#### Debugging Workflow Issues
-
-```bash
-# Download workflow artifacts for inspection
-gh run download <run-id>
-
-# Check workflow file syntax
-gh workflow view publish.yml
-
-# Re-run failed workflow
-gh run rerun <run-id>
-
-# View workflow in browser
-gh run view <run-id> --web
-```
-
-#### Emergency Publishing Recovery
-
-If automated publishing fails completely:
-
-```bash
-# Manual publishing with twine (backup method)
-uv build
-uv pip install twine
-twine upload dist/*
-```
-
-### Package Verification
-
-After successful publishing:
-
-```bash
-# Verify package is available on PyPI
-pip index versions open-stocks-mcp
-
-# Test installation from PyPI
-uv pip install open-stocks-mcp
-
-# Verify CLI entry points
-open-stocks-mcp --help
-```
+This project is configured for automated PyPI publishing via GitHub Actions with trusted publishing. For detailed troubleshooting and manual publishing steps, refer to `PACKAGING.md`.
 
 ### Release Checklist
 

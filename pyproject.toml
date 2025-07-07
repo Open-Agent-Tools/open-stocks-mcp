@@ -43,6 +43,7 @@ dependencies = [
 dev = [
     "pytest>=8.0.0",
     "pytest-asyncio>=0.23.0",
+    "pytest-mock>=3.14.0",
     "ruff>=0.7.0",
     "mypy>=1.13.0",
     "black>=24.0.0",
@@ -128,6 +129,11 @@ markers = [
 
 [tool.uv]
 managed = true
+
+[dependency-groups]
+dev = [
+    "pytest-cov>=6.2.1",
+]
 
 [tool.hatch.build]
 only-include = ["src/open_stocks_mcp"]
