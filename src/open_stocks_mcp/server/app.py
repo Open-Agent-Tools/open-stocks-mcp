@@ -14,8 +14,9 @@ from open_stocks_mcp.config import ServerConfig, load_config
 from open_stocks_mcp.logging_config import logger, setup_logging
 from open_stocks_mcp.tools.robinhood_tools import (
     get_account_info,
-    get_orders,
+    get_options_orders,
     get_portfolio,
+    get_stock_orders,
 )
 
 # Load environment variables from .env file
@@ -47,21 +48,25 @@ def register_tools(mcp_server: FastMCP) -> None:
         return await get_portfolio()
 
     @mcp_server.tool()
-    async def orders() -> types.TextContent:
-        """Retrieves a list of recent order history and their statuses."""
-        return await get_orders()
+    async def stock_orders() -> types.TextContent:
+        """Retrieves a list of recent stock order history and their statuses."""
+        return await get_stock_orders()
+
+    @mcp_server.tool()
+    async def options_orders() -> types.TextContent:
+        """Retrieves a list of recent options order history and their statuses."""
+        return await get_options_orders()
 
 
-def attempt_login(username, password):
+def attempt_login(username: str, password: str) -> None:
     """
     Attempt to log in to Robinhood.
 
-    This function will prompt for MFA if required by the Robinhood API.
     It verifies success by fetching the user profile.
     """
     try:
         logger.info(f"Attempting login for user: {username}")
-        # Let robin-stocks handle the MFA prompt internally
+        # Login with stored session if available
         rh.login(
             username=username,
             password=password,
@@ -73,7 +78,9 @@ def attempt_login(username, password):
         if user_profile:
             logger.info(f"✅ Successfully logged into Robinhood for user: {username}")
         else:
-            logger.error("❌ Login failed: Could not retrieve user profile after login.")
+            logger.error(
+                "❌ Login failed: Could not retrieve user profile after login."
+            )
             sys.exit(1)
 
     except Exception as e:
@@ -89,16 +96,20 @@ def attempt_login(username, password):
     default="stdio",
     help="Transport type (stdio or sse)",
 )
-@click.option("--username", help="Robinhood username.", default=os.getenv("ROBINHOOD_USERNAME"))
-@click.option("--password", help="Robinhood password.", default=os.getenv("ROBINHOOD_PASSWORD"))
-def main(port: int, transport: str, username, password) -> int:
+@click.option(
+    "--username", help="Robinhood username.", default=os.getenv("ROBINHOOD_USERNAME")
+)
+@click.option(
+    "--password", help="Robinhood password.", default=os.getenv("ROBINHOOD_PASSWORD")
+)
+def main(port: int, transport: str, username: str | None, password: str | None) -> int:
     """Run the server with specified transport and handle authentication."""
     if not username:
         username = click.prompt("Please enter your Robinhood username")
     if not password:
         password = click.prompt("Please enter your Robinhood password", hide_input=True)
 
-    # The login function will now handle MFA prompts internally when needed.
+    # Perform login with stored session if available
     attempt_login(username, password)
 
     server = create_mcp_server()

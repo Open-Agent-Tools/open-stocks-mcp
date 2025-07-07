@@ -12,7 +12,7 @@ from .config import RobinhoodConfig
 class RobinhoodAuth:
     """Robin Stocks authentication manager."""
 
-    config: RobinhoodConfig = field(default_factory=RobinhoodConfig)
+    config: RobinhoodConfig = field(default_factory=lambda: RobinhoodConfig())
     _authenticated: bool = field(default=False, init=False)
     _session_info: dict[str, Any] | None = field(default=None, init=False)
 
@@ -63,10 +63,6 @@ class RobinhoodAuth:
         # TODO: Implement account info retrieval
         raise NotImplementedError("Account info retrieval not implemented")
 
-    def _generate_mfa_code(self) -> str | None:
-        """Generate MFA code using TOTP."""
-        # TODO: Implement MFA code generation
-        raise NotImplementedError("MFA code generation not implemented")
 
 
 # Global authentication instance

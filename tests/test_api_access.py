@@ -1,5 +1,6 @@
 # tests/test_api_access.py
 import os
+
 import pytest
 import robin_stocks.robinhood as rh
 from dotenv import load_dotenv
@@ -13,7 +14,6 @@ def robinhood_session():
     """
     Pytest fixture to handle Robinhood login and logout for a test module.
     Requires ROBINHOOD_USERNAME and ROBINHOOD_PASSWORD to be set.
-    The robin_stocks library will prompt for MFA if required by the API.
     """
     username = os.getenv("ROBINHOOD_USERNAME")
     password = os.getenv("ROBINHOOD_PASSWORD")
@@ -25,18 +25,20 @@ def robinhood_session():
             "environment variables must be set."
         )
 
-    # Perform login. The robin_stocks library will handle the MFA prompt
-    # if the API requires it. This requires running pytest with the -s flag.
-    # We set store_session=True because the device approval flow is stateful.
+    # Perform login with stored session if available
     login_response = rh.login(
         username=username,
         password=password,
-        store_session=True  # Must be True to handle stateful device verification
+        store_session=True,  # Store session for reuse
     )
 
     # Check for successful login before yielding to tests
-    assert login_response is not None, "Login failed: rh.login() returned None. Check credentials or for a new device verification."
-    assert "access_token" in login_response, f"Login failed: {login_response.get('detail', 'Unknown error')}"
+    assert login_response is not None, (
+        "Login failed: rh.login() returned None. Check credentials."
+    )
+    assert "access_token" in login_response, (
+        f"Login failed: {login_response.get('detail', 'Unknown error')}"
+    )
 
     yield
 

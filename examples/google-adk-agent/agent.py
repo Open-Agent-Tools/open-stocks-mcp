@@ -38,9 +38,11 @@ def create_agent() -> Agent:
 
     # Create environment for MCP server
     mcp_env = os.environ.copy()
-    mcp_env.update({
-        "LOG_LEVEL": os.environ.get("LOG_LEVEL", "INFO"),
-    })
+    mcp_env.update(
+        {
+            "LOG_LEVEL": os.environ.get("LOG_LEVEL", "INFO"),
+        }
+    )
 
     agent_tools = [
         MCPToolset(

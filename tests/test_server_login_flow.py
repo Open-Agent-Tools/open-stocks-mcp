@@ -1,11 +1,8 @@
 """Integration tests for server login flow using real credentials from .env file."""
 
-import os
-import pytest
 from pathlib import Path
 
-from open_stocks_mcp.tools.robinhood_tools import auto_login, pass_through_mfa
-from mcp.types import TextContent
+import pytest
 
 
 class TestServerLoginFlow:
@@ -21,6 +18,7 @@ class TestServerLoginFlow:
             pyproject_file = parent / "pyproject.toml"
             if pyproject_file.exists() and env_file.exists():
                 from dotenv import load_dotenv
+
                 load_dotenv(env_file)
                 break
 
@@ -31,6 +29,7 @@ class TestServerLoginFlow:
 
 # Helper function to run async functions in tests
 import asyncio
+
 
 def run_async(coro):
     """Helper to run async functions in pytest."""

@@ -7,17 +7,20 @@
 - ✅ **Documentation**: Comprehensive guides in README, CONTRIBUTING, and CLAUDE.md
 - ✅ **Code Quality**: Ruff, MyPy, and pytest configured and passing
 - ✅ **Server/Client Testing**: MCP communication working via stdio transport
+- ✅ **Server-Side Authentication**: Login flow implemented in server app
+- ✅ **Core Robin Stocks Tools**: Account info, portfolio, and orders tools implemented
 
 ## Immediate Tasks (Next Sprint)
 
 ### Robin Stocks Integration
 
-#### Phase 1: Foundation (v0.1.0) - READY TO IMPLEMENT
-- [ ] **Authentication & Session Management**
-  - [ ] Create Robin Stocks configuration module (`robinhood_config.py`)
-  - [ ] Implement environment-based credential handling
-  - [ ] Add 2FA/MFA support with `pyotp`
-  - [ ] Create `login()` and `logout()` MCP tools for session management
+#### Phase 1: Foundation (v0.1.0) - PARTIALLY COMPLETE
+- [x] **Authentication & Session Management** (Server-side implementation)
+  - [x] Server-side login flow with username/password prompts
+  - [x] Environment-based credential handling (via CLI args or env vars)
+  - [x] Session verification via user profile API call
+  - [x] Session storage for reuse
+  - [ ] Complete auth module implementation (currently has TODO stubs)
   - [ ] Add session timeout and re-authentication handling
   
 - [ ] **Core Market Data Tools** (Read-only operations)
@@ -33,12 +36,14 @@
   - [ ] Create Robin Stocks specific logging and monitoring
   - [ ] Add integration tests (marked with `@pytest.mark.live_market`)
 
-#### Phase 2: Portfolio Management (v0.2.0)
-- [ ] **Portfolio Tools**
-  - [ ] `get_portfolio()` - Portfolio overview and total value
+#### Phase 2: Portfolio Management (v0.2.0) - PARTIALLY COMPLETE
+- [x] **Portfolio Tools** (Basic implementation)
+  - [x] `get_portfolio()` - Portfolio overview and total value (implemented)
+  - [x] `get_stock_orders()` - Stock order history and status (implemented)
+  - [x] `get_account_info()` - Basic account information (implemented)
+  - [ ] `get_options_orders()` - Options order history (stub created)
   - [ ] `get_positions()` - Current stock/crypto/options positions
   - [ ] `get_dividends()` - Dividend history and payments
-  - [ ] `get_orders()` - Order history and status
   
 - [ ] **Advanced Market Data**
   - [ ] `get_trending_stocks()` - Popular/trending stocks
@@ -90,14 +95,14 @@
 
 ## Dependencies & API Status
 - [ ] **Robin Stocks v3.4.0**: ✅ Installed - Monitor for API changes and new features
-- [ ] **PyOTP v2.9.0**: ✅ Installed - 2FA/MFA authentication support  
+- [ ] **PyOTP v2.9.0**: ✅ Installed - Available for future authentication features  
 - [ ] **FastMCP**: Track updates to the MCP SDK
 - [ ] **Python**: Consider Python 3.12+ features and compatibility
 
 ## Security & Authentication Notes
 - 🔐 **Environment Variables**: Use `.env` for credentials (never commit secrets)
-- 🔐 **2FA Support**: Optional MFA with TOTP codes via `pyotp`
 - 🔐 **Session Management**: 24-hour token expiration, auto re-authentication
+- 🔐 **Session Storage**: Credentials stored locally for session reuse
 - 🔐 **Read-Only First**: Start with market data tools, trading tools optional
 - 🔐 **Error Handling**: Graceful handling of auth failures and rate limits
 
@@ -108,10 +113,13 @@
 - ✅ v0.0.2 - Client/server communication fixes (published)
 
 ### v0.1.x - Robin Stocks Integration
-- [ ] v0.1.0 - **Authentication & Core Market Data** 
-  - Authentication setup with login/logout tools
-  - Basic market data tools (price, info, search, hours, history)
-  - Read-only operations with error handling
+- [ ] v0.1.0 - **Authentication & Core Market Data** (In Progress)
+  - ✅ Server-side authentication with session storage
+  - ✅ Basic portfolio and account tools (portfolio, stock_orders, account_info)
+  - ✅ Options orders stub created for future implementation
+  - [ ] Complete auth module implementation
+  - [ ] Add core market data tools (price, info, search, hours, history)
+  - [ ] Implement proper error handling and logging
   
 ### v0.2.x - Portfolio Management
 - [ ] v0.2.0 - **Portfolio & Account Tools**
@@ -132,17 +140,24 @@
 - **Legal Compliance**: Ensure all usage complies with Robin Stocks ToS and financial regulations
 
 ---
-*Last Updated: 2025-07-06*
-*Status: Foundation complete with working MCP server/client, ready for Robin Stocks integration*
+*Last Updated: 2025-07-07*
+*Status: Authentication and core portfolio tools implemented, auth module needs completion*
 
-## Recent Updates (2025-07-06)
-- Fixed client command reference in stdio connection
-- Improved client output parsing for cleaner text display
-- Verified end-to-end MCP communication working
-- All code quality checks passing (ruff, mypy, pytest)
-- **Planning Complete**: Robin Stocks integration architecture designed
-- **Dependencies Ready**: robin-stocks v3.4.0 and pyotp v2.9.0 available
-- **Phase 1 Defined**: Authentication + core market data tools for v0.1.0
-- **Authentication Scaffolding**: Created auth modules with comprehensive tests
-- **MCP Tools Scaffolding**: Added login/logout/status/account_info tools with stubs
-- **Updated Design**: Changed to user-supplied credentials with mandatory MFA
+## Recent Updates (2025-07-07)
+- **Major Authentication Progress**: Implemented server-side authentication flow
+  - Server app now handles login with username/password prompts
+  - Added session verification via user profile API calls
+  - Session storage for reuse across server restarts
+  - Graceful error handling for authentication failures
+- **Core Tools Implementation**: Added working Robin Stocks tools:
+  - `account_info()` - Retrieves basic account information
+  - `portfolio()` - Shows portfolio overview with market value, equity, buying power
+  - `stock_orders()` - Displays recent stock order history with status and details
+  - `options_orders()` - Stub created for future options implementation
+- **Code Quality**: All linting, formatting, type checking, and tests passing
+- **Architecture Progress**: 
+  - Auth module structure created (config.py, robinhood_auth.py) but needs implementation
+  - Server/client separation maintained with server-side credential handling
+  - Error handling and logging integrated throughout tools
+  - Removed deprecated MFA references from codebase
+- **Next Steps**: Complete auth module implementation and add market data tools

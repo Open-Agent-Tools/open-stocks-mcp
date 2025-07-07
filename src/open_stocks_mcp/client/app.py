@@ -1,7 +1,6 @@
 """MCP client implementation for Robin Stocks tools"""
 
 import asyncio
-import json
 
 import click
 from mcp import ClientSession, StdioServerParameters
@@ -9,7 +8,7 @@ from mcp.client.stdio import stdio_client
 from mcp.types import TextContent
 
 
-async def call_tool(tool_name: str, arguments: dict | None = None) -> str:
+async def call_tool(tool_name: str, arguments: dict[str, str] | None = None) -> str:
     """
     Call a tool on the MCP server and get the response.
 
@@ -36,7 +35,7 @@ async def call_tool(tool_name: str, arguments: dict | None = None) -> str:
 
         # Call the specified tool
         result = await session.call_tool(tool_name, arguments=arguments or {})
-        
+
         # Extract text from the result content
         if result.content and len(result.content) > 0:
             first_content = result.content[0]
@@ -48,25 +47,26 @@ async def call_tool(tool_name: str, arguments: dict | None = None) -> str:
 @click.command()
 @click.argument("message", type=str)
 def main(message: str) -> None:
-    """Call a tool on the MCP server. 
-    
+    """Call a tool on the MCP server.
+
     Message format: 'tool_name' or 'tool_name arg1=value1 arg2=value2'
-    
+
     Examples:
-        auto_login
-        pass_through_mfa mfa_code=123456
+        account_info
+        portfolio
+        stock_orders
     """
     # Parse the message to extract tool name and arguments
     parts = message.split()
     tool_name = parts[0]
-    
+
     # Parse arguments if provided
     arguments = {}
     for part in parts[1:]:
         if "=" in part:
             key, value = part.split("=", 1)
             arguments[key] = value
-    
+
     response = asyncio.run(call_tool(tool_name, arguments))
     print(response)
 

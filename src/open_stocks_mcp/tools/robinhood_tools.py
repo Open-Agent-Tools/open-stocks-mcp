@@ -38,9 +38,9 @@ async def get_portfolio() -> types.TextContent:
     try:
         portfolio = rh.load_portfolio_profile()
         # Added graceful handling for potentially missing values
-        market_value = portfolio.get('market_value', 'N/A')
-        equity = portfolio.get('equity', 'N/A')
-        buying_power = portfolio.get('buying_power', 'N/A')
+        market_value = portfolio.get("market_value", "N/A")
+        equity = portfolio.get("equity", "N/A")
+        buying_power = portfolio.get("buying_power", "N/A")
 
         portfolio_text = (
             f"Portfolio Overview:\n"
@@ -55,36 +55,58 @@ async def get_portfolio() -> types.TextContent:
         return types.TextContent(type="text", text=f"❌ Error: {e}")
 
 
-async def get_orders() -> types.TextContent:
+async def get_stock_orders() -> types.TextContent:
     """
-    Retrieves a list of recent order history and their statuses.
+    Retrieves a list of recent stock order history and their statuses.
 
     Returns:
-        A TextContent object containing recent orders.
+        A TextContent object containing recent stock orders.
     """
     try:
-        # Corrected function to get stock orders
+        # Get stock orders specifically
         orders = rh.get_all_stock_orders()
         if not orders:
-            return types.TextContent(type="text", text="No recent orders found.")
+            return types.TextContent(type="text", text="No recent stock orders found.")
 
-        orders_text = "Recent Orders:\n"
+        orders_text = "Recent Stock Orders:\n"
         # Limit to the 5 most recent orders and handle potential missing data
         for order in orders[:5]:
-            instrument_url = order.get('instrument')
-            symbol = rh.get_symbol_by_url(instrument_url) if instrument_url else 'N/A'
-            created_at = order.get('last_transaction_at', order.get('created_at', 'N/A'))
-            side = order.get('side', 'N/A').upper()
-            quantity = order.get('quantity', 'N/A')
-            avg_price = order.get('average_price', 'N/A')
-            state = order.get('state', 'N/A')
+            instrument_url = order.get("instrument")
+            symbol = rh.get_symbol_by_url(instrument_url) if instrument_url else "N/A"
+            created_at = order.get(
+                "last_transaction_at", order.get("created_at", "N/A")
+            )
+            side = order.get("side", "N/A").upper()
+            quantity = order.get("quantity", "N/A")
+            avg_price = order.get("average_price", "N/A")
+            state = order.get("state", "N/A")
 
             orders_text += (
                 f"- {created_at} | {side} {symbol} | "
                 f"Qty: {quantity} @ ${avg_price} | Status: {state}\n"
             )
-        logger.info("Successfully retrieved recent orders.")
+        logger.info("Successfully retrieved recent stock orders.")
         return types.TextContent(type="text", text=orders_text)
     except Exception as e:
-        logger.error(f"Failed to retrieve recent orders: {e}", exc_info=True)
+        logger.error(f"Failed to retrieve recent stock orders: {e}", exc_info=True)
+        return types.TextContent(type="text", text=f"❌ Error: {e}")
+
+
+async def get_options_orders() -> types.TextContent:
+    """
+    Retrieves a list of recent options order history and their statuses.
+
+    Returns:
+        A TextContent object containing recent options orders.
+    """
+    try:
+        # TODO: Implement options orders retrieval
+        # Use rh.get_all_option_orders() when implemented
+        logger.info("Options orders retrieval not yet implemented.")
+        return types.TextContent(
+            type="text",
+            text="Options orders retrieval not yet implemented. Coming soon!",
+        )
+    except Exception as e:
+        logger.error(f"Failed to retrieve options orders: {e}", exc_info=True)
         return types.TextContent(type="text", text=f"❌ Error: {e}")
