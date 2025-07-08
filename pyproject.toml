@@ -1,6 +1,6 @@
 [project]
 name = "open-stocks-mcp"
-version = "0.1.6"
+version = "0.1.7"
 description = "MCP Server based on open stock API packages like Robin Stocks"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -29,14 +29,15 @@ classifiers = [
 
 dependencies = [
     "mcp>=1.0.0",
-    "mcp[cli]>=1.0.0",
     "robin-stocks>=3.0.0",
     "pydantic>=2.0.0",
     "python-dotenv>=1.0.0",
     "anyio>=4.5",
-    "starlette>=0.36.0",
-    "uvicorn>=0.27.0",
-    "pydantic-settings>=2.10.1",
+    "click>=8.0.0",
+    "cachetools>=5.3.0",
+    "requests>=2.31.0",
+    "aiofiles>=23.2.0",
+    "cryptography>=41.0.0",
 ]
 
 [project.optional-dependencies]

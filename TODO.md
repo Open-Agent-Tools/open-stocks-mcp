@@ -47,41 +47,143 @@
   - [x] Add integration tests (marked with `@pytest.mark.live_market`)
 
 #### Phase 2: Financial History & Analytics (v0.2.0)
-- [ ] **Financial History Tools** (Priority 2)
-  - [ ] `get_dividends()` - Dividend payment history and totals
-  - [ ] `get_transfers()` - Deposit/withdrawal history
-  - [ ] `get_documents()` - Account statements and tax forms
+
+**Robin Stocks API Gap Analysis Summary:**
+Based on comprehensive analysis of the Robin Stocks API, the following major categories of functionality are not yet implemented:
+1. **Dividend & Income Tracking** - Complete dividend history and analysis tools (Phase 2)
+2. **Banking & Transfers** - Bank account management and transaction history (Phase 2)
+3. **Document Management** - Account statements, tax forms, and document downloads (Phase 2)
+4. **Advanced Market Data** - Market movers, analyst ratings, news, Level II data (Phase 2)
+5. **Options Trading** - Full options chain analysis, Greeks, and positions (Phase 3)
+6. **Watchlists** - Create and manage custom watchlists (Phase 3)
+7. **Export Tools** - Trade history export functionality (Phase 4)
+8. **Order Placement** - All trading operations (stocks, options) (Phase 5)
+9. **Cryptocurrency** - Complete crypto trading support (Phase 6 - Final)
+- [ ] **Dividend & Income Tools** (Priority 2)
+  - [ ] `get_dividends()` - All dividend payment history
+  - [ ] `get_total_dividends()` - Total dividends received
+  - [ ] `get_dividends_by_instrument(symbol)` - Dividends for specific stock
+  - [ ] `get_interest_payments()` - Interest payment history
+  - [ ] `get_stock_loan_payments()` - Stock loan payment history
+  
+- [ ] **Banking & Transfer Tools** (Priority 3)
+  - [ ] `get_linked_bank_accounts()` - All linked bank accounts
+  - [ ] `get_bank_transfers()` - Transfer history
+  - [ ] `get_unified_transfers()` - All transfer types
+  - [ ] `get_card_transactions()` - Debit card transactions
+  - [ ] `get_wire_transfers()` - Wire transfer history
   
 - [ ] **Advanced Portfolio Analytics** (Priority 3)
-  - [ ] `get_detailed_holdings()` - Comprehensive position analysis with P&L
-  - [ ] `get_position_history()` - Complete trading history
+  - [ ] `build_holdings()` - Comprehensive holdings with dividends info (robin_stocks function)
+  - [ ] `build_user_profile()` - Total equity, cash, dividend totals (robin_stocks function)
+  - [ ] `get_all_positions()` - All positions ever traded
   - [ ] `get_day_trades()` - Pattern day trading tracking
   
+- [ ] **Document Management** (Priority 4)
+  - [ ] `get_documents()` - Account documents (statements, tax forms)
+  - [ ] `download_document(document_id)` - Download specific document as PDF
+  - [ ] `download_all_documents()` - Bulk download documents
+  
 - [ ] **Advanced Market Data**
-  - [ ] `get_trending_stocks()` - Popular/trending stocks
-  - [ ] `get_fundamentals(symbol)` - Detailed company fundamentals
-  - [ ] `get_earnings(symbol)` - Earnings data and estimates
+  - [ ] `get_top_movers_sp500()` - S&P 500 top movers
+  - [ ] `get_top_100()` - Top 100 most popular stocks
+  - [ ] `get_top_movers()` - Top 20 movers overall
+  - [ ] `get_all_stocks_from_market_tag(tag)` - Stocks by category (tech, biotech, etc.)
+  - [ ] `get_ratings(symbol)` - Analyst ratings
+  - [ ] `get_earnings(symbol)` - Earnings reports
+  - [ ] `get_news(symbol)` - Stock news
+  - [ ] `get_splits(symbol)` - Stock split history
+  - [ ] `get_events(symbol)` - Corporate events
+  - [ ] `get_pricebook_by_symbol(symbol)` - Level II market data (Gold only)
 
-#### Phase 3: Account Features & Safe Operations (v0.3.0)
-- [ ] **Account Management Tools** (Priority 4)
-  - [ ] `get_watchlists()` - User's saved watchlists
+#### Phase 3: Options Trading & Advanced Features (v0.3.0)
+- [ ] **Options Trading Tools** (Priority 4)
+  - [ ] `get_options_chains(symbol)` - Option chains for a symbol
+  - [ ] `find_tradable_options(symbol, expiration_date, option_type)` - Search options
+  - [ ] `get_option_market_data(option_id)` - Greeks, open interest, etc.
+  - [ ] `get_option_historicals(symbol)` - Historical option prices
+  - [ ] `get_aggregate_positions()` - Collapsed option positions by stock
+  - [ ] `get_all_option_positions()` - All option positions ever held
+  - [ ] `get_open_option_positions()` - Currently open positions
+  
+- [ ] **Watchlist Management** (Priority 4)
+  - [ ] `get_all_watchlists()` - All user watchlists
+  - [ ] `get_watchlist_by_name(name)` - Specific watchlist contents
+  - [ ] `post_symbols_to_watchlist(watchlist_name, symbols)` - Add symbols
+  - [ ] `delete_symbols_from_watchlist(watchlist_name, symbols)` - Remove symbols
+  
+- [ ] **Account Features & Notifications** (Priority 5)
   - [ ] `get_notifications()` - Account notifications
-  - [ ] `get_margin_status()` - Margin account information
-  - [ ] `get_account_features()` - Subscription and feature status
+  - [ ] `get_latest_notification()` - Most recent notification
+  - [ ] `get_margin_calls()` - Margin call information
+  - [ ] `get_margin_interest()` - Margin interest charges
+  - [ ] `get_subscription_fees()` - Gold subscription fees
+  - [ ] `get_referrals()` - Referral information
   
-- [ ] **Safe Write Operations** (Priority 5 - requires consent)
-  - [ ] `manage_watchlist()` - Add/remove symbols from watchlists
-  - [ ] `download_documents()` - Save documents locally
+- [ ] **User Profile Tools** (Priority 5)
+  - [ ] `load_account_profile()` - Trading account details
+  - [ ] `load_basic_profile()` - Personal information
+  - [ ] `load_investment_profile()` - Investment questionnaire answers
+  - [ ] `load_security_profile()` - Security settings
+
+#### Phase 4: Export & Reporting Tools (v0.4.0)
+- [ ] **Export & Reporting Tools** (Priority 6)
+  - [ ] `export_completed_stock_orders(dir_path)` - Export stock trades
+  - [ ] `export_completed_option_orders(dir_path)` - Export option trades
+  - [ ] `export_completed_crypto_orders(dir_path)` - Export crypto trades
+
+#### Phase 5: Trading Capabilities (v0.5.0 - Optional, requires explicit user consent)
+- [ ] **Stock Order Placement** (Priority 7 - requires consent)
+  - [ ] `order_buy_market(symbol, quantity)` - Market buy orders
+  - [ ] `order_sell_market(symbol, quantity)` - Market sell orders
+  - [ ] `order_buy_limit(symbol, quantity, limit_price)` - Limit buy orders
+  - [ ] `order_sell_limit(symbol, quantity, limit_price)` - Limit sell orders
+  - [ ] `order_buy_stop_loss(symbol, quantity, stop_price)` - Stop loss buy
+  - [ ] `order_sell_stop_loss(symbol, quantity, stop_price)` - Stop loss sell
+  - [ ] `order_buy_trailing_stop(symbol, quantity, trail_amount)` - Trailing stop buy
+  - [ ] `order_sell_trailing_stop(symbol, quantity, trail_amount)` - Trailing stop sell
+  - [ ] `order_buy_fractional_by_price(symbol, amount_in_dollars)` - Fractional shares
   
-- [ ] **Multi-Platform Support**
-  - [ ] Add Gemini API integration for crypto data
-  - [ ] Add TD Ameritrade API support
-  - [ ] Unified interface across platforms
+- [ ] **Options Order Placement** (Priority 8 - requires consent)
+  - [ ] `order_buy_option_limit(symbol, quantity, limit_price, expiration_date, strike, option_type)`
+  - [ ] `order_sell_option_limit(symbol, quantity, limit_price, expiration_date, strike, option_type)`
+  - [ ] `order_option_credit_spread()` - Credit spreads
+  - [ ] `order_option_debit_spread()` - Debit spreads
   
-- [ ] **Trading Capabilities** (Optional - requires explicit user consent)
-  - [ ] `place_order(symbol, quantity, side, type)` - Order placement
-  - [ ] `cancel_order(order_id)` - Order cancellation
-  - [ ] `get_buying_power()` - Available funds for trading
+- [ ] **Order Management** (Priority 7 - requires consent)
+  - [ ] `cancel_stock_order(order_id)` - Cancel specific stock order
+  - [ ] `cancel_option_order(order_id)` - Cancel specific option order
+  - [ ] `cancel_all_stock_orders()` - Cancel all stock orders
+  - [ ] `cancel_all_option_orders()` - Cancel all option orders
+  - [ ] `get_all_open_stock_orders()` - View open stock orders
+  - [ ] `get_all_open_option_orders()` - View open option orders
+  
+- [ ] **Banking Operations** (Priority 9 - requires consent)
+  - [ ] `deposit_funds_to_robinhood_account(bank_id, amount)` - Deposit funds
+  - [ ] `withdrawl_funds_to_bank_account(bank_id, amount)` - Withdraw funds
+  - [ ] `unlink_bank_account(bank_id)` - Remove bank account
+
+#### Phase 6: Cryptocurrency Trading (v0.6.0 - Final phase)
+- [ ] **Cryptocurrency Tools** (Priority 10)
+  - [ ] `load_crypto_profile()` - Crypto account information
+  - [ ] `get_crypto_positions()` - Current crypto holdings
+  - [ ] `get_crypto_currency_pairs()` - Available crypto pairs for trading
+  - [ ] `get_crypto_info(symbol)` - Detailed crypto information
+  - [ ] `get_crypto_quote(symbol)` - Real-time crypto quotes
+  - [ ] `get_crypto_historicals(symbol, interval, span)` - Historical crypto data
+  
+- [ ] **Crypto Order Placement** (Priority 11 - requires consent)
+  - [ ] `order_buy_crypto_by_price(symbol, amount_in_dollars)` - Buy crypto by dollar amount
+  - [ ] `order_buy_crypto_by_quantity(symbol, quantity)` - Buy crypto by quantity
+  - [ ] `order_sell_crypto_by_price(symbol, amount_in_dollars)` - Sell crypto by dollar amount
+  - [ ] `order_sell_crypto_by_quantity(symbol, quantity)` - Sell crypto by quantity
+  - [ ] `order_buy_crypto_limit(symbol, quantity, limit_price)` - Limit buy orders
+  - [ ] `order_sell_crypto_limit(symbol, quantity, limit_price)` - Limit sell orders
+  
+- [ ] **Crypto Order Management** (Priority 11 - requires consent)
+  - [ ] `cancel_crypto_order(order_id)` - Cancel specific crypto order
+  - [ ] `cancel_all_crypto_orders()` - Cancel all crypto orders
+  - [ ] `get_all_open_crypto_orders()` - View open crypto orders
 
 ### Testing & Quality
 - [ ] **Integration Tests**: Add tests requiring live market data (marked with `@pytest.mark.live_market`)
@@ -146,32 +248,56 @@
   - ✅ Advanced infrastructure (rate limiting, monitoring, session management)
   - ✅ Production-ready with 17 fully functional MCP tools
   
-- [ ] v0.1.1 - **Core Market Data**
-  - [ ] Stock price and info tools
-  - [ ] Market hours and search functionality
-  - [ ] Historical price data
-  
 ### v0.2.x - Financial History & Analytics
-- [ ] v0.2.0 - **Financial History Tools**
-  - Dividend history and totals
-  - Transfer and document history
-  - Advanced portfolio analytics with P&L
+- [ ] v0.2.0 - **Financial History & Analytics**
+  - Dividend tracking tools (dividends, totals, by instrument)
+  - Banking and transfer tools (bank accounts, transfers, transactions)
+  - Advanced portfolio analytics (build_holdings, all positions, day trades)
+  - Document management (view, download documents)
   
 - [ ] v0.2.1 - **Advanced Market Data**
-  - Company fundamentals and earnings
-  - Trending stocks and market analysis
-  - Technical indicators
+  - Market movers (S&P 500, top 100, trending)
+  - Market categories and tags
+  - Stock fundamentals (ratings, earnings, news, splits, events)
+  - Level II data for Gold members
   
-### v0.3.x - Account Features & Trading
-- [ ] v0.3.0 - **Account Management & Safe Operations**
+### v0.3.x - Options Trading & Advanced Features
+- [ ] v0.3.0 - **Options Trading Tools**
+  - Options chains and search
+  - Options market data (Greeks, open interest)
+  - Options positions and history
   - Watchlist management
-  - Document downloads
-  - Notification handling
   
-- [ ] v0.3.1 - **Multi-Platform & Trading** (Optional)
-  - Gemini and TD Ameritrade integration
-  - Trading capabilities (with explicit consent)
-  - Cross-platform unified interface
+- [ ] v0.3.1 - **Account Features & Profiles**
+  - Notifications and alerts
+  - Margin account features
+  - User profile tools
+  - Subscription and referral info
+  
+### v0.4.x - Export & Reporting
+- [ ] v0.4.0 - **Export Tools**
+  - Stock, option, and crypto trade exports
+  - Comprehensive reporting functionality
+  
+### v0.5.x - Trading Capabilities (Optional - Requires User Consent)
+- [ ] v0.5.0 - **Order Placement**
+  - Stock order placement (all order types)
+  - Options order placement
+  - Order management and cancellation
+  
+- [ ] v0.5.1 - **Banking Operations**
+  - Deposit and withdrawal functions
+  - Bank account management
+  
+### v0.6.x - Cryptocurrency Trading (Final Phase)
+- [ ] v0.6.0 - **Cryptocurrency Support**
+  - Crypto account and positions
+  - Crypto quotes and market data
+  - Crypto historical data
+  
+- [ ] v0.6.1 - **Crypto Trading**
+  - Crypto order placement
+  - Crypto order management and cancellation
 
 ## Notes
 - **Rate Limiting**: Robin Stocks may have rate limits - implement respectful usage
@@ -180,8 +306,8 @@
 - **Legal Compliance**: Ensure all usage complies with Robin Stocks ToS and financial regulations
 
 ---
-*Last Updated: 2025-07-07*
-*Status: Authentication and basic account tools implemented, roadmap updated with detailed account function analysis*
+*Last Updated: 2025-07-08*
+*Status: Phase 1 Complete with 17 MCP tools. Roadmap updated with comprehensive Robin Stocks API gap analysis.*
 
 ## Recent Updates (2025-07-07)
 
