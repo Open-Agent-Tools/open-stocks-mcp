@@ -209,11 +209,11 @@ Based on comprehensive analysis of the Robin Stocks API, the following major cat
   - ✅ Production-ready with 17 fully functional MCP tools
   
 ### v0.2.x - Financial History & Analytics
-- [ ] v0.2.0 - **Financial History & Analytics**
+- [x] v0.2.0 - **Financial History & Analytics** (✅ **COMPLETE**)
   - Dividend tracking tools (dividends, totals, by instrument)
   - Advanced portfolio analytics (build_holdings, day trades)
   
-- [ ] v0.2.1 - **Advanced Market Data**
+- [x] v0.2.1 - **Advanced Market Data** (✅ **COMPLETE**)
   - Market movers (S&P 500, top 100, trending)
   - Market categories and tags
   - Stock fundamentals (ratings, earnings, news, splits, events)

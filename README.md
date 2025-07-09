@@ -19,7 +19,7 @@ This project aims to create a standardized interface for LLM applications to acc
 
 - ✅ **Foundation**: MCP server scaffolding complete
 - ✅ **Infrastructure**: CI/CD, testing, and publishing pipeline established
-- ✅ **Package**: Published to PyPI as `open-stocks-mcp` (v0.2.0)
+- ✅ **Package**: Published to PyPI as `open-stocks-mcp` (v0.3.0)
 - ✅ **Authentication**: Robin Stocks authentication with device verification support
 - ✅ **Containerization**: Production-ready Docker deployment with security features
 - ✅ **Communication**: Server/client MCP communication verified working
