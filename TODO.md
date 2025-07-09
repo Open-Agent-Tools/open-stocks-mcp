@@ -51,14 +51,11 @@
 **Robin Stocks API Gap Analysis Summary:**
 Based on comprehensive analysis of the Robin Stocks API, the following major categories of functionality are not yet implemented:
 1. **Dividend & Income Tracking** - Complete dividend history and analysis tools (Phase 2)
-2. **Banking & Transfers** - Bank account management and transaction history (Phase 2)
-3. **Document Management** - Account statements, tax forms, and document downloads (Phase 2)
-4. **Advanced Market Data** - Market movers, analyst ratings, news, Level II data (Phase 2)
-5. **Options Trading** - Full options chain analysis, Greeks, and positions (Phase 3)
-6. **Watchlists** - Create and manage custom watchlists (Phase 3)
-7. **Export Tools** - Trade history export functionality (Phase 4)
-8. **Order Placement** - All trading operations (stocks, options) (Phase 5)
-9. **Cryptocurrency** - Complete crypto trading support (Phase 6 - Final)
+2. **Advanced Market Data** - Market movers, analyst ratings, news, Level II data (Phase 2)
+3. **Options Trading** - Full options chain analysis, Greeks, and positions (Phase 3)
+4. **Watchlists** - Create and manage custom watchlists (Phase 3)
+5. **Export Tools** - Trade history export functionality (Phase 4)
+6. **Order Placement** - All trading operations (stocks, options) (Phase 5)
 - [x] **Dividend & Income Tools** (Priority 2) - ✅ COMPLETE
   - [x] `get_dividends()` - All dividend payment history
   - [x] `get_total_dividends()` - Total dividends received
@@ -66,23 +63,12 @@ Based on comprehensive analysis of the Robin Stocks API, the following major cat
   - [x] `get_interest_payments()` - Interest payment history
   - [x] `get_stock_loan_payments()` - Stock loan payment history
   
-- [ ] **Banking & Transfer Tools** (Priority 3)
-  - [ ] `get_linked_bank_accounts()` - All linked bank accounts
-  - [ ] `get_bank_transfers()` - Transfer history
-  - [ ] `get_unified_transfers()` - All transfer types
-  - [ ] `get_card_transactions()` - Debit card transactions
-  - [ ] `get_wire_transfers()` - Wire transfer history
   
-- [ ] **Advanced Portfolio Analytics** (Priority 3)
-  - [ ] `build_holdings()` - Comprehensive holdings with dividends info (robin_stocks function)
-  - [ ] `build_user_profile()` - Total equity, cash, dividend totals (robin_stocks function)
-  - [ ] `get_all_positions()` - All positions ever traded
-  - [ ] `get_day_trades()` - Pattern day trading tracking
+- [x] **Advanced Portfolio Analytics** (Priority 2) - ✅ COMPLETE
+  - [x] `build_holdings()` - Comprehensive holdings with dividends info (robin_stocks function)
+  - [x] `build_user_profile()` - Total equity, cash, dividend totals (robin_stocks function)
+  - [x] `get_day_trades()` - Pattern day trading tracking
   
-- [ ] **Document Management** (Priority 4)
-  - [ ] `get_documents()` - Account documents (statements, tax forms)
-  - [ ] `download_document(document_id)` - Download specific document as PDF
-  - [ ] `download_all_documents()` - Bulk download documents
   
 - [x] **Advanced Market Data** - ✅ COMPLETE
   - [x] `get_top_movers_sp500()` - S&P 500 top movers
@@ -97,7 +83,7 @@ Based on comprehensive analysis of the Robin Stocks API, the following major cat
   - [x] `get_pricebook_by_symbol(symbol)` - Level II market data (Gold only)
 
 #### Phase 3: Options Trading & Advanced Features (v0.3.0)
-- [ ] **Options Trading Tools** (Priority 4)
+- [ ] **Options Trading Tools** (Priority 2)
   - [ ] `get_options_chains(symbol)` - Option chains for a symbol
   - [ ] `find_tradable_options(symbol, expiration_date, option_type)` - Search options
   - [ ] `get_option_market_data(option_id)` - Greeks, open interest, etc.
@@ -106,13 +92,13 @@ Based on comprehensive analysis of the Robin Stocks API, the following major cat
   - [ ] `get_all_option_positions()` - All option positions ever held
   - [ ] `get_open_option_positions()` - Currently open positions
   
-- [ ] **Watchlist Management** (Priority 4)
+- [ ] **Watchlist Management** (Priority 2)
   - [ ] `get_all_watchlists()` - All user watchlists
   - [ ] `get_watchlist_by_name(name)` - Specific watchlist contents
   - [ ] `post_symbols_to_watchlist(watchlist_name, symbols)` - Add symbols
   - [ ] `delete_symbols_from_watchlist(watchlist_name, symbols)` - Remove symbols
   
-- [ ] **Account Features & Notifications** (Priority 5)
+- [ ] **Account Features & Notifications** (Priority 3)
   - [ ] `get_notifications()` - Account notifications
   - [ ] `get_latest_notification()` - Most recent notification
   - [ ] `get_margin_calls()` - Margin call information
@@ -120,20 +106,19 @@ Based on comprehensive analysis of the Robin Stocks API, the following major cat
   - [ ] `get_subscription_fees()` - Gold subscription fees
   - [ ] `get_referrals()` - Referral information
   
-- [ ] **User Profile Tools** (Priority 5)
+- [ ] **User Profile Tools** (Priority 3)
   - [ ] `load_account_profile()` - Trading account details
   - [ ] `load_basic_profile()` - Personal information
   - [ ] `load_investment_profile()` - Investment questionnaire answers
   - [ ] `load_security_profile()` - Security settings
 
 #### Phase 4: Export & Reporting Tools (v0.4.0)
-- [ ] **Export & Reporting Tools** (Priority 6)
+- [ ] **Export & Reporting Tools** (Priority 4)
   - [ ] `export_completed_stock_orders(dir_path)` - Export stock trades
   - [ ] `export_completed_option_orders(dir_path)` - Export option trades
-  - [ ] `export_completed_crypto_orders(dir_path)` - Export crypto trades
 
-#### Phase 5: Trading Capabilities (v0.5.0 - Optional, requires explicit user consent)
-- [ ] **Stock Order Placement** (Priority 7 - requires consent)
+#### Phase 5: Trading Capabilities (v0.5.0 - Final phase, requires explicit user consent)
+- [ ] **Stock Order Placement** (Priority 5 - requires consent)
   - [ ] `order_buy_market(symbol, quantity)` - Market buy orders
   - [ ] `order_sell_market(symbol, quantity)` - Market sell orders
   - [ ] `order_buy_limit(symbol, quantity, limit_price)` - Limit buy orders
@@ -144,13 +129,13 @@ Based on comprehensive analysis of the Robin Stocks API, the following major cat
   - [ ] `order_sell_trailing_stop(symbol, quantity, trail_amount)` - Trailing stop sell
   - [ ] `order_buy_fractional_by_price(symbol, amount_in_dollars)` - Fractional shares
   
-- [ ] **Options Order Placement** (Priority 8 - requires consent)
+- [ ] **Options Order Placement** (Priority 6 - requires consent)
   - [ ] `order_buy_option_limit(symbol, quantity, limit_price, expiration_date, strike, option_type)`
   - [ ] `order_sell_option_limit(symbol, quantity, limit_price, expiration_date, strike, option_type)`
   - [ ] `order_option_credit_spread()` - Credit spreads
   - [ ] `order_option_debit_spread()` - Debit spreads
   
-- [ ] **Order Management** (Priority 7 - requires consent)
+- [ ] **Order Management** (Priority 5 - requires consent)
   - [ ] `cancel_stock_order(order_id)` - Cancel specific stock order
   - [ ] `cancel_option_order(order_id)` - Cancel specific option order
   - [ ] `cancel_all_stock_orders()` - Cancel all stock orders
@@ -158,32 +143,7 @@ Based on comprehensive analysis of the Robin Stocks API, the following major cat
   - [ ] `get_all_open_stock_orders()` - View open stock orders
   - [ ] `get_all_open_option_orders()` - View open option orders
   
-- [ ] **Banking Operations** (Priority 9 - requires consent)
-  - [ ] `deposit_funds_to_robinhood_account(bank_id, amount)` - Deposit funds
-  - [ ] `withdrawl_funds_to_bank_account(bank_id, amount)` - Withdraw funds
-  - [ ] `unlink_bank_account(bank_id)` - Remove bank account
 
-#### Phase 6: Cryptocurrency Trading (v0.6.0 - Final phase)
-- [ ] **Cryptocurrency Tools** (Priority 10)
-  - [ ] `load_crypto_profile()` - Crypto account information
-  - [ ] `get_crypto_positions()` - Current crypto holdings
-  - [ ] `get_crypto_currency_pairs()` - Available crypto pairs for trading
-  - [ ] `get_crypto_info(symbol)` - Detailed crypto information
-  - [ ] `get_crypto_quote(symbol)` - Real-time crypto quotes
-  - [ ] `get_crypto_historicals(symbol, interval, span)` - Historical crypto data
-  
-- [ ] **Crypto Order Placement** (Priority 11 - requires consent)
-  - [ ] `order_buy_crypto_by_price(symbol, amount_in_dollars)` - Buy crypto by dollar amount
-  - [ ] `order_buy_crypto_by_quantity(symbol, quantity)` - Buy crypto by quantity
-  - [ ] `order_sell_crypto_by_price(symbol, amount_in_dollars)` - Sell crypto by dollar amount
-  - [ ] `order_sell_crypto_by_quantity(symbol, quantity)` - Sell crypto by quantity
-  - [ ] `order_buy_crypto_limit(symbol, quantity, limit_price)` - Limit buy orders
-  - [ ] `order_sell_crypto_limit(symbol, quantity, limit_price)` - Limit sell orders
-  
-- [ ] **Crypto Order Management** (Priority 11 - requires consent)
-  - [ ] `cancel_crypto_order(order_id)` - Cancel specific crypto order
-  - [ ] `cancel_all_crypto_orders()` - Cancel all crypto orders
-  - [ ] `get_all_open_crypto_orders()` - View open crypto orders
 
 ### Testing & Quality
 - [ ] **Integration Tests**: Add tests requiring live market data (marked with `@pytest.mark.live_market`)
@@ -251,9 +211,7 @@ Based on comprehensive analysis of the Robin Stocks API, the following major cat
 ### v0.2.x - Financial History & Analytics
 - [ ] v0.2.0 - **Financial History & Analytics**
   - Dividend tracking tools (dividends, totals, by instrument)
-  - Banking and transfer tools (bank accounts, transfers, transactions)
-  - Advanced portfolio analytics (build_holdings, all positions, day trades)
-  - Document management (view, download documents)
+  - Advanced portfolio analytics (build_holdings, day trades)
   
 - [ ] v0.2.1 - **Advanced Market Data**
   - Market movers (S&P 500, top 100, trending)
@@ -285,19 +243,7 @@ Based on comprehensive analysis of the Robin Stocks API, the following major cat
   - Options order placement
   - Order management and cancellation
   
-- [ ] v0.5.1 - **Banking Operations**
-  - Deposit and withdrawal functions
-  - Bank account management
   
-### v0.6.x - Cryptocurrency Trading (Final Phase)
-- [ ] v0.6.0 - **Cryptocurrency Support**
-  - Crypto account and positions
-  - Crypto quotes and market data
-  - Crypto historical data
-  
-- [ ] v0.6.1 - **Crypto Trading**
-  - Crypto order placement
-  - Crypto order management and cancellation
 
 ## Notes
 - **Rate Limiting**: Robin Stocks may have rate limits - implement respectful usage
@@ -307,9 +253,31 @@ Based on comprehensive analysis of the Robin Stocks API, the following major cat
 
 ---
 *Last Updated: 2025-07-09*
-*Status: Phase 1 Complete with 17 MCP tools. Phase 2 dividend and advanced market data tools implemented with 32 total MCP tools. Roadmap updated with comprehensive Robin Stocks API gap analysis.*
+*Status: Phase 1 Complete with 17 MCP tools. Phase 2 dividend, advanced market data, and advanced portfolio analytics tools implemented with 35 total MCP tools. Roadmap updated with comprehensive Robin Stocks API gap analysis. Banking, cryptocurrency, and document management tools removed from roadmap.*
 
 ## Recent Updates (2025-07-09)
+
+### Phase 2 Advanced Portfolio Analytics Complete! 🎉
+
+**All Phase 2 advanced portfolio analytics tools have been successfully implemented:**
+
+3. **✅ Advanced Portfolio Analytics** - COMPLETE
+   - `get_build_holdings()` - Comprehensive holdings with dividend information and performance metrics
+   - `get_build_user_profile()` - Complete financial profile with equity, cash, and dividend totals
+   - `get_day_trades()` - Pattern day trading tracking and buying power information
+
+**Implementation Highlights:**
+- Clean wrapper functions for Robin Stocks' `build_holdings()` and `build_user_profile()` functions
+- Pattern day trading analysis with remaining trade calculation
+- All functions use `@handle_robin_stocks_errors` decorator for consistent error handling
+- Comprehensive test coverage (15 unit tests for advanced portfolio tools)
+- Full integration with MCP server and existing infrastructure
+- Consistent JSON response format with "result" field
+
+**Tool Count Update:**
+- **Previous**: 32 MCP tools (Phase 1 + dividend + market data tools)
+- **Added**: 3 advanced portfolio analytics tools
+- **Total**: 35 fully functional MCP tools
 
 ### Phase 2 Advanced Market Data Complete! 🎉
 

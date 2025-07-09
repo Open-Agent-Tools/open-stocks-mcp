@@ -22,4 +22,3 @@ class TestStockTraderAgentEvaluation:
             eval_dataset_file_path_or_dir="examples/google-adk-agent/evals/list_available_tools_test.json",
         )
         await asyncio.sleep(2)  # Rate limiting delay
-

@@ -19,11 +19,11 @@ This project aims to create a standardized interface for LLM applications to acc
 
 - ✅ **Foundation**: MCP server scaffolding complete
 - ✅ **Infrastructure**: CI/CD, testing, and publishing pipeline established
-- ✅ **Package**: Published to PyPI as `open-stocks-mcp` (v0.1.7)
+- ✅ **Package**: Published to PyPI as `open-stocks-mcp` (v0.2.0)
 - ✅ **Authentication**: Robin Stocks authentication with device verification support
 - ✅ **Containerization**: Production-ready Docker deployment with security features
 - ✅ **Communication**: Server/client MCP communication verified working
-- ✅ **Core Tools**: 32 MCP tools implemented across 6 categories
+- ✅ **Core Tools**: 35 MCP tools implemented across 6 categories
 - ✅ **Advanced Data**: Market intelligence, dividend tracking, and system monitoring
 - 📋 **Next**: Enhanced trading capabilities and real-time alerts
 
@@ -147,14 +147,17 @@ For Claude Desktop app, add to your configuration:
 
 ### 3. Available Tools
 
-Once connected, your agent will have access to 32 MCP tools across 6 categories:
+Once connected, your agent will have access to 35 MCP tools across 6 categories:
 
-**Account Management (5 tools):**
+**Account Management (8 tools):**
 - `account_info` - Gets basic Robinhood account information
 - `account_details` - Gets comprehensive account details including buying power and cash balances
 - `portfolio` - Portfolio holdings and values
 - `positions` - Current stock positions
 - `portfolio_history` - Historical portfolio performance
+- `build_holdings` - Comprehensive holdings with dividend information and performance metrics
+- `build_user_profile` - Complete financial profile with equity, cash, and dividend totals
+- `day_trades` - Pattern day trading tracking and buying power information
 
 **Order Management (2 tools):**
 - `stock_orders` - Stock order history and status
@@ -234,7 +237,7 @@ docker-compose down
 
 **See the [Docker Example README](examples/Docker/README.md) for complete documentation.**
 
-## Current Functionality (v0.1.7)
+## Current Functionality (v0.2.0)
 
 ### Enhanced Authentication System
 - **Device Verification**: Automatic handling of Robinhood device verification workflows
@@ -244,12 +247,13 @@ docker-compose down
 - **Error handling**: Intelligent error classification and user guidance
 
 ### Robin Stocks Integration
-- **32 MCP Tools**: Complete suite of account, market data, dividend tracking, and system management tools
+- **35 MCP Tools**: Complete suite of account, market data, dividend tracking, advanced portfolio analytics, and system management tools
 - **Async Support**: Non-blocking API calls using asyncio
 - **Rate limiting**: Built-in protection against API rate limits
 - **Error recovery**: Automatic session refresh and retry logic
 - **Advanced Market Data**: S&P 500 movers, market intelligence, and analyst ratings
 - **Income Tracking**: Comprehensive dividend and interest payment analysis
+- **Portfolio Analytics**: Advanced holdings analysis with dividend information and day trading tracking
 
 ## Testing
 

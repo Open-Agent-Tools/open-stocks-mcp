@@ -19,6 +19,11 @@ from open_stocks_mcp.tools.robinhood_account_tools import (
     get_portfolio_history,
     get_positions,
 )
+from open_stocks_mcp.tools.robinhood_advanced_portfolio_tools import (
+    get_build_holdings,
+    get_build_user_profile,
+    get_day_trades,
+)
 from open_stocks_mcp.tools.robinhood_dividend_tools import (
     get_dividends,
     get_dividends_by_instrument,
@@ -112,6 +117,34 @@ async def portfolio_history(span: str = "week") -> dict:
         span: Time span ('day', 'week', 'month', '3month', 'year', '5year', 'all')
     """
     return await get_portfolio_history(span)
+
+
+# Advanced Portfolio Analytics Tools
+@mcp.tool()
+async def build_holdings() -> dict:
+    """Builds comprehensive holdings with dividend information and performance metrics.
+
+    Returns detailed holdings data including cost basis, equity, dividends, and performance.
+    """
+    return await get_build_holdings()
+
+
+@mcp.tool()
+async def build_user_profile() -> dict:
+    """Builds comprehensive user profile with equity, cash, and dividend totals.
+
+    Returns complete financial profile including total equity, cash balances, and dividend totals.
+    """
+    return await get_build_user_profile()
+
+
+@mcp.tool()
+async def day_trades() -> dict:
+    """Gets pattern day trading information and tracking.
+
+    Returns day trade count, remaining day trades, PDT status, and buying power information.
+    """
+    return await get_day_trades()
 
 
 # Session Management Tools

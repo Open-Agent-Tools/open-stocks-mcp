@@ -396,16 +396,20 @@ async def test_invalid_symbol_validation():
     ]
 
     # Mock authentication to pass so we can test symbol validation
-    with patch("open_stocks_mcp.tools.robinhood_market_data_tools.get_session_manager") as mock_session:
+    with patch(
+        "open_stocks_mcp.tools.robinhood_market_data_tools.get_session_manager"
+    ) as mock_session:
         session_mgr = MagicMock()
         session_mgr.ensure_authenticated = AsyncMock(return_value=True)
         mock_session.return_value = session_mgr
-        
-        with patch("open_stocks_mcp.tools.robinhood_market_data_tools.get_rate_limiter") as mock_limiter:
+
+        with patch(
+            "open_stocks_mcp.tools.robinhood_market_data_tools.get_rate_limiter"
+        ) as mock_limiter:
             limiter = MagicMock()
             limiter.acquire = AsyncMock()
             mock_limiter.return_value = limiter
-            
+
             for func in functions_to_test:
                 for invalid_symbol in invalid_symbols:
                     result = await func(invalid_symbol)

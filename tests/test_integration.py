@@ -14,6 +14,11 @@ from open_stocks_mcp.tools.robinhood_account_tools import (
     get_portfolio_history,
     get_positions,
 )
+from open_stocks_mcp.tools.robinhood_advanced_portfolio_tools import (
+    get_build_holdings,
+    get_build_user_profile,
+    get_day_trades,
+)
 from open_stocks_mcp.tools.robinhood_dividend_tools import (
     get_dividends,
     get_dividends_by_instrument,
@@ -499,3 +504,52 @@ class TestMockIntegration:
                 assert "result" in result
                 assert result["result"]["status"] == "error"
                 assert "error" in result["result"]
+
+    # Advanced Portfolio Analytics Integration Tests
+    @pytest.mark.asyncio
+    async def test_get_build_holdings_integration(self, robinhood_session):
+        """Test get_build_holdings with real API call."""
+        result = await get_build_holdings()
+
+        assert "result" in result
+        # May return success or no_data depending on holdings
+        assert result["result"]["status"] in ["success", "no_data"]
+        if result["result"]["status"] == "success":
+            assert "holdings" in result["result"]
+            assert "total_positions" in result["result"]
+            assert isinstance(result["result"]["holdings"], dict)
+            assert isinstance(result["result"]["total_positions"], int)
+
+    @pytest.mark.asyncio
+    async def test_get_build_user_profile_integration(self, robinhood_session):
+        """Test get_build_user_profile with real API call."""
+        result = await get_build_user_profile()
+
+        assert "result" in result
+        # May return success or no_data depending on profile availability
+        assert result["result"]["status"] in ["success", "no_data"]
+        if result["result"]["status"] == "success":
+            # Check for expected financial fields
+            profile = result["result"]
+            expected_fields = ["equity", "cash", "status"]
+            for field in expected_fields:
+                assert field in profile
+
+    @pytest.mark.asyncio
+    async def test_get_day_trades_integration(self, robinhood_session):
+        """Test get_day_trades with real API call."""
+        result = await get_day_trades()
+
+        assert "result" in result
+        # May return success or no_data depending on account profile availability
+        assert result["result"]["status"] in ["success", "no_data"]
+        if result["result"]["status"] == "success":
+            day_trade_info = result["result"]
+            assert "day_trade_count" in day_trade_info
+            assert "remaining_day_trades" in day_trade_info
+            assert "pattern_day_trader" in day_trade_info
+            assert "day_trade_buying_power" in day_trade_info
+            assert "overnight_buying_power" in day_trade_info
+            assert isinstance(day_trade_info["day_trade_count"], int)
+            assert isinstance(day_trade_info["remaining_day_trades"], int)
+            assert isinstance(day_trade_info["pattern_day_trader"], bool)
