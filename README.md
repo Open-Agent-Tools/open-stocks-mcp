@@ -19,12 +19,13 @@ This project aims to create a standardized interface for LLM applications to acc
 
 - ✅ **Foundation**: MCP server scaffolding complete
 - ✅ **Infrastructure**: CI/CD, testing, and publishing pipeline established
-- ✅ **Package**: Published to PyPI as `open-stocks-mcp` (v0.1.6)
+- ✅ **Package**: Published to PyPI as `open-stocks-mcp` (v0.1.7)
 - ✅ **Authentication**: Robin Stocks authentication with device verification support
 - ✅ **Containerization**: Production-ready Docker deployment with security features
 - ✅ **Communication**: Server/client MCP communication verified working
-- 🔄 **In Progress**: Core stock market tools implementation
-- 📋 **Next**: Enhanced trading features and market analysis tools
+- ✅ **Core Tools**: 32 MCP tools implemented across 6 categories
+- ✅ **Advanced Data**: Market intelligence, dividend tracking, and system monitoring
+- 📋 **Next**: Enhanced trading capabilities and real-time alerts
 
 ## Installation
 
@@ -146,34 +147,51 @@ For Claude Desktop app, add to your configuration:
 
 ### 3. Available Tools
 
-Once connected, your agent will have access to 17 MCP tools across 5 categories:
+Once connected, your agent will have access to 32 MCP tools across 6 categories:
 
-**Account Management:**
-- `account_info` - Get account information and status
-- `portfolio` - Retrieve current portfolio holdings and values  
-- `account_details` - Detailed account information
+**Account Management (5 tools):**
+- `account_info` - Gets basic Robinhood account information
+- `account_details` - Gets comprehensive account details including buying power and cash balances
+- `portfolio` - Portfolio holdings and values
 - `positions` - Current stock positions
 - `portfolio_history` - Historical portfolio performance
 
-**Market Data:**
-- `stock_price` - Get current stock prices
-- `stock_info` - Detailed stock information
-- `search_stocks_tool` - Search for stocks by symbol or name
-- `market_hours` - Current market hours and status
+**Order Management (2 tools):**
+- `stock_orders` - Stock order history and status
+- `options_orders` - Options order history
+
+**Stock Market Data (5 tools):**
+- `stock_price` - Real-time stock prices
+- `stock_info` - Company fundamentals
+- `search_stocks_tool` - Search for stocks by symbol/name
+- `market_hours` - Market status and hours
 - `price_history` - Historical price data
 
-**Order History:**
-- `stock_orders` - Get list of stock orders and their status
-- `options_orders` - Options trading order history
+**Advanced Market Data (10 tools):**
+- `top_movers_sp500` - S&P 500 top movers
+- `top_100_stocks` - Most popular stocks
+- `top_movers` - Top 20 overall movers
+- `stocks_by_tag` - Stocks by category (tech, biotech, etc.)
+- `stock_ratings` - Analyst ratings
+- `stock_earnings` - Earnings reports
+- `stock_news` - Latest news stories
+- `stock_splits` - Stock split history
+- `stock_events` - Corporate events
+- `stock_level2_data` - Level II market data (Gold)
 
-**System Management:**
-- `session_status` - Authentication session information
-- `rate_limit_status` - API rate limiting status
-- `metrics_summary` - Server performance metrics
-- `health_check` - Server health status
+**Dividend & Income (5 tools):**
+- `dividends` - Complete dividend history
+- `total_dividends` - Total dividends with yearly breakdown
+- `dividends_by_instrument` - Dividends for specific stocks
+- `interest_payments` - Interest from cash management
+- `stock_loan_payments` - Stock lending income
 
-**Utility:**
-- `list_tools` - List all available MCP tools
+**System Tools (5 tools):**
+- `list_tools` - List all available tools
+- `session_status` - Authentication status
+- `rate_limit_status` - Rate limiting information
+- `metrics_summary` - Performance metrics
+- `health_check` - System health status
 
 ## Docker Deployment
 
@@ -216,7 +234,7 @@ docker-compose down
 
 **See the [Docker Example README](examples/Docker/README.md) for complete documentation.**
 
-## Current Functionality (v0.1.6)
+## Current Functionality (v0.1.7)
 
 ### Enhanced Authentication System
 - **Device Verification**: Automatic handling of Robinhood device verification workflows
@@ -226,10 +244,12 @@ docker-compose down
 - **Error handling**: Intelligent error classification and user guidance
 
 ### Robin Stocks Integration
-- **17 MCP Tools**: Complete suite of account, market data, and system management tools
+- **32 MCP Tools**: Complete suite of account, market data, dividend tracking, and system management tools
 - **Async Support**: Non-blocking API calls using asyncio
 - **Rate limiting**: Built-in protection against API rate limits
 - **Error recovery**: Automatic session refresh and retry logic
+- **Advanced Market Data**: S&P 500 movers, market intelligence, and analyst ratings
+- **Income Tracking**: Comprehensive dividend and interest payment analysis
 
 ## Testing
 

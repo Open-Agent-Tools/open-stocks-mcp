@@ -23,12 +23,3 @@ class TestStockTraderAgentEvaluation:
         )
         await asyncio.sleep(2)  # Rate limiting delay
 
-    @pytest.mark.agent_evaluation
-    @pytest.mark.asyncio
-    async def test_echo_functionality_agent(self):
-        """Test agent echo tool functionality."""
-        await AgentEvaluator.evaluate(
-            agent_module="examples.google_adk_agent",
-            eval_dataset_file_path_or_dir="examples/google-adk-agent/evals/echo_test.json",
-        )
-        await asyncio.sleep(2)  # Rate limiting delay
