@@ -23,9 +23,10 @@ This project aims to create a standardized interface for LLM applications to acc
 - ✅ **Authentication**: Robin Stocks authentication with device verification support
 - ✅ **Containerization**: Production-ready Docker deployment with security features
 - ✅ **Communication**: Server/client MCP communication verified working
-- ✅ **Core Tools**: 35 MCP tools implemented across 6 categories
+- ✅ **Core Tools**: 56 MCP tools implemented across 10 categories
 - ✅ **Advanced Data**: Market intelligence, dividend tracking, and system monitoring
-- 📋 **Next**: Enhanced trading capabilities and real-time alerts
+- ✅ **Phase 3**: Options trading, watchlist management, account features, and user profiles
+- 📋 **Next**: Trading capabilities and order placement
 
 ## Installation
 
@@ -147,7 +148,7 @@ For Claude Desktop app, add to your configuration:
 
 ### 3. Available Tools
 
-Once connected, your agent will have access to 35 MCP tools across 6 categories:
+Once connected, your agent will have access to 56 MCP tools across 10 categories:
 
 **Account Management (8 tools):**
 - `account_info` - Gets basic Robinhood account information
@@ -188,6 +189,40 @@ Once connected, your agent will have access to 35 MCP tools across 6 categories:
 - `dividends_by_instrument` - Dividends for specific stocks
 - `interest_payments` - Interest from cash management
 - `stock_loan_payments` - Stock lending income
+
+**Options Trading (7 tools):**
+- `options_chains` - Complete option chains for stocks
+- `find_options` - Search tradable options with filters
+- `option_market_data` - Greeks, open interest, and market data
+- `option_historicals` - Historical option price data
+- `aggregate_option_positions` - Aggregated positions by stock
+- `all_option_positions` - All option positions ever held
+- `open_option_positions` - Currently open option positions
+
+**Watchlist Management (5 tools):**
+- `all_watchlists` - All user-created watchlists
+- `watchlist_by_name` - Contents of specific watchlist
+- `add_to_watchlist` - Add symbols to watchlist
+- `remove_from_watchlist` - Remove symbols from watchlist
+- `watchlist_performance` - Performance metrics for watchlist
+
+**Account Features & Notifications (7 tools):**
+- `notifications` - Account notifications and alerts
+- `latest_notification` - Most recent notification
+- `margin_calls` - Margin call information
+- `margin_interest` - Margin interest charges
+- `subscription_fees` - Robinhood Gold fees
+- `referrals` - Referral program information
+- `account_features` - Comprehensive account features
+
+**User Profile Management (7 tools):**
+- `account_profile` - Trading account configuration
+- `basic_profile` - Basic user information
+- `investment_profile` - Risk assessment and objectives
+- `security_profile` - Security settings
+- `user_profile` - Comprehensive user profile
+- `complete_profile` - Combined profile data
+- `account_settings` - Account preferences
 
 **System Tools (5 tools):**
 - `list_tools` - List all available tools
@@ -237,7 +272,7 @@ docker-compose down
 
 **See the [Docker Example README](examples/Docker/README.md) for complete documentation.**
 
-## Current Functionality (v0.2.0)
+## Current Functionality (v0.3.0)
 
 ### Enhanced Authentication System
 - **Device Verification**: Automatic handling of Robinhood device verification workflows
@@ -247,13 +282,17 @@ docker-compose down
 - **Error handling**: Intelligent error classification and user guidance
 
 ### Robin Stocks Integration
-- **35 MCP Tools**: Complete suite of account, market data, dividend tracking, advanced portfolio analytics, and system management tools
+- **56 MCP Tools**: Complete suite of account, market data, options trading, watchlist management, and user profile tools
 - **Async Support**: Non-blocking API calls using asyncio
 - **Rate limiting**: Built-in protection against API rate limits
 - **Error recovery**: Automatic session refresh and retry logic
 - **Advanced Market Data**: S&P 500 movers, market intelligence, and analyst ratings
 - **Income Tracking**: Comprehensive dividend and interest payment analysis
 - **Portfolio Analytics**: Advanced holdings analysis with dividend information and day trading tracking
+- **Options Trading**: Complete options chain analysis, market data, and position tracking
+- **Watchlist Management**: Create and manage custom watchlists with performance tracking
+- **Account Features**: Notifications, margin calls, subscription fees, and referral information
+- **User Profiles**: Complete user profile management with security and investment preferences
 
 ## Testing
 

@@ -179,10 +179,29 @@ agent_tools = [
 
 ### Available MCP Tools
 
-Currently available through the open-stocks-mcp server:
+The open-stocks-mcp server now provides 56 MCP tools across 10 categories:
 
-- **`get_portfolio`**: Retrieve current portfolio holdings and values
-- **`get_stock_orders`**: Get list of stock orders and their status
+**Account Management (8 tools):**
+- `account_info`, `account_details`, `portfolio`, `positions`, `portfolio_history`
+- `build_holdings`, `build_user_profile`, `day_trades`
+
+**Options Trading (7 tools):**
+- `options_chains`, `find_options`, `option_market_data`, `option_historicals`
+- `aggregate_option_positions`, `all_option_positions`, `open_option_positions`
+
+**Watchlist Management (5 tools):**
+- `all_watchlists`, `watchlist_by_name`, `add_to_watchlist`
+- `remove_from_watchlist`, `watchlist_performance`
+
+**Account Features & Notifications (7 tools):**
+- `notifications`, `latest_notification`, `margin_calls`, `margin_interest`
+- `subscription_fees`, `referrals`, `account_features`
+
+**User Profile Management (7 tools):**
+- `account_profile`, `basic_profile`, `investment_profile`, `security_profile`
+- `user_profile`, `complete_profile`, `account_settings`
+
+**And more categories including Market Data, Dividend Tracking, and System Tools**
 
 ## Running Evaluations
 
@@ -262,10 +281,14 @@ Here's the complete implementation for the Stock Trading agent:
    ]
    ```
 
-2. **Expected Response** - The test expects the agent to list MCP tools:
+2. **Expected Response** - The test expects the agent to list all 56 MCP tools alphabetically:
    ```
-   • get_portfolio
-   • get_stock_orders
+   • account_details
+   • account_features
+   • account_info
+   ... (53 more tools) ...
+   • watchlist_by_name
+   • watchlist_performance
    ```
 
 3. **Running the Test**:

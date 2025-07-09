@@ -19,13 +19,19 @@
           "final_response": {
             "parts": [
               {
-                "text": "• account_details\n• account_info\n• dividends\n• dividends_by_instrument\n• health_check\n• interest_payments\n• list_tools\n• market_hours\n• metrics_summary\n• options_orders\n• portfolio\n• portfolio_history\n• positions\n• price_history\n• rate_limit_status\n• search_stocks_tool\n• session_status\n• stock_earnings\n• stock_events\n• stock_info\n• stock_level2_data\n• stock_loan_payments\n• stock_news\n• stock_orders\n• stock_price\n• stock_ratings\n• stock_splits\n• stocks_by_tag\n• top_100_stocks\n• top_movers\n• top_movers_sp500\n• total_dividends"
+                "text": "• account_details\n• account_features\n• account_info\n• account_profile\n• account_settings\n• add_to_watchlist\n• aggregate_option_positions\n• all_option_positions\n• all_watchlists\n• basic_profile\n• build_holdings\n• build_user_profile\n• complete_profile\n• day_trades\n• dividends\n• dividends_by_instrument\n• find_options\n• health_check\n• interest_payments\n• investment_profile\n• latest_notification\n• list_tools\n• margin_calls\n• margin_interest\n• market_hours\n• metrics_summary\n• notifications\n• open_option_positions\n• option_historicals\n• option_market_data\n• options_chains\n• options_orders\n• portfolio\n• portfolio_history\n• positions\n• price_history\n• rate_limit_status\n• referrals\n• remove_from_watchlist\n• search_stocks_tool\n• security_profile\n• session_status\n• stock_earnings\n• stock_events\n• stock_info\n• stock_level2_data\n• stock_loan_payments\n• stock_news\n• stock_orders\n• stock_price\n• stock_ratings\n• stock_splits\n• stocks_by_tag\n• subscription_fees\n• top_100_stocks\n• top_movers\n• top_movers_sp500\n• total_dividends\n• user_profile\n• watchlist_by_name\n• watchlist_performance"
               }
             ],
             "role": "model"
           },
           "intermediate_data": {
-            "tool_uses": [],
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "list_tools"
+              }
+            ],
             "intermediate_responses": []
           }
         }

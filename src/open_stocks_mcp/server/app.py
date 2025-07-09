@@ -12,6 +12,15 @@ from open_stocks_mcp.config import ServerConfig, load_config
 from open_stocks_mcp.logging_config import logger, setup_logging
 from open_stocks_mcp.monitoring import MonitoredTool, get_metrics_collector
 from open_stocks_mcp.tools.rate_limiter import get_rate_limiter
+from open_stocks_mcp.tools.robinhood_account_features_tools import (
+    get_account_features,
+    get_latest_notification,
+    get_margin_calls,
+    get_margin_interest,
+    get_notifications,
+    get_referrals,
+    get_subscription_fees,
+)
 from open_stocks_mcp.tools.robinhood_account_tools import (
     get_account_details,
     get_account_info,
@@ -43,6 +52,17 @@ from open_stocks_mcp.tools.robinhood_market_data_tools import (
     get_top_movers,
     get_top_movers_sp500,
 )
+
+# Phase 3 Tools
+from open_stocks_mcp.tools.robinhood_options_tools import (
+    find_tradable_options,
+    get_aggregate_positions,
+    get_all_option_positions,
+    get_open_option_positions,
+    get_option_historicals,
+    get_option_market_data,
+    get_options_chains,
+)
 from open_stocks_mcp.tools.robinhood_order_tools import (
     get_options_orders,
     get_stock_orders,
@@ -55,6 +75,22 @@ from open_stocks_mcp.tools.robinhood_stock_tools import (
     search_stocks,
 )
 from open_stocks_mcp.tools.robinhood_tools import list_available_tools
+from open_stocks_mcp.tools.robinhood_user_profile_tools import (
+    get_account_profile,
+    get_account_settings,
+    get_basic_profile,
+    get_complete_profile,
+    get_investment_profile,
+    get_security_profile,
+    get_user_profile,
+)
+from open_stocks_mcp.tools.robinhood_watchlist_tools import (
+    add_symbols_to_watchlist,
+    get_all_watchlists,
+    get_watchlist_by_name,
+    get_watchlist_performance,
+    remove_symbols_from_watchlist,
+)
 from open_stocks_mcp.tools.session_manager import get_session_manager
 
 # Load environment variables from .env file
@@ -360,6 +396,222 @@ async def stock_level2_data(symbol: str) -> dict:
         symbol: Stock ticker symbol (e.g., "AAPL")
     """
     return await get_stock_level2_data(symbol)
+
+
+# Phase 3: Options Trading Tools
+@mcp.tool()
+async def options_chains(symbol: str) -> dict:
+    """Gets complete option chains for a stock symbol.
+
+    Args:
+        symbol: Stock ticker symbol (e.g., "AAPL")
+    """
+    return await get_options_chains(symbol)
+
+
+@mcp.tool()
+async def find_options(
+    symbol: str, expiration_date: str | None = None, option_type: str | None = None
+) -> dict:
+    """Finds tradable options with optional filtering.
+
+    Args:
+        symbol: Stock ticker symbol (e.g., "AAPL")
+        expiration_date: Optional expiration date in YYYY-MM-DD format
+        option_type: Optional option type ("call" or "put")
+    """
+    return await find_tradable_options(symbol, expiration_date, option_type)
+
+
+@mcp.tool()
+async def option_market_data(option_id: str) -> dict:
+    """Gets market data for a specific option contract.
+
+    Args:
+        option_id: Unique option contract ID
+    """
+    return await get_option_market_data(option_id)
+
+
+@mcp.tool()
+async def option_historicals(
+    symbol: str,
+    expiration_date: str,
+    strike_price: str,
+    option_type: str,
+    interval: str = "hour",
+    span: str = "week",
+) -> dict:
+    """Gets historical price data for an option contract.
+
+    Args:
+        symbol: Stock ticker symbol (e.g., "AAPL")
+        expiration_date: Expiration date in YYYY-MM-DD format
+        strike_price: Strike price as string
+        option_type: Option type ("call" or "put")
+        interval: Time interval (default: "hour")
+        span: Time span (default: "week")
+    """
+    return await get_option_historicals(
+        symbol, expiration_date, strike_price, option_type, interval, span
+    )
+
+
+@mcp.tool()
+async def aggregate_option_positions() -> dict:
+    """Gets aggregated option positions collapsed by underlying stock."""
+    return await get_aggregate_positions()
+
+
+@mcp.tool()
+async def all_option_positions() -> dict:
+    """Gets all option positions ever held."""
+    return await get_all_option_positions()
+
+
+@mcp.tool()
+async def open_option_positions() -> dict:
+    """Gets currently open option positions."""
+    return await get_open_option_positions()
+
+
+# Phase 3: Watchlist Management Tools
+@mcp.tool()
+async def all_watchlists() -> dict:
+    """Gets all user-created watchlists."""
+    return await get_all_watchlists()
+
+
+@mcp.tool()
+async def watchlist_by_name(watchlist_name: str) -> dict:
+    """Gets contents of a specific watchlist by name.
+
+    Args:
+        watchlist_name: Name of the watchlist to retrieve
+    """
+    return await get_watchlist_by_name(watchlist_name)
+
+
+@mcp.tool()
+async def add_to_watchlist(watchlist_name: str, symbols: list[str]) -> dict:
+    """Adds symbols to a watchlist.
+
+    Args:
+        watchlist_name: Name of the watchlist
+        symbols: List of stock symbols to add
+    """
+    return await add_symbols_to_watchlist(watchlist_name, symbols)
+
+
+@mcp.tool()
+async def remove_from_watchlist(watchlist_name: str, symbols: list[str]) -> dict:
+    """Removes symbols from a watchlist.
+
+    Args:
+        watchlist_name: Name of the watchlist
+        symbols: List of stock symbols to remove
+    """
+    return await remove_symbols_from_watchlist(watchlist_name, symbols)
+
+
+@mcp.tool()
+async def watchlist_performance(watchlist_name: str) -> dict:
+    """Gets performance metrics for a watchlist.
+
+    Args:
+        watchlist_name: Name of the watchlist to analyze
+    """
+    return await get_watchlist_performance(watchlist_name)
+
+
+# Phase 3: Account Features & Notifications Tools
+@mcp.tool()
+async def notifications(count: int = 20) -> dict:
+    """Gets account notifications and alerts.
+
+    Args:
+        count: Number of notifications to retrieve (default: 20)
+    """
+    return await get_notifications(count)
+
+
+@mcp.tool()
+async def latest_notification() -> dict:
+    """Gets the most recent notification."""
+    return await get_latest_notification()
+
+
+@mcp.tool()
+async def margin_calls() -> dict:
+    """Gets margin call information."""
+    return await get_margin_calls()
+
+
+@mcp.tool()
+async def margin_interest() -> dict:
+    """Gets margin interest charges and rates."""
+    return await get_margin_interest()
+
+
+@mcp.tool()
+async def subscription_fees() -> dict:
+    """Gets Robinhood Gold subscription fees."""
+    return await get_subscription_fees()
+
+
+@mcp.tool()
+async def referrals() -> dict:
+    """Gets referral program information."""
+    return await get_referrals()
+
+
+@mcp.tool()
+async def account_features() -> dict:
+    """Gets comprehensive account features and settings."""
+    return await get_account_features()
+
+
+# Phase 3: User Profile Tools
+@mcp.tool()
+async def account_profile() -> dict:
+    """Gets trading account profile and configuration."""
+    return await get_account_profile()
+
+
+@mcp.tool()
+async def basic_profile() -> dict:
+    """Gets basic user profile information."""
+    return await get_basic_profile()
+
+
+@mcp.tool()
+async def investment_profile() -> dict:
+    """Gets investment profile and risk assessment."""
+    return await get_investment_profile()
+
+
+@mcp.tool()
+async def security_profile() -> dict:
+    """Gets security profile and settings."""
+    return await get_security_profile()
+
+
+@mcp.tool()
+async def user_profile() -> dict:
+    """Gets comprehensive user profile information."""
+    return await get_user_profile()
+
+
+@mcp.tool()
+async def complete_profile() -> dict:
+    """Gets complete user profile combining all profile types."""
+    return await get_complete_profile()
+
+
+@mcp.tool()
+async def account_settings() -> dict:
+    """Gets account settings and preferences."""
+    return await get_account_settings()
 
 
 def create_mcp_server(config: ServerConfig | None = None) -> FastMCP:
