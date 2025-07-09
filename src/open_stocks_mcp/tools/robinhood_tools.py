@@ -17,8 +17,7 @@ async def list_available_tools(mcp: FastMCP) -> dict:
     """
     tools = await mcp.list_tools()
     tool_list: list[dict] = [
-        {"name": tool.name, "description": tool.description}
-        for tool in tools
+        {"name": tool.name, "description": tool.description} for tool in tools
     ]
 
     logger.info("Successfully listed available tools.")

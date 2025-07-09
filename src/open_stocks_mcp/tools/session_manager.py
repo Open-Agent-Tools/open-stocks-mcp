@@ -85,13 +85,10 @@ class SessionManager:
 
             # Run synchronous login in executor with device verification handling
             loop = asyncio.get_event_loop()
-            
+
             # Use a custom login function that handles device verification
             login_result = await loop.run_in_executor(
-                None,
-                self._login_with_device_verification,
-                self.username,
-                self.password
+                None, self._login_with_device_verification, self.username, self.password
             )
 
             if not login_result:
@@ -116,100 +113,114 @@ class SessionManager:
 
     def _login_with_device_verification(self, username: str, password: str) -> bool:
         """Handle Robin Stocks login with device verification support.
-        
+
         Args:
             username: Robinhood username
             password: Robinhood password
-            
+
         Returns:
             True if login successful, False otherwise
         """
         import io
-        import sys
-        from contextlib import redirect_stdout, redirect_stderr
-        
+        from contextlib import redirect_stderr, redirect_stdout
+
         try:
             # Capture any output from Robin Stocks
             stdout_buffer = io.StringIO()
             stderr_buffer = io.StringIO()
-            
+
             with redirect_stdout(stdout_buffer), redirect_stderr(stderr_buffer):
                 # Override input function to simulate automatic approval
-                original_input = __builtins__.get('input', input)
-                
+                original_input = __builtins__.get("input", input)
+
                 def mock_input(prompt=""):
                     """Mock input function that logs prompts and simulates automatic approval."""
                     logger.info(f"Device verification prompt: {prompt}")
-                    
+
                     # If this is asking for a verification code, we can't provide it
-                    if any(keyword in prompt.lower() for keyword in ['code', 'sms', 'email', 'verification']):
-                        logger.error("Interactive verification code required - cannot proceed in headless mode")
+                    if any(
+                        keyword in prompt.lower()
+                        for keyword in ["code", "sms", "email", "verification"]
+                    ):
+                        logger.error(
+                            "Interactive verification code required - cannot proceed in headless mode"
+                        )
                         raise Exception("Interactive verification required")
-                    
+
                     # For device approval prompts, simulate waiting
-                    if any(keyword in prompt.lower() for keyword in ['app', 'device', 'approval', 'notification']):
+                    if any(
+                        keyword in prompt.lower()
+                        for keyword in ["app", "device", "approval", "notification"]
+                    ):
                         logger.info("Waiting for device approval...")
                         # Robin Stocks will handle the device approval workflow
                         return ""
-                    
+
                     # Default case - return empty string
                     return ""
-                
+
                 # Temporarily replace input function
                 if isinstance(__builtins__, dict):
-                    __builtins__['input'] = mock_input
+                    __builtins__["input"] = mock_input
                 else:
                     __builtins__.input = mock_input
-                
+
                 try:
                     # Attempt login with device verification handling
                     result = rh.login(username, password, store_session=True)
-                    
+
                     # Restore original input function
                     if isinstance(__builtins__, dict):
-                        __builtins__['input'] = original_input
+                        __builtins__["input"] = original_input
                     else:
                         __builtins__.input = original_input
-                    
+
                     if result:
                         logger.info("Login successful with device verification")
                         return True
                     else:
                         logger.error("Login failed")
                         return False
-                        
+
                 except Exception as inner_e:
                     # Restore original input function
                     if isinstance(__builtins__, dict):
-                        __builtins__['input'] = original_input
+                        __builtins__["input"] = original_input
                     else:
                         __builtins__.input = original_input
-                    
+
                     error_msg = str(inner_e)
-                    
+
                     # Check if this is a device verification issue
-                    if any(keyword in error_msg.lower() for keyword in ['verification', 'device', 'challenge', 'code']):
+                    if any(
+                        keyword in error_msg.lower()
+                        for keyword in ["verification", "device", "challenge", "code"]
+                    ):
                         logger.error(f"Device verification required: {error_msg}")
-                        logger.info("This account requires device verification. Please:")
-                        logger.info("1. Check your Robinhood mobile app for verification prompts")
+                        logger.info(
+                            "This account requires device verification. Please:"
+                        )
+                        logger.info(
+                            "1. Check your Robinhood mobile app for verification prompts"
+                        )
                         logger.info("2. Approve the device if prompted")
                         logger.info("3. Try again after verification")
                     else:
                         logger.error(f"Login error: {error_msg}")
-                    
+
                     return False
-            
+
             # Log any captured output
             stdout_content = stdout_buffer.getvalue()
             stderr_content = stderr_buffer.getvalue()
-            
+
             if stdout_content:
                 logger.info(f"Robin Stocks output: {stdout_content}")
             if stderr_content:
                 logger.warning(f"Robin Stocks errors: {stderr_content}")
-            
+
             return False
-            
+
         except Exception as e:
             logger.error(f"Device verification login failed: {e}")
             return False

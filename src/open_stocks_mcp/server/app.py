@@ -19,6 +19,13 @@ from open_stocks_mcp.tools.robinhood_account_tools import (
     get_portfolio_history,
     get_positions,
 )
+from open_stocks_mcp.tools.robinhood_dividend_tools import (
+    get_dividends,
+    get_dividends_by_instrument,
+    get_interest_payments,
+    get_stock_loan_payments,
+    get_total_dividends,
+)
 from open_stocks_mcp.tools.robinhood_order_tools import (
     get_options_orders,
     get_stock_orders,
@@ -180,6 +187,41 @@ async def price_history(symbol: str, period: str = "week") -> dict:
         period: Time period ("day", "week", "month", "3month", "year", "5year")
     """
     return await get_price_history(symbol, period)
+
+
+# Dividend & Income Tools
+@mcp.tool()
+async def dividends() -> dict:
+    """Gets all dividend payment history for the account."""
+    return await get_dividends()
+
+
+@mcp.tool()
+async def total_dividends() -> dict:
+    """Gets total dividends received across all time."""
+    return await get_total_dividends()
+
+
+@mcp.tool()
+async def dividends_by_instrument(symbol: str) -> dict:
+    """Gets dividend history for a specific stock symbol.
+
+    Args:
+        symbol: Stock ticker symbol (e.g., "AAPL")
+    """
+    return await get_dividends_by_instrument(symbol)
+
+
+@mcp.tool()
+async def interest_payments() -> dict:
+    """Gets interest payment history from cash management."""
+    return await get_interest_payments()
+
+
+@mcp.tool()
+async def stock_loan_payments() -> dict:
+    """Gets stock loan payment history from the stock lending program."""
+    return await get_stock_loan_payments()
 
 
 def create_mcp_server(config: ServerConfig | None = None) -> FastMCP:

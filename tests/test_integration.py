@@ -14,6 +14,13 @@ from open_stocks_mcp.tools.robinhood_account_tools import (
     get_portfolio_history,
     get_positions,
 )
+from open_stocks_mcp.tools.robinhood_dividend_tools import (
+    get_dividends,
+    get_dividends_by_instrument,
+    get_interest_payments,
+    get_stock_loan_payments,
+    get_total_dividends,
+)
 from open_stocks_mcp.tools.robinhood_order_tools import (
     get_stock_orders,
 )
@@ -150,6 +157,68 @@ class TestIntegrationPhase1:
             else:
                 assert result["result"]["status"] in ["success", "no_data"]
 
+    @pytest.mark.asyncio
+    async def test_get_dividends_integration(self, robinhood_session):
+        """Test get_dividends with real API call."""
+        result = await get_dividends()
+
+        assert "result" in result
+        assert result["result"]["status"] == "success"
+        assert "dividends" in result["result"]
+        assert "total_dividends" in result["result"]
+        assert "count" in result["result"]
+        assert isinstance(result["result"]["dividends"], list)
+
+    @pytest.mark.asyncio
+    async def test_get_total_dividends_integration(self, robinhood_session):
+        """Test get_total_dividends with real API call."""
+        result = await get_total_dividends()
+
+        assert "result" in result
+        assert result["result"]["status"] == "success"
+        assert "total_amount" in result["result"]
+        assert "payment_count" in result["result"]
+        assert "by_year" in result["result"]
+
+    @pytest.mark.asyncio
+    async def test_get_dividends_by_instrument_integration(self, robinhood_session):
+        """Test get_dividends_by_instrument with real API call."""
+        # Test with a common dividend stock
+        result = await get_dividends_by_instrument("AAPL")
+
+        assert "result" in result
+        assert result["result"]["status"] == "success"
+        assert "symbol" in result["result"]
+        assert result["result"]["symbol"] == "AAPL"
+        assert "dividends" in result["result"]
+        assert "total_amount" in result["result"]
+        assert "count" in result["result"]
+
+    @pytest.mark.asyncio
+    async def test_get_interest_payments_integration(self, robinhood_session):
+        """Test get_interest_payments with real API call."""
+        result = await get_interest_payments()
+
+        assert "result" in result
+        assert result["result"]["status"] == "success"
+        assert "interest_payments" in result["result"]
+        assert "total_interest" in result["result"]
+        assert "count" in result["result"]
+        assert isinstance(result["result"]["interest_payments"], list)
+
+    @pytest.mark.asyncio
+    async def test_get_stock_loan_payments_integration(self, robinhood_session):
+        """Test get_stock_loan_payments with real API call."""
+        result = await get_stock_loan_payments()
+
+        assert "result" in result
+        assert result["result"]["status"] == "success"
+        assert "loan_payments" in result["result"]
+        assert "total_loan_income" in result["result"]
+        assert "count" in result["result"]
+        assert "enrolled" in result["result"]
+        assert isinstance(result["result"]["loan_payments"], list)
+
 
 class TestMockIntegration:
     """Integration tests using mocks to test error conditions and edge cases."""
@@ -164,6 +233,10 @@ class TestMockIntegration:
             get_account_details,
             get_positions,
             get_portfolio_history,
+            get_dividends,
+            get_total_dividends,
+            get_interest_payments,
+            get_stock_loan_payments,
         ]
 
         # Mock all robin_stocks calls to return empty/None data
@@ -192,10 +265,32 @@ class TestMockIntegration:
                 "open_stocks_mcp.tools.robinhood_account_tools.rh.get_historical_portfolio",
                 return_value=None,
             ),
+            patch(
+                "open_stocks_mcp.tools.robinhood_dividend_tools.rh.account.get_dividends",
+                return_value=[],
+            ),
+            patch(
+                "open_stocks_mcp.tools.robinhood_dividend_tools.rh.account.get_total_dividends",
+                return_value="0.00",
+            ),
+            patch(
+                "open_stocks_mcp.tools.robinhood_dividend_tools.rh.account.get_dividends_by_instrument",
+                return_value=[],
+            ),
+            patch(
+                "open_stocks_mcp.tools.robinhood_dividend_tools.rh.account.get_interest_payments",
+                return_value=[],
+            ),
+            patch(
+                "open_stocks_mcp.tools.robinhood_dividend_tools.rh.account.get_stock_loan_payments",
+                return_value=[],
+            ),
         ):
             for tool in tools:
                 if tool == get_portfolio_history:
                     result = await tool()
+                elif tool == get_dividends_by_instrument:
+                    result = await tool("AAPL")
                 else:
                     result = await tool()
 
@@ -215,6 +310,10 @@ class TestMockIntegration:
             get_account_details,
             get_positions,
             get_portfolio_history,
+            get_dividends,
+            get_total_dividends,
+            get_interest_payments,
+            get_stock_loan_payments,
         ]
 
         for tool in tools:
@@ -244,9 +343,31 @@ class TestMockIntegration:
                     "open_stocks_mcp.tools.robinhood_account_tools.rh.get_historical_portfolio",
                     side_effect=Exception("Test Error"),
                 ),
+                patch(
+                    "open_stocks_mcp.tools.robinhood_dividend_tools.rh.account.get_dividends",
+                    side_effect=Exception("Test Error"),
+                ),
+                patch(
+                    "open_stocks_mcp.tools.robinhood_dividend_tools.rh.account.get_total_dividends",
+                    side_effect=Exception("Test Error"),
+                ),
+                patch(
+                    "open_stocks_mcp.tools.robinhood_dividend_tools.rh.account.get_dividends_by_instrument",
+                    side_effect=Exception("Test Error"),
+                ),
+                patch(
+                    "open_stocks_mcp.tools.robinhood_dividend_tools.rh.account.get_interest_payments",
+                    side_effect=Exception("Test Error"),
+                ),
+                patch(
+                    "open_stocks_mcp.tools.robinhood_dividend_tools.rh.account.get_stock_loan_payments",
+                    side_effect=Exception("Test Error"),
+                ),
             ):
                 if tool == get_portfolio_history:
                     result = await tool()
+                elif tool == get_dividends_by_instrument:
+                    result = await tool("AAPL")
                 else:
                     result = await tool()
 

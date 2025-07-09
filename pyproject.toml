@@ -125,6 +125,7 @@ markers = [
     "integration: marks tests as integration tests (may require credentials)",
     "live_market: marks tests that require live market data",
     "login_flow: marks tests for the complete login flow with real credentials",
+    "asyncio: marks tests as asyncio tests",
 ]
 
 [tool.uv]
