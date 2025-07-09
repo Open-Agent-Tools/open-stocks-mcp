@@ -33,8 +33,6 @@
 - [ ] `get_all_open_stock_orders()` - View open stock orders
 - [ ] `get_all_open_option_orders()` - View open option orders
 
-**Target: Q1 2025 | Tools Added: +19 = 80 total**
-
 ## Phase 5: Quality & Reliability (v0.5.0)
 
 ### Technical Debt & Code Quality
@@ -55,9 +53,13 @@
 - [ ] **Performance Metrics** - Detailed latency and throughput tracking
 - [ ] **Alert System** - Proactive monitoring and alerting
 
-**Target: Q2 2025**
-
 ## Phase 6: Advanced Features (v0.6.0)
+
+### Advanced Stock Data (4 tools)
+- [ ] `get_instruments_by_symbols()` - Detailed instrument metadata for multiple symbols
+- [ ] `find_instrument_data()` - Search instrument information by various criteria
+- [ ] `get_stock_quote_by_id()` - Get quote using internal Robinhood instrument ID
+- [ ] `get_pricebook_by_symbol()` - Level II order book data (Gold subscription required)
 
 ### Technical Analysis Tools (~12 tools)
 - [ ] **Technical Indicators** - RSI, MACD, Moving Averages, Bollinger Bands
@@ -75,40 +77,6 @@
 - [ ] **Extended Hours Trading** - Pre/post market data and trading
 - [ ] **Sector Analysis** - Sector performance and rotation analysis
 - [ ] **Market Sentiment** - Social sentiment and retail trader metrics
-
-**Target: Q2-Q3 2025 | Tools Added: +25 = 105 total**
-
-## Phase 7: Export & Integration (v0.7.0)
-
-### Data Export Tools (~8 tools)
-- [ ] **Trade History Export** - CSV/JSON export of all trading activity
-- [ ] **Tax Reporting** - 1099 preparation and tax-loss harvesting data
-- [ ] **Portfolio Reports** - Comprehensive portfolio analysis reports
-- [ ] **Performance Analytics** - Risk-adjusted returns and benchmarking
-
-### Third-party Integrations (~8 tools)
-- [ ] **TradingView Integration** - Chart integration and analysis
-- [ ] **Portfolio Tracker APIs** - Personal Capital, Mint integration
-- [ ] **Spreadsheet Export** - Google Sheets, Excel automation
-- [ ] **Webhook Support** - Real-time data streaming to external systems
-
-**Target: Q3-Q4 2025 | Tools Added: +16 = 121 total**
-
-## Phase 8: Enterprise & Advanced Trading (v0.8.0+)
-
-### Enterprise Features
-- [ ] **Multi-Account Support** - Manage multiple Robinhood accounts
-- [ ] **Team Collaboration** - Shared watchlists and analysis
-- [ ] **Advanced Permissions** - Role-based access control
-- [ ] **Audit Logging** - Comprehensive trading activity logs
-
-### Algorithmic Trading Support
-- [ ] **Strategy Backtesting** - Historical strategy performance
-- [ ] **Paper Trading** - Virtual trading for strategy testing
-- [ ] **Automated Trading** - Rule-based trading execution
-- [ ] **Risk Management** - Position sizing and risk controls
-
-**Target: 2026 | Tools Added: +12 = 133+ total**
 
 ## Infrastructure Improvements
 
@@ -134,9 +102,6 @@
 
 ## Security & Compliance
 - [ ] **Security Audit** - Review credential handling and API security
-- [ ] **Legal Compliance** - Ensure Robin Stocks ToS and financial regulations compliance
-- [ ] **Data Privacy** - GDPR, CCPA compliance for user data
-- [ ] **Licensing** - Consider financial services licensing requirements
 
 ## Success Metrics
 
@@ -151,13 +116,6 @@
 - ✅ Zero critical type errors
 - ✅ 99.9% uptime
 - ✅ <50ms average response time
-
-### Long-term Vision (2026):
-- 🎯 **133+ MCP tools**
-- 🎯 **Enterprise-ready platform**
-- 🎯 **10,000+ active users**
-- 🎯 **99.99% uptime**
-- 🎯 **Full algorithmic trading support**
 
 ---
 

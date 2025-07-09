@@ -407,6 +407,54 @@ uv run pytest --watch
 
 **Goal**: Transform from read-only analysis to full trading platform
 
+## Intentionally Excluded
+
+The following Robin Stocks API functionality is **deliberately excluded** from the Open Stocks MCP server as it falls outside the project's scope and intent:
+
+### **Cryptocurrency Functions**
+- `get_crypto_positions()` - Current crypto holdings
+- `get_crypto_quote(symbol)` - Real-time crypto prices  
+- `get_crypto_historicals(symbol)` - Historical crypto data
+- `get_crypto_info(symbol)` - Crypto asset information
+- `get_crypto_currency_pairs()` - Available trading pairs
+- `load_crypto_profile()` - Crypto account profile
+- `get_crypto_id(symbol)` - Get crypto asset ID
+
+**Rationale**: This project focuses specifically on **stock and options trading**. Cryptocurrency trading represents a different asset class with distinct regulatory, technical, and market characteristics that would significantly expand the project scope beyond its core mission.
+
+### **Document Management Functions**
+- `get_documents()` - Account documents list
+- `download_document()` - Download specific document
+- `download_all_documents()` - Download all documents
+
+**Rationale**: Document management is primarily an administrative function rather than a trading or analysis tool. The MCP protocol is designed for real-time data and trading operations, not file management.
+
+### **Banking & Transfer Functions**
+- `get_wire_transfers()` - Wire transfer history
+- `get_card_transactions()` - Card transaction history  
+- `get_linked_bank_accounts()` - Connected bank accounts
+- `get_unified_transfers()` - Unified transfer history
+
+**Rationale**: Banking and transfer functions are account management features that fall outside the scope of market data analysis and trading operations. These functions are better handled through Robinhood's native interface.
+
+### **Currency Trading Functions**
+- `get_currency_pairs()` - Forex currency pairs
+- Foreign exchange trading capabilities
+
+**Rationale**: Forex trading is a specialized market with different characteristics from stock and options trading. Including forex would require additional expertise and significantly expand the project's complexity.
+
+## Project Scope
+
+The Open Stocks MCP server is intentionally focused on:
+- ✅ **Stock market data and analysis**
+- ✅ **Options trading and analysis**
+- ✅ **Portfolio management and tracking**
+- ✅ **Dividend and income analysis**
+- ✅ **Account and user profile management**
+- ✅ **Trading order placement and management** (Phase 4)
+
+This focused approach ensures the project remains manageable, maintainable, and aligned with its core mission of providing comprehensive **stock and options trading capabilities** through the MCP protocol.
+
 ## License
 
 Apache License 2.0 - see LICENSE file for details.

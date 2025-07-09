@@ -582,7 +582,7 @@ async def get_account_features() -> dict[str, Any]:
     features_data = {}
 
     errors = []
-    
+
     # Get subscription info
     try:
         subscription_result = await get_subscription_fees()
