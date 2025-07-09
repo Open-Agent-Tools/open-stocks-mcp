@@ -26,6 +26,18 @@ from open_stocks_mcp.tools.robinhood_dividend_tools import (
     get_stock_loan_payments,
     get_total_dividends,
 )
+from open_stocks_mcp.tools.robinhood_market_data_tools import (
+    get_stock_earnings,
+    get_stock_events,
+    get_stock_level2_data,
+    get_stock_news,
+    get_stock_ratings,
+    get_stock_splits,
+    get_stocks_by_tag,
+    get_top_100,
+    get_top_movers,
+    get_top_movers_sp500,
+)
 from open_stocks_mcp.tools.robinhood_order_tools import (
     get_options_orders,
     get_stock_orders,
@@ -222,6 +234,99 @@ async def interest_payments() -> dict:
 async def stock_loan_payments() -> dict:
     """Gets stock loan payment history from the stock lending program."""
     return await get_stock_loan_payments()
+
+
+# Advanced Market Data Tools
+@mcp.tool()
+async def top_movers_sp500(direction: str = "up") -> dict:
+    """Gets top S&P 500 movers for the day.
+
+    Args:
+        direction: Direction of movement, either 'up' or 'down' (default: 'up')
+    """
+    return await get_top_movers_sp500(direction)
+
+
+@mcp.tool()
+async def top_100_stocks() -> dict:
+    """Gets top 100 most popular stocks on Robinhood."""
+    return await get_top_100()
+
+
+@mcp.tool()
+async def top_movers() -> dict:
+    """Gets top 20 movers on Robinhood."""
+    return await get_top_movers()
+
+
+@mcp.tool()
+async def stocks_by_tag(tag: str) -> dict:
+    """Gets stocks filtered by market category tag.
+
+    Args:
+        tag: Market category tag (e.g., 'technology', 'biopharmaceutical', 'upcoming-earnings')
+    """
+    return await get_stocks_by_tag(tag)
+
+
+@mcp.tool()
+async def stock_ratings(symbol: str) -> dict:
+    """Gets analyst ratings for a stock.
+
+    Args:
+        symbol: Stock ticker symbol (e.g., "AAPL")
+    """
+    return await get_stock_ratings(symbol)
+
+
+@mcp.tool()
+async def stock_earnings(symbol: str) -> dict:
+    """Gets earnings reports for a stock.
+
+    Args:
+        symbol: Stock ticker symbol (e.g., "AAPL")
+    """
+    return await get_stock_earnings(symbol)
+
+
+@mcp.tool()
+async def stock_news(symbol: str) -> dict:
+    """Gets news stories for a stock.
+
+    Args:
+        symbol: Stock ticker symbol (e.g., "AAPL")
+    """
+    return await get_stock_news(symbol)
+
+
+@mcp.tool()
+async def stock_splits(symbol: str) -> dict:
+    """Gets stock split history for a stock.
+
+    Args:
+        symbol: Stock ticker symbol (e.g., "AAPL")
+    """
+    return await get_stock_splits(symbol)
+
+
+@mcp.tool()
+async def stock_events(symbol: str) -> dict:
+    """Gets corporate events for a stock (for owned positions).
+
+    Args:
+        symbol: Stock ticker symbol (e.g., "AAPL")
+    """
+    return await get_stock_events(symbol)
+
+
+@mcp.tool()
+async def stock_level2_data(symbol: str) -> dict:
+    """Gets Level II market data for a stock (Gold subscription required).
+
+    Args:
+        symbol: Stock ticker symbol (e.g., "AAPL")
+    """
+    return await get_stock_level2_data(symbol)
 
 
 def create_mcp_server(config: ServerConfig | None = None) -> FastMCP:

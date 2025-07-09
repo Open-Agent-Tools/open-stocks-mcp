@@ -14,6 +14,7 @@ Run complete code quality checks and fix all issues:
 4. **Run pytest**: `uv run pytest` (fix any failing tests)
 5. **Review and update**: Check all TODO.md files for recent changes and update them
 6. **Commit changes**: Make detailed commit with all fixes and push to current branch
+7. **Push Commit**: Push to current branch
 
 ### `publish <version number>`
 Prepare and trigger a new release:

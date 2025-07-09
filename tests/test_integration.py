@@ -21,6 +21,16 @@ from open_stocks_mcp.tools.robinhood_dividend_tools import (
     get_stock_loan_payments,
     get_total_dividends,
 )
+from open_stocks_mcp.tools.robinhood_market_data_tools import (
+    get_stock_earnings,
+    get_stock_news,
+    get_stock_ratings,
+    get_stock_splits,
+    get_stocks_by_tag,
+    get_top_100,
+    get_top_movers,
+    get_top_movers_sp500,
+)
 from open_stocks_mcp.tools.robinhood_order_tools import (
     get_stock_orders,
 )
@@ -219,6 +229,109 @@ class TestIntegrationPhase1:
         assert "enrolled" in result["result"]
         assert isinstance(result["result"]["loan_payments"], list)
 
+    @pytest.mark.asyncio
+    async def test_get_top_movers_sp500_integration(self, robinhood_session):
+        """Test get_top_movers_sp500 with real API call."""
+        result = await get_top_movers_sp500("up")
+
+        assert "result" in result
+        assert result["result"]["status"] == "success"
+        assert "direction" in result["result"]
+        assert result["result"]["direction"] == "up"
+        assert "movers" in result["result"]
+        assert "count" in result["result"]
+        assert isinstance(result["result"]["movers"], list)
+
+    @pytest.mark.asyncio
+    async def test_get_top_100_integration(self, robinhood_session):
+        """Test get_top_100 with real API call."""
+        result = await get_top_100()
+
+        assert "result" in result
+        assert result["result"]["status"] == "success"
+        assert "stocks" in result["result"]
+        assert "count" in result["result"]
+        assert isinstance(result["result"]["stocks"], list)
+
+    @pytest.mark.asyncio
+    async def test_get_top_movers_integration(self, robinhood_session):
+        """Test get_top_movers with real API call."""
+        result = await get_top_movers()
+
+        assert "result" in result
+        assert result["result"]["status"] == "success"
+        assert "movers" in result["result"]
+        assert "count" in result["result"]
+        assert isinstance(result["result"]["movers"], list)
+
+    @pytest.mark.asyncio
+    async def test_get_stocks_by_tag_integration(self, robinhood_session):
+        """Test get_stocks_by_tag with real API call."""
+        result = await get_stocks_by_tag("technology")
+
+        assert "result" in result
+        # May return success or no_data depending on tag availability
+        assert result["result"]["status"] in ["success", "no_data"]
+        if result["result"]["status"] == "success":
+            assert "tag" in result["result"]
+            assert result["result"]["tag"] == "technology"
+            assert "stocks" in result["result"]
+            assert "count" in result["result"]
+
+    @pytest.mark.asyncio
+    async def test_get_stock_ratings_integration(self, robinhood_session):
+        """Test get_stock_ratings with real API call."""
+        result = await get_stock_ratings("AAPL")
+
+        assert "result" in result
+        # May return success or no_data depending on rating availability
+        assert result["result"]["status"] in ["success", "no_data"]
+        if result["result"]["status"] == "success":
+            assert "symbol" in result["result"]
+            assert result["result"]["symbol"] == "AAPL"
+
+    @pytest.mark.asyncio
+    async def test_get_stock_earnings_integration(self, robinhood_session):
+        """Test get_stock_earnings with real API call."""
+        result = await get_stock_earnings("AAPL")
+
+        assert "result" in result
+        # May return success or no_data depending on earnings availability
+        assert result["result"]["status"] in ["success", "no_data"]
+        if result["result"]["status"] == "success":
+            assert "symbol" in result["result"]
+            assert result["result"]["symbol"] == "AAPL"
+            assert "earnings" in result["result"]
+            assert "count" in result["result"]
+
+    @pytest.mark.asyncio
+    async def test_get_stock_news_integration(self, robinhood_session):
+        """Test get_stock_news with real API call."""
+        result = await get_stock_news("AAPL")
+
+        assert "result" in result
+        # May return success or no_data depending on news availability
+        assert result["result"]["status"] in ["success", "no_data"]
+        if result["result"]["status"] == "success":
+            assert "symbol" in result["result"]
+            assert result["result"]["symbol"] == "AAPL"
+            assert "news" in result["result"]
+            assert "count" in result["result"]
+
+    @pytest.mark.asyncio
+    async def test_get_stock_splits_integration(self, robinhood_session):
+        """Test get_stock_splits with real API call."""
+        result = await get_stock_splits("AAPL")
+
+        assert "result" in result
+        # May return success or no_data depending on splits availability
+        assert result["result"]["status"] in ["success", "no_data"]
+        if result["result"]["status"] == "success":
+            assert "symbol" in result["result"]
+            assert result["result"]["symbol"] == "AAPL"
+            assert "splits" in result["result"]
+            assert "count" in result["result"]
+
 
 class TestMockIntegration:
     """Integration tests using mocks to test error conditions and edge cases."""
@@ -237,6 +350,8 @@ class TestMockIntegration:
             get_total_dividends,
             get_interest_payments,
             get_stock_loan_payments,
+            get_top_100,
+            get_top_movers,
         ]
 
         # Mock all robin_stocks calls to return empty/None data
@@ -283,6 +398,14 @@ class TestMockIntegration:
             ),
             patch(
                 "open_stocks_mcp.tools.robinhood_dividend_tools.rh.account.get_stock_loan_payments",
+                return_value=[],
+            ),
+            patch(
+                "open_stocks_mcp.tools.robinhood_market_data_tools.rh.get_top_100",
+                return_value=[],
+            ),
+            patch(
+                "open_stocks_mcp.tools.robinhood_market_data_tools.rh.get_top_movers",
                 return_value=[],
             ),
         ):

@@ -84,17 +84,17 @@ Based on comprehensive analysis of the Robin Stocks API, the following major cat
   - [ ] `download_document(document_id)` - Download specific document as PDF
   - [ ] `download_all_documents()` - Bulk download documents
   
-- [ ] **Advanced Market Data**
-  - [ ] `get_top_movers_sp500()` - S&P 500 top movers
-  - [ ] `get_top_100()` - Top 100 most popular stocks
-  - [ ] `get_top_movers()` - Top 20 movers overall
-  - [ ] `get_all_stocks_from_market_tag(tag)` - Stocks by category (tech, biotech, etc.)
-  - [ ] `get_ratings(symbol)` - Analyst ratings
-  - [ ] `get_earnings(symbol)` - Earnings reports
-  - [ ] `get_news(symbol)` - Stock news
-  - [ ] `get_splits(symbol)` - Stock split history
-  - [ ] `get_events(symbol)` - Corporate events
-  - [ ] `get_pricebook_by_symbol(symbol)` - Level II market data (Gold only)
+- [x] **Advanced Market Data** - ✅ COMPLETE
+  - [x] `get_top_movers_sp500()` - S&P 500 top movers
+  - [x] `get_top_100()` - Top 100 most popular stocks
+  - [x] `get_top_movers()` - Top 20 movers overall
+  - [x] `get_all_stocks_from_market_tag(tag)` - Stocks by category (tech, biotech, etc.)
+  - [x] `get_ratings(symbol)` - Analyst ratings
+  - [x] `get_earnings(symbol)` - Earnings reports
+  - [x] `get_news(symbol)` - Stock news
+  - [x] `get_splits(symbol)` - Stock split history
+  - [x] `get_events(symbol)` - Corporate events
+  - [x] `get_pricebook_by_symbol(symbol)` - Level II market data (Gold only)
 
 #### Phase 3: Options Trading & Advanced Features (v0.3.0)
 - [ ] **Options Trading Tools** (Priority 4)
@@ -307,36 +307,46 @@ Based on comprehensive analysis of the Robin Stocks API, the following major cat
 
 ---
 *Last Updated: 2025-07-09*
-*Status: Phase 1 Complete with 17 MCP tools. Phase 2 dividend tools implemented with 22 total MCP tools. Roadmap updated with comprehensive Robin Stocks API gap analysis.*
+*Status: Phase 1 Complete with 17 MCP tools. Phase 2 dividend and advanced market data tools implemented with 32 total MCP tools. Roadmap updated with comprehensive Robin Stocks API gap analysis.*
 
 ## Recent Updates (2025-07-09)
 
-### Phase 2 Dividend Tools Complete! 🎉
+### Phase 2 Advanced Market Data Complete! 🎉
 
-**All Phase 2 dividend tracking tools have been successfully implemented:**
+**All Phase 2 advanced market data tools have been successfully implemented:**
 
-1. **✅ Dividend & Income Tools** (Priority 2) - COMPLETE
+1. **✅ Advanced Market Data** - COMPLETE
+   - `get_top_movers_sp500(direction)` - S&P 500 top movers (up/down)
+   - `get_top_100()` - Top 100 most popular stocks on Robinhood
+   - `get_top_movers()` - Top 20 movers overall
+   - `get_stocks_by_tag(tag)` - Stocks by category (technology, biotech, etc.)
+   - `get_stock_ratings(symbol)` - Analyst ratings and recommendations
+   - `get_stock_earnings(symbol)` - Quarterly earnings reports
+   - `get_stock_news(symbol)` - Latest news stories for stocks
+   - `get_stock_splits(symbol)` - Stock split history
+   - `get_stock_events(symbol)` - Corporate events for owned positions
+   - `get_stock_level2_data(symbol)` - Level II market data (Gold subscription)
+
+2. **✅ Dividend & Income Tools** (Priority 2) - COMPLETE
    - `get_dividends()` - Complete dividend payment history with symbol resolution
    - `get_total_dividends()` - Total dividends with yearly breakdown and statistics
    - `get_dividends_by_instrument(symbol)` - Dividend history for specific stocks
    - `get_interest_payments()` - Interest payment history from cash management
    - `get_stock_loan_payments()` - Stock lending program payment history
-   - All functions use async wrappers and consistent JSON response format
-   - Comprehensive test coverage with 10 unit tests
-   - Proper error handling with graceful fallbacks
 
-**Implementation Details:**
-- Added `contextlib.suppress` for cleaner error handling
-- Integrated with existing authentication and rate limiting
-- Symbol resolution from instrument URLs
-- Proper date range tracking and yearly aggregation
-- Support for different payment states (paid, pending, etc.)
-- Comprehensive logging and monitoring integration
+**Implementation Highlights:**
+- Clean wrapper functions following existing patterns from Robin Stocks analysis
+- All functions use `@handle_robin_stocks_errors` decorator for consistent error handling
+- Async execution with `execute_with_retry()` for reliability
+- Input validation and symbol formatting
+- Comprehensive test coverage (39 unit tests for market data tools)
+- Full integration with MCP server and existing infrastructure
+- Consistent JSON response format with "result" field
 
 **Tool Count Update:**
-- **Previous**: 17 MCP tools (Phase 1)
-- **Added**: 5 dividend tools
-- **Total**: 22 fully functional MCP tools
+- **Previous**: 22 MCP tools (Phase 1 + dividend tools)
+- **Added**: 10 advanced market data tools
+- **Total**: 32 fully functional MCP tools
 
 ## Previous Updates (2025-07-07)
 
