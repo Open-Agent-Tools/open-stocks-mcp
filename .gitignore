@@ -358,6 +358,10 @@ _site/
 .ipynb_checkpoints/
 *.ipynb
 
+# Google ADK Evaluation Results
+.adk/
+*.evalset_result.json
+
 # Lock Files (depending on preference)
 # Uncomment if you don't want to track lock files
 # uv.lock
