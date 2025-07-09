@@ -330,6 +330,83 @@ For development with auto-reloading:
 uv run pytest --watch
 ```
 
+## Development History
+
+### Phase 1: Foundation (v0.1.1) - ✅ Complete
+**Released**: December 2024  
+**Milestone**: Production-ready MCP server with core functionality
+
+**Key Features:**
+- **Authentication & Session Management**: Server-side login flow with environment-based credentials, session verification, storage, and re-authentication handling
+- **Basic Account Tools**: Portfolio overview, stock order history, basic account information, options order history
+- **Essential Account Tools**: Comprehensive account details (buying power, cash balances), current stock positions, historical portfolio performance  
+- **Core Market Data Tools**: Real-time stock prices, company information, stock search, market hours, historical price data
+- **Infrastructure**: Async wrapper for Robin Stocks API, comprehensive error handling, rate limiting, monitoring, integration tests
+
+**Technical Achievements:**
+- 17 fully functional MCP tools
+- Production-ready error handling and monitoring  
+- Modular architecture with clear separation of concerns
+- Comprehensive test coverage with 94 tests
+
+### Phase 2: Financial History & Analytics (v0.2.0) - ✅ Complete  
+**Released**: January 2025  
+**Milestone**: Comprehensive financial tracking and market intelligence
+
+**Key Features:**
+- **Dividend & Income Tools**: Complete dividend payment history with symbol resolution, total dividends with yearly breakdowns, instrument-specific dividend analysis, interest and stock loan payment history
+- **Advanced Portfolio Analytics**: Comprehensive holdings with dividend information and performance metrics, complete financial profile with equity/cash/dividend totals, pattern day trading tracking and buying power analysis
+- **Advanced Market Data**: S&P 500 top movers, top 100 most popular stocks, market categories and tags, analyst ratings and recommendations, quarterly earnings reports, stock news, stock splits, corporate events, Level II market data for Gold members
+
+**Technical Achievements:**
+- Added 18 new MCP tools (total: 35)
+- Enhanced market intelligence capabilities
+- Advanced financial analysis and reporting
+- Comprehensive dividend and income tracking
+
+### Phase 3: Options Trading & Advanced Features (v0.3.0) - ✅ Complete
+**Released**: July 2025  
+**Milestone**: Professional options trading and account management
+
+**Key Features:**
+- **Options Trading Tools**: Complete option chains analysis, tradable options search with filtering, options market data (Greeks, open interest, volume), historical option prices, comprehensive options position tracking (all, open, aggregate by underlying)
+- **Watchlist Management**: Full CRUD operations for custom stock watchlists, add/remove symbols with validation, performance tracking with gain/loss metrics, portfolio organization
+- **Account Features & Notifications**: Account notifications and alerts, margin call and interest tracking, Robinhood Gold subscription management, referral program information, comprehensive account features overview
+- **User Profile Tools**: Complete user profile management (account, basic, investment, security profiles), account settings and preferences, consolidated profile views, security settings management
+- **Enhanced Dividend Tools**: Advanced dividend tracking with improved symbol resolution and analytics
+
+**Technical Achievements:**
+- Added 26 new MCP tools (total: 61)
+- Complete options trading capabilities
+- Advanced portfolio management features  
+- Production-ready with comprehensive error handling
+- Enhanced code quality with ruff linting and formatting
+
+**Infrastructure Improvements:**
+- Robust error isolation and handling in all functions
+- 159 comprehensive unit tests with full coverage
+- Modern Python practices with contextlib.suppress
+- Consistent MCP patterns across all tools
+- Advanced monitoring and health checks
+
+### Current Status (v0.3.0)
+- **61 MCP tools** across 8 categories
+- **Complete read-only functionality** for comprehensive market analysis
+- **Production-ready** deployment with Docker containerization  
+- **Professional-grade** options trading and portfolio management
+- **Comprehensive** dividend tracking and financial analytics
+- **Advanced** watchlist management and account features
+
+### Next: Phase 4 - Trading Capabilities (v0.4.0)
+**Target**: Q1 2025  
+**Focus**: Live trading capabilities with order placement and management
+- Stock order placement (all order types)
+- Options order placement and strategies  
+- Order management and cancellation
+- Real-time trading execution
+
+**Goal**: Transform from read-only analysis to full trading platform
+
 ## License
 
 Apache License 2.0 - see LICENSE file for details.
