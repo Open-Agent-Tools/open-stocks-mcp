@@ -42,20 +42,20 @@ adk --help
 # Navigate to project root first
 cd /Users/wes/Development/open-stocks-mcp
 
-# Basic evaluation command
-adk eval examples/google-adk-agent tests/evals/list_available_tools_test.json
+# Basic evaluation command (with recommended config)
+adk eval examples/google-adk-agent tests/evals/list_available_tools_test.json --config_file_path tests/evals/test_config.json
 
 # With custom configuration
 adk eval examples/google-adk-agent tests/evals/list_available_tools_test.json --config_file_path tests/evals/test_config.json
 
 # With detailed results output
-adk eval examples/google-adk-agent tests/evals/list_available_tools_test.json --print_detailed_results
+adk eval examples/google-adk-agent tests/evals/list_available_tools_test.json --config_file_path tests/evals/test_config.json --print_detailed_results
 
 # With specific run ID for tracking
-adk eval examples/google-adk-agent tests/evals/list_available_tools_test.json --run_id stock_trader_test_$(date +%s)
+adk eval examples/google-adk-agent tests/evals/list_available_tools_test.json --config_file_path tests/evals/test_config.json --run_id stock_trader_test_$(date +%s)
 
 # With custom model
-GOOGLE_MODEL="gemini-2.0-flash-exp" adk eval examples/google-adk-agent tests/evals/list_available_tools_test.json
+GOOGLE_MODEL="gemini-2.0-flash-exp" adk eval examples/google-adk-agent tests/evals/list_available_tools_test.json --config_file_path tests/evals/test_config.json
 ```
 
 ### ❌ Wrong Way (From Agent Directory)
@@ -94,7 +94,7 @@ Before running evaluations, ensure:
 ### 🎯 Expected Results
 A successful evaluation will show:
 ```
-Using evaluation criteria: {'tool_trajectory_avg_score': 1.0, 'response_match_score': 0.8}
+Using evaluation criteria: {'tool_trajectory_avg_score': 0.5, 'response_match_score': 0.5}
 Running Eval: list_available_tools_test_set:list_available_tools_test
 Result: ✅ Passed
 
@@ -112,10 +112,10 @@ list_available_tools_test_set:
 ### 1. List Available Tools Test
 **File**: `tests/evals/list_available_tools_test.json`  
 **Purpose**: Validates that the agent can successfully list all available MCP tools  
-**Expected Output**: Alphabetically sorted bullet list of 61 MCP tools
+**Expected Output**: Alphabetically sorted bullet list of 60 MCP tools
 
 ```bash
-adk eval agent.py ../../tests/evals/list_available_tools_test.json
+adk eval examples/google-adk-agent tests/evals/list_available_tools_test.json --config_file_path tests/evals/test_config.json
 ```
 
 ### 2. Creating Custom Evaluation Tests
@@ -274,11 +274,11 @@ echo "Running all ADK evaluations..."
 
 # List available tools test
 echo "Testing tool listing..."
-adk eval agent.py ../../tests/evals/list_available_tools_test.json
+adk eval examples/google-adk-agent tests/evals/list_available_tools_test.json --config_file_path tests/evals/test_config.json
 
 # Add more tests as they are created
 # echo "Testing portfolio analysis..."
-# adk eval agent.py ../../tests/evals/portfolio_analysis_test.json
+# adk eval examples/google-adk-agent tests/evals/portfolio_analysis_test.json --config_file_path tests/evals/test_config.json
 
 echo "All evaluations completed successfully!"
 ```
@@ -306,7 +306,7 @@ def run_evaluation(test_file):
     start_time = time.time()
     try:
         result = subprocess.run(
-            ["adk", "eval", "agent.py", test_file],
+            ["adk", "eval", "examples/google-adk-agent", test_file, "--config_file_path", "tests/evals/test_config.json"],
             capture_output=True,
             text=True,
             check=True

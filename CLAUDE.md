@@ -22,7 +22,7 @@ Run test suite:
 Run ADK agent evaluation (from project root):
 1. Verify ADK installed: `adk --help`
 2. Set env vars: `GOOGLE_API_KEY`, `ROBINHOOD_USERNAME`, `ROBINHOOD_PASSWORD` 
-3. Run: `adk eval examples/google-adk-agent tests/evals/list_available_tools_test.json`
+3. Run: `adk eval examples/google-adk-agent tests/evals/list_available_tools_test.json --config_file_path tests/evals/test_config.json`
 
 ### `publish <version>`
 Release workflow:
@@ -173,7 +173,7 @@ ROBINHOOD_PASSWORD="password"
 ### Running ADK Evaluations
 1. Install: `pip install google-agent-developer-kit`
 2. Set environment variables (see above)
-3. From project root: `adk eval examples/google-adk-agent tests/evals/list_available_tools_test.json`
+3. From project root: `adk eval examples/google-adk-agent tests/evals/list_available_tools_test.json --config_file_path tests/evals/test_config.json`
 4. Expected: "✅ Passed" with tool listing evaluation
 
 ## Important Notes

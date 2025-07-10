@@ -4,14 +4,12 @@ import robin_stocks.robinhood as rh
 
 from open_stocks_mcp.logging_config import logger
 from open_stocks_mcp.tools.error_handling import (
-    create_error_response,
     create_no_data_response,
     create_success_response,
     execute_with_retry,
     handle_robin_stocks_errors,
     log_api_call,
     sanitize_api_response,
-    validate_span,
 )
 
 
@@ -156,68 +154,4 @@ async def get_positions() -> dict:
     logger.info("Successfully retrieved current positions.")
     return create_success_response(
         {"positions": position_list, "count": len(position_list)}
-    )
-
-
-@handle_robin_stocks_errors
-async def get_portfolio_history(span: str = "week") -> dict:
-    """
-    Retrieves historical portfolio performance data.
-
-    Args:
-        span: Time span for history ('day', 'week', 'month', '3month', 'year', '5year', 'all')
-
-    Returns:
-        A JSON object containing portfolio history in the result field.
-    """
-    # Input validation
-    if not validate_span(span):
-        return create_error_response(
-            ValueError(
-                f"Invalid span: {span}. Must be one of: day, week, month, 3month, year, 5year, all"
-            ),
-            "span validation",
-        )
-
-    log_api_call("get_portfolio_history", span=span)
-
-    # Get portfolio history with retry logic
-    history = await execute_with_retry(
-        rh.get_historical_portfolio, None, span, "regular"
-    )
-
-    if not history:
-        return create_no_data_response("No portfolio history found.", {"span": span})
-
-    # Handle case where history is a list vs dict
-    if isinstance(history, list):
-        if not history:
-            return create_no_data_response(
-                "No portfolio history found.", {"span": span}
-            )
-        historicals = history
-        total_return = "N/A"
-    else:
-        historicals = history.get("historicals", [])
-        total_return = history.get("total_return", "N/A")
-
-    # Show last 5 data points
-    recent_data = []
-    for data_point in historicals[-5:]:
-        if data_point:  # Skip None entries
-            recent_data.append(
-                {
-                    "date": data_point.get("begins_at", "N/A"),
-                    "total_equity": data_point.get("adjusted_close_equity", "N/A"),
-                }
-            )
-
-    logger.info("Successfully retrieved portfolio history.")
-    return create_success_response(
-        {
-            "span": span,
-            "total_return": total_return,
-            "data_points_count": len(historicals),
-            "recent_performance": recent_data,
-        }
     )

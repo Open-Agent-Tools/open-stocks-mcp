@@ -53,9 +53,7 @@ async def get_build_holdings() -> dict[str, Any]:
     logger.info("Building comprehensive holdings with dividend information")
 
     # Execute the build_holdings function with retry logic
-    holdings = await execute_with_retry(
-        func=rh.build_holdings, func_name="build_holdings", max_retries=3
-    )
+    holdings = await execute_with_retry(rh.build_holdings, max_retries=3)
 
     if not holdings:
         logger.warning("No holdings data returned from build_holdings")
@@ -104,9 +102,7 @@ async def get_build_user_profile() -> dict[str, Any]:
     logger.info("Building comprehensive user profile with totals")
 
     # Execute the build_user_profile function with retry logic
-    profile = await execute_with_retry(
-        func=rh.build_user_profile, func_name="build_user_profile", max_retries=3
-    )
+    profile = await execute_with_retry(rh.build_user_profile, max_retries=3)
 
     if not profile:
         logger.warning("No user profile data returned from build_user_profile")
@@ -144,11 +140,7 @@ async def get_day_trades() -> dict[str, Any]:
 
     try:
         # Get account information which contains day trading data
-        account_info = await execute_with_retry(
-            func=rh.load_account_profile,
-            func_name="load_account_profile",
-            max_retries=3,
-        )
+        account_info = await execute_with_retry(rh.load_account_profile, max_retries=3)
 
         if not account_info:
             logger.warning("No account profile data available for day trading info")

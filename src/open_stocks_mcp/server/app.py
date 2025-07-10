@@ -25,7 +25,6 @@ from open_stocks_mcp.tools.robinhood_account_tools import (
     get_account_details,
     get_account_info,
     get_portfolio,
-    get_portfolio_history,
     get_positions,
 )
 from open_stocks_mcp.tools.robinhood_advanced_portfolio_tools import (
@@ -143,16 +142,6 @@ async def account_details() -> dict:
 async def positions() -> dict:
     """Gets current stock positions with quantities and values."""
     return await get_positions()
-
-
-@mcp.tool()
-async def portfolio_history(span: str = "week") -> dict:
-    """Gets historical portfolio performance data.
-
-    Args:
-        span: Time span ('day', 'week', 'month', '3month', 'year', '5year', 'all')
-    """
-    return await get_portfolio_history(span)
 
 
 # Advanced Portfolio Analytics Tools

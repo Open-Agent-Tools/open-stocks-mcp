@@ -132,7 +132,6 @@ class TestToolRegistration:
             "account_info",
             "account_details",
             "positions",
-            "portfolio_history",
         ]
 
         for tool_name in expected_tools:
@@ -153,18 +152,3 @@ class TestToolRegistration:
         assert (
             account_info_tool.description == "Gets basic Robinhood account information."
         )
-
-    @pytest.mark.asyncio
-    async def test_portfolio_history_tool_has_parameters(self):
-        """Test that portfolio_history tool has span parameter."""
-        tools_list = await mcp.list_tools()
-        portfolio_history_tool = None
-
-        for tool in tools_list:
-            if tool.name == "portfolio_history":
-                portfolio_history_tool = tool
-                break
-
-        assert portfolio_history_tool is not None
-        # Check that the tool has parameters defined
-        assert portfolio_history_tool.inputSchema is not None

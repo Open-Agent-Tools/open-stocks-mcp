@@ -179,10 +179,10 @@ agent_tools = [
 
 ### Available MCP Tools
 
-The open-stocks-mcp server now provides 56 MCP tools across 10 categories:
+The open-stocks-mcp server now provides 60 MCP tools across 10 categories:
 
-**Account Management (8 tools):**
-- `account_info`, `account_details`, `portfolio`, `positions`, `portfolio_history`
+**Account Management (7 tools):**
+- `account_info`, `account_details`, `portfolio`, `positions`
 - `build_holdings`, `build_user_profile`, `day_trades`
 
 **Options Trading (7 tools):**
