@@ -44,55 +44,76 @@ class TestAttemptLogin:
 
     def test_attempt_login_success(self):
         """Test successful login attempt."""
-        mock_user_profile = {"username": "testuser", "id": "123"}
+        mock_session_manager = MagicMock()
+        mock_session_manager.ensure_authenticated.return_value = True
+        mock_session_manager.get_session_info.return_value = {
+            "username": "testuser",
+            "authenticated": True,
+        }
 
         with (
-            patch("open_stocks_mcp.server.app.rh.login") as mock_login,
             patch(
-                "open_stocks_mcp.server.app.rh.load_user_profile",
-                return_value=mock_user_profile,
-            ) as mock_profile,
+                "open_stocks_mcp.server.app.get_session_manager",
+                return_value=mock_session_manager,
+            ),
+            patch(
+                "open_stocks_mcp.server.app.asyncio.run", return_value=True
+            ) as mock_run,
             patch("open_stocks_mcp.server.app.logger") as mock_logger,
         ):
             # Should not raise any exception
             attempt_login("testuser", "testpass")
 
-            mock_login.assert_called_once_with(
-                username="testuser", password="testpass", store_session=True
+            mock_session_manager.set_credentials.assert_called_once_with(
+                "testuser", "testpass"
             )
-            mock_profile.assert_called_once()
+            mock_run.assert_called_once()
+            mock_session_manager.get_session_info.assert_called_once()
             mock_logger.info.assert_called()
 
     def test_attempt_login_no_user_profile(self):
-        """Test login attempt when user profile retrieval fails."""
+        """Test login attempt when authentication fails."""
+        mock_session_manager = MagicMock()
+        mock_session_manager.ensure_authenticated.return_value = False
+
         with (
-            patch("open_stocks_mcp.server.app.rh.login") as mock_login,
             patch(
-                "open_stocks_mcp.server.app.rh.load_user_profile", return_value=None
-            ) as mock_profile,
+                "open_stocks_mcp.server.app.get_session_manager",
+                return_value=mock_session_manager,
+            ),
+            patch(
+                "open_stocks_mcp.server.app.asyncio.run", return_value=False
+            ) as mock_run,
             patch("open_stocks_mcp.server.app.logger") as mock_logger,
             patch("open_stocks_mcp.server.app.sys.exit") as mock_exit,
         ):
             attempt_login("testuser", "testpass")
 
-            mock_login.assert_called_once()
-            mock_profile.assert_called_once()
+            mock_session_manager.set_credentials.assert_called_once_with(
+                "testuser", "testpass"
+            )
+            mock_run.assert_called_once()
             mock_logger.error.assert_called()
             mock_exit.assert_called_once_with(1)
 
     def test_attempt_login_exception(self):
-        """Test login attempt with exception."""
+        """Test login attempt when an exception occurs."""
+        mock_session_manager = MagicMock()
+        mock_session_manager.set_credentials.side_effect = Exception("Login failed")
+
         with (
             patch(
-                "open_stocks_mcp.server.app.rh.login",
-                side_effect=Exception("Login failed"),
-            ) as mock_login,
+                "open_stocks_mcp.server.app.get_session_manager",
+                return_value=mock_session_manager,
+            ),
             patch("open_stocks_mcp.server.app.logger") as mock_logger,
             patch("open_stocks_mcp.server.app.sys.exit") as mock_exit,
         ):
             attempt_login("testuser", "testpass")
 
-            mock_login.assert_called_once()
+            mock_session_manager.set_credentials.assert_called_once_with(
+                "testuser", "testpass"
+            )
             mock_logger.error.assert_called()
             mock_exit.assert_called_once_with(1)
 
@@ -109,9 +130,6 @@ class TestToolRegistration:
 
         expected_tools = [
             "account_info",
-            "portfolio",
-            "stock_orders",
-            "options_orders",
             "account_details",
             "positions",
             "portfolio_history",

@@ -1,478 +1,186 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Project guidance for Claude Code when working with the Open Stocks MCP server.
 
 ## User Shortcuts
 
-When users type these commands, execute the associated actions:
-
 ### `cleanup`
-Run complete code quality checks and fix all issues:
-1. **Run ruff linting**: `uv run ruff check . --fix`
-2. **Run ruff formatting**: `uv run ruff format .`
-3. **Run mypy type checking**: `uv run mypy .` (fix any errors found)
-4. **Run pytest**: `uv run pytest` (fix any failing tests)
-5. **Review and update**: Check all TODO.md files for recent changes and update them
-6. **Commit changes**: Make detailed commit with all fixes and push to current branch
-7. **Push Commit**: Push to current branch
-
-### `publish <version number>`
-Prepare and trigger a new release:
-1. **Run cleanup first**: Execute all cleanup steps
-2. **Update version in docs** : Update all references to the next version based on user input
-2. **Check version**: Verify version in pyproject.toml and __init__.py match
-3. **Build test**: Run `uv build` to ensure package builds correctly
-4. **Create release**: Use `gh release create` with appropriate version and notes
-5. **Monitor**: Track the publishing workflow with `gh run list`
+Complete code quality workflow:
+1. `uv run ruff check . --fix` - Fix linting issues
+2. `uv run ruff format .` - Format code  
+3. `uv run mypy .` - Type checking
+4. `uv run pytest` - Run tests
+5. Commit changes with detailed message
 
 ### `test`
-Run comprehensive testing:
-1. **Run all tests**: `uv run pytest`
-2. **Run excluding slow**: `uv run pytest -m "not slow"`
-3. **Run integration tests**: `uv run pytest -m integration` (if credentials available)
-4. **Report results**: Show test coverage and any failures
+Run test suite:
+1. `uv run pytest` - All tests
+2. `uv run pytest -m "not slow"` - Fast tests only
+3. `uv run pytest -m integration` - Integration tests (needs credentials)
+
+### `adk-eval`
+Run ADK agent evaluation (from project root):
+1. Verify ADK installed: `adk --help`
+2. Set env vars: `GOOGLE_API_KEY`, `ROBINHOOD_USERNAME`, `ROBINHOOD_PASSWORD` 
+3. Run: `adk eval examples/google-adk-agent tests/evals/list_available_tools_test.json`
+
+### `publish <version>`
+Release workflow:
+1. Run `cleanup` first
+2. Update versions in `pyproject.toml` and `__init__.py`
+3. `uv build` - Test package build
+4. `gh release create v<version>` - Trigger PyPI publishing
 
 ### `check`
-Quick status check:
-1. **Git status**: Show current branch and uncommitted changes
-2. **Recent commits**: Show last 3 commits with `git log --oneline -3`
-3. **Workflow status**: Check latest GitHub Actions with `gh run list --limit=3`
-4. **Package status**: Check if package builds with `uv build`
+Quick project status:
+1. `git status` - Working tree status
+2. `git log --oneline -3` - Recent commits
+3. `gh run list --limit=3` - CI status
+4. `uv build` - Package build test
 
 ## Project Overview
 
-This is an MCP (Model Context Protocol) Server that provides access to stock market data through open-source APIs, particularly Robin Stocks. The server uses FastMCP for simplified MCP server development.
+**Open Stocks MCP** - Model Context Protocol server providing stock market data through Robin Stocks API.
+- **Framework**: FastMCP for simplified MCP development
+- **API**: Robin Stocks for market data and trading
+- **Tools**: 60+ MCP tools for account, market data, options, orders
+- **Agent Integration**: Google ADK evaluation tests
 
-## Development Commands
+## Quick Reference
 
-This project uses UV for dependency management and virtual environments.
-
-### Virtual Environment Setup
+### Development Setup
 ```bash
-uv venv  # Creates .venv
-source .venv/bin/activate  # Activate the environment
+uv venv && source .venv/bin/activate
+uv pip install -e ".[dev]"
 ```
 
-### Dependency Installation
+### Testing
 ```bash
-uv pip install -e .  # Install project in editable mode
-uv pip install -e ".[dev]"  # Install with dev dependencies
+pytest                           # All tests
+pytest tests/unit/               # Unit tests (fast)
+pytest tests/integration/ -m integration  # Integration (needs auth)
+pytest tests/evals/ -m agent_evaluation   # ADK evaluation
 ```
 
-### Running Tests
+### Code Quality
 ```bash
-pytest
+ruff check . --fix              # Lint and fix
+ruff format .                   # Format code  
+mypy .                          # Type check
 ```
 
-### Linting and Type Checking
+### MCP Development
 ```bash
-ruff check .  # Linting
-ruff format .  # Formatting
-black .  # Alternative formatting
-mypy .  # Type checking
-```
-
-### Adding Dependencies
-```bash
-# Add to pyproject.toml dependencies section, then:
-uv pip install -e .
-```
-
-## Architecture
-
-### MCP Server Structure
-
-The project uses FastMCP, which provides a high-level interface to the MCP protocol:
-
-```python
-from mcp.server.fastmcp import FastMCP
-
-# Create server instance
-mcp = FastMCP("Open Stocks MCP")
-
-# Tools are functions that can have side effects
-@mcp.tool()
-def get_stock_price(symbol: str) -> dict:
-    """Get current stock price."""
-    return {"symbol": symbol, "price": 100.00}
-
-# Resources provide data without side effects  
-@mcp.resource("portfolio://holdings")
-def get_holdings() -> str:
-    """Get portfolio holdings."""
-    return json.dumps({"AAPL": 10, "GOOGL": 5})
-
-# Prompts are reusable templates
-@mcp.prompt(title="Stock Analysis")
-def analyze_stock(symbol: str) -> str:
-    return f"Analyze {symbol} stock performance"
-```
-
-### Key MCP Patterns
-
-1. **JSON Output**: Tools should ALWAYS return JSON objects with data in a "result" field
-2. **Structured Output**: Tools can return Pydantic models, TypedDicts, or regular dicts for structured data
-3. **Context Access**: Tools can access MCP context for logging, progress reporting, and session data
-4. **Async Support**: Use async functions for I/O operations
-5. **Error Handling**: Return JSON objects with error information in the "result" field
-
-### MCP Tool Best Practices
-
-When implementing MCP tools, follow these best practices:
-
-1. **Clear Naming**: Provide clear, descriptive names and descriptions
-2. **Schema Definitions**: Use detailed JSON Schema definitions for parameters
-3. **Examples**: Include examples in tool descriptions to demonstrate usage
-4. **Error Handling**: Implement proper error handling and validation
-5. **Progress Reporting**: Use progress reporting for long operations
-6. **Atomic Operations**: Keep tool operations focused and atomic
-7. **Documentation**: Document expected return value structures
-8. **Timeouts**: Implement proper timeouts for operations
-9. **Rate Limiting**: Consider rate limiting for resource-intensive operations
-10. **Logging**: Log tool usage for debugging and monitoring
-11. **Result Field**: Always return JSON with data in a "result" field
-
-Example tool implementation:
-
-```python
-@mcp.tool()
-async def get_stock_quote(symbol: str) -> dict:
-    """Get detailed stock quote information.
-    
-    Args:
-        symbol: Stock ticker symbol (e.g., "AAPL", "GOOGL")
-    
-    Returns:
-        JSON object with stock quote data in "result" field:
-        {
-            "result": {
-                "symbol": "AAPL",
-                "price": 150.00,
-                "change": 2.50,
-                "change_percent": 1.69,
-                "volume": 50000000
-            }
-        }
-    """
-    try:
-        # Async wrapper for synchronous API
-        loop = asyncio.get_event_loop()
-        quote = await loop.run_in_executor(None, rh.stocks.get_quote, symbol)
-        
-        return {
-            "result": {
-                "symbol": symbol,
-                "price": float(quote["last_trade_price"]),
-                "change": float(quote["previous_close"]) - float(quote["last_trade_price"]),
-                "volume": int(quote["volume"]),
-                "status": "success"
-            }
-        }
-    except Exception as e:
-        logger.error(f"Failed to get quote for {symbol}: {e}")
-        return {
-            "result": {
-                "error": str(e),
-                "status": "error"
-            }
-        }
-```
-
-### Robin Stocks Integration
-
-Robin Stocks is synchronous, so wrap calls in async functions:
-
-```python
-import asyncio
-import robin_stocks.robinhood as rh
-
-@mcp.tool()
-async def get_stock_quote(symbol: str) -> dict:
-    """Get stock quote asynchronously."""
-    loop = asyncio.get_event_loop()
-    quote = await loop.run_in_executor(None, rh.stocks.get_latest_price, symbol)
-    return {"symbol": symbol, "price": float(quote[0])}
-```
-
-### Development Guidelines
-
-1. **Tools vs Resources**: 
-   - Tools: Functions that perform actions (place orders, fetch live data)
-   - Resources: Static or cached data (portfolio snapshot, watchlists)
-
-2. **Authentication**: Handle Robin Stocks auth in server lifecycle:
-   ```python
-   from contextlib import asynccontextmanager
-   
-   @asynccontextmanager
-   async def app_lifespan(server: FastMCP):
-       # Login on startup
-       rh.login(username, password)
-       yield
-       # Logout on shutdown
-       rh.logout()
-   
-   mcp = FastMCP("Open Stocks", lifespan=app_lifespan)
-   ```
-
-3. **Error Handling**: Always handle API errors gracefully
-4. **Rate Limiting**: Implement caching to avoid hitting API limits
-5. **Security**: Never log or return sensitive data (passwords, full account numbers)
-
-## Testing MCP Tools
-
-Test tools with the MCP Inspector:
-```bash
+# Test server locally
 uv run mcp dev src/open_stocks_mcp/server/app.py
+
+# Test tools individually  
+uv run python -c "from open_stocks_mcp.tools.robinhood_account_tools import get_account_info; print(get_account_info())"
 ```
 
-Or write unit tests with pytest:
+## MCP Architecture
+
+### Tool Structure
+All tools return JSON with `result` field:
 ```python
-def test_stock_tool():
-    result = get_stock_price("AAPL")
-    assert "symbol" in result
-    assert "price" in result
-
-@pytest.mark.integration
-def test_live_stock_data():
-    # Test requiring real API access
-    pass
-
-@pytest.mark.slow  
-def test_performance():
-    # Test that might take longer
-    pass
+@mcp.tool()
+async def get_stock_quote(symbol: str) -> dict:
+    try:
+        quote = await execute_with_retry(rh.stocks.get_quote, symbol)
+        return {"result": {"symbol": symbol, "price": float(quote["last_trade_price"])}}
+    except Exception as e:
+        return {"result": {"error": str(e), "status": "error"}}
 ```
 
-Available test markers:
-- `slow`: Tests that take longer to run
-- `integration`: Tests requiring credentials/live APIs  
-- `live_market`: Tests requiring live market data
+### Key Patterns
+- **Async wrappers** for Robin Stocks (synchronous API)
+- **Retry logic** via `execute_with_retry`
+- **Error handling** via `@handle_robin_stocks_errors` 
+- **Rate limiting** via `get_rate_limiter()`
+- **Session management** for authentication
 
-## GitHub CLI Usage
+### Authentication
+```python
+# Server startup authentication
+from open_stocks_mcp.tools.session_manager import get_session_manager
 
-This project has GitHub CLI (gh) available and authenticated. Use it for repository operations:
+session_manager = get_session_manager()
+session_manager.set_credentials(username, password)
+await session_manager.ensure_authenticated()
+```
 
-### Repository Management
+## Test Structure
+
+```
+tests/
+├── unit/           # Fast isolated tests (18 tests)
+├── auth/           # Authentication tests (29 tests) 
+├── server/         # MCP server tests (10 tests)
+├── integration/    # Live API tests (4 tests)
+└── evals/          # ADK agent tests (1 test)
+```
+
+**Test Markers:**
+- `slow` - Long-running tests
+- `integration` - Requires credentials
+- `agent_evaluation` - ADK evaluation tests
+
+## GitHub Workflows
+
+### Publishing
+Triggered by release creation:
 ```bash
-# View repository info
-gh repo view
-
-# Check workflow status
-gh run list
-
-# View latest workflow run
-gh run view
-
-# Re-run failed workflows
-gh run rerun <run-id>
+gh release create v0.3.1 --title "v0.3.1" --notes "Release notes"
 ```
 
-### Releases and Publishing
+### Development
 ```bash
-# Create a release (triggers PyPI publishing workflow)
-gh release create v0.1.1 --title "v0.1.1 - Feature Description" --notes "Release notes here"
-
-# List releases
-gh release list
-
-# View release details
-gh release view v0.0.2  # or latest version
+gh repo view                    # Repository info
+gh run list                     # Workflow status
+gh pr create --title "feat: ..." --body "..."
 ```
 
-### Issues and Pull Requests
+## Environment Variables
+
+### Required for Live Testing
 ```bash
-# Create an issue
-gh issue create --title "Add Robin Stocks integration" --body "Implement stock price tools"
-
-# List issues
-gh issue list
-
-# Create a pull request
-gh pr create --title "feat: add stock price tool" --body "Implements get_stock_price tool using Robin Stocks API"
-
-# View PR status
-gh pr list
+ROBINHOOD_USERNAME="email@example.com"
+ROBINHOOD_PASSWORD="password"
 ```
 
-### Workflow Operations
+### Required for ADK Evaluation  
 ```bash
-# Trigger a workflow manually (if configured)
-gh workflow run tests.yml
-
-# View workflow runs
-gh run list --workflow=tests.yml
-
-# Download workflow artifacts
-gh run download <run-id>
+GOOGLE_API_KEY="your-google-api-key"
+ROBINHOOD_USERNAME="email@example.com" 
+ROBINHOOD_PASSWORD="password"
 ```
 
-Always prefer `gh` commands over manual GitHub web interface operations for consistency and automation.
+## Common Tasks
 
-## Package Publishing
+### Adding New MCP Tool
+1. Create tool function in appropriate `tools/robinhood_*.py` file
+2. Use `@mcp.tool()` decorator
+3. Follow async pattern with error handling
+4. Add to server registration in `server/app.py`
+5. Write unit tests in `tests/unit/`
 
-This project is configured for automated PyPI publishing via GitHub Actions with trusted publishing.
+### Debugging Authentication Issues
+1. Check session status: `session_manager.get_session_info()`
+2. Test login: `session_manager.ensure_authenticated()`
+3. Verify credentials in environment variables
+4. Check Robin Stocks API status
 
-### Publishing Process
+### Running ADK Evaluations
+1. Install: `pip install google-agent-developer-kit`
+2. Set environment variables (see above)
+3. From project root: `adk eval examples/google-adk-agent tests/evals/list_available_tools_test.json`
+4. Expected: "✅ Passed" with tool listing evaluation
 
-#### 1. Trigger Publishing via Release
-```bash
-# Create a new release to trigger publishing workflow
-gh release create v0.0.2 --title "v0.0.2 - Feature Description" --notes "Release notes here"
+## Important Notes
 
-# View the triggered workflow
-gh run list --workflow=publish.yml
-
-# Monitor specific run
-gh run view <run-id>
-```
-
-#### 2. Manual Publishing (if needed)
-```bash
-# Build package locally
-uv build
-
-# Check package contents
-ls dist/
-# Should show: open_stocks_mcp-X.Y.Z.tar.gz and open_stocks_mcp-X.Y.Z-py3-none-any.whl
-
-# Test package installation locally
-uv pip install dist/open_stocks_mcp-*.whl
-```
-
-### Publishing Workflow
-
-The GitHub Actions workflow (`publish.yml`) automatically:
-
-1. **Build**: Creates wheel and source distribution
-2. **Publish**: Uploads to PyPI using trusted publishing
-3. **Artifacts**: Stores build artifacts for debugging
-
-### Troubleshooting Publishing Issues
-
-#### Common Workflow Failures
-
-**Build Failures:**
-```bash
-# Check build job logs
-gh run view <run-id> --job=build --log
-
-# Common issues:
-# - Missing dependencies in pyproject.toml
-# - Import errors in package code
-# - Version conflicts
-```
-
-**Publishing Failures:**
-```bash
-# Check publish job logs  
-gh run view <run-id> --job="Publish to PyPI" --log
-
-# Common issues:
-# - PyPI trusted publishing not configured
-# - Package name already exists
-# - Version already published
-# - Missing required metadata
-```
-
-#### Version Management Issues
-
-**Version Already Exists:**
-```bash
-# Check current PyPI version
-pip index versions open-stocks-mcp
-
-# Update version in pyproject.toml and __init__.py
-# Then create new release with updated version tag
-```
-
-**Version Mismatch:**
-```bash
-# Ensure version consistency between:
-# - pyproject.toml [project] version
-# - src/open_stocks_mcp/__init__.py __version__
-# - git tag (should match)
-```
-
-#### PyPI Trusted Publishing Setup
-
-If publishing fails with authentication errors:
-
-1. **Go to PyPI.org** → Account → Publishing
-2. **Add Pending Publisher:**
-   - PyPI project name: `open-stocks-mcp`
-   - Owner: `Open-Agent-Tools`
-   - Repository: `open-stocks-mcp` 
-   - Workflow: `publish.yml`
-   - Environment: `pypi`
-
-#### Local Testing Before Release
-
-```bash
-# Test package builds correctly
-uv build
-
-# Test installation from wheel
-uv pip install --force-reinstall dist/open_stocks_mcp-*.whl
-
-# Test CLI commands work
-open-stocks-mcp --help
-uv run pytest
-
-# Test import works
-python -c "import open_stocks_mcp; print(open_stocks_mcp.__version__)"
-```
-
-#### Debugging Workflow Issues
-
-```bash
-# Download workflow artifacts for inspection
-gh run download <run-id>
-
-# Check workflow file syntax
-gh workflow view publish.yml
-
-# Re-run failed workflow
-gh run rerun <run-id>
-
-# View workflow in browser
-gh run view <run-id> --web
-```
-
-#### Emergency Publishing Recovery
-
-If automated publishing fails completely:
-
-```bash
-# Manual publishing with twine (backup method)
-uv build
-uv pip install twine
-twine upload dist/*
-```
-
-### Package Verification
-
-After successful publishing:
-
-```bash
-# Verify package is available on PyPI
-pip index versions open-stocks-mcp
-
-# Test installation from PyPI
-uv pip install open-stocks-mcp
-
-# Verify CLI entry points
-open-stocks-mcp --help
-```
-
-### Release Checklist
-
-Before creating a release:
-
-- [ ] Update version in `pyproject.toml` and `__init__.py`
-- [ ] Run full test suite: `uv run pytest`
-- [ ] Check code quality: `uv run ruff check . && uv run mypy .`
-- [ ] Test local build: `uv build`
-- [ ] Update CHANGELOG.md (if exists)
-- [ ] Create meaningful release notes
-- [ ] Tag follows semantic versioning (vX.Y.Z)
+- **Always run ADK from project root** - Path resolution requirement
+- **Use UV for dependencies** - Project uses UV package manager  
+- **Async patterns required** - Robin Stocks is sync, tools are async
+- **JSON responses mandatory** - All tools return `{"result": data}` format
+- **Error handling critical** - Use decorators and try/catch patterns
+- **Rate limiting active** - Automatic rate limiting for Robin Stocks API

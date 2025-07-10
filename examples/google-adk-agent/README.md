@@ -2,6 +2,8 @@
 
 A comprehensive stock trading agent that uses Google ADK to connect with our open-stocks-mcp server for Robin Stocks operations. This agent provides access to 32+ MCP tools for complete stock market analysis and portfolio management.
 
+> **📁 Note**: Evaluation tests and documentation have been moved to `tests/evals/` for better organization alongside the main test suite. See `tests/evals/ADK-testing-evals.md` for comprehensive testing documentation.
+
 ## Prerequisites
 
 1. **Install Google ADK**: Follow Google's Agent Development Kit installation guide

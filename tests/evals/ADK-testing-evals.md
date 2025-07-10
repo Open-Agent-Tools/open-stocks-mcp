@@ -2,6 +2,8 @@
 
 This guide covers testing and evaluation procedures for the Stock Trading Agent using Google ADK framework.
 
+**Note**: This documentation and evaluation tests have been moved from `examples/google-adk-agent/evals/` to `tests/evals/` for better organization alongside the main test suite.
+
 ## Prerequisites
 
 ### 1. Environment Setup
@@ -33,36 +35,87 @@ adk --help
 
 ## Running ADK Evaluations
 
-### Basic Evaluation Command
+> **⚠️ Important**: Always run ADK evaluations from the **project root directory** (`/Users/wes/Development/open-stocks-mcp/`). The ADK expects the agent module path relative to the current working directory.
+
+### ✅ Correct Way (From Project Root)
 ```bash
-# Run evaluation from the examples/google-adk-agent directory
-adk eval agent.py evals/list_available_tools_test.json
+# Navigate to project root first
+cd /Users/wes/Development/open-stocks-mcp
+
+# Basic evaluation command
+adk eval examples/google-adk-agent tests/evals/list_available_tools_test.json
+
+# With custom configuration
+adk eval examples/google-adk-agent tests/evals/list_available_tools_test.json --config_file_path tests/evals/test_config.json
+
+# With detailed results output
+adk eval examples/google-adk-agent tests/evals/list_available_tools_test.json --print_detailed_results
+
+# With specific run ID for tracking
+adk eval examples/google-adk-agent tests/evals/list_available_tools_test.json --run_id stock_trader_test_$(date +%s)
+
+# With custom model
+GOOGLE_MODEL="gemini-2.0-flash-exp" adk eval examples/google-adk-agent tests/evals/list_available_tools_test.json
 ```
 
-### Advanced Evaluation Options
+### ❌ Wrong Way (From Agent Directory)
 ```bash
-# Run with custom configuration
-adk eval agent.py evals/list_available_tools_test.json --config evals/test_config.json
-
-# Run with specific run ID for tracking
-adk eval agent.py evals/list_available_tools_test.json --run_id stock_trader_test_$(date +%s)
-
-# Run with debug output
-adk eval agent.py evals/list_available_tools_test.json --verbose
-
-# Run with custom model
-GOOGLE_MODEL="gemini-2.0-flash-exp" adk eval agent.py evals/list_available_tools_test.json
+# Don't do this - will cause path errors
+cd examples/google-adk-agent
+adk eval agent.py ../../tests/evals/list_available_tools_test.json  # ❌ Incorrect syntax
 ```
+
+### 📋 Prerequisites Checklist
+Before running evaluations, ensure:
+
+1. **✅ Google ADK Installed**
+   ```bash
+   pip install google-agent-developer-kit
+   adk --help  # Verify installation
+   ```
+
+2. **✅ Environment Variables Set**
+   ```bash
+   export GOOGLE_API_KEY="your-google-api-key"
+   export ROBINHOOD_USERNAME="your_email@example.com"
+   export ROBINHOOD_PASSWORD="your_robinhood_password"
+   ```
+
+3. **✅ Correct Working Directory**
+   ```bash
+   pwd  # Should show: /Users/wes/Development/open-stocks-mcp
+   ```
+
+4. **✅ Agent Module Available**
+   ```bash
+   ls examples/google-adk-agent/  # Should show: agent.py, __init__.py, etc.
+   ```
+
+### 🎯 Expected Results
+A successful evaluation will show:
+```
+Using evaluation criteria: {'tool_trajectory_avg_score': 1.0, 'response_match_score': 0.8}
+Running Eval: list_available_tools_test_set:list_available_tools_test
+Result: ✅ Passed
+
+*********************************************************************
+Eval Run Summary
+list_available_tools_test_set:
+  Tests passed: 1
+  Tests failed: 0
+```
+
+**Last Successful Run**: 2025-07-10T15:01:40Z
 
 ## Available Evaluation Tests
 
 ### 1. List Available Tools Test
-**File**: `evals/list_available_tools_test.json`  
+**File**: `tests/evals/list_available_tools_test.json`  
 **Purpose**: Validates that the agent can successfully list all available MCP tools  
 **Expected Output**: Alphabetically sorted bullet list of 61 MCP tools
 
 ```bash
-adk eval agent.py evals/list_available_tools_test.json
+adk eval agent.py ../../tests/evals/list_available_tools_test.json
 ```
 
 ### 2. Creating Custom Evaluation Tests
@@ -146,7 +199,7 @@ adk eval agent.py evals/list_available_tools_test.json
 ## Evaluation Configuration
 
 ### Test Configuration File
-**File**: `evals/test_config.json`
+**File**: `tests/evals/test_config.json`
 
 ```json
 {
@@ -221,11 +274,11 @@ echo "Running all ADK evaluations..."
 
 # List available tools test
 echo "Testing tool listing..."
-adk eval agent.py evals/list_available_tools_test.json
+adk eval agent.py ../../tests/evals/list_available_tools_test.json
 
 # Add more tests as they are created
 # echo "Testing portfolio analysis..."
-# adk eval agent.py evals/portfolio_analysis_test.json
+# adk eval agent.py ../../tests/evals/portfolio_analysis_test.json
 
 echo "All evaluations completed successfully!"
 ```
@@ -273,7 +326,7 @@ def run_evaluation(test_file):
         }
 
 if __name__ == "__main__":
-    tests = ["evals/list_available_tools_test.json"]
+    tests = ["tests/evals/list_available_tools_test.json"]
     
     for test in tests:
         print(f"Running {test}...")
