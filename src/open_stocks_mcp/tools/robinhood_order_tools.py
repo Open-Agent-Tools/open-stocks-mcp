@@ -1,5 +1,7 @@
 """MCP tools for Robin Stocks order operations."""
 
+from typing import Any
+
 import robin_stocks.robinhood as rh
 
 from open_stocks_mcp.logging_config import logger
@@ -13,7 +15,7 @@ from open_stocks_mcp.tools.error_handling import (
 
 
 @handle_robin_stocks_errors
-async def get_stock_orders() -> dict:
+async def get_stock_orders() -> dict[str, Any]:
     """
     Retrieves a list of recent stock order history and their statuses.
 
@@ -63,7 +65,7 @@ async def get_stock_orders() -> dict:
 
 
 @handle_robin_stocks_errors
-async def get_options_orders() -> dict:
+async def get_options_orders() -> dict[str, Any]:
     """
     Retrieves a list of recent options order history and their statuses.
 

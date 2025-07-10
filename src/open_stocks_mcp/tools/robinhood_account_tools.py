@@ -1,5 +1,7 @@
 """MCP tools for Robin Stocks account operations."""
 
+from typing import Any
+
 import robin_stocks.robinhood as rh
 
 from open_stocks_mcp.logging_config import logger
@@ -14,7 +16,7 @@ from open_stocks_mcp.tools.error_handling import (
 
 
 @handle_robin_stocks_errors
-async def get_account_info() -> dict:
+async def get_account_info() -> dict[str, Any]:
     """
     Retrieves basic information about the Robinhood account.
 
@@ -42,7 +44,7 @@ async def get_account_info() -> dict:
 
 
 @handle_robin_stocks_errors
-async def get_portfolio() -> dict:
+async def get_portfolio() -> dict[str, Any]:
     """
     Provides a high-level overview of the portfolio.
 
@@ -71,7 +73,7 @@ async def get_portfolio() -> dict:
 
 
 @handle_robin_stocks_errors
-async def get_account_details() -> dict:
+async def get_account_details() -> dict[str, Any]:
     """
     Retrieves comprehensive account details including buying power and cash balances.
 
@@ -109,7 +111,7 @@ async def get_account_details() -> dict:
 
 
 @handle_robin_stocks_errors
-async def get_positions() -> dict:
+async def get_positions() -> dict[str, Any]:
     """
     Retrieves current stock positions with quantities and values.
 

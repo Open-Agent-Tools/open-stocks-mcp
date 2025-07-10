@@ -3,6 +3,7 @@
 import asyncio
 import time
 from collections import defaultdict, deque
+from typing import Any
 
 from open_stocks_mcp.logging_config import logger
 
@@ -28,11 +29,13 @@ class RateLimiter:
         self.burst_size = burst_size
 
         # Track call timestamps
-        self.call_times: deque = deque(maxlen=calls_per_hour)
+        self.call_times: deque[float] = deque(maxlen=calls_per_hour)
         self._lock = asyncio.Lock()
 
         # Track per-endpoint limits
-        self.endpoint_buckets: dict[str, deque] = defaultdict(lambda: deque(maxlen=100))
+        self.endpoint_buckets: dict[str, deque[float]] = defaultdict(
+            lambda: deque(maxlen=100)
+        )
 
     async def acquire(self, endpoint: str | None = None, weight: float = 1.0) -> None:
         """Acquire permission to make an API call.
@@ -101,7 +104,7 @@ class RateLimiter:
             if endpoint:
                 self.endpoint_buckets[endpoint].append(now)
 
-    def get_stats(self) -> dict:
+    def get_stats(self) -> dict[str, Any]:
         """Get current rate limiter statistics.
 
         Returns:
@@ -147,7 +150,9 @@ def get_rate_limiter() -> RateLimiter:
     return _rate_limiter
 
 
-async def rate_limited_call(func, *args, endpoint: str | None = None, **kwargs):
+async def rate_limited_call(
+    func: Any, *args: Any, endpoint: str | None = None, **kwargs: Any
+) -> Any:
     """Execute a function with rate limiting.
 
     Args:

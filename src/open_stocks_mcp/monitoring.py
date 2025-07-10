@@ -21,10 +21,10 @@ class MetricsCollector:
         self.window_size = timedelta(minutes=window_size_minutes)
 
         # Metrics storage
-        self.api_calls: deque = deque()
-        self.errors: deque = deque()
-        self.response_times: deque = deque()
-        self.tool_usage: dict[str, deque] = defaultdict(deque)
+        self.api_calls: deque[tuple[datetime, str, bool]] = deque()
+        self.errors: deque[tuple[datetime, str, str | None]] = deque()
+        self.response_times: deque[tuple[datetime, float]] = deque()
+        self.tool_usage: dict[str, deque[tuple[datetime, bool]]] = defaultdict(deque)
         self.error_types: dict[str, int] = defaultdict(int)
 
         # Counters
@@ -119,7 +119,7 @@ class MetricsCollector:
             )
 
             # Calculate average response time
-            avg_response_time = 0
+            avg_response_time = 0.0
             if self.response_times:
                 avg_response_time = sum(t[1] for t in self.response_times) / len(
                     self.response_times
@@ -152,7 +152,7 @@ class MetricsCollector:
                 total = len(calls)
                 tool_stats[tool] = {
                     "calls": total,
-                    "success_rate": (successful / total * 100) if total > 0 else 0,
+                    "success_rate": (successful / total * 100.0) if total > 0 else 0.0,
                 }
 
             return {
@@ -238,10 +238,10 @@ class MonitoredTool:
         self.tool_name = tool_name
         self.metrics = get_metrics_collector()
 
-    def __call__(self, func):
+    def __call__(self, func: Any) -> Any:
         """Decorate the function."""
 
-        async def wrapper(*args, **kwargs):
+        async def wrapper(*args: Any, **kwargs: Any) -> Any:
             start_time = time.time()
             success = False
             error_type = None

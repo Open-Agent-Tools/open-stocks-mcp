@@ -149,28 +149,28 @@ def create_error_response(error: Exception, context: str = "") -> dict[str, Any]
     return response
 
 
-def handle_robin_stocks_errors(func: Callable) -> Callable:
+def handle_robin_stocks_errors(func: Callable[..., Any]) -> Callable[..., Any]:
     """Decorator to handle Robin Stocks API errors consistently."""
 
     @functools.wraps(func)
-    async def wrapper(*args, **kwargs):
+    async def wrapper(*args: Any, **kwargs: Any) -> dict[str, Any]:
         context = f"in {func.__name__}"
         try:
-            return await func(*args, **kwargs)
+            return await func(*args, **kwargs)  # type: ignore[no-any-return]
         except Exception as e:
             return create_error_response(e, context)
 
     return wrapper
 
 
-def handle_robin_stocks_sync_errors(func: Callable) -> Callable:
+def handle_robin_stocks_sync_errors(func: Callable[..., Any]) -> Callable[..., Any]:
     """Decorator to handle Robin Stocks API errors for sync functions."""
 
     @functools.wraps(func)
-    def wrapper(*args, **kwargs):
+    def wrapper(*args: Any, **kwargs: Any) -> dict[str, Any]:
         context = f"in {func.__name__}"
         try:
-            return func(*args, **kwargs)
+            return func(*args, **kwargs)  # type: ignore[no-any-return]
         except Exception as e:
             return create_error_response(e, context)
 
@@ -178,15 +178,15 @@ def handle_robin_stocks_sync_errors(func: Callable) -> Callable:
 
 
 async def execute_with_retry(
-    func: Callable,
-    *args,
+    func: Callable[..., Any],
+    *args: Any,
     max_retries: int = 3,
     delay: float = 1.0,
     backoff_factor: float = 2.0,
     handle_auth_errors: bool = True,
     rate_limit: bool = True,
     endpoint: str | None = None,
-    **kwargs,
+    **kwargs: Any,
 ) -> Any:
     """Execute a function with retry logic for transient errors.
 
@@ -333,7 +333,7 @@ def sanitize_api_response(data: Any) -> Any:
     return data
 
 
-def log_api_call(func_name: str, symbol: str | None = None, **kwargs) -> None:
+def log_api_call(func_name: str, symbol: str | None = None, **kwargs: Any) -> None:
     """Log API call for monitoring and debugging."""
     log_data = {"function": func_name}
 

@@ -2,6 +2,7 @@
 
 import asyncio
 from datetime import datetime, timedelta
+from typing import Any
 
 import robin_stocks.robinhood as rh
 
@@ -131,9 +132,14 @@ class SessionManager:
 
             with redirect_stdout(stdout_buffer), redirect_stderr(stderr_buffer):
                 # Override input function to simulate automatic approval
-                original_input = __builtins__.get("input", input)
+                builtins_dict = (
+                    __builtins__
+                    if isinstance(__builtins__, dict)
+                    else __builtins__.__dict__
+                )
+                original_input = builtins_dict.get("input", input)
 
-                def mock_input(prompt=""):
+                def mock_input(prompt: str = "") -> str:
                     """Mock input function that logs prompts and simulates automatic approval."""
                     logger.info(f"Device verification prompt: {prompt}")
 
@@ -163,7 +169,7 @@ class SessionManager:
                 if isinstance(__builtins__, dict):
                     __builtins__["input"] = mock_input
                 else:
-                    __builtins__.input = mock_input
+                    __builtins__.input = mock_input  # type: ignore[assignment]
 
                 try:
                     # Attempt login with device verification handling
@@ -237,7 +243,7 @@ class SessionManager:
             self.login_time = None
             return await self._authenticate()
 
-    def get_session_info(self) -> dict:
+    def get_session_info(self) -> dict[str, Any]:
         """Get current session information.
 
         Returns:

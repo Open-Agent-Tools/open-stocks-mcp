@@ -1,5 +1,7 @@
 """MCP tools for Robin Stocks cryptocurrency operations."""
 
+from typing import Any
+
 from open_stocks_mcp.logging_config import logger
 
 # TODO: Implement crypto trading tools
@@ -27,7 +29,7 @@ from open_stocks_mcp.logging_config import logger
 # - cancel_all_crypto_orders() -> dict
 
 
-async def get_crypto_positions() -> dict:
+async def get_crypto_positions() -> dict[str, Any]:
     """
     Get current cryptocurrency positions.
 

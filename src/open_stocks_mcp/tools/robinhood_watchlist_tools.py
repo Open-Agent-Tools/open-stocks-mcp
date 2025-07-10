@@ -408,7 +408,7 @@ async def get_watchlist_performance(watchlist_name: str) -> dict[str, Any]:
     watchlist_data = await get_watchlist_by_name(watchlist_name)
 
     if watchlist_data["result"]["status"] != "success":
-        return watchlist_data
+        return watchlist_data  # type: ignore[no-any-return]
 
     symbols = watchlist_data["result"].get("symbols", [])
 

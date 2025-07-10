@@ -1,5 +1,7 @@
 """MCP tools for Robin Stocks stock market data operations."""
 
+from typing import Any
+
 import robin_stocks.robinhood as rh
 
 from open_stocks_mcp.logging_config import logger
@@ -16,7 +18,7 @@ from open_stocks_mcp.tools.error_handling import (
 
 
 @handle_robin_stocks_errors
-async def get_stock_price(symbol: str) -> dict:
+async def get_stock_price(symbol: str) -> dict[str, Any]:
     """
     Get current stock price and basic metrics.
 
@@ -69,7 +71,7 @@ async def get_stock_price(symbol: str) -> dict:
 
 
 @handle_robin_stocks_errors
-async def get_stock_info(symbol: str) -> dict:
+async def get_stock_info(symbol: str) -> dict[str, Any]:
     """
     Get detailed company information and fundamentals.
 
@@ -123,7 +125,7 @@ async def get_stock_info(symbol: str) -> dict:
 
 
 @handle_robin_stocks_errors
-async def search_stocks(query: str) -> dict:
+async def search_stocks(query: str) -> dict[str, Any]:
     """
     Search for stocks by symbol or company name.
 
@@ -177,7 +179,7 @@ async def search_stocks(query: str) -> dict:
 
 
 @handle_robin_stocks_errors
-async def get_market_hours() -> dict:
+async def get_market_hours() -> dict[str, Any]:
     """
     Get current market hours and status.
 
@@ -210,7 +212,7 @@ async def get_market_hours() -> dict:
 
 
 @handle_robin_stocks_errors
-async def get_price_history(symbol: str, period: str = "week") -> dict:
+async def get_price_history(symbol: str, period: str = "week") -> dict[str, Any]:
     """
     Get historical price data for a stock.
 
