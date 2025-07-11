@@ -1,9 +1,9 @@
 """Unit tests for market data tools."""
 
+from typing import Any
 from unittest.mock import patch
 
 import pytest
-from typing import Any
 
 from open_stocks_mcp.tools.robinhood_market_data_tools import (
     get_stocks_by_tag,

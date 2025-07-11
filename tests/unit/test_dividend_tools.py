@@ -1,9 +1,9 @@
 """Unit tests for dividend tools."""
 
+from typing import Any
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from typing import Any
 
 from open_stocks_mcp.tools.robinhood_dividend_tools import (
     get_dividends,

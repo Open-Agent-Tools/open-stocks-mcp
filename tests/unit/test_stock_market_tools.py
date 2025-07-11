@@ -1,9 +1,9 @@
 """Unit tests for stock market and core tools."""
 
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from typing import Any
 
 from open_stocks_mcp.tools.robinhood_stock_tools import (
     get_market_hours,
@@ -21,7 +21,9 @@ class TestStockMarketTools:
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_quotes")
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_latest_price")
     @pytest.mark.asyncio
-    async def test_get_stock_price_success(self, mock_latest_price: Any, mock_quotes: Any) -> None:
+    async def test_get_stock_price_success(
+        self, mock_latest_price: Any, mock_quotes: Any
+    ) -> None:
         """Test successful stock price retrieval."""
         mock_latest_price.return_value = ["150.25"]
         mock_quotes.return_value = [
@@ -48,7 +50,9 @@ class TestStockMarketTools:
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_quotes")
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_latest_price")
     @pytest.mark.asyncio
-    async def test_get_stock_price_no_data(self, mock_latest_price: Any, mock_quotes: Any) -> None:
+    async def test_get_stock_price_no_data(
+        self, mock_latest_price: Any, mock_quotes: Any
+    ) -> None:
         """Test stock price when no data is available."""
         mock_latest_price.return_value = None
         mock_quotes.return_value = None
@@ -73,7 +77,7 @@ class TestStockMarketTools:
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_fundamentals")
     @pytest.mark.asyncio
     async def test_get_stock_info_success(
-        self, mock_fundamentals, mock_instruments, mock_name
+        self, mock_fundamentals: Any, mock_instruments: Any, mock_name: Any
     ) -> None:
         """Test successful stock info retrieval."""
         mock_fundamentals.return_value = [
@@ -107,7 +111,9 @@ class TestStockMarketTools:
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_instruments_by_symbols")
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_fundamentals")
     @pytest.mark.asyncio
-    async def test_get_stock_info_no_data(self, mock_fundamentals: Any, mock_instruments: Any) -> None:
+    async def test_get_stock_info_no_data(
+        self, mock_fundamentals: Any, mock_instruments: Any
+    ) -> None:
         """Test stock info when no data is available."""
         mock_fundamentals.return_value = None
         mock_instruments.return_value = None
@@ -360,7 +366,9 @@ class TestServerTools:
 
     @patch("open_stocks_mcp.server.app.get_metrics_collector")
     @pytest.mark.asyncio
-    async def test_metrics_summary_success(self, mock_get_metrics_collector: Any) -> None:
+    async def test_metrics_summary_success(
+        self, mock_get_metrics_collector: Any
+    ) -> None:
         """Test successful metrics summary retrieval."""
         from open_stocks_mcp.server.app import metrics_summary
 

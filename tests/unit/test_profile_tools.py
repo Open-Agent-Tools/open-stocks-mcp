@@ -1,9 +1,9 @@
 """Unit tests for user profile management tools."""
 
+from typing import Any
 from unittest.mock import patch
 
 import pytest
-from typing import Any
 
 from open_stocks_mcp.tools.robinhood_user_profile_tools import (
     get_account_profile,
@@ -20,7 +20,9 @@ class TestAccountProfile:
 
     @patch("open_stocks_mcp.tools.robinhood_user_profile_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_get_account_profile_success(self, mock_execute_with_retry: Any) -> None:
+    async def test_get_account_profile_success(
+        self, mock_execute_with_retry: Any
+    ) -> None:
         """Test successful account profile retrieval."""
         mock_execute_with_retry.return_value = {
             "account_number": "12345678",
@@ -60,7 +62,9 @@ class TestAccountProfile:
 
     @patch("open_stocks_mcp.tools.robinhood_user_profile_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_get_account_profile_no_data(self, mock_execute_with_retry: Any) -> None:
+    async def test_get_account_profile_no_data(
+        self, mock_execute_with_retry: Any
+    ) -> None:
         """Test account profile when no data is available."""
         mock_execute_with_retry.return_value = None
 
@@ -73,7 +77,9 @@ class TestAccountProfile:
 
     @patch("open_stocks_mcp.tools.robinhood_user_profile_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_get_account_profile_minimal_data(self, mock_execute_with_retry: Any) -> None:
+    async def test_get_account_profile_minimal_data(
+        self, mock_execute_with_retry: Any
+    ) -> None:
         """Test account profile with minimal data."""
         mock_execute_with_retry.return_value = {
             "account_number": "87654321",
@@ -95,7 +101,9 @@ class TestBasicProfile:
 
     @patch("open_stocks_mcp.tools.robinhood_user_profile_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_get_basic_profile_success(self, mock_execute_with_retry: Any) -> None:
+    async def test_get_basic_profile_success(
+        self, mock_execute_with_retry: Any
+    ) -> None:
         """Test successful basic profile retrieval."""
         mock_execute_with_retry.return_value = {
             "first_name": "John",
@@ -137,7 +145,9 @@ class TestBasicProfile:
 
     @patch("open_stocks_mcp.tools.robinhood_user_profile_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_get_basic_profile_no_data(self, mock_execute_with_retry: Any) -> None:
+    async def test_get_basic_profile_no_data(
+        self, mock_execute_with_retry: Any
+    ) -> None:
         """Test basic profile when no data is available."""
         mock_execute_with_retry.return_value = None
 
@@ -150,7 +160,9 @@ class TestBasicProfile:
 
     @patch("open_stocks_mcp.tools.robinhood_user_profile_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_get_basic_profile_partial_data(self, mock_execute_with_retry: Any) -> None:
+    async def test_get_basic_profile_partial_data(
+        self, mock_execute_with_retry: Any
+    ) -> None:
         """Test basic profile with partial data."""
         mock_execute_with_retry.return_value = {
             "first_name": "Jane",
@@ -173,7 +185,9 @@ class TestInvestmentProfile:
 
     @patch("open_stocks_mcp.tools.robinhood_user_profile_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_get_investment_profile_success(self, mock_execute_with_retry: Any) -> None:
+    async def test_get_investment_profile_success(
+        self, mock_execute_with_retry: Any
+    ) -> None:
         """Test successful investment profile retrieval."""
         mock_execute_with_retry.return_value = {
             "risk_tolerance": "moderate",
@@ -210,7 +224,9 @@ class TestInvestmentProfile:
 
     @patch("open_stocks_mcp.tools.robinhood_user_profile_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_get_investment_profile_no_data(self, mock_execute_with_retry: Any) -> None:
+    async def test_get_investment_profile_no_data(
+        self, mock_execute_with_retry: Any
+    ) -> None:
         """Test investment profile when no data is available."""
         mock_execute_with_retry.return_value = None
 
@@ -223,7 +239,9 @@ class TestInvestmentProfile:
 
     @patch("open_stocks_mcp.tools.robinhood_user_profile_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_get_investment_profile_conservative(self, mock_execute_with_retry: Any) -> None:
+    async def test_get_investment_profile_conservative(
+        self, mock_execute_with_retry: Any
+    ) -> None:
         """Test investment profile for conservative investor."""
         mock_execute_with_retry.return_value = {
             "risk_tolerance": "conservative",
@@ -256,7 +274,9 @@ class TestSecurityProfile:
 
     @patch("open_stocks_mcp.tools.robinhood_user_profile_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_get_security_profile_success(self, mock_execute_with_retry: Any) -> None:
+    async def test_get_security_profile_success(
+        self, mock_execute_with_retry: Any
+    ) -> None:
         """Test successful security profile retrieval."""
         mock_execute_with_retry.return_value = {
             "sms_enabled": True,
@@ -288,7 +308,9 @@ class TestSecurityProfile:
 
     @patch("open_stocks_mcp.tools.robinhood_user_profile_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_get_security_profile_no_data(self, mock_execute_with_retry: Any) -> None:
+    async def test_get_security_profile_no_data(
+        self, mock_execute_with_retry: Any
+    ) -> None:
         """Test security profile when no data is available."""
         mock_execute_with_retry.return_value = None
 
@@ -301,7 +323,9 @@ class TestSecurityProfile:
 
     @patch("open_stocks_mcp.tools.robinhood_user_profile_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_get_security_profile_minimal_security(self, mock_execute_with_retry: Any) -> None:
+    async def test_get_security_profile_minimal_security(
+        self, mock_execute_with_retry: Any
+    ) -> None:
         """Test security profile with minimal security features."""
         mock_execute_with_retry.return_value = {
             "sms_enabled": False,
@@ -375,7 +399,9 @@ class TestUserProfile:
 
     @patch("open_stocks_mcp.tools.robinhood_user_profile_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_get_user_profile_unverified_email(self, mock_execute_with_retry: Any) -> None:
+    async def test_get_user_profile_unverified_email(
+        self, mock_execute_with_retry: Any
+    ) -> None:
         """Test user profile with unverified email."""
         mock_execute_with_retry.return_value = {
             "username": "jane_smith",
@@ -406,11 +432,11 @@ class TestCompleteProfile:
     @pytest.mark.asyncio
     async def test_get_complete_profile_success(
         self,
-        mock_user_profile,
-        mock_basic_profile,
-        mock_account_profile,
-        mock_investment_profile,
-        mock_security_profile,
+        mock_user_profile: Any,
+        mock_basic_profile: Any,
+        mock_account_profile: Any,
+        mock_investment_profile: Any,
+        mock_security_profile: Any,
     ) -> None:
         """Test successful complete profile retrieval."""
         mock_user_profile.return_value = {
@@ -490,11 +516,11 @@ class TestCompleteProfile:
     @pytest.mark.asyncio
     async def test_get_complete_profile_partial_success(
         self,
-        mock_user_profile,
-        mock_basic_profile,
-        mock_account_profile,
-        mock_investment_profile,
-        mock_security_profile,
+        mock_user_profile: Any,
+        mock_basic_profile: Any,
+        mock_account_profile: Any,
+        mock_investment_profile: Any,
+        mock_security_profile: Any,
     ) -> None:
         """Test complete profile with some failures."""
         mock_user_profile.return_value = {
@@ -550,11 +576,11 @@ class TestCompleteProfile:
     @pytest.mark.asyncio
     async def test_get_complete_profile_exception(
         self,
-        mock_user_profile,
-        mock_basic_profile,
-        mock_account_profile,
-        mock_investment_profile,
-        mock_security_profile,
+        mock_user_profile: Any,
+        mock_basic_profile: Any,
+        mock_account_profile: Any,
+        mock_investment_profile: Any,
+        mock_security_profile: Any,
     ) -> None:
         """Test complete profile with exception."""
         mock_user_profile.return_value = {
@@ -581,11 +607,11 @@ class TestCompleteProfile:
     @pytest.mark.asyncio
     async def test_get_complete_profile_all_failures(
         self,
-        mock_user_profile,
-        mock_basic_profile,
-        mock_account_profile,
-        mock_investment_profile,
-        mock_security_profile,
+        mock_user_profile: Any,
+        mock_basic_profile: Any,
+        mock_account_profile: Any,
+        mock_investment_profile: Any,
+        mock_security_profile: Any,
     ) -> None:
         """Test complete profile when all profiles fail."""
         mock_user_profile.return_value = {

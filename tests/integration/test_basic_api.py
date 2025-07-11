@@ -1,9 +1,9 @@
 """Basic integration tests for core API functionality."""
 
 import os
+from typing import Any
 
 import pytest
-from typing import Any
 from dotenv import load_dotenv
 
 from open_stocks_mcp.tools.robinhood_account_tools import (
@@ -17,7 +17,7 @@ load_dotenv()
 
 
 @pytest.fixture(scope="module")
-def robinhood_session():
+def robinhood_session() -> Any:
     """Handle Robinhood login for integration tests."""
     username = os.getenv("ROBINHOOD_USERNAME")
     password = os.getenv("ROBINHOOD_PASSWORD")

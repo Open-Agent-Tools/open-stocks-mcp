@@ -1,5 +1,6 @@
 """Unit tests for market research and advanced data tools."""
 
+from typing import Any
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -23,7 +24,7 @@ class TestTopMoversSP500:
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.get_rate_limiter")
     @pytest.mark.asyncio
     async def test_get_top_movers_sp500_up_success(
-        self, mock_rate_limiter, mock_session_manager, mock_execute_with_retry
+        self, mock_rate_limiter: Any, mock_session_manager: Any, mock_execute_with_retry: Any
     ) -> None:
         """Test successful retrieval of S&P 500 up movers."""
         # Mock authentication - make it async
@@ -73,7 +74,7 @@ class TestTopMoversSP500:
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.get_rate_limiter")
     @pytest.mark.asyncio
     async def test_get_top_movers_sp500_down_success(
-        self, mock_rate_limiter, mock_session_manager, mock_execute_with_retry
+        self, mock_rate_limiter: Any, mock_session_manager: Any, mock_execute_with_retry: Any
     ) -> None:
         """Test successful retrieval of S&P 500 down movers."""
         # Mock authentication and rate limiting
@@ -118,7 +119,7 @@ class TestTopMoversSP500:
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.get_rate_limiter")
     @pytest.mark.asyncio
     async def test_get_top_movers_sp500_no_data(
-        self, mock_rate_limiter, mock_session_manager, mock_execute_with_retry
+        self, mock_rate_limiter: Any, mock_session_manager: Any, mock_execute_with_retry: Any
     ) -> None:
         """Test when no movers data is available."""
         # Mock authentication and rate limiting
@@ -139,7 +140,7 @@ class TestTopMoversSP500:
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.get_session_manager")
     @pytest.mark.asyncio
     async def test_get_top_movers_sp500_authentication_failed(
-        self, mock_session_manager
+        self, mock_session_manager: Any
     ) -> None:
         """Test authentication failure."""
         mock_session = mock_session_manager.return_value
@@ -160,7 +161,7 @@ class TestStockRatings:
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.get_rate_limiter")
     @pytest.mark.asyncio
     async def test_get_stock_ratings_success(
-        self, mock_rate_limiter, mock_session_manager, mock_execute_with_retry
+        self, mock_rate_limiter: Any, mock_session_manager: Any, mock_execute_with_retry: Any
     ) -> None:
         """Test successful stock ratings retrieval."""
         # Mock authentication and rate limiting
@@ -212,7 +213,7 @@ class TestStockRatings:
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.get_rate_limiter")
     @pytest.mark.asyncio
     async def test_get_stock_ratings_no_data(
-        self, mock_rate_limiter, mock_session_manager, mock_execute_with_retry
+        self, mock_rate_limiter: Any, mock_session_manager: Any, mock_execute_with_retry: Any
     ) -> None:
         """Test when no ratings data is available."""
         # Mock authentication and rate limiting
@@ -239,7 +240,7 @@ class TestStockEarnings:
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.get_rate_limiter")
     @pytest.mark.asyncio
     async def test_get_stock_earnings_success(
-        self, mock_rate_limiter, mock_session_manager, mock_execute_with_retry
+        self, mock_rate_limiter: Any, mock_session_manager: Any, mock_execute_with_retry: Any
     ) -> None:
         """Test successful stock earnings retrieval."""
         # Mock authentication and rate limiting
@@ -297,7 +298,7 @@ class TestStockEarnings:
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.get_rate_limiter")
     @pytest.mark.asyncio
     async def test_get_stock_earnings_no_data(
-        self, mock_rate_limiter, mock_session_manager, mock_execute_with_retry
+        self, mock_rate_limiter: Any, mock_session_manager: Any, mock_execute_with_retry: Any
     ) -> None:
         """Test when no earnings data is available."""
         # Mock authentication and rate limiting
@@ -324,7 +325,7 @@ class TestStockNews:
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.get_rate_limiter")
     @pytest.mark.asyncio
     async def test_get_stock_news_success(
-        self, mock_rate_limiter, mock_session_manager, mock_execute_with_retry
+        self, mock_rate_limiter: Any, mock_session_manager: Any, mock_execute_with_retry: Any
     ) -> None:
         """Test successful stock news retrieval."""
         # Mock authentication and rate limiting
@@ -384,7 +385,7 @@ class TestStockNews:
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.get_rate_limiter")
     @pytest.mark.asyncio
     async def test_get_stock_news_no_data(
-        self, mock_rate_limiter, mock_session_manager, mock_execute_with_retry
+        self, mock_rate_limiter: Any, mock_session_manager: Any, mock_execute_with_retry: Any
     ) -> None:
         """Test when no news data is available."""
         # Mock authentication and rate limiting
@@ -411,7 +412,7 @@ class TestStockSplits:
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.get_rate_limiter")
     @pytest.mark.asyncio
     async def test_get_stock_splits_success(
-        self, mock_rate_limiter, mock_session_manager, mock_execute_with_retry
+        self, mock_rate_limiter: Any, mock_session_manager: Any, mock_execute_with_retry: Any
     ) -> None:
         """Test successful stock splits retrieval."""
         # Mock authentication and rate limiting
@@ -463,7 +464,7 @@ class TestStockSplits:
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.get_rate_limiter")
     @pytest.mark.asyncio
     async def test_get_stock_splits_no_data(
-        self, mock_rate_limiter, mock_session_manager, mock_execute_with_retry
+        self, mock_rate_limiter: Any, mock_session_manager: Any, mock_execute_with_retry: Any
     ) -> None:
         """Test when no splits data is available."""
         # Mock authentication and rate limiting
@@ -490,7 +491,7 @@ class TestStockEvents:
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.get_rate_limiter")
     @pytest.mark.asyncio
     async def test_get_stock_events_success(
-        self, mock_rate_limiter, mock_session_manager, mock_execute_with_retry
+        self, mock_rate_limiter: Any, mock_session_manager: Any, mock_execute_with_retry: Any
     ) -> None:
         """Test successful stock events retrieval."""
         # Mock authentication and rate limiting
@@ -538,7 +539,7 @@ class TestStockEvents:
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.get_rate_limiter")
     @pytest.mark.asyncio
     async def test_get_stock_events_no_data(
-        self, mock_rate_limiter, mock_session_manager, mock_execute_with_retry
+        self, mock_rate_limiter: Any, mock_session_manager: Any, mock_execute_with_retry: Any
     ) -> None:
         """Test when no events data is available."""
         # Mock authentication and rate limiting
@@ -565,7 +566,7 @@ class TestStockLevel2Data:
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.get_rate_limiter")
     @pytest.mark.asyncio
     async def test_get_stock_level2_data_success(
-        self, mock_rate_limiter, mock_session_manager, mock_execute_with_retry
+        self, mock_rate_limiter: Any, mock_session_manager: Any, mock_execute_with_retry: Any
     ) -> None:
         """Test successful Level II data retrieval."""
         # Mock authentication and rate limiting
@@ -614,7 +615,7 @@ class TestStockLevel2Data:
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.get_rate_limiter")
     @pytest.mark.asyncio
     async def test_get_stock_level2_data_no_data(
-        self, mock_rate_limiter, mock_session_manager, mock_execute_with_retry
+        self, mock_rate_limiter: Any, mock_session_manager: Any, mock_execute_with_retry: Any
     ) -> None:
         """Test when no Level II data is available (Gold subscription required)."""
         # Mock authentication and rate limiting
@@ -638,7 +639,7 @@ class TestStockLevel2Data:
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.get_rate_limiter")
     @pytest.mark.asyncio
     async def test_get_stock_level2_data_api_error(
-        self, mock_rate_limiter, mock_session_manager, mock_execute_with_retry
+        self, mock_rate_limiter: Any, mock_session_manager: Any, mock_execute_with_retry: Any
     ) -> None:
         """Test API error handling for Level II data."""
         # Mock authentication and rate limiting

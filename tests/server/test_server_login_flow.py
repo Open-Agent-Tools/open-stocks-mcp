@@ -2,6 +2,7 @@
 
 import asyncio
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -10,7 +11,7 @@ class TestServerLoginFlow:
     """Test the complete server login flow with environment credentials."""
 
     @pytest.fixture(autouse=True)
-    def load_env_credentials(self):
+    def load_env_credentials(self) -> None:
         """Load real credentials from .env file for testing."""
         # Find project root by looking for pyproject.toml
         current_path = Path(__file__).resolve()
@@ -28,6 +29,6 @@ class TestServerLoginFlow:
         assert True
 
 
-def run_async(coro):
+def run_async(coro: Any) -> Any:
     """Helper to run async functions in pytest."""
     return asyncio.run(coro)

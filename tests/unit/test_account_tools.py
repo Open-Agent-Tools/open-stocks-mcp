@@ -1,9 +1,9 @@
 """Unit tests for account tools."""
 
+from typing import Any
 from unittest.mock import patch
 
 import pytest
-from typing import Any
 
 from open_stocks_mcp.tools.robinhood_account_tools import (
     get_account_details,
@@ -70,7 +70,9 @@ class TestAccountTools:
     @patch("open_stocks_mcp.tools.robinhood_account_tools.rh.get_symbol_by_url")
     @patch("open_stocks_mcp.tools.robinhood_account_tools.rh.get_open_stock_positions")
     @pytest.mark.asyncio
-    async def test_get_positions_success(self, mock_positions: Any, mock_symbol: Any) -> None:
+    async def test_get_positions_success(
+        self, mock_positions: Any, mock_symbol: Any
+    ) -> None:
         """Test successful positions retrieval."""
         mock_positions.return_value = [
             {
@@ -254,7 +256,9 @@ class TestAccountTools:
     @patch("open_stocks_mcp.tools.robinhood_order_tools.rh.get_symbol_by_url")
     @patch("open_stocks_mcp.tools.robinhood_order_tools.rh.get_all_stock_orders")
     @pytest.mark.asyncio
-    async def test_get_stock_orders_success(self, mock_orders: Any, mock_symbol: Any) -> None:
+    async def test_get_stock_orders_success(
+        self, mock_orders: Any, mock_symbol: Any
+    ) -> None:
         """Test successful stock orders retrieval."""
         mock_orders.return_value = [
             {

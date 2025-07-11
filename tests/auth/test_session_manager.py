@@ -2,9 +2,9 @@
 
 import asyncio
 from datetime import datetime, timedelta
+from typing import Any
 
 import pytest
-from typing import Any
 
 from open_stocks_mcp.tools.session_manager import SessionManager, get_session_manager
 
@@ -13,7 +13,7 @@ class TestSessionManager:
     """Test SessionManager class."""
 
     @pytest.fixture
-    def session_manager(self):
+    def session_manager(self) -> Any:
         """Create a fresh SessionManager instance."""
         return SessionManager()
 
@@ -56,7 +56,9 @@ class TestSessionManager:
         assert isinstance(session_manager.last_successful_call, datetime)
 
     @pytest.mark.asyncio
-    async def test_ensure_authenticated_already_valid(self, session_manager: Any) -> None:
+    async def test_ensure_authenticated_already_valid(
+        self, session_manager: Any
+    ) -> None:
         """Test ensure_authenticated when session is already valid."""
         session_manager._is_authenticated = True
         session_manager.login_time = datetime.now()
@@ -65,7 +67,9 @@ class TestSessionManager:
         assert result is True
 
     @pytest.mark.asyncio
-    async def test_ensure_authenticated_needs_auth(self, session_manager, mocker: Any) -> None:
+    async def test_ensure_authenticated_needs_auth(
+        self, session_manager: Any, mocker: Any
+    ) -> None:
         """Test ensure_authenticated when authentication is needed."""
         session_manager.set_credentials("testuser", "testpass")
 
@@ -82,13 +86,15 @@ class TestSessionManager:
         assert session_manager.login_time is not None
 
     @pytest.mark.asyncio
-    async def test_ensure_authenticated_no_credentials(self, session_manager: Any) -> None:
+    async def test_ensure_authenticated_no_credentials(
+        self, session_manager: Any
+    ) -> None:
         """Test ensure_authenticated without credentials."""
         result = await session_manager.ensure_authenticated()
         assert result is False
 
     @pytest.mark.asyncio
-    async def test_authenticate_success(self, session_manager, mocker: Any) -> None:
+    async def test_authenticate_success(self, session_manager: Any, mocker: Any) -> None:
         """Test successful authentication."""
         session_manager.set_credentials("testuser", "testpass")
 
@@ -103,7 +109,7 @@ class TestSessionManager:
         assert session_manager._is_authenticated is True
 
     @pytest.mark.asyncio
-    async def test_authenticate_failure(self, session_manager, mocker: Any) -> None:
+    async def test_authenticate_failure(self, session_manager: Any, mocker: Any) -> None:
         """Test authentication failure."""
         session_manager.set_credentials("testuser", "testpass")
 
@@ -116,7 +122,7 @@ class TestSessionManager:
         assert not session_manager._is_authenticated
 
     @pytest.mark.asyncio
-    async def test_authenticate_no_profile(self, session_manager, mocker: Any) -> None:
+    async def test_authenticate_no_profile(self, session_manager: Any, mocker: Any) -> None:
         """Test authentication when profile retrieval fails."""
         session_manager.set_credentials("testuser", "testpass")
 
@@ -127,7 +133,7 @@ class TestSessionManager:
         assert result is False
 
     @pytest.mark.asyncio
-    async def test_refresh_session(self, session_manager, mocker: Any) -> None:
+    async def test_refresh_session(self, session_manager: Any, mocker: Any) -> None:
         """Test refreshing session."""
         session_manager.set_credentials("testuser", "testpass")
         session_manager._is_authenticated = True
@@ -179,7 +185,7 @@ class TestSessionManager:
         assert info["time_until_expiry"] == "Expired"
 
     @pytest.mark.asyncio
-    async def test_logout(self, session_manager, mocker: Any) -> None:
+    async def test_logout(self, session_manager: Any, mocker: Any) -> None:
         """Test logout functionality."""
         session_manager._is_authenticated = True
         session_manager.login_time = datetime.now()
@@ -193,7 +199,7 @@ class TestSessionManager:
         assert session_manager.last_successful_call is None
 
     @pytest.mark.asyncio
-    async def test_logout_with_error(self, session_manager, mocker: Any) -> None:
+    async def test_logout_with_error(self, session_manager: Any, mocker: Any) -> None:
         """Test logout with error still clears session."""
         session_manager._is_authenticated = True
         session_manager.login_time = datetime.now()
@@ -226,7 +232,7 @@ class TestSessionManagerGlobal:
         manager.set_credentials("testuser", "testpass")
 
         # Mock slow authentication
-        async def slow_auth(*args, **kwargs):
+        async def slow_auth(*args: Any, **kwargs: Any) -> Any:
             await asyncio.sleep(0.1)
             return {"username": "testuser"}
 

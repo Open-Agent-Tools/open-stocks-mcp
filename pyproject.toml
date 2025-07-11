@@ -107,9 +107,14 @@ python_version = "3.11"
 strict = true
 warn_return_any = true
 warn_unused_ignores = true
+exclude = ["examples/"]
 
 [[tool.mypy.overrides]]
 module = "robin_stocks.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "google.adk.*"
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

@@ -1,9 +1,9 @@
 """Unit tests for advanced portfolio analytics tools."""
 
+from typing import Any
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from typing import Any
 
 from open_stocks_mcp.tools.robinhood_advanced_portfolio_tools import (
     get_build_holdings,
@@ -98,7 +98,9 @@ class TestBuildUserProfile:
         "open_stocks_mcp.tools.robinhood_advanced_portfolio_tools.rh.build_user_profile"
     )
     @pytest.mark.asyncio
-    async def test_build_user_profile_success(self, mock_build_user_profile: Any) -> None:
+    async def test_build_user_profile_success(
+        self, mock_build_user_profile: Any
+    ) -> None:
         """Test successful user profile build."""
         mock_build_user_profile.return_value = {
             "equity": "50000.00",
@@ -124,7 +126,9 @@ class TestBuildUserProfile:
         "open_stocks_mcp.tools.robinhood_advanced_portfolio_tools.rh.build_user_profile"
     )
     @pytest.mark.asyncio
-    async def test_build_user_profile_no_data(self, mock_build_user_profile: Any) -> None:
+    async def test_build_user_profile_no_data(
+        self, mock_build_user_profile: Any
+    ) -> None:
         """Test build user profile when no data is available."""
         mock_build_user_profile.return_value = None
 
@@ -138,7 +142,9 @@ class TestBuildUserProfile:
         "open_stocks_mcp.tools.robinhood_advanced_portfolio_tools.rh.build_user_profile"
     )
     @pytest.mark.asyncio
-    async def test_build_user_profile_partial_data(self, mock_build_user_profile: Any) -> None:
+    async def test_build_user_profile_partial_data(
+        self, mock_build_user_profile: Any
+    ) -> None:
         """Test build user profile with partial data."""
         mock_build_user_profile.return_value = {
             "equity": "25000.00",
@@ -249,7 +255,7 @@ class TestInterestPayments:
     )
     @pytest.mark.asyncio
     async def test_interest_payments_success(
-        self, mock_interest_payments, mock_session_manager, mock_rate_limiter
+        self, mock_interest_payments: Any, mock_session_manager: Any, mock_rate_limiter: Any
     ) -> None:
         """Test successful interest payments retrieval."""
         mock_interest_payments.return_value = [
@@ -300,7 +306,7 @@ class TestInterestPayments:
     )
     @pytest.mark.asyncio
     async def test_interest_payments_no_data(
-        self, mock_interest_payments, mock_session_manager, mock_rate_limiter
+        self, mock_interest_payments: Any, mock_session_manager: Any, mock_rate_limiter: Any
     ) -> None:
         """Test interest payments when no data is available."""
         mock_interest_payments.return_value = None
@@ -338,10 +344,10 @@ class TestStockLoanPayments:
     @pytest.mark.asyncio
     async def test_stock_loan_payments_success(
         self,
-        mock_loan_payments,
-        mock_instrument,
-        mock_session_manager,
-        mock_rate_limiter,
+        mock_loan_payments: Any,
+        mock_instrument: Any,
+        mock_session_manager: Any,
+        mock_rate_limiter: Any,
     ) -> None:
         """Test successful stock loan payments retrieval."""
         mock_loan_payments.return_value = [
@@ -401,7 +407,7 @@ class TestStockLoanPayments:
     )
     @pytest.mark.asyncio
     async def test_stock_loan_payments_no_data(
-        self, mock_loan_payments, mock_session_manager, mock_rate_limiter
+        self, mock_loan_payments: Any, mock_session_manager: Any, mock_rate_limiter: Any
     ) -> None:
         """Test stock loan payments when no data is available."""
         mock_loan_payments.return_value = None
@@ -431,7 +437,9 @@ class TestServerMetrics:
 
     @patch("open_stocks_mcp.server.app.get_metrics_collector")
     @pytest.mark.asyncio
-    async def test_metrics_summary_success(self, mock_get_metrics_collector: Any) -> None:
+    async def test_metrics_summary_success(
+        self, mock_get_metrics_collector: Any
+    ) -> None:
         """Test successful metrics summary retrieval."""
         # We need to import the function from the server app
         from open_stocks_mcp.server.app import metrics_summary

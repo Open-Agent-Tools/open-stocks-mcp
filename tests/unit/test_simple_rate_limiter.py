@@ -1,9 +1,9 @@
 """Simple tests for rate limiter without time delays."""
 
+from typing import Any
 from unittest.mock import patch
 
 import pytest
-from typing import Any
 
 from open_stocks_mcp.tools.rate_limiter import RateLimiter, get_rate_limiter
 

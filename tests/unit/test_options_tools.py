@@ -1,9 +1,9 @@
 """Unit tests for options trading tools."""
 
+from typing import Any
 from unittest.mock import patch
 
 import pytest
-from typing import Any
 
 from open_stocks_mcp.tools.robinhood_options_tools import (
     find_tradable_options,
@@ -330,7 +330,9 @@ class TestOptionPositions:
         "open_stocks_mcp.tools.robinhood_options_tools.rh.options.get_all_option_positions"
     )
     @pytest.mark.asyncio
-    async def test_get_all_option_positions_success(self, mock_all_positions: Any) -> None:
+    async def test_get_all_option_positions_success(
+        self, mock_all_positions: Any
+    ) -> None:
         """Test successful all option positions retrieval."""
         mock_all_positions.return_value = [
             {
@@ -370,7 +372,9 @@ class TestOptionPositions:
         "open_stocks_mcp.tools.robinhood_options_tools.rh.options.get_open_option_positions"
     )
     @pytest.mark.asyncio
-    async def test_get_open_option_positions_success(self, mock_open_positions: Any) -> None:
+    async def test_get_open_option_positions_success(
+        self, mock_open_positions: Any
+    ) -> None:
         """Test successful open option positions retrieval."""
         mock_open_positions.return_value = [
             {
@@ -398,7 +402,9 @@ class TestOptionPositions:
         "open_stocks_mcp.tools.robinhood_options_tools.rh.options.get_open_option_positions"
     )
     @pytest.mark.asyncio
-    async def test_get_open_option_positions_none(self, mock_open_positions: Any) -> None:
+    async def test_get_open_option_positions_none(
+        self, mock_open_positions: Any
+    ) -> None:
         """Test open option positions when none exist."""
         mock_open_positions.return_value = None
 
