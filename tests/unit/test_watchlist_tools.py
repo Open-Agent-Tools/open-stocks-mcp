@@ -341,6 +341,7 @@ class TestGetWatchlistPerformance:
     """Test get watchlist performance functionality."""
 
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.get_watchlist_by_name")
+    @pytest.mark.slow
     @pytest.mark.asyncio
     async def test_get_watchlist_performance_success(
         self, mock_get_watchlist: Any
@@ -423,6 +424,7 @@ class TestGetWatchlistPerformance:
         assert result["result"]["status"] == "no_data"
 
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.get_watchlist_by_name")
+    @pytest.mark.slow
     @pytest.mark.asyncio
     async def test_get_watchlist_performance_mixed_results(
         self, mock_get_watchlist: Any

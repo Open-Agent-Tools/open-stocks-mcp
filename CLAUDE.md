@@ -15,9 +15,10 @@ Complete code quality workflow:
 ### `test`
 Run test suite:
 1. `uv run pytest` - All tests (skips exception tests by default)
-2. `uv run pytest -m "not slow"` - Fast tests only
+2. `uv run pytest -m "not slow and not exception_test"` - Fast tests only (recommended for development)
 3. `uv run pytest -m integration` - Integration tests (needs credentials)
 4. `uv run pytest -m exception_test` - Exception/error state tests only
+5. `uv run pytest -m slow` - Slow performance tests only
 
 ### `adk-eval`
 Run ADK agent evaluation (from project root):
@@ -62,6 +63,8 @@ pytest tests/unit/               # Unit tests (fast)
 pytest tests/integration/ -m integration  # Integration (needs auth)
 pytest tests/evals/ -m agent_evaluation   # ADK evaluation
 pytest -m exception_test         # Run only exception/error state tests
+pytest -m slow                   # Run only slow performance tests
+pytest -m "not slow and not exception_test"  # Fast tests only (recommended for development)
 pytest -m "not exception_test"   # Run all tests except exception tests
 ```
 
@@ -124,7 +127,7 @@ tests/
 ```
 
 **Test Markers:**
-- `slow` - Long-running tests
+- `slow` - Long-running performance tests (watchlist operations, multiple API calls)
 - `integration` - Requires credentials
 - `agent_evaluation` - ADK evaluation tests
 - `exception_test` - Error state and exception handling tests (skipped by default)
