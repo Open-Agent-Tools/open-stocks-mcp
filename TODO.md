@@ -10,8 +10,8 @@
 
 ### Current Test Coverage Status
 - **Total MCP Tools:** 60
-- **Tools with Tests:** 41 (68%) - **+5 Priority 4 watchlist tools completed!**
-- **Tools without Tests:** 19 (32%)
+- **Tools with Tests:** 48 (80%) - **+7 Priority 5 market research tools completed!**
+- **Tools without Tests:** 12 (20%)
 
 ### Priority 1: Core Trading & Portfolio Tools ✅ COMPLETED
 - [x] `stock_price()` - Get current stock price and basic metrics
@@ -52,14 +52,14 @@
 - [x] `remove_from_watchlist()` - Remove symbols from a watchlist
 - [x] `watchlist_performance()` - Get performance metrics for a watchlist
 
-### Priority 5: Advanced Market Data & Research
-- [ ] `top_movers_sp500()` - Get top S&P 500 movers
-- [ ] `stock_ratings()` - Get analyst ratings for a stock
-- [ ] `stock_earnings()` - Get earnings reports for a stock
-- [ ] `stock_news()` - Get news stories for a stock
-- [ ] `stock_splits()` - Get stock split history for a stock
-- [ ] `stock_events()` - Get corporate events for a stock
-- [ ] `stock_level2_data()` - Get Level II market data (Gold subscription required)
+### Priority 5: Advanced Market Data & Research ✅ COMPLETED
+- [x] `top_movers_sp500()` - Get top S&P 500 movers
+- [x] `stock_ratings()` - Get analyst ratings for a stock
+- [x] `stock_earnings()` - Get earnings reports for a stock
+- [x] `stock_news()` - Get news stories for a stock
+- [x] `stock_splits()` - Get stock split history for a stock
+- [x] `stock_events()` - Get corporate events for a stock
+- [x] `stock_level2_data()` - Get Level II market data (Gold subscription required)
 
 ### Priority 6: Account Features & Notifications
 - [ ] `notifications()` - Get account notifications and alerts
@@ -93,6 +93,7 @@
 - [x] `test_options_tools.py` - ✅ COMPLETED: Options trading tools (17 tests)
 - [x] `test_analytics_tools.py` - ✅ COMPLETED: Advanced portfolio analytics tools (17 tests)
 - [x] `test_watchlist_tools.py` - ✅ COMPLETED: Watchlist management tools (25 tests)
+- [x] `test_market_research_tools.py` - ✅ COMPLETED: Advanced market data & research tools (24 tests)
 - [ ] `test_profile_tools.py` - User profile tools
 - [ ] `test_notification_tools.py` - Account notifications tools
 
