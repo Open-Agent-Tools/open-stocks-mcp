@@ -88,9 +88,7 @@ class TestStockMarketTools:
                 "average_volume": "50000000",
             }
         ]
-        mock_instruments.return_value = [
-            {"simple_name": "Apple", "tradeable": True}
-        ]
+        mock_instruments.return_value = [{"simple_name": "Apple", "tradeable": True}]
         mock_name.return_value = "Apple Inc."
 
         result = await get_stock_info("AAPL")
@@ -280,16 +278,16 @@ class TestStockMarketTools:
         """Test successful tools listing."""
         # Create a mock FastMCP instance
         mock_mcp = AsyncMock()
-        
+
         # Create mock tool objects
         mock_tool1 = MagicMock()
         mock_tool1.name = "stock_price"
         mock_tool1.description = "Get current stock price and basic metrics"
-        
+
         mock_tool2 = MagicMock()
         mock_tool2.name = "portfolio"
         mock_tool2.description = "Provides a high-level overview of the portfolio"
-        
+
         mock_mcp.list_tools.return_value = [mock_tool1, mock_tool2]
 
         result = await list_available_tools(mock_mcp)
@@ -298,7 +296,10 @@ class TestStockMarketTools:
         assert result["result"]["count"] == 2
         assert len(result["result"]["tools"]) == 2
         assert result["result"]["tools"][0]["name"] == "stock_price"
-        assert result["result"]["tools"][0]["description"] == "Get current stock price and basic metrics"
+        assert (
+            result["result"]["tools"][0]["description"]
+            == "Get current stock price and basic metrics"
+        )
         assert result["result"]["tools"][1]["name"] == "portfolio"
 
 
@@ -311,7 +312,7 @@ class TestServerTools:
         """Test successful session status retrieval."""
         # We need to import these from the server app where they're defined
         from open_stocks_mcp.server.app import session_status
-        
+
         mock_session_manager = MagicMock()
         mock_session_manager.get_session_info.return_value = {
             "is_authenticated": True,
@@ -335,7 +336,7 @@ class TestServerTools:
     async def test_rate_limit_status_success(self, mock_get_rate_limiter):
         """Test successful rate limit status retrieval."""
         from open_stocks_mcp.server.app import rate_limit_status
-        
+
         mock_rate_limiter = MagicMock()
         mock_rate_limiter.get_stats.return_value = {
             "calls_last_minute": 5,
@@ -361,7 +362,7 @@ class TestServerTools:
     async def test_metrics_summary_success(self, mock_get_metrics_collector):
         """Test successful metrics summary retrieval."""
         from open_stocks_mcp.server.app import metrics_summary
-        
+
         mock_metrics_collector = AsyncMock()
         mock_metrics_collector.get_metrics.return_value = {
             "total_calls": 500,
@@ -387,7 +388,7 @@ class TestServerTools:
     async def test_health_check_success(self, mock_get_metrics_collector):
         """Test successful health check."""
         from open_stocks_mcp.server.app import health_check
-        
+
         mock_metrics_collector = AsyncMock()
         mock_metrics_collector.get_health_status.return_value = {
             "health_status": "healthy",  # Different key to avoid status override
@@ -414,7 +415,7 @@ class TestServerTools:
     async def test_health_check_degraded(self, mock_get_metrics_collector):
         """Test health check with degraded status."""
         from open_stocks_mcp.server.app import health_check
-        
+
         mock_metrics_collector = AsyncMock()
         mock_metrics_collector.get_health_status.return_value = {
             "health_status": "degraded",  # Different key to avoid status override

@@ -60,9 +60,7 @@ async def get_options_chains(symbol: str) -> dict[str, Any]:
         return {"result": {"error": "Symbol is required", "status": "error"}}
 
     # Get option chains data
-    chains_data = await execute_with_retry(
-        func=rh.options.get_chains, func_name="get_chains", max_retries=3, symbol=symbol
-    )
+    chains_data = await execute_with_retry(rh.options.get_chains, symbol, max_retries=3)
 
     if not chains_data:
         logger.warning(f"No option chains found for {symbol}")
@@ -149,12 +147,11 @@ async def find_tradable_options(
 
     # Find tradable options
     options_data = await execute_with_retry(
-        func=rh.options.find_tradable_options,
-        func_name="find_tradable_options",
+        rh.options.find_tradable_options,
+        symbol,
+        expiration_date,
+        option_type,
         max_retries=3,
-        symbol=symbol,
-        expirationDate=expiration_date,
-        optionType=option_type,
     )
 
     if not options_data:
@@ -234,10 +231,9 @@ async def get_option_market_data(option_id: str) -> dict[str, Any]:
 
     # Get option market data by ID
     market_data = await execute_with_retry(
-        func=rh.options.get_option_market_data_by_id,
-        func_name="get_option_market_data_by_id",
+        rh.options.get_option_market_data_by_id,
+        option_id,
         max_retries=3,
-        id=option_id,
     )
 
     if not market_data:
@@ -338,15 +334,14 @@ async def get_option_historicals(
 
     # Get historical option data
     historical_data = await execute_with_retry(
-        func=rh.options.get_option_historicals,
-        func_name="get_option_historicals",
+        rh.options.get_option_historicals,
+        symbol,
+        expiration_date,
+        strike_price,
+        option_type,
+        interval,
+        span,
         max_retries=3,
-        symbol=symbol,
-        expirationDate=expiration_date,
-        strikePrice=strike_price,
-        optionType=option_type,
-        interval=interval,
-        span=span,
     )
 
     if not historical_data:
@@ -428,8 +423,7 @@ async def get_aggregate_positions() -> dict[str, Any]:
 
     # Get aggregated positions
     positions_data = await execute_with_retry(
-        func=rh.options.get_aggregate_positions,
-        func_name="get_aggregate_positions",
+        rh.options.get_aggregate_positions,
         max_retries=3,
     )
 
@@ -505,8 +499,7 @@ async def get_all_option_positions() -> dict[str, Any]:
 
     # Get all option positions
     positions_data = await execute_with_retry(
-        func=rh.options.get_all_option_positions,
-        func_name="get_all_option_positions",
+        rh.options.get_all_option_positions,
         max_retries=3,
     )
 
@@ -591,8 +584,7 @@ async def get_open_option_positions() -> dict[str, Any]:
 
     # Get open option positions
     positions_data = await execute_with_retry(
-        func=rh.options.get_open_option_positions,
-        func_name="get_open_option_positions",
+        rh.options.get_open_option_positions,
         max_retries=3,
     )
 
