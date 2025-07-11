@@ -2,12 +2,12 @@ version: '3.8'
 
 services:
   open-stocks-mcp:
-    # Use the base image we built and verified
-    image: open-stocks-mcp-base:latest
-    # Build the image if it doesn't exist (optional)
+    # Build the image from the Dockerfile with v0.4.0
     build:
       context: .
       dockerfile: Dockerfile
+    # Tag the built image for easier identification
+    image: open-stocks-mcp:0.4.0
     # Name the container for easier identification
     container_name: open-stocks-mcp-server
     # Restart the container automatically if it stops

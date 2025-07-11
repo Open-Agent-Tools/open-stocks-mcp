@@ -20,14 +20,14 @@ This setup uses a production-ready approach:
 
 ### 1. Choose Your Setup
 
-**Production (Stable):**
-Uses the published PyPI package (v0.3.0 - STDIO transport only):
+**Production (Recommended):**
+Uses the published PyPI package (v0.4.0 with HTTP transport support):
 ```bash
 docker-compose up
 ```
 
-**Development (Latest):**
-Builds from source with HTTP transport support (v0.4.0+):
+**Development (Latest Features):**
+Builds from source with the latest development features:
 ```bash
 docker-compose -f docker-compose.dev.yml up
 ```
@@ -100,7 +100,7 @@ INFO -   - Health Check: http://0.0.0.0:3000/health
 
 Run the server using Docker Compose:
 
-**Production (Stable):**
+**Production (Recommended - v0.4.0 with HTTP transport):**
 ```bash
 # Foreground (see logs)
 docker-compose up
@@ -109,7 +109,7 @@ docker-compose up
 docker-compose up -d
 ```
 
-**Development (Latest with HTTP transport):**
+**Development (Latest from source):**
 ```bash
 # Foreground (see logs)
 docker-compose -f docker-compose.dev.yml up
@@ -157,6 +157,55 @@ curl -X POST http://localhost:3000/mcp \
 # SSE endpoint for real-time events
 curl -N -H "Accept: text/event-stream" http://localhost:3000/sse
 ```
+
+### Automated Validation
+
+**Quick Setup Validation:**
+```bash
+# Run the comprehensive validation script
+./validate-docker-setup.sh
+```
+
+This script automatically:
+- ✅ Checks all prerequisites (Docker, Docker Compose, environment file)
+- ✅ Builds the Docker image
+- ✅ Starts a test container
+- ✅ Validates all HTTP endpoints
+- ✅ Tests security headers and health checks
+- ✅ Provides detailed feedback and troubleshooting
+
+### Manual HTTP Transport Validation
+
+✅ **All HTTP endpoints tested and working correctly:**
+
+```bash
+# Health check endpoint
+curl http://localhost:3000/health
+# Returns: {"status":"healthy","version":"0.4.0","transport":"http"}
+
+# Server information
+curl http://localhost:3000/
+# Returns: Server details with available endpoints
+
+# Detailed status
+curl http://localhost:3000/status
+# Returns: Server status, session info, rate limiting, metrics
+
+# Available tools list
+curl http://localhost:3000/tools
+# Returns: Complete list of 61 available MCP tools
+```
+
+✅ **Security features validated:**
+- Security headers present (X-Content-Type-Options, X-Frame-Options, X-XSS-Protection)
+- CORS middleware functioning
+- Origin validation working
+- Non-root user execution confirmed
+
+✅ **Container health checks validated:**
+- Docker health checks passing
+- Automatic service recovery working
+- Resource limits respected
 
 ### Available Tools
 
@@ -233,8 +282,24 @@ The Docker Compose configuration includes resource limits:
 
 Adjust these in `docker-compose.yml` based on your needs.
 
+## Version Information
+
+**Current Release: v0.4.0**
+- ✅ HTTP transport with Server-Sent Events (SSE)
+- ✅ FastAPI-based server with comprehensive middleware
+- ✅ Security headers and CORS support
+- ✅ Health check and monitoring endpoints
+- ✅ Timeout handling and graceful degradation
+- ✅ Full backward compatibility with STDIO transport
+
+**Container Image:**
+- **Production**: Uses PyPI package `open-stocks-mcp==0.4.0`
+- **Development**: Built from source with latest features
+- **Base**: Python 3.11-slim for security and performance
+
 ## Security Features
 
+- **HTTP Transport Security**: Origin validation, security headers, CORS middleware
 - **Non-root user**: Container runs as user ID 1001 for security
 - **Health checks**: Automatic container health monitoring
 - **Environment isolation**: Credentials passed via environment variables
