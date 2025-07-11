@@ -132,6 +132,7 @@ markers = [
     "login_flow: marks tests for the complete login flow with real credentials",
     "asyncio: marks tests as asyncio tests",
     "agent_evaluation: marks tests as ADK agent evaluation tests",
+    "exception_test: marks tests that handle exceptions and error states (skipped by default for faster test runs)",
 ]
 
 [tool.uv]

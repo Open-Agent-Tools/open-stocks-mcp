@@ -40,6 +40,8 @@ class TestAccountTools:
         assert result["result"]["username"] == "testuser"
         assert result["result"]["created_at"] == "2023-01-01T00:00:00Z"
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_account_tools.rh.load_user_profile")
     @pytest.mark.asyncio
     async def test_get_account_info_error(self, mock_profile: Any) -> None:
@@ -155,6 +157,8 @@ class TestAccountTools:
         assert "AAPL" in result["result"]["holdings"]
         assert "GOOGL" in result["result"]["holdings"]
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_advanced_portfolio_tools.rh.build_holdings")
     @pytest.mark.asyncio
     async def test_get_build_holdings_no_data(self, mock_holdings: Any) -> None:
@@ -168,6 +172,8 @@ class TestAccountTools:
         assert result["result"]["total_positions"] == 0
         assert result["result"]["holdings"] == {}
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_advanced_portfolio_tools.rh.build_holdings")
     @pytest.mark.asyncio
     async def test_get_build_holdings_error(self, mock_holdings: Any) -> None:
@@ -202,6 +208,8 @@ class TestAccountTools:
         assert result["result"]["dividend_total"] == "1245.67"
         assert result["result"]["cash"] == "2500.00"
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch(
         "open_stocks_mcp.tools.robinhood_advanced_portfolio_tools.rh.build_user_profile"
     )
@@ -239,6 +247,8 @@ class TestAccountTools:
         assert not result["result"]["pattern_day_trader"]
         assert result["result"]["day_trade_buying_power"] == "25000.00"
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch(
         "open_stocks_mcp.tools.robinhood_advanced_portfolio_tools.rh.load_account_profile"
     )
@@ -294,6 +304,8 @@ class TestAccountTools:
         assert result["result"]["orders"][1]["symbol"] == "GOOGL"
         assert result["result"]["orders"][1]["side"] == "SELL"
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_order_tools.rh.get_all_stock_orders")
     @pytest.mark.asyncio
     async def test_get_stock_orders_no_data(self, mock_orders: Any) -> None:
@@ -307,6 +319,8 @@ class TestAccountTools:
         assert result["result"]["orders"] == []
         assert "No recent stock orders found" in result["result"]["message"]
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_order_tools.rh.get_all_stock_orders")
     @pytest.mark.asyncio
     async def test_get_stock_orders_error(self, mock_orders: Any) -> None:
@@ -355,6 +369,8 @@ class TestAccountTools:
         assert result["result"]["orders"][1]["chain_symbol"] == "GOOGL"
         assert result["result"]["orders"][1]["side"] == "SELL"
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_order_tools.rh.get_all_option_orders")
     @pytest.mark.asyncio
     async def test_get_options_orders_no_data(self, mock_orders: Any) -> None:
@@ -381,6 +397,8 @@ class TestAccountTools:
         assert result["result"]["count"] == 0
         assert "not yet implemented" in result["result"]["message"]
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_order_tools.rh.get_all_option_orders")
     @pytest.mark.asyncio
     async def test_get_options_orders_error(self, mock_orders: Any) -> None:

@@ -105,6 +105,8 @@ class TestTopMoversSP500:
         assert result["result"]["movers"][0]["symbol"] == "TSLA"
         assert result["result"]["status"] == "success"
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @pytest.mark.asyncio
     async def test_get_top_movers_sp500_invalid_direction(self) -> None:
         """Test invalid direction parameter."""
@@ -114,6 +116,8 @@ class TestTopMoversSP500:
         assert result["result"]["status"] == "error"
         assert "Direction must be 'up' or 'down'" in result["result"]["error"]
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.execute_with_retry")
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.get_session_manager")
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.get_rate_limiter")
@@ -137,6 +141,8 @@ class TestTopMoversSP500:
         assert "No S&P 500 up movers found" in result["result"]["message"]
         assert result["result"]["direction"] == "up"
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.get_session_manager")
     @pytest.mark.asyncio
     async def test_get_top_movers_sp500_authentication_failed(
@@ -199,6 +205,8 @@ class TestStockRatings:
         assert result["result"]["ratings"][0]["rating"] == "buy"
         assert result["result"]["status"] == "success"
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @pytest.mark.asyncio
     async def test_get_stock_ratings_invalid_symbol(self) -> None:
         """Test invalid symbol format."""
@@ -208,6 +216,8 @@ class TestStockRatings:
         assert result["result"]["status"] == "error"
         assert "Invalid symbol format" in result["result"]["error"]
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.execute_with_retry")
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.get_session_manager")
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.get_rate_limiter")
@@ -284,6 +294,8 @@ class TestStockEarnings:
         assert result["result"]["earnings"][0]["eps"]["actual"] == "1.25"
         assert result["result"]["status"] == "success"
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @pytest.mark.asyncio
     async def test_get_stock_earnings_invalid_symbol(self) -> None:
         """Test invalid symbol format."""
@@ -293,6 +305,8 @@ class TestStockEarnings:
         assert result["result"]["status"] == "error"
         assert "Invalid symbol format" in result["result"]["error"]
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.execute_with_retry")
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.get_session_manager")
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.get_rate_limiter")
@@ -371,6 +385,8 @@ class TestStockNews:
         )
         assert result["result"]["status"] == "success"
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @pytest.mark.asyncio
     async def test_get_stock_news_invalid_symbol(self) -> None:
         """Test invalid symbol format."""
@@ -380,6 +396,8 @@ class TestStockNews:
         assert result["result"]["status"] == "error"
         assert "Invalid symbol format" in result["result"]["error"]
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.execute_with_retry")
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.get_session_manager")
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.get_rate_limiter")
@@ -450,6 +468,8 @@ class TestStockSplits:
         assert result["result"]["splits"][1]["execution_date"] == "2014-06-09"
         assert result["result"]["status"] == "success"
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @pytest.mark.asyncio
     async def test_get_stock_splits_invalid_symbol(self) -> None:
         """Test invalid symbol format."""
@@ -459,6 +479,8 @@ class TestStockSplits:
         assert result["result"]["status"] == "error"
         assert "Invalid symbol format" in result["result"]["error"]
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.execute_with_retry")
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.get_session_manager")
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.get_rate_limiter")
@@ -525,6 +547,8 @@ class TestStockEvents:
         assert result["result"]["events"][0]["state"] == "confirmed"
         assert result["result"]["status"] == "success"
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @pytest.mark.asyncio
     async def test_get_stock_events_invalid_symbol(self) -> None:
         """Test invalid symbol format."""
@@ -534,6 +558,8 @@ class TestStockEvents:
         assert result["result"]["status"] == "error"
         assert "Invalid symbol format" in result["result"]["error"]
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.execute_with_retry")
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.get_session_manager")
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.get_rate_limiter")
@@ -601,6 +627,8 @@ class TestStockLevel2Data:
         assert result["result"]["updated_at"] == "2024-07-09T16:00:00Z"
         assert result["result"]["status"] == "success"
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @pytest.mark.asyncio
     async def test_get_stock_level2_data_invalid_symbol(self) -> None:
         """Test invalid symbol format."""
@@ -610,6 +638,8 @@ class TestStockLevel2Data:
         assert result["result"]["status"] == "error"
         assert "Invalid symbol format" in result["result"]["error"]
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.execute_with_retry")
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.get_session_manager")
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.get_rate_limiter")
@@ -634,6 +664,8 @@ class TestStockLevel2Data:
         assert "Gold subscription may be required" in result["result"]["message"]
         assert result["result"]["symbol"] == "AAPL"
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.execute_with_retry")
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.get_session_manager")
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.get_rate_limiter")

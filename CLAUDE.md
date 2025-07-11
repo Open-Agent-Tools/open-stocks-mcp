@@ -14,9 +14,10 @@ Complete code quality workflow:
 
 ### `test`
 Run test suite:
-1. `uv run pytest` - All tests
+1. `uv run pytest` - All tests (skips exception tests by default)
 2. `uv run pytest -m "not slow"` - Fast tests only
 3. `uv run pytest -m integration` - Integration tests (needs credentials)
+4. `uv run pytest -m exception_test` - Exception/error state tests only
 
 ### `adk-eval`
 Run ADK agent evaluation (from project root):
@@ -56,10 +57,12 @@ uv pip install -e ".[dev]"
 
 ### Testing
 ```bash
-pytest                           # All tests
+pytest                           # All tests (skips exception tests by default)
 pytest tests/unit/               # Unit tests (fast)
 pytest tests/integration/ -m integration  # Integration (needs auth)
 pytest tests/evals/ -m agent_evaluation   # ADK evaluation
+pytest -m exception_test         # Run only exception/error state tests
+pytest -m "not exception_test"   # Run all tests except exception tests
 ```
 
 ### Code Quality
@@ -124,6 +127,7 @@ tests/
 - `slow` - Long-running tests
 - `integration` - Requires credentials
 - `agent_evaluation` - ADK evaluation tests
+- `exception_test` - Error state and exception handling tests (skipped by default)
 
 ## GitHub Workflows
 

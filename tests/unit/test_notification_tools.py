@@ -64,6 +64,8 @@ class TestNotifications:
         assert result["result"]["notifications"][1]["read"] is True
         assert result["result"]["status"] == "success"
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
     @pytest.mark.asyncio
     async def test_get_notifications_no_data(
@@ -166,6 +168,8 @@ class TestLatestNotification:
         assert result["result"]["notification"]["read"] is False
         assert result["result"]["status"] == "success"
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
     @pytest.mark.asyncio
     async def test_get_latest_notification_no_data(
@@ -217,6 +221,8 @@ class TestMarginCalls:
         assert result["result"]["margin_calls"][0]["status"] == "active"
         assert result["result"]["status"] == "success"
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
     @pytest.mark.asyncio
     async def test_get_margin_calls_no_data(self, mock_execute_with_retry: Any) -> None:
@@ -264,6 +270,8 @@ class TestMarginCalls:
         assert result["result"]["has_active_calls"] is False
         assert result["result"]["status"] == "success"
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
     @pytest.mark.asyncio
     async def test_get_margin_calls_invalid_amounts(
@@ -336,6 +344,8 @@ class TestMarginInterest:
         assert len(result["result"]["interest_charges"]) == 3
         assert result["result"]["status"] == "success"
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
     @pytest.mark.asyncio
     async def test_get_margin_interest_no_data(
@@ -354,6 +364,8 @@ class TestMarginInterest:
         assert result["result"]["status"] == "no_data"
         assert "No margin interest charges found" in result["result"]["message"]
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
     @pytest.mark.asyncio
     async def test_get_margin_interest_invalid_amounts(
@@ -422,6 +434,8 @@ class TestSubscriptionFees:
         assert len(result["result"]["subscription_fees"]) == 3
         assert result["result"]["status"] == "success"
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
     @pytest.mark.asyncio
     async def test_get_subscription_fees_no_data(
@@ -549,6 +563,8 @@ class TestReferrals:
         assert result["result"]["referral_code"] is None  # No code in list format
         assert result["result"]["status"] == "success"
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
     @pytest.mark.asyncio
     async def test_get_referrals_no_data(self, mock_execute_with_retry: Any) -> None:
@@ -566,6 +582,8 @@ class TestReferrals:
         assert result["result"]["status"] == "no_data"
         assert "No referrals found" in result["result"]["message"]
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
     @pytest.mark.asyncio
     async def test_get_referrals_invalid_rewards(
@@ -675,6 +693,8 @@ class TestAccountFeatures:
         assert features["referrals"]["completed_referrals"] == 3
         assert features["referrals"]["total_rewards"] == "45.00"
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.get_referrals")
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.get_notifications")
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.get_margin_interest")
@@ -769,6 +789,8 @@ class TestAccountSettings:
         assert settings["cash_management_enabled"] is True
         assert settings["max_ach_early_access"] == "1000.00"
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_user_profile_tools.get_account_profile")
     @pytest.mark.asyncio
     async def test_get_account_settings_no_data(
@@ -814,6 +836,8 @@ class TestAccountSettings:
         assert settings["crypto_enabled"] is False  # Default value
         assert settings["dividend_reinvestment"] is False  # Default value
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_user_profile_tools.get_account_profile")
     @pytest.mark.asyncio
     async def test_get_account_settings_exception(

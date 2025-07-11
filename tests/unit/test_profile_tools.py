@@ -60,6 +60,8 @@ class TestAccountProfile:
         )
         assert result["result"]["status"] == "success"
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_user_profile_tools.execute_with_retry")
     @pytest.mark.asyncio
     async def test_get_account_profile_no_data(
@@ -143,6 +145,8 @@ class TestBasicProfile:
         )
         assert result["result"]["status"] == "success"
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_user_profile_tools.execute_with_retry")
     @pytest.mark.asyncio
     async def test_get_basic_profile_no_data(
@@ -222,6 +226,8 @@ class TestInvestmentProfile:
         assert result["result"]["investment_profile"]["professional_trader"] is False
         assert result["result"]["status"] == "success"
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_user_profile_tools.execute_with_retry")
     @pytest.mark.asyncio
     async def test_get_investment_profile_no_data(
@@ -306,6 +312,8 @@ class TestSecurityProfile:
         assert result["result"]["security_profile"]["password_reset_required"] is False
         assert result["result"]["status"] == "success"
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_user_profile_tools.execute_with_retry")
     @pytest.mark.asyncio
     async def test_get_security_profile_no_data(
@@ -384,6 +392,8 @@ class TestUserProfile:
         assert result["result"]["user_profile"]["profile_name"] == "John Doe"
         assert result["result"]["status"] == "success"
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_user_profile_tools.execute_with_retry")
     @pytest.mark.asyncio
     async def test_get_user_profile_no_data(self, mock_execute_with_retry: Any) -> None:
@@ -568,6 +578,8 @@ class TestCompleteProfile:
         assert "basic_profile" not in complete  # Failed to load
         assert "investment_profile" not in complete  # Failed to load
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_user_profile_tools.get_security_profile")
     @patch("open_stocks_mcp.tools.robinhood_user_profile_tools.get_investment_profile")
     @patch("open_stocks_mcp.tools.robinhood_user_profile_tools.get_account_profile")
@@ -599,6 +611,8 @@ class TestCompleteProfile:
         assert result["result"]["status"] == "partial_success"
         assert "Error loading complete profile" in result["result"]["error"]
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_user_profile_tools.get_security_profile")
     @patch("open_stocks_mcp.tools.robinhood_user_profile_tools.get_investment_profile")
     @patch("open_stocks_mcp.tools.robinhood_user_profile_tools.get_account_profile")

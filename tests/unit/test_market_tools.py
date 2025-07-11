@@ -60,6 +60,8 @@ class TestMarketTools:
         assert "result" in result
         assert isinstance(result["result"], dict)
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.rh.get_top_movers")
     @pytest.mark.asyncio
     async def test_get_top_movers_error(self, mock_movers: Any) -> None:

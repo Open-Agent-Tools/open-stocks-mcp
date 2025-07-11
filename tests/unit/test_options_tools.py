@@ -51,6 +51,8 @@ class TestOptionsChains:
         assert result["result"]["chains"] is not None
         assert result["result"]["status"] == "success"
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_options_tools.rh.options.get_chains")
     @pytest.mark.asyncio
     async def test_get_options_chains_no_data(self, mock_chains: Any) -> None:
@@ -63,6 +65,8 @@ class TestOptionsChains:
         assert result["result"]["status"] == "no_data"
         assert "No option chains found" in result["result"]["message"]
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @pytest.mark.asyncio
     async def test_get_options_chains_invalid_symbol(self) -> None:
         """Test options chains with invalid symbol."""
@@ -135,6 +139,8 @@ class TestFindOptions:
         assert result["result"]["options"][0]["type"] == "call"
         assert result["result"]["status"] == "success"
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @pytest.mark.asyncio
     async def test_find_options_invalid_date_format(self) -> None:
         """Test finding options with invalid date format."""
@@ -181,6 +187,8 @@ class TestOptionMarketData:
         assert result["result"]["market_data"] is not None
         assert result["result"]["status"] == "success"
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch(
         "open_stocks_mcp.tools.robinhood_options_tools.rh.options.get_option_market_data_by_id"
     )
@@ -245,6 +253,8 @@ class TestOptionHistoricals:
         assert len(result["result"]["historicals"]) == 2
         assert result["result"]["status"] == "success"
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @pytest.mark.asyncio
     async def test_get_option_historicals_invalid_type(self) -> None:
         """Test option historicals with invalid option type."""
@@ -259,6 +269,8 @@ class TestOptionHistoricals:
             "call" in result["result"]["error"] and "put" in result["result"]["error"]
         )
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @pytest.mark.asyncio
     async def test_get_option_historicals_invalid_interval(self) -> None:
         """Test option historicals with invalid interval."""

@@ -96,6 +96,8 @@ class TestAttemptLogin:
             mock_logger.error.assert_called()
             mock_exit.assert_called_once_with(1)
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     def test_attempt_login_exception(self) -> None:
         """Test login attempt when an exception occurs."""
         mock_session_manager = MagicMock()

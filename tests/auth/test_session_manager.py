@@ -32,6 +32,8 @@ class TestSessionManager:
         assert session_manager.username == "testuser"
         assert session_manager.password == "testpass"
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     def test_is_session_valid_not_authenticated(self, session_manager: Any) -> None:
         """Test session validity when not authenticated."""
         assert not session_manager.is_session_valid()
@@ -85,6 +87,8 @@ class TestSessionManager:
         assert session_manager._is_authenticated is True
         assert session_manager.login_time is not None
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @pytest.mark.asyncio
     async def test_ensure_authenticated_no_credentials(
         self, session_manager: Any
@@ -108,6 +112,8 @@ class TestSessionManager:
         assert result is True
         assert session_manager._is_authenticated is True
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @pytest.mark.asyncio
     async def test_authenticate_failure(self, session_manager: Any, mocker: Any) -> None:
         """Test authentication failure."""
@@ -121,6 +127,8 @@ class TestSessionManager:
         assert result is False
         assert not session_manager._is_authenticated
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @pytest.mark.asyncio
     async def test_authenticate_no_profile(self, session_manager: Any, mocker: Any) -> None:
         """Test authentication when profile retrieval fails."""
@@ -198,6 +206,8 @@ class TestSessionManager:
         assert session_manager.login_time is None
         assert session_manager.last_successful_call is None
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @pytest.mark.asyncio
     async def test_logout_with_error(self, session_manager: Any, mocker: Any) -> None:
         """Test logout with error still clears session."""

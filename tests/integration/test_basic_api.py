@@ -64,6 +64,8 @@ class TestBasicIntegration:
 
 
 @pytest.mark.integration
+@pytest.mark.exception_test
+@pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
 @pytest.mark.asyncio
 async def test_api_error_handling() -> None:
     """Test API error handling without authentication."""

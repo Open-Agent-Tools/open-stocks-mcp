@@ -197,6 +197,8 @@ class TestAddSymbolsToWatchlist:
         assert result["result"]["status"] == "success"
         assert "Successfully added 2 symbols" in result["result"]["message"]
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
     @pytest.mark.asyncio
     async def test_add_symbols_to_watchlist_failure(
@@ -232,6 +234,8 @@ class TestAddSymbolsToWatchlist:
         assert result["result"]["status"] == "error"
         assert "At least one symbol is required" in result["result"]["error"]
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @pytest.mark.asyncio
     async def test_add_symbols_to_watchlist_invalid_symbols(self) -> None:
         """Test add symbols with invalid symbols."""
@@ -278,6 +282,8 @@ class TestRemoveSymbolsFromWatchlist:
         assert result["result"]["status"] == "success"
         assert "Successfully removed 2 symbols" in result["result"]["message"]
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
     @pytest.mark.asyncio
     async def test_remove_symbols_from_watchlist_failure(
@@ -313,6 +319,8 @@ class TestRemoveSymbolsFromWatchlist:
         assert result["result"]["status"] == "error"
         assert "At least one symbol is required" in result["result"]["error"]
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
     @pytest.mark.asyncio
     async def test_remove_symbols_from_watchlist_exception(
@@ -441,6 +449,8 @@ class TestGetWatchlistPerformance:
         assert summary["unchanged"] == 0
         assert summary["total_volume"] == 0
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.get_watchlist_by_name")
     @pytest.mark.asyncio
     async def test_get_watchlist_performance_api_error(

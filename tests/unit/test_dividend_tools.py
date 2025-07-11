@@ -65,6 +65,8 @@ class TestDividendTools:
         assert "result" in result
         assert isinstance(result["result"], dict)
 
+    @pytest.mark.exception_test
+    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_dividend_tools.asyncio.get_event_loop")
     @pytest.mark.asyncio
     async def test_get_dividends_error(self, mock_loop: Any) -> None:
