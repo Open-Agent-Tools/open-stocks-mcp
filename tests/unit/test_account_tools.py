@@ -3,6 +3,7 @@
 from unittest.mock import patch
 
 import pytest
+from typing import Any
 
 from open_stocks_mcp.tools.robinhood_account_tools import (
     get_account_details,
@@ -26,7 +27,7 @@ class TestAccountTools:
 
     @patch("open_stocks_mcp.tools.robinhood_account_tools.rh.load_user_profile")
     @pytest.mark.asyncio
-    async def test_get_account_info_success(self, mock_profile):
+    async def test_get_account_info_success(self, mock_profile: Any) -> None:
         """Test successful account info retrieval."""
         mock_profile.return_value = {
             "username": "testuser",
@@ -41,7 +42,7 @@ class TestAccountTools:
 
     @patch("open_stocks_mcp.tools.robinhood_account_tools.rh.load_user_profile")
     @pytest.mark.asyncio
-    async def test_get_account_info_error(self, mock_profile):
+    async def test_get_account_info_error(self, mock_profile: Any) -> None:
         """Test account info error handling."""
         mock_profile.side_effect = Exception("API Error")
 
@@ -52,7 +53,7 @@ class TestAccountTools:
 
     @patch("open_stocks_mcp.tools.robinhood_account_tools.rh.load_portfolio_profile")
     @pytest.mark.asyncio
-    async def test_get_portfolio_success(self, mock_portfolio):
+    async def test_get_portfolio_success(self, mock_portfolio: Any) -> None:
         """Test successful portfolio retrieval."""
         mock_portfolio.return_value = {
             "total_return_today": "50.00",
@@ -69,7 +70,7 @@ class TestAccountTools:
     @patch("open_stocks_mcp.tools.robinhood_account_tools.rh.get_symbol_by_url")
     @patch("open_stocks_mcp.tools.robinhood_account_tools.rh.get_open_stock_positions")
     @pytest.mark.asyncio
-    async def test_get_positions_success(self, mock_positions, mock_symbol):
+    async def test_get_positions_success(self, mock_positions: Any, mock_symbol: Any) -> None:
         """Test successful positions retrieval."""
         mock_positions.return_value = [
             {
@@ -100,7 +101,7 @@ class TestAccountTools:
 
     @patch("open_stocks_mcp.tools.robinhood_account_tools.rh.load_phoenix_account")
     @pytest.mark.asyncio
-    async def test_get_account_details_success(self, mock_account):
+    async def test_get_account_details_success(self, mock_account: Any) -> None:
         """Test successful account details retrieval."""
         mock_account.return_value = {
             "account_number": "123456789",
@@ -114,7 +115,7 @@ class TestAccountTools:
 
     @patch("open_stocks_mcp.tools.robinhood_advanced_portfolio_tools.rh.build_holdings")
     @pytest.mark.asyncio
-    async def test_get_build_holdings_success(self, mock_holdings):
+    async def test_get_build_holdings_success(self, mock_holdings: Any) -> None:
         """Test successful build holdings retrieval."""
         mock_holdings.return_value = {
             "AAPL": {
@@ -154,7 +155,7 @@ class TestAccountTools:
 
     @patch("open_stocks_mcp.tools.robinhood_advanced_portfolio_tools.rh.build_holdings")
     @pytest.mark.asyncio
-    async def test_get_build_holdings_no_data(self, mock_holdings):
+    async def test_get_build_holdings_no_data(self, mock_holdings: Any) -> None:
         """Test build holdings when no data is available."""
         mock_holdings.return_value = None
 
@@ -167,7 +168,7 @@ class TestAccountTools:
 
     @patch("open_stocks_mcp.tools.robinhood_advanced_portfolio_tools.rh.build_holdings")
     @pytest.mark.asyncio
-    async def test_get_build_holdings_error(self, mock_holdings):
+    async def test_get_build_holdings_error(self, mock_holdings: Any) -> None:
         """Test build holdings error handling."""
         mock_holdings.side_effect = Exception("API Error")
 
@@ -180,7 +181,7 @@ class TestAccountTools:
         "open_stocks_mcp.tools.robinhood_advanced_portfolio_tools.rh.build_user_profile"
     )
     @pytest.mark.asyncio
-    async def test_get_build_user_profile_success(self, mock_profile):
+    async def test_get_build_user_profile_success(self, mock_profile: Any) -> None:
         """Test successful build user profile retrieval."""
         mock_profile.return_value = {
             "equity": "50000.00",
@@ -203,7 +204,7 @@ class TestAccountTools:
         "open_stocks_mcp.tools.robinhood_advanced_portfolio_tools.rh.build_user_profile"
     )
     @pytest.mark.asyncio
-    async def test_get_build_user_profile_no_data(self, mock_profile):
+    async def test_get_build_user_profile_no_data(self, mock_profile: Any) -> None:
         """Test build user profile when no data is available."""
         mock_profile.return_value = None
 
@@ -217,7 +218,7 @@ class TestAccountTools:
         "open_stocks_mcp.tools.robinhood_advanced_portfolio_tools.rh.load_account_profile"
     )
     @pytest.mark.asyncio
-    async def test_get_day_trades_success(self, mock_account):
+    async def test_get_day_trades_success(self, mock_account: Any) -> None:
         """Test successful day trades retrieval."""
         mock_account.return_value = {
             "day_trade_count": "2",
@@ -240,7 +241,7 @@ class TestAccountTools:
         "open_stocks_mcp.tools.robinhood_advanced_portfolio_tools.rh.load_account_profile"
     )
     @pytest.mark.asyncio
-    async def test_get_day_trades_no_data(self, mock_account):
+    async def test_get_day_trades_no_data(self, mock_account: Any) -> None:
         """Test day trades when no account data is available."""
         mock_account.return_value = None
 
@@ -253,7 +254,7 @@ class TestAccountTools:
     @patch("open_stocks_mcp.tools.robinhood_order_tools.rh.get_symbol_by_url")
     @patch("open_stocks_mcp.tools.robinhood_order_tools.rh.get_all_stock_orders")
     @pytest.mark.asyncio
-    async def test_get_stock_orders_success(self, mock_orders, mock_symbol):
+    async def test_get_stock_orders_success(self, mock_orders: Any, mock_symbol: Any) -> None:
         """Test successful stock orders retrieval."""
         mock_orders.return_value = [
             {
@@ -291,7 +292,7 @@ class TestAccountTools:
 
     @patch("open_stocks_mcp.tools.robinhood_order_tools.rh.get_all_stock_orders")
     @pytest.mark.asyncio
-    async def test_get_stock_orders_no_data(self, mock_orders):
+    async def test_get_stock_orders_no_data(self, mock_orders: Any) -> None:
         """Test stock orders when no orders are available."""
         mock_orders.return_value = None
 
@@ -304,7 +305,7 @@ class TestAccountTools:
 
     @patch("open_stocks_mcp.tools.robinhood_order_tools.rh.get_all_stock_orders")
     @pytest.mark.asyncio
-    async def test_get_stock_orders_error(self, mock_orders):
+    async def test_get_stock_orders_error(self, mock_orders: Any) -> None:
         """Test stock orders error handling."""
         mock_orders.side_effect = Exception("API Error")
 
@@ -315,7 +316,7 @@ class TestAccountTools:
 
     @patch("open_stocks_mcp.tools.robinhood_order_tools.rh.get_all_option_orders")
     @pytest.mark.asyncio
-    async def test_get_options_orders_success(self, mock_orders):
+    async def test_get_options_orders_success(self, mock_orders: Any) -> None:
         """Test successful options orders retrieval."""
         mock_orders.return_value = [
             {
@@ -352,7 +353,7 @@ class TestAccountTools:
 
     @patch("open_stocks_mcp.tools.robinhood_order_tools.rh.get_all_option_orders")
     @pytest.mark.asyncio
-    async def test_get_options_orders_no_data(self, mock_orders):
+    async def test_get_options_orders_no_data(self, mock_orders: Any) -> None:
         """Test options orders when no orders are available."""
         mock_orders.return_value = None
 
@@ -365,7 +366,7 @@ class TestAccountTools:
 
     @patch("open_stocks_mcp.tools.robinhood_order_tools.rh.get_all_option_orders")
     @pytest.mark.asyncio
-    async def test_get_options_orders_not_implemented(self, mock_orders):
+    async def test_get_options_orders_not_implemented(self, mock_orders: Any) -> None:
         """Test options orders when API is not implemented."""
         mock_orders.side_effect = Exception("not implemented")
 
@@ -378,7 +379,7 @@ class TestAccountTools:
 
     @patch("open_stocks_mcp.tools.robinhood_order_tools.rh.get_all_option_orders")
     @pytest.mark.asyncio
-    async def test_get_options_orders_error(self, mock_orders):
+    async def test_get_options_orders_error(self, mock_orders: Any) -> None:
         """Test options orders error handling."""
         mock_orders.side_effect = Exception("API Error")
 

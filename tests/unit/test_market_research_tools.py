@@ -24,7 +24,7 @@ class TestTopMoversSP500:
     @pytest.mark.asyncio
     async def test_get_top_movers_sp500_up_success(
         self, mock_rate_limiter, mock_session_manager, mock_execute_with_retry
-    ):
+    ) -> None:
         """Test successful retrieval of S&P 500 up movers."""
         # Mock authentication - make it async
         mock_session = mock_session_manager.return_value
@@ -74,7 +74,7 @@ class TestTopMoversSP500:
     @pytest.mark.asyncio
     async def test_get_top_movers_sp500_down_success(
         self, mock_rate_limiter, mock_session_manager, mock_execute_with_retry
-    ):
+    ) -> None:
         """Test successful retrieval of S&P 500 down movers."""
         # Mock authentication and rate limiting
         mock_session = mock_session_manager.return_value
@@ -105,7 +105,7 @@ class TestTopMoversSP500:
         assert result["result"]["status"] == "success"
 
     @pytest.mark.asyncio
-    async def test_get_top_movers_sp500_invalid_direction(self):
+    async def test_get_top_movers_sp500_invalid_direction(self) -> None:
         """Test invalid direction parameter."""
         result = await get_top_movers_sp500("invalid")
 
@@ -119,7 +119,7 @@ class TestTopMoversSP500:
     @pytest.mark.asyncio
     async def test_get_top_movers_sp500_no_data(
         self, mock_rate_limiter, mock_session_manager, mock_execute_with_retry
-    ):
+    ) -> None:
         """Test when no movers data is available."""
         # Mock authentication and rate limiting
         mock_session = mock_session_manager.return_value
@@ -140,7 +140,7 @@ class TestTopMoversSP500:
     @pytest.mark.asyncio
     async def test_get_top_movers_sp500_authentication_failed(
         self, mock_session_manager
-    ):
+    ) -> None:
         """Test authentication failure."""
         mock_session = mock_session_manager.return_value
         mock_session.ensure_authenticated = AsyncMock(return_value=False)
@@ -161,7 +161,7 @@ class TestStockRatings:
     @pytest.mark.asyncio
     async def test_get_stock_ratings_success(
         self, mock_rate_limiter, mock_session_manager, mock_execute_with_retry
-    ):
+    ) -> None:
         """Test successful stock ratings retrieval."""
         # Mock authentication and rate limiting
         mock_session = mock_session_manager.return_value
@@ -199,7 +199,7 @@ class TestStockRatings:
         assert result["result"]["status"] == "success"
 
     @pytest.mark.asyncio
-    async def test_get_stock_ratings_invalid_symbol(self):
+    async def test_get_stock_ratings_invalid_symbol(self) -> None:
         """Test invalid symbol format."""
         result = await get_stock_ratings("123INVALID")
 
@@ -213,7 +213,7 @@ class TestStockRatings:
     @pytest.mark.asyncio
     async def test_get_stock_ratings_no_data(
         self, mock_rate_limiter, mock_session_manager, mock_execute_with_retry
-    ):
+    ) -> None:
         """Test when no ratings data is available."""
         # Mock authentication and rate limiting
         mock_session = mock_session_manager.return_value
@@ -240,7 +240,7 @@ class TestStockEarnings:
     @pytest.mark.asyncio
     async def test_get_stock_earnings_success(
         self, mock_rate_limiter, mock_session_manager, mock_execute_with_retry
-    ):
+    ) -> None:
         """Test successful stock earnings retrieval."""
         # Mock authentication and rate limiting
         mock_session = mock_session_manager.return_value
@@ -284,7 +284,7 @@ class TestStockEarnings:
         assert result["result"]["status"] == "success"
 
     @pytest.mark.asyncio
-    async def test_get_stock_earnings_invalid_symbol(self):
+    async def test_get_stock_earnings_invalid_symbol(self) -> None:
         """Test invalid symbol format."""
         result = await get_stock_earnings("123INVALID")
 
@@ -298,7 +298,7 @@ class TestStockEarnings:
     @pytest.mark.asyncio
     async def test_get_stock_earnings_no_data(
         self, mock_rate_limiter, mock_session_manager, mock_execute_with_retry
-    ):
+    ) -> None:
         """Test when no earnings data is available."""
         # Mock authentication and rate limiting
         mock_session = mock_session_manager.return_value
@@ -325,7 +325,7 @@ class TestStockNews:
     @pytest.mark.asyncio
     async def test_get_stock_news_success(
         self, mock_rate_limiter, mock_session_manager, mock_execute_with_retry
-    ):
+    ) -> None:
         """Test successful stock news retrieval."""
         # Mock authentication and rate limiting
         mock_session = mock_session_manager.return_value
@@ -371,7 +371,7 @@ class TestStockNews:
         assert result["result"]["status"] == "success"
 
     @pytest.mark.asyncio
-    async def test_get_stock_news_invalid_symbol(self):
+    async def test_get_stock_news_invalid_symbol(self) -> None:
         """Test invalid symbol format."""
         result = await get_stock_news("123INVALID")
 
@@ -385,7 +385,7 @@ class TestStockNews:
     @pytest.mark.asyncio
     async def test_get_stock_news_no_data(
         self, mock_rate_limiter, mock_session_manager, mock_execute_with_retry
-    ):
+    ) -> None:
         """Test when no news data is available."""
         # Mock authentication and rate limiting
         mock_session = mock_session_manager.return_value
@@ -412,7 +412,7 @@ class TestStockSplits:
     @pytest.mark.asyncio
     async def test_get_stock_splits_success(
         self, mock_rate_limiter, mock_session_manager, mock_execute_with_retry
-    ):
+    ) -> None:
         """Test successful stock splits retrieval."""
         # Mock authentication and rate limiting
         mock_session = mock_session_manager.return_value
@@ -450,7 +450,7 @@ class TestStockSplits:
         assert result["result"]["status"] == "success"
 
     @pytest.mark.asyncio
-    async def test_get_stock_splits_invalid_symbol(self):
+    async def test_get_stock_splits_invalid_symbol(self) -> None:
         """Test invalid symbol format."""
         result = await get_stock_splits("123INVALID")
 
@@ -464,7 +464,7 @@ class TestStockSplits:
     @pytest.mark.asyncio
     async def test_get_stock_splits_no_data(
         self, mock_rate_limiter, mock_session_manager, mock_execute_with_retry
-    ):
+    ) -> None:
         """Test when no splits data is available."""
         # Mock authentication and rate limiting
         mock_session = mock_session_manager.return_value
@@ -491,7 +491,7 @@ class TestStockEvents:
     @pytest.mark.asyncio
     async def test_get_stock_events_success(
         self, mock_rate_limiter, mock_session_manager, mock_execute_with_retry
-    ):
+    ) -> None:
         """Test successful stock events retrieval."""
         # Mock authentication and rate limiting
         mock_session = mock_session_manager.return_value
@@ -525,7 +525,7 @@ class TestStockEvents:
         assert result["result"]["status"] == "success"
 
     @pytest.mark.asyncio
-    async def test_get_stock_events_invalid_symbol(self):
+    async def test_get_stock_events_invalid_symbol(self) -> None:
         """Test invalid symbol format."""
         result = await get_stock_events("123INVALID")
 
@@ -539,7 +539,7 @@ class TestStockEvents:
     @pytest.mark.asyncio
     async def test_get_stock_events_no_data(
         self, mock_rate_limiter, mock_session_manager, mock_execute_with_retry
-    ):
+    ) -> None:
         """Test when no events data is available."""
         # Mock authentication and rate limiting
         mock_session = mock_session_manager.return_value
@@ -566,7 +566,7 @@ class TestStockLevel2Data:
     @pytest.mark.asyncio
     async def test_get_stock_level2_data_success(
         self, mock_rate_limiter, mock_session_manager, mock_execute_with_retry
-    ):
+    ) -> None:
         """Test successful Level II data retrieval."""
         # Mock authentication and rate limiting
         mock_session = mock_session_manager.return_value
@@ -601,7 +601,7 @@ class TestStockLevel2Data:
         assert result["result"]["status"] == "success"
 
     @pytest.mark.asyncio
-    async def test_get_stock_level2_data_invalid_symbol(self):
+    async def test_get_stock_level2_data_invalid_symbol(self) -> None:
         """Test invalid symbol format."""
         result = await get_stock_level2_data("123INVALID")
 
@@ -615,7 +615,7 @@ class TestStockLevel2Data:
     @pytest.mark.asyncio
     async def test_get_stock_level2_data_no_data(
         self, mock_rate_limiter, mock_session_manager, mock_execute_with_retry
-    ):
+    ) -> None:
         """Test when no Level II data is available (Gold subscription required)."""
         # Mock authentication and rate limiting
         mock_session = mock_session_manager.return_value
@@ -639,7 +639,7 @@ class TestStockLevel2Data:
     @pytest.mark.asyncio
     async def test_get_stock_level2_data_api_error(
         self, mock_rate_limiter, mock_session_manager, mock_execute_with_retry
-    ):
+    ) -> None:
         """Test API error handling for Level II data."""
         # Mock authentication and rate limiting
         mock_session = mock_session_manager.return_value

@@ -3,6 +3,7 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from typing import Any
 
 from open_stocks_mcp.tools.robinhood_stock_tools import (
     get_market_hours,
@@ -20,7 +21,7 @@ class TestStockMarketTools:
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_quotes")
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_latest_price")
     @pytest.mark.asyncio
-    async def test_get_stock_price_success(self, mock_latest_price, mock_quotes):
+    async def test_get_stock_price_success(self, mock_latest_price: Any, mock_quotes: Any) -> None:
         """Test successful stock price retrieval."""
         mock_latest_price.return_value = ["150.25"]
         mock_quotes.return_value = [
@@ -47,7 +48,7 @@ class TestStockMarketTools:
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_quotes")
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_latest_price")
     @pytest.mark.asyncio
-    async def test_get_stock_price_no_data(self, mock_latest_price, mock_quotes):
+    async def test_get_stock_price_no_data(self, mock_latest_price: Any, mock_quotes: Any) -> None:
         """Test stock price when no data is available."""
         mock_latest_price.return_value = None
         mock_quotes.return_value = None
@@ -59,7 +60,7 @@ class TestStockMarketTools:
         assert "No price data found" in result["result"]["message"]
 
     @pytest.mark.asyncio
-    async def test_get_stock_price_invalid_symbol(self):
+    async def test_get_stock_price_invalid_symbol(self) -> None:
         """Test stock price with invalid symbol format."""
         result = await get_stock_price("123INVALID")
 
@@ -73,7 +74,7 @@ class TestStockMarketTools:
     @pytest.mark.asyncio
     async def test_get_stock_info_success(
         self, mock_fundamentals, mock_instruments, mock_name
-    ):
+    ) -> None:
         """Test successful stock info retrieval."""
         mock_fundamentals.return_value = [
             {
@@ -106,7 +107,7 @@ class TestStockMarketTools:
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_instruments_by_symbols")
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_fundamentals")
     @pytest.mark.asyncio
-    async def test_get_stock_info_no_data(self, mock_fundamentals, mock_instruments):
+    async def test_get_stock_info_no_data(self, mock_fundamentals: Any, mock_instruments: Any) -> None:
         """Test stock info when no data is available."""
         mock_fundamentals.return_value = None
         mock_instruments.return_value = None
@@ -119,7 +120,7 @@ class TestStockMarketTools:
 
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.find_instrument_data")
     @pytest.mark.asyncio
-    async def test_search_stocks_success(self, mock_find_instrument):
+    async def test_search_stocks_success(self, mock_find_instrument: Any) -> None:
         """Test successful stock search."""
         mock_find_instrument.return_value = [
             {
@@ -151,7 +152,7 @@ class TestStockMarketTools:
 
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.find_instrument_data")
     @pytest.mark.asyncio
-    async def test_search_stocks_no_results(self, mock_find_instrument):
+    async def test_search_stocks_no_results(self, mock_find_instrument: Any) -> None:
         """Test stock search with no results."""
         mock_find_instrument.return_value = None
 
@@ -165,7 +166,7 @@ class TestStockMarketTools:
         assert result["result"]["status"] == "success"
 
     @pytest.mark.asyncio
-    async def test_search_stocks_empty_query(self):
+    async def test_search_stocks_empty_query(self) -> None:
         """Test stock search with empty query."""
         result = await search_stocks("")
 
@@ -175,7 +176,7 @@ class TestStockMarketTools:
 
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_markets")
     @pytest.mark.asyncio
-    async def test_get_market_hours_success(self, mock_markets):
+    async def test_get_market_hours_success(self, mock_markets: Any) -> None:
         """Test successful market hours retrieval."""
         mock_markets.return_value = [
             {
@@ -206,7 +207,7 @@ class TestStockMarketTools:
 
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_markets")
     @pytest.mark.asyncio
-    async def test_get_market_hours_no_data(self, mock_markets):
+    async def test_get_market_hours_no_data(self, mock_markets: Any) -> None:
         """Test market hours when no data is available."""
         mock_markets.return_value = None
 
@@ -218,7 +219,7 @@ class TestStockMarketTools:
 
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_stock_historicals")
     @pytest.mark.asyncio
-    async def test_get_price_history_success(self, mock_historicals):
+    async def test_get_price_history_success(self, mock_historicals: Any) -> None:
         """Test successful price history retrieval."""
         mock_historicals.return_value = [
             {
@@ -253,7 +254,7 @@ class TestStockMarketTools:
 
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_stock_historicals")
     @pytest.mark.asyncio
-    async def test_get_price_history_no_data(self, mock_historicals):
+    async def test_get_price_history_no_data(self, mock_historicals: Any) -> None:
         """Test price history when no data is available."""
         mock_historicals.return_value = None
 
@@ -264,7 +265,7 @@ class TestStockMarketTools:
         assert "No historical data found" in result["result"]["message"]
 
     @pytest.mark.asyncio
-    async def test_get_price_history_invalid_period(self):
+    async def test_get_price_history_invalid_period(self) -> None:
         """Test price history with invalid period."""
         result = await get_price_history("AAPL", "invalid")
 
@@ -274,7 +275,7 @@ class TestStockMarketTools:
         assert "Invalid period" in result["result"]["error"]
 
     @pytest.mark.asyncio
-    async def test_list_available_tools_success(self):
+    async def test_list_available_tools_success(self) -> None:
         """Test successful tools listing."""
         # Create a mock FastMCP instance
         mock_mcp = AsyncMock()
@@ -308,7 +309,7 @@ class TestServerTools:
 
     @patch("open_stocks_mcp.tools.session_manager.get_session_manager")
     @pytest.mark.asyncio
-    async def test_session_status_success(self, mock_get_session_manager):
+    async def test_session_status_success(self, mock_get_session_manager: Any) -> None:
         """Test successful session status retrieval."""
         # We need to import these from the server app where they're defined
         from open_stocks_mcp.server.app import session_status
@@ -333,7 +334,7 @@ class TestServerTools:
 
     @patch("open_stocks_mcp.server.app.get_rate_limiter")
     @pytest.mark.asyncio
-    async def test_rate_limit_status_success(self, mock_get_rate_limiter):
+    async def test_rate_limit_status_success(self, mock_get_rate_limiter: Any) -> None:
         """Test successful rate limit status retrieval."""
         from open_stocks_mcp.server.app import rate_limit_status
 
@@ -359,7 +360,7 @@ class TestServerTools:
 
     @patch("open_stocks_mcp.server.app.get_metrics_collector")
     @pytest.mark.asyncio
-    async def test_metrics_summary_success(self, mock_get_metrics_collector):
+    async def test_metrics_summary_success(self, mock_get_metrics_collector: Any) -> None:
         """Test successful metrics summary retrieval."""
         from open_stocks_mcp.server.app import metrics_summary
 
@@ -385,7 +386,7 @@ class TestServerTools:
 
     @patch("open_stocks_mcp.server.app.get_metrics_collector")
     @pytest.mark.asyncio
-    async def test_health_check_success(self, mock_get_metrics_collector):
+    async def test_health_check_success(self, mock_get_metrics_collector: Any) -> None:
         """Test successful health check."""
         from open_stocks_mcp.server.app import health_check
 
@@ -412,7 +413,7 @@ class TestServerTools:
 
     @patch("open_stocks_mcp.server.app.get_metrics_collector")
     @pytest.mark.asyncio
-    async def test_health_check_degraded(self, mock_get_metrics_collector):
+    async def test_health_check_degraded(self, mock_get_metrics_collector: Any) -> None:
         """Test health check with degraded status."""
         from open_stocks_mcp.server.app import health_check
 

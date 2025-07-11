@@ -3,6 +3,7 @@
 import os
 
 import pytest
+from typing import Any
 from dotenv import load_dotenv
 
 from open_stocks_mcp.tools.robinhood_account_tools import (
@@ -41,21 +42,21 @@ class TestBasicIntegration:
     """Test basic API functionality that should work reliably."""
 
     @pytest.mark.asyncio
-    async def test_get_account_info(self, robinhood_session):
+    async def test_get_account_info(self, robinhood_session: Any) -> None:
         """Test getting basic account information."""
         result = await get_account_info()
         assert "result" in result
         assert isinstance(result["result"], dict)
 
     @pytest.mark.asyncio
-    async def test_get_portfolio(self, robinhood_session):
+    async def test_get_portfolio(self, robinhood_session: Any) -> None:
         """Test getting portfolio information."""
         result = await get_portfolio()
         assert "result" in result
         assert isinstance(result["result"], dict)
 
     @pytest.mark.asyncio
-    async def test_get_positions(self, robinhood_session):
+    async def test_get_positions(self, robinhood_session: Any) -> None:
         """Test getting positions."""
         result = await get_positions()
         assert "result" in result
@@ -64,7 +65,7 @@ class TestBasicIntegration:
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_api_error_handling():
+async def test_api_error_handling() -> None:
     """Test API error handling without authentication."""
     # This should handle the case where we're not authenticated
     result = await get_account_info()

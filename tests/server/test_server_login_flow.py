@@ -23,7 +23,7 @@ class TestServerLoginFlow:
                 load_dotenv(env_file)
                 break
 
-    def test_placeholder(self):
+    def test_placeholder(self) -> None:
         """Placeholder test to keep the test file valid."""
         assert True
 

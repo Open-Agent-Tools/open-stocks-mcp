@@ -3,6 +3,7 @@
 from unittest.mock import AsyncMock, patch
 
 import pytest
+from typing import Any
 
 from open_stocks_mcp.tools.robinhood_advanced_portfolio_tools import (
     get_build_holdings,
@@ -20,7 +21,7 @@ class TestBuildHoldings:
 
     @patch("open_stocks_mcp.tools.robinhood_advanced_portfolio_tools.rh.build_holdings")
     @pytest.mark.asyncio
-    async def test_build_holdings_success(self, mock_build_holdings):
+    async def test_build_holdings_success(self, mock_build_holdings: Any) -> None:
         """Test successful holdings build."""
         mock_build_holdings.return_value = {
             "AAPL": {
@@ -63,7 +64,7 @@ class TestBuildHoldings:
 
     @patch("open_stocks_mcp.tools.robinhood_advanced_portfolio_tools.rh.build_holdings")
     @pytest.mark.asyncio
-    async def test_build_holdings_no_data(self, mock_build_holdings):
+    async def test_build_holdings_no_data(self, mock_build_holdings: Any) -> None:
         """Test build holdings when no data is available."""
         mock_build_holdings.return_value = None
 
@@ -77,7 +78,7 @@ class TestBuildHoldings:
 
     @patch("open_stocks_mcp.tools.robinhood_advanced_portfolio_tools.rh.build_holdings")
     @pytest.mark.asyncio
-    async def test_build_holdings_empty_dict(self, mock_build_holdings):
+    async def test_build_holdings_empty_dict(self, mock_build_holdings: Any) -> None:
         """Test build holdings with empty dictionary."""
         mock_build_holdings.return_value = {}
 
@@ -97,7 +98,7 @@ class TestBuildUserProfile:
         "open_stocks_mcp.tools.robinhood_advanced_portfolio_tools.rh.build_user_profile"
     )
     @pytest.mark.asyncio
-    async def test_build_user_profile_success(self, mock_build_user_profile):
+    async def test_build_user_profile_success(self, mock_build_user_profile: Any) -> None:
         """Test successful user profile build."""
         mock_build_user_profile.return_value = {
             "equity": "50000.00",
@@ -123,7 +124,7 @@ class TestBuildUserProfile:
         "open_stocks_mcp.tools.robinhood_advanced_portfolio_tools.rh.build_user_profile"
     )
     @pytest.mark.asyncio
-    async def test_build_user_profile_no_data(self, mock_build_user_profile):
+    async def test_build_user_profile_no_data(self, mock_build_user_profile: Any) -> None:
         """Test build user profile when no data is available."""
         mock_build_user_profile.return_value = None
 
@@ -137,7 +138,7 @@ class TestBuildUserProfile:
         "open_stocks_mcp.tools.robinhood_advanced_portfolio_tools.rh.build_user_profile"
     )
     @pytest.mark.asyncio
-    async def test_build_user_profile_partial_data(self, mock_build_user_profile):
+    async def test_build_user_profile_partial_data(self, mock_build_user_profile: Any) -> None:
         """Test build user profile with partial data."""
         mock_build_user_profile.return_value = {
             "equity": "25000.00",
@@ -160,7 +161,7 @@ class TestDayTrades:
         "open_stocks_mcp.tools.robinhood_advanced_portfolio_tools.rh.load_account_profile"
     )
     @pytest.mark.asyncio
-    async def test_day_trades_success(self, mock_load_account):
+    async def test_day_trades_success(self, mock_load_account: Any) -> None:
         """Test successful day trading info retrieval."""
         mock_load_account.return_value = {
             "day_trade_count": "2",
@@ -184,7 +185,7 @@ class TestDayTrades:
         "open_stocks_mcp.tools.robinhood_advanced_portfolio_tools.rh.load_account_profile"
     )
     @pytest.mark.asyncio
-    async def test_day_trades_pdt_status(self, mock_load_account):
+    async def test_day_trades_pdt_status(self, mock_load_account: Any) -> None:
         """Test day trading info when user is pattern day trader."""
         mock_load_account.return_value = {
             "day_trade_count": "5",
@@ -207,7 +208,7 @@ class TestDayTrades:
         "open_stocks_mcp.tools.robinhood_advanced_portfolio_tools.rh.load_account_profile"
     )
     @pytest.mark.asyncio
-    async def test_day_trades_no_data(self, mock_load_account):
+    async def test_day_trades_no_data(self, mock_load_account: Any) -> None:
         """Test day trading info when no account data is available."""
         mock_load_account.return_value = None
 
@@ -221,7 +222,7 @@ class TestDayTrades:
         "open_stocks_mcp.tools.robinhood_advanced_portfolio_tools.rh.load_account_profile"
     )
     @pytest.mark.asyncio
-    async def test_day_trades_missing_fields(self, mock_load_account):
+    async def test_day_trades_missing_fields(self, mock_load_account: Any) -> None:
         """Test day trading info with missing fields."""
         mock_load_account.return_value = {
             # Missing some fields
@@ -249,7 +250,7 @@ class TestInterestPayments:
     @pytest.mark.asyncio
     async def test_interest_payments_success(
         self, mock_interest_payments, mock_session_manager, mock_rate_limiter
-    ):
+    ) -> None:
         """Test successful interest payments retrieval."""
         mock_interest_payments.return_value = [
             {
@@ -300,7 +301,7 @@ class TestInterestPayments:
     @pytest.mark.asyncio
     async def test_interest_payments_no_data(
         self, mock_interest_payments, mock_session_manager, mock_rate_limiter
-    ):
+    ) -> None:
         """Test interest payments when no data is available."""
         mock_interest_payments.return_value = None
 
@@ -341,7 +342,7 @@ class TestStockLoanPayments:
         mock_instrument,
         mock_session_manager,
         mock_rate_limiter,
-    ):
+    ) -> None:
         """Test successful stock loan payments retrieval."""
         mock_loan_payments.return_value = [
             {
@@ -401,7 +402,7 @@ class TestStockLoanPayments:
     @pytest.mark.asyncio
     async def test_stock_loan_payments_no_data(
         self, mock_loan_payments, mock_session_manager, mock_rate_limiter
-    ):
+    ) -> None:
         """Test stock loan payments when no data is available."""
         mock_loan_payments.return_value = None
 
@@ -430,7 +431,7 @@ class TestServerMetrics:
 
     @patch("open_stocks_mcp.server.app.get_metrics_collector")
     @pytest.mark.asyncio
-    async def test_metrics_summary_success(self, mock_get_metrics_collector):
+    async def test_metrics_summary_success(self, mock_get_metrics_collector: Any) -> None:
         """Test successful metrics summary retrieval."""
         # We need to import the function from the server app
         from open_stocks_mcp.server.app import metrics_summary
@@ -458,7 +459,7 @@ class TestServerMetrics:
 
     @patch("open_stocks_mcp.server.app.get_metrics_collector")
     @pytest.mark.asyncio
-    async def test_health_check_healthy(self, mock_get_metrics_collector):
+    async def test_health_check_healthy(self, mock_get_metrics_collector: Any) -> None:
         """Test health check with healthy status."""
         from open_stocks_mcp.server.app import health_check
 
@@ -485,7 +486,7 @@ class TestServerMetrics:
 
     @patch("open_stocks_mcp.server.app.get_metrics_collector")
     @pytest.mark.asyncio
-    async def test_health_check_degraded(self, mock_get_metrics_collector):
+    async def test_health_check_degraded(self, mock_get_metrics_collector: Any) -> None:
         """Test health check with degraded status."""
         from open_stocks_mcp.server.app import health_check
 

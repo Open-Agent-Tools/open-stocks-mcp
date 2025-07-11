@@ -10,12 +10,12 @@ from open_stocks_mcp.server.app import attempt_login, create_mcp_server, mcp
 class TestServerApp:
     """Test server app functionality."""
 
-    def test_mcp_server_instance_exists(self):
+    def test_mcp_server_instance_exists(self) -> None:
         """Test that global mcp server instance exists."""
         assert mcp is not None
         assert hasattr(mcp, "tool")
 
-    def test_create_mcp_server_returns_mcp_instance(self):
+    def test_create_mcp_server_returns_mcp_instance(self) -> None:
         """Test create_mcp_server returns the global mcp instance."""
         with (
             patch("open_stocks_mcp.server.app.load_config") as mock_config,
@@ -28,7 +28,7 @@ class TestServerApp:
             mock_config.assert_called_once()
             mock_logging.assert_called_once()
 
-    def test_create_mcp_server_with_config(self):
+    def test_create_mcp_server_with_config(self) -> None:
         """Test create_mcp_server with provided config."""
         mock_config = MagicMock()
 
@@ -42,7 +42,7 @@ class TestServerApp:
 class TestAttemptLogin:
     """Test attempt_login functionality."""
 
-    def test_attempt_login_success(self):
+    def test_attempt_login_success(self) -> None:
         """Test successful login attempt."""
         mock_session_manager = MagicMock()
         mock_session_manager.ensure_authenticated.return_value = True
@@ -71,7 +71,7 @@ class TestAttemptLogin:
             mock_session_manager.get_session_info.assert_called_once()
             mock_logger.info.assert_called()
 
-    def test_attempt_login_no_user_profile(self):
+    def test_attempt_login_no_user_profile(self) -> None:
         """Test login attempt when authentication fails."""
         mock_session_manager = MagicMock()
         mock_session_manager.ensure_authenticated.return_value = False
@@ -96,7 +96,7 @@ class TestAttemptLogin:
             mock_logger.error.assert_called()
             mock_exit.assert_called_once_with(1)
 
-    def test_attempt_login_exception(self):
+    def test_attempt_login_exception(self) -> None:
         """Test login attempt when an exception occurs."""
         mock_session_manager = MagicMock()
         mock_session_manager.set_credentials.side_effect = Exception("Login failed")
@@ -122,7 +122,7 @@ class TestToolRegistration:
     """Test that all tools are properly registered."""
 
     @pytest.mark.asyncio
-    async def test_tools_are_registered(self):
+    async def test_tools_are_registered(self) -> None:
         """Test that all expected tools are registered on the mcp server."""
         # Get the list of registered tools via list_tools method
         tools_list = await mcp.list_tools()
@@ -138,7 +138,7 @@ class TestToolRegistration:
             assert tool_name in tool_names, f"Tool {tool_name} not registered"
 
     @pytest.mark.asyncio
-    async def test_account_info_tool_callable(self):
+    async def test_account_info_tool_callable(self) -> None:
         """Test that account_info tool is callable."""
         tools_list = await mcp.list_tools()
         account_info_tool = None

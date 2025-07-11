@@ -3,6 +3,7 @@
 from unittest.mock import patch
 
 import pytest
+from typing import Any
 
 from open_stocks_mcp.tools.robinhood_watchlist_tools import (
     add_symbols_to_watchlist,
@@ -18,7 +19,7 @@ class TestGetAllWatchlists:
 
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_get_all_watchlists_success(self, mock_execute_with_retry):
+    async def test_get_all_watchlists_success(self, mock_execute_with_retry: Any) -> None:
         """Test successful retrieval of all watchlists."""
         mock_execute_with_retry.return_value = [
             {
@@ -49,7 +50,7 @@ class TestGetAllWatchlists:
 
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_get_all_watchlists_no_data(self, mock_execute_with_retry):
+    async def test_get_all_watchlists_no_data(self, mock_execute_with_retry: Any) -> None:
         """Test get all watchlists when no data is available."""
         mock_execute_with_retry.return_value = None
 
@@ -63,7 +64,7 @@ class TestGetAllWatchlists:
 
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_get_all_watchlists_empty_list(self, mock_execute_with_retry):
+    async def test_get_all_watchlists_empty_list(self, mock_execute_with_retry: Any) -> None:
         """Test get all watchlists with empty list."""
         mock_execute_with_retry.return_value = []
 
@@ -77,7 +78,7 @@ class TestGetAllWatchlists:
 
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_get_all_watchlists_missing_symbols(self, mock_execute_with_retry):
+    async def test_get_all_watchlists_missing_symbols(self, mock_execute_with_retry: Any) -> None:
         """Test get all watchlists with missing symbols field."""
         mock_execute_with_retry.return_value = [
             {
@@ -101,7 +102,7 @@ class TestGetWatchlistByName:
 
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_get_watchlist_by_name_success(self, mock_execute_with_retry):
+    async def test_get_watchlist_by_name_success(self, mock_execute_with_retry: Any) -> None:
         """Test successful retrieval of watchlist by name."""
         mock_execute_with_retry.return_value = {
             "name": "Tech Stocks",
@@ -120,7 +121,7 @@ class TestGetWatchlistByName:
 
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_get_watchlist_by_name_not_found(self, mock_execute_with_retry):
+    async def test_get_watchlist_by_name_not_found(self, mock_execute_with_retry: Any) -> None:
         """Test get watchlist by name when watchlist not found."""
         mock_execute_with_retry.return_value = None
 
@@ -134,7 +135,7 @@ class TestGetWatchlistByName:
         assert "not found" in result["result"]["message"]
 
     @pytest.mark.asyncio
-    async def test_get_watchlist_by_name_empty_name(self):
+    async def test_get_watchlist_by_name_empty_name(self) -> None:
         """Test get watchlist by name with empty name."""
         result = await get_watchlist_by_name("")
 
@@ -144,7 +145,7 @@ class TestGetWatchlistByName:
 
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_get_watchlist_by_name_no_symbols(self, mock_execute_with_retry):
+    async def test_get_watchlist_by_name_no_symbols(self, mock_execute_with_retry: Any) -> None:
         """Test get watchlist by name with no symbols."""
         mock_execute_with_retry.return_value = {
             "name": "Empty Watchlist",
@@ -166,7 +167,7 @@ class TestAddSymbolsToWatchlist:
 
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_add_symbols_to_watchlist_success(self, mock_execute_with_retry):
+    async def test_add_symbols_to_watchlist_success(self, mock_execute_with_retry: Any) -> None:
         """Test successful addition of symbols to watchlist."""
         mock_execute_with_retry.return_value = {"success": True}
 
@@ -182,7 +183,7 @@ class TestAddSymbolsToWatchlist:
 
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_add_symbols_to_watchlist_failure(self, mock_execute_with_retry):
+    async def test_add_symbols_to_watchlist_failure(self, mock_execute_with_retry: Any) -> None:
         """Test failed addition of symbols to watchlist."""
         mock_execute_with_retry.return_value = None
 
@@ -196,7 +197,7 @@ class TestAddSymbolsToWatchlist:
         assert "Failed to add symbols" in result["result"]["error"]
 
     @pytest.mark.asyncio
-    async def test_add_symbols_to_watchlist_empty_name(self):
+    async def test_add_symbols_to_watchlist_empty_name(self) -> None:
         """Test add symbols with empty watchlist name."""
         result = await add_symbols_to_watchlist("", ["AAPL"])
 
@@ -205,7 +206,7 @@ class TestAddSymbolsToWatchlist:
         assert "Watchlist name is required" in result["result"]["error"]
 
     @pytest.mark.asyncio
-    async def test_add_symbols_to_watchlist_empty_symbols(self):
+    async def test_add_symbols_to_watchlist_empty_symbols(self) -> None:
         """Test add symbols with empty symbols list."""
         result = await add_symbols_to_watchlist("Tech Stocks", [])
 
@@ -214,7 +215,7 @@ class TestAddSymbolsToWatchlist:
         assert "At least one symbol is required" in result["result"]["error"]
 
     @pytest.mark.asyncio
-    async def test_add_symbols_to_watchlist_invalid_symbols(self):
+    async def test_add_symbols_to_watchlist_invalid_symbols(self) -> None:
         """Test add symbols with invalid symbols."""
         result = await add_symbols_to_watchlist("Tech Stocks", ["", "  ", None])
 
@@ -225,8 +226,8 @@ class TestAddSymbolsToWatchlist:
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
     @pytest.mark.asyncio
     async def test_add_symbols_to_watchlist_format_symbols(
-        self, mock_execute_with_retry
-    ):
+        self, mock_execute_with_retry: Any
+    ) -> None:
         """Test symbol formatting (lowercase to uppercase, strip whitespace)."""
         mock_execute_with_retry.return_value = {"success": True}
 
@@ -243,7 +244,7 @@ class TestRemoveSymbolsFromWatchlist:
 
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_remove_symbols_from_watchlist_success(self, mock_execute_with_retry):
+    async def test_remove_symbols_from_watchlist_success(self, mock_execute_with_retry: Any) -> None:
         """Test successful removal of symbols from watchlist."""
         mock_execute_with_retry.return_value = {"success": True}
 
@@ -259,7 +260,7 @@ class TestRemoveSymbolsFromWatchlist:
 
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_remove_symbols_from_watchlist_failure(self, mock_execute_with_retry):
+    async def test_remove_symbols_from_watchlist_failure(self, mock_execute_with_retry: Any) -> None:
         """Test failed removal of symbols from watchlist."""
         mock_execute_with_retry.return_value = None
 
@@ -273,7 +274,7 @@ class TestRemoveSymbolsFromWatchlist:
         assert "Failed to remove symbols" in result["result"]["error"]
 
     @pytest.mark.asyncio
-    async def test_remove_symbols_from_watchlist_empty_name(self):
+    async def test_remove_symbols_from_watchlist_empty_name(self) -> None:
         """Test remove symbols with empty watchlist name."""
         result = await remove_symbols_from_watchlist("", ["AAPL"])
 
@@ -282,7 +283,7 @@ class TestRemoveSymbolsFromWatchlist:
         assert "Watchlist name is required" in result["result"]["error"]
 
     @pytest.mark.asyncio
-    async def test_remove_symbols_from_watchlist_empty_symbols(self):
+    async def test_remove_symbols_from_watchlist_empty_symbols(self) -> None:
         """Test remove symbols with empty symbols list."""
         result = await remove_symbols_from_watchlist("Tech Stocks", [])
 
@@ -293,8 +294,8 @@ class TestRemoveSymbolsFromWatchlist:
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
     @pytest.mark.asyncio
     async def test_remove_symbols_from_watchlist_exception(
-        self, mock_execute_with_retry
-    ):
+        self, mock_execute_with_retry: Any
+    ) -> None:
         """Test exception handling during symbol removal."""
         mock_execute_with_retry.side_effect = Exception("API Error")
 
@@ -311,7 +312,7 @@ class TestGetWatchlistPerformance:
 
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.get_watchlist_by_name")
     @pytest.mark.asyncio
-    async def test_get_watchlist_performance_success(self, mock_get_watchlist):
+    async def test_get_watchlist_performance_success(self, mock_get_watchlist: Any) -> None:
         """Test watchlist performance handling when API calls fail."""
         # Mock watchlist data
         mock_get_watchlist.return_value = {
@@ -350,8 +351,8 @@ class TestGetWatchlistPerformance:
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.get_watchlist_by_name")
     @pytest.mark.asyncio
     async def test_get_watchlist_performance_watchlist_not_found(
-        self, mock_get_watchlist
-    ):
+        self, mock_get_watchlist: Any
+    ) -> None:
         """Test watchlist performance when watchlist not found."""
         mock_get_watchlist.return_value = {
             "result": {"status": "not_found", "message": "Watchlist not found"}
@@ -363,7 +364,7 @@ class TestGetWatchlistPerformance:
         assert result["result"]["status"] == "not_found"
 
     @pytest.mark.asyncio
-    async def test_get_watchlist_performance_empty_name(self):
+    async def test_get_watchlist_performance_empty_name(self) -> None:
         """Test watchlist performance with empty name."""
         result = await get_watchlist_performance("")
 
@@ -373,7 +374,7 @@ class TestGetWatchlistPerformance:
 
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.get_watchlist_by_name")
     @pytest.mark.asyncio
-    async def test_get_watchlist_performance_empty_watchlist(self, mock_get_watchlist):
+    async def test_get_watchlist_performance_empty_watchlist(self, mock_get_watchlist: Any) -> None:
         """Test watchlist performance with no symbols."""
         mock_get_watchlist.return_value = {
             "result": {"name": "Empty", "symbols": [], "status": "success"}
@@ -389,7 +390,7 @@ class TestGetWatchlistPerformance:
 
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.get_watchlist_by_name")
     @pytest.mark.asyncio
-    async def test_get_watchlist_performance_mixed_results(self, mock_get_watchlist):
+    async def test_get_watchlist_performance_mixed_results(self, mock_get_watchlist: Any) -> None:
         """Test watchlist performance with multiple symbols (all will fail gracefully)."""
         mock_get_watchlist.return_value = {
             "result": {
@@ -414,7 +415,7 @@ class TestGetWatchlistPerformance:
 
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.get_watchlist_by_name")
     @pytest.mark.asyncio
-    async def test_get_watchlist_performance_api_error(self, mock_get_watchlist):
+    async def test_get_watchlist_performance_api_error(self, mock_get_watchlist: Any) -> None:
         """Test watchlist performance when API calls fail for some symbols."""
         mock_get_watchlist.return_value = {
             "result": {"name": "Test", "symbols": ["AAPL"], "status": "success"}

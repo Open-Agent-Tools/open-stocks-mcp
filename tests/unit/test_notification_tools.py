@@ -3,6 +3,7 @@
 from unittest.mock import patch
 
 import pytest
+from typing import Any
 
 from open_stocks_mcp.tools.robinhood_account_features_tools import (
     get_account_features,
@@ -21,7 +22,7 @@ class TestNotifications:
 
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_get_notifications_success(self, mock_execute_with_retry):
+    async def test_get_notifications_success(self, mock_execute_with_retry: Any) -> None:
         """Test successful notifications retrieval."""
         mock_execute_with_retry.return_value = [
             {
@@ -63,7 +64,7 @@ class TestNotifications:
 
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_get_notifications_no_data(self, mock_execute_with_retry):
+    async def test_get_notifications_no_data(self, mock_execute_with_retry: Any) -> None:
         """Test notifications when no data is available."""
         mock_execute_with_retry.return_value = None
 
@@ -78,7 +79,7 @@ class TestNotifications:
 
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_get_notifications_empty_list(self, mock_execute_with_retry):
+    async def test_get_notifications_empty_list(self, mock_execute_with_retry: Any) -> None:
         """Test notifications with empty list."""
         mock_execute_with_retry.return_value = []
 
@@ -92,7 +93,7 @@ class TestNotifications:
 
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_get_notifications_count_limit(self, mock_execute_with_retry):
+    async def test_get_notifications_count_limit(self, mock_execute_with_retry: Any) -> None:
         """Test notifications with count limit."""
         mock_execute_with_retry.return_value = [
             {"id": f"notif_{i}", "title": f"Notification {i}", "read": False}
@@ -109,7 +110,7 @@ class TestNotifications:
 
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_get_notifications_mixed_read_status(self, mock_execute_with_retry):
+    async def test_get_notifications_mixed_read_status(self, mock_execute_with_retry: Any) -> None:
         """Test notifications with mixed read status."""
         mock_execute_with_retry.return_value = [
             {"id": "notif_1", "title": "Read Notification", "read": True},
@@ -133,7 +134,7 @@ class TestLatestNotification:
 
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_get_latest_notification_success(self, mock_execute_with_retry):
+    async def test_get_latest_notification_success(self, mock_execute_with_retry: Any) -> None:
         """Test successful latest notification retrieval."""
         mock_execute_with_retry.return_value = {
             "id": "latest_notif",
@@ -155,7 +156,7 @@ class TestLatestNotification:
 
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_get_latest_notification_no_data(self, mock_execute_with_retry):
+    async def test_get_latest_notification_no_data(self, mock_execute_with_retry: Any) -> None:
         """Test latest notification when no data is available."""
         mock_execute_with_retry.return_value = None
 
@@ -173,7 +174,7 @@ class TestMarginCalls:
 
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_get_margin_calls_success(self, mock_execute_with_retry):
+    async def test_get_margin_calls_success(self, mock_execute_with_retry: Any) -> None:
         """Test successful margin calls retrieval."""
         mock_execute_with_retry.return_value = [
             {
@@ -204,7 +205,7 @@ class TestMarginCalls:
 
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_get_margin_calls_no_data(self, mock_execute_with_retry):
+    async def test_get_margin_calls_no_data(self, mock_execute_with_retry: Any) -> None:
         """Test margin calls when no data is available."""
         mock_execute_with_retry.return_value = None
 
@@ -220,7 +221,7 @@ class TestMarginCalls:
 
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_get_margin_calls_no_active_calls(self, mock_execute_with_retry):
+    async def test_get_margin_calls_no_active_calls(self, mock_execute_with_retry: Any) -> None:
         """Test margin calls with no active calls."""
         mock_execute_with_retry.return_value = [
             {
@@ -249,7 +250,7 @@ class TestMarginCalls:
 
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_get_margin_calls_invalid_amounts(self, mock_execute_with_retry):
+    async def test_get_margin_calls_invalid_amounts(self, mock_execute_with_retry: Any) -> None:
         """Test margin calls with invalid amount values."""
         mock_execute_with_retry.return_value = [
             {
@@ -283,7 +284,7 @@ class TestMarginInterest:
 
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_get_margin_interest_success(self, mock_execute_with_retry):
+    async def test_get_margin_interest_success(self, mock_execute_with_retry: Any) -> None:
         """Test successful margin interest retrieval."""
         mock_execute_with_retry.return_value = [
             {
@@ -317,7 +318,7 @@ class TestMarginInterest:
 
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_get_margin_interest_no_data(self, mock_execute_with_retry):
+    async def test_get_margin_interest_no_data(self, mock_execute_with_retry: Any) -> None:
         """Test margin interest when no data is available."""
         mock_execute_with_retry.return_value = None
 
@@ -333,7 +334,7 @@ class TestMarginInterest:
 
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_get_margin_interest_invalid_amounts(self, mock_execute_with_retry):
+    async def test_get_margin_interest_invalid_amounts(self, mock_execute_with_retry: Any) -> None:
         """Test margin interest with invalid amount values."""
         mock_execute_with_retry.return_value = [
             {
@@ -362,7 +363,7 @@ class TestSubscriptionFees:
 
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_get_subscription_fees_success(self, mock_execute_with_retry):
+    async def test_get_subscription_fees_success(self, mock_execute_with_retry: Any) -> None:
         """Test successful subscription fees retrieval."""
         mock_execute_with_retry.return_value = [
             {
@@ -397,7 +398,7 @@ class TestSubscriptionFees:
 
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_get_subscription_fees_no_data(self, mock_execute_with_retry):
+    async def test_get_subscription_fees_no_data(self, mock_execute_with_retry: Any) -> None:
         """Test subscription fees when no data is available."""
         mock_execute_with_retry.return_value = None
 
@@ -414,7 +415,7 @@ class TestSubscriptionFees:
 
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_get_subscription_fees_non_gold(self, mock_execute_with_retry):
+    async def test_get_subscription_fees_non_gold(self, mock_execute_with_retry: Any) -> None:
         """Test subscription fees for non-Gold member."""
         mock_execute_with_retry.return_value = [
             {
@@ -440,7 +441,7 @@ class TestReferrals:
 
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_get_referrals_success_dict_format(self, mock_execute_with_retry):
+    async def test_get_referrals_success_dict_format(self, mock_execute_with_retry: Any) -> None:
         """Test successful referrals retrieval with dict format."""
         mock_execute_with_retry.return_value = {
             "referral_code": "ABC123",
@@ -484,7 +485,7 @@ class TestReferrals:
 
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_get_referrals_success_list_format(self, mock_execute_with_retry):
+    async def test_get_referrals_success_list_format(self, mock_execute_with_retry: Any) -> None:
         """Test successful referrals retrieval with list format."""
         mock_execute_with_retry.return_value = [
             {
@@ -516,7 +517,7 @@ class TestReferrals:
 
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_get_referrals_no_data(self, mock_execute_with_retry):
+    async def test_get_referrals_no_data(self, mock_execute_with_retry: Any) -> None:
         """Test referrals when no data is available."""
         mock_execute_with_retry.return_value = None
 
@@ -533,7 +534,7 @@ class TestReferrals:
 
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
     @pytest.mark.asyncio
-    async def test_get_referrals_invalid_rewards(self, mock_execute_with_retry):
+    async def test_get_referrals_invalid_rewards(self, mock_execute_with_retry: Any) -> None:
         """Test referrals with invalid reward values."""
         mock_execute_with_retry.return_value = [
             {
@@ -580,7 +581,7 @@ class TestAccountFeatures:
         mock_margin_interest,
         mock_notifications,
         mock_referrals,
-    ):
+    ) -> None:
         """Test successful account features retrieval."""
         mock_subscription_fees.return_value = {
             "result": {
@@ -651,7 +652,7 @@ class TestAccountFeatures:
         mock_margin_interest,
         mock_notifications,
         mock_referrals,
-    ):
+    ) -> None:
         """Test account features with some errors."""
         mock_subscription_fees.return_value = {
             "result": {
@@ -691,7 +692,7 @@ class TestAccountSettings:
 
     @patch("open_stocks_mcp.tools.robinhood_user_profile_tools.get_account_profile")
     @pytest.mark.asyncio
-    async def test_get_account_settings_success(self, mock_get_account_profile):
+    async def test_get_account_settings_success(self, mock_get_account_profile: Any) -> None:
         """Test successful account settings retrieval."""
         mock_get_account_profile.return_value = {
             "result": {
@@ -732,7 +733,7 @@ class TestAccountSettings:
 
     @patch("open_stocks_mcp.tools.robinhood_user_profile_tools.get_account_profile")
     @pytest.mark.asyncio
-    async def test_get_account_settings_no_data(self, mock_get_account_profile):
+    async def test_get_account_settings_no_data(self, mock_get_account_profile: Any) -> None:
         """Test account settings when no data is available."""
         mock_get_account_profile.return_value = {
             "result": {"status": "no_data", "error": "No account profile data found"}
@@ -747,7 +748,7 @@ class TestAccountSettings:
 
     @patch("open_stocks_mcp.tools.robinhood_user_profile_tools.get_account_profile")
     @pytest.mark.asyncio
-    async def test_get_account_settings_minimal_data(self, mock_get_account_profile):
+    async def test_get_account_settings_minimal_data(self, mock_get_account_profile: Any) -> None:
         """Test account settings with minimal data."""
         mock_get_account_profile.return_value = {
             "result": {
@@ -773,7 +774,7 @@ class TestAccountSettings:
 
     @patch("open_stocks_mcp.tools.robinhood_user_profile_tools.get_account_profile")
     @pytest.mark.asyncio
-    async def test_get_account_settings_exception(self, mock_get_account_profile):
+    async def test_get_account_settings_exception(self, mock_get_account_profile: Any) -> None:
         """Test account settings with exception."""
         mock_get_account_profile.side_effect = Exception("API Error")
 

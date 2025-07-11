@@ -3,6 +3,7 @@
 from unittest.mock import AsyncMock, patch
 
 import pytest
+from typing import Any
 
 from open_stocks_mcp.tools.robinhood_dividend_tools import (
     get_dividends,
@@ -16,7 +17,7 @@ class TestDividendTools:
 
     @patch("open_stocks_mcp.tools.robinhood_dividend_tools.asyncio.get_event_loop")
     @pytest.mark.asyncio
-    async def test_get_dividends_success(self, mock_loop):
+    async def test_get_dividends_success(self, mock_loop: Any) -> None:
         """Test successful dividends retrieval."""
         # Mock the event loop and run_in_executor
         mock_executor = AsyncMock()
@@ -34,7 +35,7 @@ class TestDividendTools:
 
     @patch("open_stocks_mcp.tools.robinhood_dividend_tools.asyncio.get_event_loop")
     @pytest.mark.asyncio
-    async def test_get_total_dividends_success(self, mock_loop):
+    async def test_get_total_dividends_success(self, mock_loop: Any) -> None:
         """Test successful total dividends calculation."""
         # Mock the event loop and run_in_executor
         mock_executor = AsyncMock()
@@ -49,7 +50,7 @@ class TestDividendTools:
 
     @patch("open_stocks_mcp.tools.robinhood_dividend_tools.asyncio.get_event_loop")
     @pytest.mark.asyncio
-    async def test_get_dividends_by_instrument_success(self, mock_loop):
+    async def test_get_dividends_by_instrument_success(self, mock_loop: Any) -> None:
         """Test successful dividends by instrument retrieval."""
         # Mock the event loop and run_in_executor
         mock_executor = AsyncMock()
@@ -66,7 +67,7 @@ class TestDividendTools:
 
     @patch("open_stocks_mcp.tools.robinhood_dividend_tools.asyncio.get_event_loop")
     @pytest.mark.asyncio
-    async def test_get_dividends_error(self, mock_loop):
+    async def test_get_dividends_error(self, mock_loop: Any) -> None:
         """Test error handling."""
         # Mock the event loop and run_in_executor to raise an exception
         mock_executor = AsyncMock()

@@ -3,6 +3,7 @@
 from unittest.mock import patch
 
 import pytest
+from typing import Any
 
 from open_stocks_mcp.tools.robinhood_options_tools import (
     find_tradable_options,
@@ -20,7 +21,7 @@ class TestOptionsChains:
 
     @patch("open_stocks_mcp.tools.robinhood_options_tools.rh.options.get_chains")
     @pytest.mark.asyncio
-    async def test_get_options_chains_success(self, mock_chains):
+    async def test_get_options_chains_success(self, mock_chains: Any) -> None:
         """Test successful options chains retrieval."""
         # Mock data for option chains
         mock_chains.return_value = [
@@ -52,7 +53,7 @@ class TestOptionsChains:
 
     @patch("open_stocks_mcp.tools.robinhood_options_tools.rh.options.get_chains")
     @pytest.mark.asyncio
-    async def test_get_options_chains_no_data(self, mock_chains):
+    async def test_get_options_chains_no_data(self, mock_chains: Any) -> None:
         """Test options chains when no data is available."""
         mock_chains.return_value = None
 
@@ -63,7 +64,7 @@ class TestOptionsChains:
         assert "No option chains found" in result["result"]["message"]
 
     @pytest.mark.asyncio
-    async def test_get_options_chains_invalid_symbol(self):
+    async def test_get_options_chains_invalid_symbol(self) -> None:
         """Test options chains with invalid symbol."""
         result = await get_options_chains("123INVALID")
 
@@ -80,7 +81,7 @@ class TestFindOptions:
         "open_stocks_mcp.tools.robinhood_options_tools.rh.options.find_tradable_options"
     )
     @pytest.mark.asyncio
-    async def test_find_options_no_filters(self, mock_find):
+    async def test_find_options_no_filters(self, mock_find: Any) -> None:
         """Test finding options without filters."""
         mock_find.return_value = [
             {
@@ -111,7 +112,7 @@ class TestFindOptions:
         "open_stocks_mcp.tools.robinhood_options_tools.rh.options.find_tradable_options"
     )
     @pytest.mark.asyncio
-    async def test_find_options_with_filters(self, mock_find):
+    async def test_find_options_with_filters(self, mock_find: Any) -> None:
         """Test finding options with expiration and type filters."""
         mock_find.return_value = [
             {
@@ -135,7 +136,7 @@ class TestFindOptions:
         assert result["result"]["status"] == "success"
 
     @pytest.mark.asyncio
-    async def test_find_options_invalid_date_format(self):
+    async def test_find_options_invalid_date_format(self) -> None:
         """Test finding options with invalid date format."""
         result = await find_tradable_options("AAPL", "01/19/2024", "call")
 
@@ -152,7 +153,7 @@ class TestOptionMarketData:
         "open_stocks_mcp.tools.robinhood_options_tools.rh.options.get_option_market_data_by_id"
     )
     @pytest.mark.asyncio
-    async def test_get_option_market_data_success(self, mock_market_data):
+    async def test_get_option_market_data_success(self, mock_market_data: Any) -> None:
         """Test successful option market data retrieval."""
         mock_market_data.return_value = {
             "symbol": "AAPL",
@@ -184,7 +185,7 @@ class TestOptionMarketData:
         "open_stocks_mcp.tools.robinhood_options_tools.rh.options.get_option_market_data_by_id"
     )
     @pytest.mark.asyncio
-    async def test_get_option_market_data_no_data(self, mock_market_data):
+    async def test_get_option_market_data_no_data(self, mock_market_data: Any) -> None:
         """Test option market data when no data is available."""
         mock_market_data.return_value = None
 
@@ -195,7 +196,7 @@ class TestOptionMarketData:
         assert "No market data found" in result["result"]["error"]
 
     @pytest.mark.asyncio
-    async def test_get_option_market_data_empty_id(self):
+    async def test_get_option_market_data_empty_id(self) -> None:
         """Test option market data with empty ID."""
         result = await get_option_market_data("")
 
@@ -211,7 +212,7 @@ class TestOptionHistoricals:
         "open_stocks_mcp.tools.robinhood_options_tools.rh.options.get_option_historicals"
     )
     @pytest.mark.asyncio
-    async def test_get_option_historicals_success(self, mock_historicals):
+    async def test_get_option_historicals_success(self, mock_historicals: Any) -> None:
         """Test successful option historicals retrieval."""
         mock_historicals.return_value = [
             {
@@ -245,7 +246,7 @@ class TestOptionHistoricals:
         assert result["result"]["status"] == "success"
 
     @pytest.mark.asyncio
-    async def test_get_option_historicals_invalid_type(self):
+    async def test_get_option_historicals_invalid_type(self) -> None:
         """Test option historicals with invalid option type."""
         result = await get_option_historicals(
             "AAPL", "2024-01-19", "150.00", "invalid", "hour", "week"
@@ -259,7 +260,7 @@ class TestOptionHistoricals:
         )
 
     @pytest.mark.asyncio
-    async def test_get_option_historicals_invalid_interval(self):
+    async def test_get_option_historicals_invalid_interval(self) -> None:
         """Test option historicals with invalid interval."""
         result = await get_option_historicals(
             "AAPL", "2024-01-19", "150.00", "call", "invalid", "week"
@@ -278,7 +279,7 @@ class TestOptionPositions:
         "open_stocks_mcp.tools.robinhood_options_tools.rh.options.get_aggregate_positions"
     )
     @pytest.mark.asyncio
-    async def test_get_aggregate_positions_success(self, mock_aggregate):
+    async def test_get_aggregate_positions_success(self, mock_aggregate: Any) -> None:
         """Test successful aggregate positions retrieval."""
         mock_aggregate.return_value = {
             "AAPL": {
@@ -314,7 +315,7 @@ class TestOptionPositions:
         "open_stocks_mcp.tools.robinhood_options_tools.rh.options.get_aggregate_positions"
     )
     @pytest.mark.asyncio
-    async def test_get_aggregate_positions_empty(self, mock_aggregate):
+    async def test_get_aggregate_positions_empty(self, mock_aggregate: Any) -> None:
         """Test aggregate positions when empty."""
         mock_aggregate.return_value = []
 
@@ -329,7 +330,7 @@ class TestOptionPositions:
         "open_stocks_mcp.tools.robinhood_options_tools.rh.options.get_all_option_positions"
     )
     @pytest.mark.asyncio
-    async def test_get_all_option_positions_success(self, mock_all_positions):
+    async def test_get_all_option_positions_success(self, mock_all_positions: Any) -> None:
         """Test successful all option positions retrieval."""
         mock_all_positions.return_value = [
             {
@@ -369,7 +370,7 @@ class TestOptionPositions:
         "open_stocks_mcp.tools.robinhood_options_tools.rh.options.get_open_option_positions"
     )
     @pytest.mark.asyncio
-    async def test_get_open_option_positions_success(self, mock_open_positions):
+    async def test_get_open_option_positions_success(self, mock_open_positions: Any) -> None:
         """Test successful open option positions retrieval."""
         mock_open_positions.return_value = [
             {
@@ -397,7 +398,7 @@ class TestOptionPositions:
         "open_stocks_mcp.tools.robinhood_options_tools.rh.options.get_open_option_positions"
     )
     @pytest.mark.asyncio
-    async def test_get_open_option_positions_none(self, mock_open_positions):
+    async def test_get_open_option_positions_none(self, mock_open_positions: Any) -> None:
         """Test open option positions when none exist."""
         mock_open_positions.return_value = None
 
