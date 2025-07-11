@@ -261,7 +261,10 @@ class TestInterestPayments:
     )
     @pytest.mark.asyncio
     async def test_interest_payments_success(
-        self, mock_interest_payments: Any, mock_session_manager: Any, mock_rate_limiter: Any
+        self,
+        mock_interest_payments: Any,
+        mock_session_manager: Any,
+        mock_rate_limiter: Any,
     ) -> None:
         """Test successful interest payments retrieval."""
         mock_interest_payments.return_value = [
@@ -314,7 +317,10 @@ class TestInterestPayments:
     )
     @pytest.mark.asyncio
     async def test_interest_payments_no_data(
-        self, mock_interest_payments: Any, mock_session_manager: Any, mock_rate_limiter: Any
+        self,
+        mock_interest_payments: Any,
+        mock_session_manager: Any,
+        mock_rate_limiter: Any,
     ) -> None:
         """Test interest payments when no data is available."""
         mock_interest_payments.return_value = None

@@ -98,7 +98,9 @@ class TestSessionManager:
         assert result is False
 
     @pytest.mark.asyncio
-    async def test_authenticate_success(self, session_manager: Any, mocker: Any) -> None:
+    async def test_authenticate_success(
+        self, session_manager: Any, mocker: Any
+    ) -> None:
         """Test successful authentication."""
         session_manager.set_credentials("testuser", "testpass")
 
@@ -115,7 +117,9 @@ class TestSessionManager:
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @pytest.mark.asyncio
-    async def test_authenticate_failure(self, session_manager: Any, mocker: Any) -> None:
+    async def test_authenticate_failure(
+        self, session_manager: Any, mocker: Any
+    ) -> None:
         """Test authentication failure."""
         session_manager.set_credentials("testuser", "testpass")
 
@@ -130,7 +134,9 @@ class TestSessionManager:
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @pytest.mark.asyncio
-    async def test_authenticate_no_profile(self, session_manager: Any, mocker: Any) -> None:
+    async def test_authenticate_no_profile(
+        self, session_manager: Any, mocker: Any
+    ) -> None:
         """Test authentication when profile retrieval fails."""
         session_manager.set_credentials("testuser", "testpass")
 
