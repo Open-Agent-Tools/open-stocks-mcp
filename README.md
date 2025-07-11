@@ -86,6 +86,7 @@ The Open Stocks MCP server includes enhanced authentication that handles Robinho
 
 ### Via Command Line
 
+**STDIO Transport (Default)**
 Start the server in stdio transport mode (for MCP clients):
 
 ```bash
@@ -95,6 +96,27 @@ open-stocks-mcp-server --transport stdio
 # For development with auto-reload
 uv run open-stocks-mcp-server --transport stdio
 ```
+
+**HTTP Transport (New in v0.4.0)**
+Start the server with HTTP transport for better reliability and session management:
+
+```bash
+# Using the installed package with default settings (localhost:3000)
+open-stocks-mcp-server --transport http
+
+# Custom host and port
+open-stocks-mcp-server --transport http --host localhost --port 3000
+
+# For development with auto-reload
+uv run open-stocks-mcp-server --transport http --port 3000
+```
+
+**Available Endpoints (HTTP Transport):**
+- JSON-RPC 2.0: `http://localhost:3000/mcp`
+- Server-Sent Events: `http://localhost:3000/sse`
+- Health Check: `http://localhost:3000/health`
+- Server Status: `http://localhost:3000/status`
+- API Documentation: `http://localhost:3000/docs`
 
 ### Testing the Server
 
@@ -113,7 +135,8 @@ To integrate Open Stocks MCP with your ADK (Agent Development Kit) agent:
 
 ### 1. Update MCP Settings
 
-Add the server to your MCP settings configuration (typically in `mcp_settings.json` or similar):
+**STDIO Transport (Legacy)**
+Add the server to your MCP settings configuration:
 
 ```json
 {
@@ -127,6 +150,20 @@ Add the server to your MCP settings configuration (typically in `mcp_settings.js
 }
 ```
 
+**HTTP Transport (Recommended)**
+For better reliability and session management:
+
+```json
+{
+  "mcpServers": {
+    "open-stocks": {
+      "command": "http://localhost:3000/mcp",
+      "transport": "http"
+    }
+  }
+}
+```
+
 ### 2. Claude Desktop Integration
 
 For Claude Desktop app, add to your configuration:
@@ -134,6 +171,7 @@ For Claude Desktop app, add to your configuration:
 **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 
+**STDIO Transport:**
 ```json
 {
   "mcpServers": {
@@ -143,6 +181,22 @@ For Claude Desktop app, add to your configuration:
     }
   }
 }
+```
+
+**HTTP Transport (Recommended):**
+```json
+{
+  "mcpServers": {
+    "open-stocks": {
+      "command": "http://localhost:3000/mcp"
+    }
+  }
+}
+```
+
+**Note**: When using HTTP transport, start the server first:
+```bash
+open-stocks-mcp-server --transport http
 ```
 
 
@@ -191,14 +245,16 @@ docker-compose down
 
 **See the [Docker Example README](examples/Docker/README.md) for complete documentation.**
 
-## Current Functionality (v0.3.0)
+## Current Functionality (v0.4.0)
 
 ### Core Features
 - **61 MCP Tools**: Complete trading and analysis toolkit
+- **HTTP Transport**: New HTTP transport with SSE for better reliability and session management
 - **Enhanced Authentication**: Device verification, MFA support, session persistence
 - **Production Ready**: Docker deployment, comprehensive error handling
 - **Advanced Analytics**: Portfolio analysis, dividend tracking, options trading
 - **Real-time Data**: Market data, news, earnings, analyst ratings
+- **Health Monitoring**: Built-in health checks and status endpoints
 
 ## Testing
 
@@ -238,7 +294,7 @@ uv run pytest --watch
 
 ## Development Roadmap
 
-**Current Status (v0.3.0)**: 61 MCP tools, complete read-only functionality  
+**Current Status (v0.4.0)**: 61 MCP tools, HTTP transport with SSE, complete read-only functionality  
 **Next Phase**: Live trading capabilities (order placement and management)
 
 For detailed development history and roadmap, see `TODO.md`.

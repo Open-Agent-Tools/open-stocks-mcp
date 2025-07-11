@@ -139,5 +139,9 @@ echo
 echo "Next steps:"
 echo "1. Edit .env file with your Robinhood credentials"
 echo "2. Run: docker-compose up"
-echo "3. Test connection: curl -N -H 'Accept: text/event-stream' http://localhost:3001/sse"
+echo "3. Test endpoints:"
+echo "   - Health check: curl http://localhost:3000/health"
+echo "   - Server status: curl http://localhost:3000/status"
+echo "   - Available tools: curl http://localhost:3000/tools"
+echo "   - SSE events: curl -N -H 'Accept: text/event-stream' http://localhost:3000/sse"
 echo

@@ -650,12 +650,13 @@ def attempt_login(username: str, password: str) -> None:
 
 
 @click.command()
-@click.option("--port", default=3001, help="Port to listen on for SSE")
+@click.option("--port", default=3000, help="Port to listen on for HTTP transport")
+@click.option("--host", default="localhost", help="Host to bind to")
 @click.option(
     "--transport",
-    type=click.Choice(["stdio", "sse"]),
+    type=click.Choice(["stdio", "http"]),
     default="stdio",
-    help="Transport type (stdio or sse)",
+    help="Transport type (stdio or http)",
 )
 @click.option(
     "--username", help="Robinhood username.", default=os.getenv("ROBINHOOD_USERNAME")
@@ -663,7 +664,9 @@ def attempt_login(username: str, password: str) -> None:
 @click.option(
     "--password", help="Robinhood password.", default=os.getenv("ROBINHOOD_PASSWORD")
 )
-def main(port: int, transport: str, username: str | None, password: str | None) -> int:
+def main(
+    port: int, host: str, transport: str, username: str | None, password: str | None
+) -> int:
     """Run the server with specified transport and handle authentication."""
     if not username:
         username = click.prompt("Please enter your Robinhood username")
@@ -677,10 +680,13 @@ def main(port: int, transport: str, username: str | None, password: str | None) 
 
     try:
         if transport == "stdio":
+            logger.info("Starting MCP server with STDIO transport")
             asyncio.run(server.run_stdio_async())
         else:
-            server.settings.port = port
-            asyncio.run(server.run_sse_async())
+            # Use our enhanced HTTP transport
+            from open_stocks_mcp.server.http_transport import run_http_server
+
+            asyncio.run(run_http_server(server, host, port))
         return 0
     except KeyboardInterrupt:
         logger.info("Server stopped by user")

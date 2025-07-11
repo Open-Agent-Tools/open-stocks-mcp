@@ -1,15 +1,13 @@
 version: '3.8'
 
 services:
-  open-stocks-mcp:
-    # Use the base image we built and verified
-    image: open-stocks-mcp-base:latest
-    # Build the image if it doesn't exist (optional)
+  open-stocks-mcp-dev:
+    # Build from source for development with HTTP transport
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ../../  # Build from project root
+      dockerfile: examples/Docker/Dockerfile.dev
     # Name the container for easier identification
-    container_name: open-stocks-mcp-server
+    container_name: open-stocks-mcp-server-dev
     # Restart the container automatically if it stops
     restart: unless-stopped
     # Pass environment variables from a .env file in the same directory
@@ -50,8 +48,13 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+    # Volume mount for development (optional)
+    volumes:
+      - type: tmpfs
+        target: /tmp
+        tmpfs:
+          size: 100M
 
 # Note:
-# Create a .env file in this directory with your Robinhood credentials:
-# ROBINHOOD_USERNAME=your_username
-# ROBINHOOD_PASSWORD=your_password
+# This is the development version that builds from source
+# For production, use docker-compose.yml with the published package

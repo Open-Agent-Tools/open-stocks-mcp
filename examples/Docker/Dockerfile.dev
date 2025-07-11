@@ -1,3 +1,6 @@
+# Development Dockerfile for Open Stocks MCP with HTTP transport
+# This builds from source to include the latest HTTP transport features
+
 # Use an official Python runtime as a parent image
 FROM python:3.11-slim
 
@@ -10,6 +13,7 @@ ENV PYTHONUNBUFFERED=1 \
 # Install system dependencies for health checks and HTTP transport
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
 # Create a non-root user for security
@@ -19,9 +23,11 @@ RUN groupadd --gid 1001 mcp && \
 # Set the working directory in the container
 WORKDIR /usr/src/app
 
-# Install the open-stocks-mcp package from PyPI
-# Use the latest version with HTTP transport support
-RUN pip install --no-cache-dir open-stocks-mcp==0.3.0
+# Copy the project source code
+COPY . .
+
+# Install the open-stocks-mcp package from source
+RUN pip install --no-cache-dir -e .
 
 # Verify that the package and its dependencies are installed correctly
 RUN pip check && \

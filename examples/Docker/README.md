@@ -5,9 +5,10 @@ This directory contains a complete example of how to run the Open Stocks MCP ser
 ## Architecture
 
 This setup uses a production-ready approach:
-1. **Dockerfile**: Creates a secure base image with the `open-stocks-mcp` library (v0.1.6) installed and verified
-2. **docker-compose.yml**: Orchestrates the server deployment with proper configuration and security settings
+1. **Dockerfile**: Creates a secure base image with the `open-stocks-mcp` library installed and verified
+2. **docker-compose.yml**: Orchestrates the server deployment with HTTP transport and proper configuration
 3. **Enhanced Authentication**: Automatic device verification and MFA support for seamless Robinhood integration
+4. **HTTP Transport**: Uses HTTP transport (port 3000) for better reliability and session management
 
 ## Prerequisites
 
@@ -17,21 +18,33 @@ This setup uses a production-ready approach:
 
 ## Quick Start
 
-### 1. Build the Base Image
+### 1. Choose Your Setup
 
-First, build the base image that contains the verified library installation:
-
+**Production (Stable):**
+Uses the published PyPI package (v0.3.0 - STDIO transport only):
 ```bash
-docker build . -t open-stocks-mcp-base:latest
+docker-compose up
 ```
 
-Or let Docker Compose build it automatically:
+**Development (Latest):**
+Builds from source with HTTP transport support (v0.4.0+):
+```bash
+docker-compose -f docker-compose.dev.yml up
+```
 
+### 2. Build the Image
+
+**Production:**
 ```bash
 docker-compose build
 ```
 
-### 2. Create Environment File
+**Development:**
+```bash
+docker-compose -f docker-compose.dev.yml build
+```
+
+### 3. Create Environment File
 
 Copy the example environment file and add your credentials:
 
@@ -49,7 +62,7 @@ ROBINHOOD_PASSWORD=your_robinhood_password
 
 ⚠️ **Security Note**: Never commit the `.env` file to version control. It's already included in `.gitignore`.
 
-### 3. Device Verification Setup
+### 4. Device Verification Setup
 
 **IMPORTANT**: The first time you start the container, Robinhood may require device verification:
 
@@ -69,19 +82,25 @@ INFO - Device verification prompt: Check robinhood app for device approvals meth
 INFO - Login successful with device verification
 INFO - Successfully authenticated user: your_username
 INFO - ✅ Successfully logged into Robinhood for user: your_username
-INFO - Uvicorn running on http://127.0.0.1:3001 (Press CTRL+C to quit)
+INFO - Starting HTTP MCP server on 0.0.0.0:3000
+INFO - Available endpoints:
+INFO -   - MCP JSON-RPC: http://0.0.0.0:3000/mcp
+INFO -   - SSE Events: http://0.0.0.0:3000/sse
+INFO -   - Health Check: http://0.0.0.0:3000/health
 ```
 
 **Success Indicators:**
 - ✅ Container status shows `healthy`
 - ✅ Logs show "Login successful with device verification"
-- ✅ Logs show "Uvicorn running on http://127.0.0.1:3001"
+- ✅ Logs show "Starting HTTP MCP server on 0.0.0.0:3000"
 - ✅ Session file created at `/home/mcp/.tokens/robinhood.pickle`
+- ✅ Health check responds: `curl http://localhost:3000/health`
 
-### 4. Start the Server
+### 5. Start the Server
 
 Run the server using Docker Compose:
 
+**Production (Stable):**
 ```bash
 # Foreground (see logs)
 docker-compose up
@@ -90,7 +109,16 @@ docker-compose up
 docker-compose up -d
 ```
 
-### 5. Verify Server Health
+**Development (Latest with HTTP transport):**
+```bash
+# Foreground (see logs)
+docker-compose -f docker-compose.dev.yml up
+
+# Background (detached mode)
+docker-compose -f docker-compose.dev.yml up -d
+```
+
+### 6. Verify Server Health
 
 Check that the server is running properly:
 
@@ -109,23 +137,39 @@ docker inspect open-stocks-mcp-server --format='{{.State.Health.Status}}'
 
 ### Connecting to the Server
 
-The MCP server runs on port `3001` using Server-Sent Events (SSE) transport. You can connect with any MCP-compatible client:
+The MCP server runs on port `3000` using **HTTP transport with Server-Sent Events (SSE)**. You can connect with any MCP-compatible client:
 
 ```bash
-# Using mcp CLI tool
-mcp --transport sse --url http://localhost:3001
+# Test health endpoint
+curl http://localhost:3000/health
 
-# Using curl to test connection
-curl -N -H "Accept: text/event-stream" http://localhost:3001/sse
+# Test server status
+curl http://localhost:3000/status
+
+# Test available tools
+curl http://localhost:3000/tools
+
+# MCP JSON-RPC endpoint
+curl -X POST http://localhost:3000/mcp \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc": "2.0", "method": "tools/list", "id": 1}'
+
+# SSE endpoint for real-time events
+curl -N -H "Accept: text/event-stream" http://localhost:3000/sse
 ```
 
 ### Available Tools
 
-The server provides 17 MCP tools across 5 categories:
+The server provides **61 MCP tools** across **10 categories**:
 
-- **Account Management**: `account_info`, `portfolio`, `account_details`, `positions`, `portfolio_history`
+- **Account Management**: `account_info`, `portfolio`, `account_details`, `positions`
 - **Market Data**: `stock_price`, `stock_info`, `search_stocks_tool`, `market_hours`, `price_history`
-- **Order History**: `stock_orders`, `options_orders`
+- **Options Trading**: `options_chains`, `find_options`, `option_market_data`, `option_historicals`
+- **Watchlist Management**: `all_watchlists`, `watchlist_by_name`, `add_to_watchlist`, `remove_from_watchlist`
+- **Advanced Analytics**: `build_holdings`, `build_user_profile`, `day_trades`
+- **Market Research**: `top_movers_sp500`, `stock_ratings`, `stock_earnings`, `stock_news`
+- **Account Features**: `notifications`, `margin_calls`, `subscription_fees`, `referrals`
+- **User Profiles**: `account_profile`, `basic_profile`, `investment_profile`, `security_profile`
 - **System Management**: `session_status`, `rate_limit_status`, `metrics_summary`, `health_check`
 - **Utility**: `list_tools`
 
