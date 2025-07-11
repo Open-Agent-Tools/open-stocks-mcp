@@ -148,88 +148,7 @@ For Claude Desktop app, add to your configuration:
 
 ### 3. Available Tools
 
-Once connected, your agent will have access to 56 MCP tools across 10 categories:
-
-**Account Management (8 tools):**
-- `account_info` - Gets basic Robinhood account information
-- `account_details` - Gets comprehensive account details including buying power and cash balances
-- `portfolio` - Portfolio holdings and values
-- `positions` - Current stock positions
-- `portfolio_history` - Historical portfolio performance
-- `build_holdings` - Comprehensive holdings with dividend information and performance metrics
-- `build_user_profile` - Complete financial profile with equity, cash, and dividend totals
-- `day_trades` - Pattern day trading tracking and buying power information
-
-**Order Management (2 tools):**
-- `stock_orders` - Stock order history and status
-- `options_orders` - Options order history
-
-**Stock Market Data (5 tools):**
-- `stock_price` - Real-time stock prices
-- `stock_info` - Company fundamentals
-- `search_stocks_tool` - Search for stocks by symbol/name
-- `market_hours` - Market status and hours
-- `price_history` - Historical price data
-
-**Advanced Market Data (10 tools):**
-- `top_movers_sp500` - S&P 500 top movers
-- `top_100_stocks` - Most popular stocks
-- `top_movers` - Top 20 overall movers
-- `stocks_by_tag` - Stocks by category (tech, biotech, etc.)
-- `stock_ratings` - Analyst ratings
-- `stock_earnings` - Earnings reports
-- `stock_news` - Latest news stories
-- `stock_splits` - Stock split history
-- `stock_events` - Corporate events
-- `stock_level2_data` - Level II market data (Gold)
-
-**Dividend & Income (5 tools):**
-- `dividends` - Complete dividend history
-- `total_dividends` - Total dividends with yearly breakdown
-- `dividends_by_instrument` - Dividends for specific stocks
-- `interest_payments` - Interest from cash management
-- `stock_loan_payments` - Stock lending income
-
-**Options Trading (7 tools):**
-- `options_chains` - Complete option chains for stocks
-- `find_options` - Search tradable options with filters
-- `option_market_data` - Greeks, open interest, and market data
-- `option_historicals` - Historical option price data
-- `aggregate_option_positions` - Aggregated positions by stock
-- `all_option_positions` - All option positions ever held
-- `open_option_positions` - Currently open option positions
-
-**Watchlist Management (5 tools):**
-- `all_watchlists` - All user-created watchlists
-- `watchlist_by_name` - Contents of specific watchlist
-- `add_to_watchlist` - Add symbols to watchlist
-- `remove_from_watchlist` - Remove symbols from watchlist
-- `watchlist_performance` - Performance metrics for watchlist
-
-**Account Features & Notifications (7 tools):**
-- `notifications` - Account notifications and alerts
-- `latest_notification` - Most recent notification
-- `margin_calls` - Margin call information
-- `margin_interest` - Margin interest charges
-- `subscription_fees` - Robinhood Gold fees
-- `referrals` - Referral program information
-- `account_features` - Comprehensive account features
-
-**User Profile Management (7 tools):**
-- `account_profile` - Trading account configuration
-- `basic_profile` - Basic user information
-- `investment_profile` - Risk assessment and objectives
-- `security_profile` - Security settings
-- `user_profile` - Comprehensive user profile
-- `complete_profile` - Combined profile data
-- `account_settings` - Account preferences
-
-**System Tools (5 tools):**
-- `list_tools` - List all available tools
-- `session_status` - Authentication status
-- `rate_limit_status` - Rate limiting information
-- `metrics_summary` - Performance metrics
-- `health_check` - System health status
+Once connected, your agent will have access to 61 MCP tools across 10 categories covering account management, market data, options trading, watchlists, user profiles, and system monitoring. Use the `list_tools` command for the complete current list.
 
 ## Docker Deployment
 
@@ -274,25 +193,12 @@ docker-compose down
 
 ## Current Functionality (v0.3.0)
 
-### Enhanced Authentication System
-- **Device Verification**: Automatic handling of Robinhood device verification workflows
-- **Environment-based login**: Secure credential storage via `.env` files
-- **Session persistence**: Cached authentication sessions to reduce verification frequency
-- **MFA Support**: Full support for SMS, email, and mobile app verification methods
-- **Error handling**: Intelligent error classification and user guidance
-
-### Robin Stocks Integration
-- **56 MCP Tools**: Complete suite of account, market data, options trading, watchlist management, and user profile tools
-- **Async Support**: Non-blocking API calls using asyncio
-- **Rate limiting**: Built-in protection against API rate limits
-- **Error recovery**: Automatic session refresh and retry logic
-- **Advanced Market Data**: S&P 500 movers, market intelligence, and analyst ratings
-- **Income Tracking**: Comprehensive dividend and interest payment analysis
-- **Portfolio Analytics**: Advanced holdings analysis with dividend information and day trading tracking
-- **Options Trading**: Complete options chain analysis, market data, and position tracking
-- **Watchlist Management**: Create and manage custom watchlists with performance tracking
-- **Account Features**: Notifications, margin calls, subscription fees, and referral information
-- **User Profiles**: Complete user profile management with security and investment preferences
+### Core Features
+- **61 MCP Tools**: Complete trading and analysis toolkit
+- **Enhanced Authentication**: Device verification, MFA support, session persistence
+- **Production Ready**: Docker deployment, comprehensive error handling
+- **Advanced Analytics**: Portfolio analysis, dividend tracking, options trading
+- **Real-time Data**: Market data, news, earnings, analyst ratings
 
 ## Testing
 
@@ -330,82 +236,12 @@ For development with auto-reloading:
 uv run pytest --watch
 ```
 
-## Development History
+## Development Roadmap
 
-### Phase 1: Foundation (v0.1.1) - ✅ Complete
-**Released**: December 2024  
-**Milestone**: Production-ready MCP server with core functionality
+**Current Status (v0.3.0)**: 61 MCP tools, complete read-only functionality  
+**Next Phase**: Live trading capabilities (order placement and management)
 
-**Key Features:**
-- **Authentication & Session Management**: Server-side login flow with environment-based credentials, session verification, storage, and re-authentication handling
-- **Basic Account Tools**: Portfolio overview, stock order history, basic account information, options order history
-- **Essential Account Tools**: Comprehensive account details (buying power, cash balances), current stock positions, historical portfolio performance  
-- **Core Market Data Tools**: Real-time stock prices, company information, stock search, market hours, historical price data
-- **Infrastructure**: Async wrapper for Robin Stocks API, comprehensive error handling, rate limiting, monitoring, integration tests
-
-**Technical Achievements:**
-- 17 fully functional MCP tools
-- Production-ready error handling and monitoring  
-- Modular architecture with clear separation of concerns
-- Comprehensive test coverage with 94 tests
-
-### Phase 2: Financial History & Analytics (v0.2.0) - ✅ Complete  
-**Released**: January 2025  
-**Milestone**: Comprehensive financial tracking and market intelligence
-
-**Key Features:**
-- **Dividend & Income Tools**: Complete dividend payment history with symbol resolution, total dividends with yearly breakdowns, instrument-specific dividend analysis, interest and stock loan payment history
-- **Advanced Portfolio Analytics**: Comprehensive holdings with dividend information and performance metrics, complete financial profile with equity/cash/dividend totals, pattern day trading tracking and buying power analysis
-- **Advanced Market Data**: S&P 500 top movers, top 100 most popular stocks, market categories and tags, analyst ratings and recommendations, quarterly earnings reports, stock news, stock splits, corporate events, Level II market data for Gold members
-
-**Technical Achievements:**
-- Added 18 new MCP tools (total: 35)
-- Enhanced market intelligence capabilities
-- Advanced financial analysis and reporting
-- Comprehensive dividend and income tracking
-
-### Phase 3: Options Trading & Advanced Features (v0.3.0) - ✅ Complete
-**Released**: July 2025  
-**Milestone**: Professional options trading and account management
-
-**Key Features:**
-- **Options Trading Tools**: Complete option chains analysis, tradable options search with filtering, options market data (Greeks, open interest, volume), historical option prices, comprehensive options position tracking (all, open, aggregate by underlying)
-- **Watchlist Management**: Full CRUD operations for custom stock watchlists, add/remove symbols with validation, performance tracking with gain/loss metrics, portfolio organization
-- **Account Features & Notifications**: Account notifications and alerts, margin call and interest tracking, Robinhood Gold subscription management, referral program information, comprehensive account features overview
-- **User Profile Tools**: Complete user profile management (account, basic, investment, security profiles), account settings and preferences, consolidated profile views, security settings management
-- **Enhanced Dividend Tools**: Advanced dividend tracking with improved symbol resolution and analytics
-
-**Technical Achievements:**
-- Added 26 new MCP tools (total: 61)
-- Complete options trading capabilities
-- Advanced portfolio management features  
-- Production-ready with comprehensive error handling
-- Enhanced code quality with ruff linting and formatting
-
-**Infrastructure Improvements:**
-- Robust error isolation and handling in all functions
-- 159 comprehensive unit tests with full coverage
-- Modern Python practices with contextlib.suppress
-- Consistent MCP patterns across all tools
-- Advanced monitoring and health checks
-
-### Current Status (v0.3.0)
-- **61 MCP tools** across 8 categories
-- **Complete read-only functionality** for comprehensive market analysis
-- **Production-ready** deployment with Docker containerization  
-- **Professional-grade** options trading and portfolio management
-- **Comprehensive** dividend tracking and financial analytics
-- **Advanced** watchlist management and account features
-
-### Next: Phase 4 - Trading Capabilities (v0.4.0)
-**Target**: Q1 2025  
-**Focus**: Live trading capabilities with order placement and management
-- Stock order placement (all order types)
-- Options order placement and strategies  
-- Order management and cancellation
-- Real-time trading execution
-
-**Goal**: Transform from read-only analysis to full trading platform
+For detailed development history and roadmap, see `TODO.md`.
 
 ## Intentionally Excluded
 

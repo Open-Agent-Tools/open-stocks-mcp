@@ -1,28 +1,6 @@
 # GEMINI.md
 
-This file provides guidance to Gemini when working with code in this repository.
-
-## Project Overview
-
-This is an MCP (Model Context Protocol) Server that provides access to stock market data through open-source APIs, particularly Robin Stocks. The server uses FastMCP for simplified MCP server development.
-
-This project aims to create a standardized interface for LLM applications to access stock market data, portfolio information, and trading capabilities through the Model Context Protocol.
-
-### Planned Features
-- Real-time stock price data
-- Portfolio management tools  
-- Market analysis capabilities
-- Historical data access
-- Trading alerts and notifications
-
-## Status
-
-- ✅ **Foundation**: MCP server scaffolding complete
-- ✅ **Infrastructure**: CI/CD, testing, and publishing pipeline established
-- ✅ **Package**: Published to PyPI as `open-stocks-mcp` (v0.1.1)
-- ✅ **Communication**: Server/client MCP communication verified working
-- 🔄 **In Progress**: Robin Stocks API integration
-- 📋 **Next**: Core stock market tools implementation
+This file provides technical guidance for Gemini when working with the Open Stocks MCP server codebase.
 
 ## Development Commands
 
@@ -229,78 +207,6 @@ Available test markers:
 - `integration`: Tests requiring credentials/live APIs  
 - `live_market`: Tests requiring live market data
 
-## GitHub CLI Usage
+## Release Management
 
-This project has GitHub CLI (gh) available and authenticated. Use it for repository operations:
-
-### Repository Management
-```bash
-# View repository info
-gh repo view
-
-# Check workflow status
-gh run list
-
-# View latest workflow run
-gh run view
-
-# Re-run failed workflows
-gh run rerun <run-id>
-```
-
-### Releases and Publishing
-```bash
-# Create a release (triggers PyPI publishing workflow)
-gh release create v0.1.1 --title "v0.1.1 - Feature Description" --notes "Release notes here"
-
-# List releases
-gh release list
-
-# View release details
-gh release view v0.0.2  # or latest version
-```
-
-### Issues and Pull Requests
-```bash
-# Create an issue
-gh issue create --title "Add Robin Stocks integration" --body "Implement stock price tools"
-
-# List issues
-gh issue list
-
-# Create a pull request
-gh pr create --title "feat: add stock price tool" --body "Implements get_stock_price tool using Robin Stocks API"
-
-# View PR status
-gh pr list
-```
-
-### Workflow Operations
-```bash
-# Trigger a workflow manually (if configured)
-gh workflow run tests.yml
-
-# View workflow runs
-gh run list --workflow=tests.yml
-
-# Download workflow artifacts
-gh run download <run-id>
-```
-
-Always prefer `gh` commands over manual GitHub web interface operations for consistency and automation.
-
-## Package Publishing
-
-This project is configured for automated PyPI publishing via GitHub Actions with trusted publishing. For detailed troubleshooting and manual publishing steps, refer to `PACKAGING.md`.
-
-### Release Checklist
-
-Before creating a release:
-
-- [ ] Update version in `pyproject.toml` and `__init__.py`
-- [ ] Run full test suite: `uv run pytest`
-- [ ] Check code quality: `uv run ruff check . && uv run mypy .`
-- [ ] Test local build: `uv build`
-- [ ] Update CHANGELOG.md (if exists)
-- [ ] Create meaningful release notes
-- [ ] Tag follows semantic versioning (vX.Y.Z)
+For complete GitHub CLI operations and release processes, see `CONTRIBUTING.md`.
