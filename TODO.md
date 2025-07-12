@@ -7,167 +7,45 @@
 - ✅ **HTTP transport with persistent volumes** - Docker examples with session persistence
 - ✅ **Phases 1-5 complete**: Foundation, Analytics, Options Trading, Watchlists, Profiles, HTTP Transport
 
-## Phase 4: Test Coverage Improvement - **IMMEDIATE PRIORITY**
+## Completed Phases Summary ✅
 
-### Current Test Coverage Status ✅ COMPLETE!
-- **Total MCP Tools:** 60
-- **Tools with Tests:** 60 (100%) - **+6 Priority 7 user profile tools completed!**
-- **Tools without Tests:** 0 (0%)
+### Phase 1-3: Foundation & Core Functionality (v0.1.0 - v0.3.0)
+- ✅ **61 MCP tools** across 8 categories implemented
+- ✅ Complete read-only market data, portfolio analytics, options data
+- ✅ Watchlist management and user profile tools
 
-### Priority 1: Core Trading & Portfolio Tools ✅ COMPLETED
-- [x] `stock_price()` - Get current stock price and basic metrics
-- [x] `stock_info()` - Get detailed company information and fundamentals
-- [x] `search_stocks_tool()` - Search for stocks by symbol or company name
-- [x] `market_hours()` - Get current market hours and status
-- [x] `price_history()` - Get historical price data for a stock
-- [x] `stock_orders()` - Retrieve stock order history and statuses (completed previously)
-- [x] `options_orders()` - Retrieve options order history and statuses (completed previously)
-- [x] `list_tools()` - Provides a list of available tools and their descriptions
-- [x] `session_status()` - Get current session status and authentication info
-- [x] `rate_limit_status()` - Get current rate limit usage and statistics
-- [x] `metrics_summary()` - Get comprehensive metrics summary
-- [x] `health_check()` - Get health status of the MCP server
+### Phase 4: Test Coverage (v0.3.1)
+- ✅ **148 comprehensive tests** covering all 61 MCP tools (100% coverage)
+- ✅ Test performance optimization with markers (slow, exception_test)
 
-### Priority 2: Options Trading Tools ✅ COMPLETED
-- [x] `options_chains()` - Get complete option chains for a stock symbol
-- [x] `find_options()` - Find tradable options with optional filtering
-- [x] `option_market_data()` - Get market data for a specific option contract
-- [x] `option_historicals()` - Get historical price data for an option contract
-- [x] `aggregate_option_positions()` - Get aggregated option positions by underlying stock
-- [x] `all_option_positions()` - Get all option positions ever held
-- [x] `open_option_positions()` - Get currently open option positions
+### Phase 5: HTTP Transport & Infrastructure (v0.4.1)
+- ✅ HTTP transport with Server-Sent Events (SSE)
+- ✅ Docker deployment with persistent volumes
+- ✅ Health monitoring and session management
+- ✅ Security headers, CORS, and timeout handling
 
-### Priority 3: Advanced Portfolio Analytics ✅ COMPLETED
-- [x] `build_holdings()` - Build comprehensive holdings with dividend information
-- [x] `build_user_profile()` - Build comprehensive user profile with equity totals
-- [x] `day_trades()` - Get pattern day trading information
-- [x] `interest_payments()` - Get interest payment history from cash management
-- [x] `stock_loan_payments()` - Get stock loan payment history
-- [x] `metrics_summary()` - Get comprehensive metrics summary
-- [x] `health_check()` - Get health status of the MCP server
 
-### Priority 4: Watchlist Management ✅ COMPLETED
-- [x] `all_watchlists()` - Get all user-created watchlists
-- [x] `watchlist_by_name()` - Get contents of a specific watchlist by name
-- [x] `add_to_watchlist()` - Add symbols to a watchlist
-- [x] `remove_from_watchlist()` - Remove symbols from a watchlist
-- [x] `watchlist_performance()` - Get performance metrics for a watchlist
+## Phase 6: Advanced Instrument Data (v0.4.2) - **IMMEDIATE PRIORITY**
 
-### Priority 5: Advanced Market Data & Research ✅ COMPLETED
-- [x] `top_movers_sp500()` - Get top S&P 500 movers
-- [x] `stock_ratings()` - Get analyst ratings for a stock
-- [x] `stock_earnings()` - Get earnings reports for a stock
-- [x] `stock_news()` - Get news stories for a stock
-- [x] `stock_splits()` - Get stock split history for a stock
-- [x] `stock_events()` - Get corporate events for a stock
-- [x] `stock_level2_data()` - Get Level II market data (Gold subscription required)
+### Enhanced Stock Instrument Tools (4 tools)
+- [ ] `get_instruments_by_symbols(symbols: list[str])` - Detailed instrument metadata for multiple symbols
+- [ ] `find_instrument_data(query: str)` - Search instrument information by various criteria  
+- [ ] `get_stock_quote_by_id(instrument_id: str)` - Get quote using internal Robinhood instrument ID
+- [ ] `get_pricebook_by_symbol(symbol: str)` - Level II order book data (Gold subscription required)
 
-### Priority 6: Account Features & Notifications ✅ COMPLETED
-- [x] `notifications()` - Get account notifications and alerts
-- [x] `latest_notification()` - Get the most recent notification
-- [x] `margin_calls()` - Get margin call information
-- [x] `margin_interest()` - Get margin interest charges and rates
-- [x] `subscription_fees()` - Get Robinhood Gold subscription fees
-- [x] `referrals()` - Get referral program information
-- [x] `account_features()` - Get comprehensive account features and settings
-- [x] `account_settings()` - Get account settings and preferences
+**Benefits:**
+- Enhanced instrument search and discovery capabilities
+- Direct access to Robinhood's internal instrument metadata
+- Level II market data for advanced traders (Gold subscribers)
+- Better integration support for complex trading strategies
 
-### Priority 7: User Profile Management ✅ COMPLETED
-- [x] `account_profile()` - Get trading account profile and configuration
-- [x] `basic_profile()` - Get basic user profile information
-- [x] `investment_profile()` - Get investment profile and risk assessment
-- [x] `security_profile()` - Get security profile and settings
-- [x] `user_profile()` - Get comprehensive user profile information
-- [x] `complete_profile()` - Get complete user profile combining all profile types
+**Implementation Notes:**
+- All tools use existing Robin Stocks API functions
+- Pure read-only functionality with no trading risk
+- Can be implemented quickly (1-2 days)
+- Brings total MCP tools to 65 before trading capabilities
 
-### Test Implementation Strategy ✅ ALL COMPLETED!
-1. **Phase 4A (Priority 1):** Core trading functionality tests ✅
-2. **Phase 4B (Priority 2):** Options trading tests ✅
-3. **Phase 4C (Priority 3):** Portfolio analytics tests ✅
-4. **Phase 4D (Priority 4):** Watchlist management tests ✅
-5. **Phase 4E (Priority 5):** Advanced market data tests ✅
-6. **Phase 4F (Priority 6):** Account features tests ✅
-7. **Phase 4G (Priority 7):** User profile tests ✅
-
-### Test Categories ✅ ALL COMPLETED!
-- [x] `test_stock_market_tools.py` - ✅ COMPLETED: Stock market data tools (19 tests)
-- [x] `test_options_tools.py` - ✅ COMPLETED: Options trading tools (17 tests)
-- [x] `test_analytics_tools.py` - ✅ COMPLETED: Advanced portfolio analytics tools (17 tests)
-- [x] `test_watchlist_tools.py` - ✅ COMPLETED: Watchlist management tools (25 tests)
-- [x] `test_market_research_tools.py` - ✅ COMPLETED: Advanced market data & research tools (24 tests)
-- [x] `test_notification_tools.py` - ✅ COMPLETED: Account features & notifications tools (27 tests)
-- [x] `test_profile_tools.py` - ✅ COMPLETED: User profile tools (19 tests)
-
-## Phase 4 Complete! 🎉
-**Total Test Coverage: 148 comprehensive tests covering all 60 MCP tools (100%)**
-
-## Phase 5: HTTP SSE Transport Implementation (v0.4.1) - **✅ COMPLETED**
-
-### MCP Server Transport Migration
-**Background**: Current STDIO transport has timeout limitations causing test failures and agent interaction issues. HTTP transport with SSE provides better timeout control, session management, and reliability.
-
-**Reference**: [MCP HTTP Transport Docs](https://modelcontextprotocol.io/docs/concepts/transports#streamable-http)
-
-- [x] **HTTP Transport Server Implementation** - ✅ COMPLETED: Implement official MCP HTTP transport
-  - HTTP server accepting JSON-RPC 2.0 POST requests at `/mcp` endpoint
-  - Server-Sent Events (SSE) for server-to-client communication at `/sse` endpoint
-  - Session management with session ID headers for stateful connections
-  - Support both single JSON responses and SSE streams for multiple messages
-  - Configurable server (default: localhost:3000, configurable port/host)
-  - Maintained backward compatibility with STDIO for development
-
-- [x] **Session & Connection Management** - ✅ COMPLETED: Stateful HTTP sessions
-  - Session initialization and persistence implemented
-  - Session termination handling with proper cleanup
-  - Connection state management for multiple concurrent clients
-  - Proper session cleanup and resource management in place
-
-- [x] **Security Implementation** - ✅ COMPLETED: HTTP transport security measures
-  - Origin headers validation for request authenticity
-  - Localhost binding by default for local servers
-  - HTTPS support configuration ready for production deployments
-  - Authentication mechanisms integrated with existing session manager
-  - Request validation and rate limiting per session
-
-- [x] **Timeout & Reliability Management** - ✅ COMPLETED: HTTP transport timeout and reliability features
-  - HTTP request timeout settings (default: 120s, configurable)
-  - SSE connection timeout handling and keep-alive implemented
-  - Graceful timeout responses with proper error codes
-  - Circuit breaker pattern for repeated connection failures
-  - Request queuing with timeout for high-load scenarios
-
-- [x] **Client Configuration Updates** - ✅ COMPLETED: Update all client configurations for HTTP transport
-  - Claude Desktop config: `"command": "http://localhost:3001/mcp"`
-  - ADK agent HTTP transport configuration examples added
-  - Docker deployment updated with HTTP port exposure (port 3001)
-  - Health check endpoints (`/health`, `/status`) for monitoring implemented
-  - Persistent volumes for session tokens and logs implemented
-
-- [x] **Testing Infrastructure** - ✅ COMPLETED: Comprehensive HTTP transport testing
-  - HTTP transport testing utilities with JSON-RPC 2.0 support
-  - Test clients for HTTP POST request/SSE response patterns
-  - Session management testing (initialization, persistence, cleanup)
-  - Timeout and connection reliability testing
-  - Concurrent client connections and session isolation tests
-  - STDIO tests maintained for backward compatibility
-
-- [x] **Implementation Dependencies** - ✅ COMPLETED: Add required HTTP transport dependencies
-  - FastAPI and Uvicorn for HTTP server (`fastapi>=0.104.0, uvicorn>=0.24.0`)
-  - SSE support libraries (`sse-starlette>=1.8.0`)
-  - JSON-RPC 2.0 handling (`jsonrpclib-pelix>=0.4.3`)
-  - Updated pyproject.toml with HTTP transport dependencies
-  - HTTP client testing dependencies (`httpx>=0.26.0`)
-
-- [x] **Documentation & Examples** - ✅ COMPLETED: Complete HTTP transport documentation
-  - README updated with HTTP transport configuration examples
-  - Claude Desktop HTTP configuration: `{"command": "http://localhost:3001/mcp"}`
-  - Docker examples updated with port 3001 exposure and health checks
-  - Added persistent volume documentation for session and log storage
-  - Added troubleshooting guide for HTTP transport connectivity
-  - Documented session management and health monitoring endpoints
-  - Security configuration examples and .gitignore for sensitive data provided
-
-## Phase 6: Trading Capabilities (v0.5.0) - **MOVED FROM PHASE 5**
+## Phase 7: Trading Capabilities (v0.5.0) - **MOVED FROM PHASE 6**
 
 ### Stock Order Placement (9 tools)
 - [ ] `order_buy_market(symbol, quantity)` - Market buy orders
@@ -194,62 +72,41 @@
 - [ ] `get_all_open_stock_orders()` - View open stock orders
 - [ ] `get_all_open_option_orders()` - View open option orders
 
-## Phase 7: Quality & Reliability (v0.6.0)
+## Phase 8: Quality & Reliability (v0.6.0)
 
 ### Technical Debt & Code Quality
-- [x] **MyPy Type Safety** - ✅ COMPLETED: Fixed 277 type errors - Now 0 MyPy errors in 50 source files
-- [x] **Code Formatting** - ✅ COMPLETED: Maintained with ruff - 3 files reformatted in latest cleanup
-- [x] **Test Performance Optimization** - ✅ COMPLETED: Added slow/exception_test markers, 98.6% speed improvement
+- ✅ **Type Safety & Formatting** - MyPy and Ruff compliance maintained
 - [ ] **Advanced Error Handling** - More granular error recovery and reporting
 - [ ] **Caching Strategy** - Redis/memory caching for frequently requested data
 - [ ] **Rate Limit Optimization** - Intelligent request batching and prioritization
 
 ### Timeout Configuration & Improvements
-- [ ] **HTTP Request Timeouts** - Add request/connection timeouts for Robin Stocks API calls
-  - Configure requests library timeout settings (connection: 10s, read: 30s)
-  - Add timeout handling in session_manager.py authentication flows
-  - Implement timeout-specific error classification in error_handling.py
-- [ ] **Test Timeout Protection** - Add pytest-timeout configuration
-  - Add pytest-timeout to dev dependencies in pyproject.toml
-  - Configure default test timeouts (fast: 30s, integration: 120s, slow: 300s)
-  - Add timeout markers for different test categories
-- [ ] **MCP Server Timeouts** - Configure FastMCP server timeout settings
-  - Add tool execution timeout limits (default: 60s, configurable)
-  - Implement graceful timeout handling with partial results
-  - Add timeout monitoring and logging
-- [ ] **Rate Limiter Timeout Protection** - Enhance rate limiter with timeout limits
-  - Add maximum wait time limits for rate limiting (max: 300s)
-  - Implement timeout exceptions for excessive wait times
-  - Add circuit breaker pattern for repeated timeout failures
-- [ ] **ADK Evaluation Timeouts** - Add timeout configuration for agent evaluations
-  - Configure evaluation timeout limits in test configs
-  - Add timeout handling for agent tool execution
-  - Implement timeout recovery and reporting
+- [ ] **HTTP Request Timeouts** - Robin Stocks API timeout settings
+- [ ] **Test Timeout Protection** - pytest-timeout configuration  
+- [ ] **MCP Server Timeouts** - Tool execution timeout limits
+- [ ] **Rate Limiter Timeout Protection** - Circuit breaker patterns
+- [ ] **ADK Evaluation Timeouts** - Agent evaluation timeout handling
 
 ### Testing Infrastructure
-- [ ] **Test Rate Limit Analysis** - Identify tests that need rate limiting consideration
-  - Analyze current test timeouts and identify rate-limit related failures
-  - Mark tests that make multiple rapid API calls with `@pytest.mark.rate_limited`
-  - Add test configuration for rate limit testing (mock vs live API)
-  - Document which tests require careful rate limit handling
-- [ ] **Live Integration Tests** - Real market data testing with `@pytest.mark.live_market`
-- [ ] **Comprehensive Mocking** - Complete Robin Stocks API response mocks
-- [ ] **Error Scenario Testing** - Network failures, rate limits, authentication errors
-- [ ] **Performance Testing** - Load testing for high-frequency requests
+- [ ] **Test Rate Limit Analysis** - Mark rate-limited tests appropriately
+- [ ] **Live Integration Tests** - Real market data testing
+- [ ] **Comprehensive Mocking** - Complete API response mocks
+- [ ] **Error Scenario Testing** - Network/authentication failure testing
+- [ ] **Performance Testing** - Load testing capabilities
 
 ### Enhanced Monitoring
-- [ ] **OpenTelemetry Integration** - Distributed tracing and metrics
-- [ ] **Advanced Health Checks** - Component-level health monitoring
-- [ ] **Performance Metrics** - Detailed latency and throughput tracking
-- [ ] **Alert System** - Proactive monitoring and alerting
+- [ ] **OpenTelemetry Integration** - Distributed tracing
+- [ ] **Advanced Health Checks** - Component-level monitoring
+- [ ] **Performance Metrics** - Latency and throughput tracking
+- [ ] **Alert System** - Proactive monitoring
 
-## Phase 8: Advanced Features (v0.7.0)
+## Phase 9: Advanced Features (v0.7.0)
 
-### Advanced Stock Data (4 tools)
-- [ ] `get_instruments_by_symbols()` - Detailed instrument metadata for multiple symbols
-- [ ] `find_instrument_data()` - Search instrument information by various criteria
-- [ ] `get_stock_quote_by_id()` - Get quote using internal Robinhood instrument ID
-- [ ] `get_pricebook_by_symbol()` - Level II order book data (Gold subscription required)
+**Note**: The following are explicitly out of scope for this project:
+- **Crypto tools**: `get_crypto_*()` functions (crypto trading/data)
+- **Banking tools**: `get_bank_*()` functions (ACH transfers, bank account management)  
+- **Deposit/Withdrawal**: Any functions involving money movement
+- **Account modifications**: Settings changes, profile updates
 
 ### Technical Analysis Tools (~12 tools)
 - [ ] **Technical Indicators** - RSI, MACD, Moving Averages, Bollinger Bands
@@ -268,40 +125,23 @@
 - [ ] **Sector Analysis** - Sector performance and rotation analysis
 - [ ] **Market Sentiment** - Social sentiment and retail trader metrics
 
-## Infrastructure Improvements
-
-### Development & Operations
-- [ ] **Interactive API Documentation** - Swagger/OpenAPI documentation
-- [ ] **Example Notebooks** - Jupyter notebooks with real use cases
-- [ ] **VS Code Extension** - Enhanced development experience
-- [ ] **Docker Compose** - Multi-service deployment
-- [ ] **Kubernetes Support** - Cloud-native deployment
-- [ ] **Security Hardening** - Security audits and penetration testing
-
-### Configuration & Management
-- [ ] **Enhanced Configuration** - YAML-based configuration management
-- [ ] **Environment Management** - Development, staging, production environments
-- [ ] **Secret Management** - Secure credential storage and rotation
-- [ ] **Feature Flags** - Runtime feature toggles
-
-## Dependencies & Monitoring
-- [ ] **Robin Stocks v3.4.0+** - Monitor for API changes and new features
-- [ ] **FastMCP Updates** - Track updates to the MCP SDK
-- [ ] **Python 3.12+** - Consider newer Python features and compatibility
-- [ ] **Version Management** - Automated versioning with bump2version
-
-## Security & Compliance
-- [ ] **Security Audit** - Review credential handling and API security
+## Infrastructure & Operations
+- [ ] **Documentation** - Interactive API docs, example notebooks
+- [ ] **Development Tools** - VS Code extension, enhanced debugging
+- [ ] **Deployment** - Kubernetes support, multi-service orchestration
+- [ ] **Configuration** - YAML config management, feature flags
+- [ ] **Security** - Credential management, security audits
+- [ ] **Dependencies** - Robin Stocks updates, Python 3.12+ migration
 
 ## Success Metrics
 
-### Phase 4 (Trading) Success Criteria:
+### Phase 7 (Trading) Success Criteria:
 - ✅ All order types successfully place trades
 - ✅ Zero data loss or order corruption
 - ✅ Sub-100ms order placement latency
 - ✅ 99.9% order placement success rate
 
-### Phase 5 (Quality) Success Criteria:
+### Phase 8 (Quality) Success Criteria:
 - ✅ 95%+ test coverage
 - ✅ Zero critical type errors
 - ✅ 99.9% uptime
@@ -311,4 +151,4 @@
 
 *Last Updated: 2025-07-12*  
 *Current Status: v0.4.1 with 61 MCP tools, HTTP transport, and persistent volumes - Phases 1-5 complete*  
-*Next Priority: Phase 6 Trading Capabilities Implementation*
+*Next Priority: Phase 6 Advanced Instrument Data Implementation*
