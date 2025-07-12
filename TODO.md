@@ -1,10 +1,11 @@
 # TODO - Open Stocks MCP
 
-## Current Status (v0.3.0)
+## Current Status (v0.4.1)
 - ✅ **61 MCP tools** across 8 categories
 - ✅ **Complete read-only functionality** for market data, portfolios, and analysis
 - ✅ **Production-ready** with comprehensive error handling and monitoring
-- ✅ **Phases 1-3 complete**: Foundation, Analytics, Options Trading, Watchlists, Profiles
+- ✅ **HTTP transport with persistent volumes** - Docker examples with session persistence
+- ✅ **Phases 1-5 complete**: Foundation, Analytics, Options Trading, Watchlists, Profiles, HTTP Transport
 
 ## Phase 4: Test Coverage Improvement - **IMMEDIATE PRIORITY**
 
@@ -100,7 +101,7 @@
 ## Phase 4 Complete! 🎉
 **Total Test Coverage: 148 comprehensive tests covering all 60 MCP tools (100%)**
 
-## Phase 5: HTTP SSE Transport Implementation (v0.4.0) - **✅ COMPLETED**
+## Phase 5: HTTP SSE Transport Implementation (v0.4.1) - **✅ COMPLETED**
 
 ### MCP Server Transport Migration
 **Background**: Current STDIO transport has timeout limitations causing test failures and agent interaction issues. HTTP transport with SSE provides better timeout control, session management, and reliability.
@@ -136,10 +137,11 @@
   - Request queuing with timeout for high-load scenarios
 
 - [x] **Client Configuration Updates** - ✅ COMPLETED: Update all client configurations for HTTP transport
-  - Claude Desktop config: `"command": "http://localhost:3000/mcp"`
+  - Claude Desktop config: `"command": "http://localhost:3001/mcp"`
   - ADK agent HTTP transport configuration examples added
-  - Docker deployment updated with HTTP port exposure (port 3000)
+  - Docker deployment updated with HTTP port exposure (port 3001)
   - Health check endpoints (`/health`, `/status`) for monitoring implemented
+  - Persistent volumes for session tokens and logs implemented
 
 - [x] **Testing Infrastructure** - ✅ COMPLETED: Comprehensive HTTP transport testing
   - HTTP transport testing utilities with JSON-RPC 2.0 support
@@ -158,11 +160,12 @@
 
 - [x] **Documentation & Examples** - ✅ COMPLETED: Complete HTTP transport documentation
   - README updated with HTTP transport configuration examples
-  - Claude Desktop HTTP configuration: `{"command": "http://localhost:3000/mcp"}`
-  - Docker examples updated with port 3000 exposure and health checks
+  - Claude Desktop HTTP configuration: `{"command": "http://localhost:3001/mcp"}`
+  - Docker examples updated with port 3001 exposure and health checks
+  - Added persistent volume documentation for session and log storage
   - Added troubleshooting guide for HTTP transport connectivity
   - Documented session management and health monitoring endpoints
-  - Security configuration examples provided
+  - Security configuration examples and .gitignore for sensitive data provided
 
 ## Phase 6: Trading Capabilities (v0.5.0) - **MOVED FROM PHASE 5**
 
@@ -306,6 +309,6 @@
 
 ---
 
-*Last Updated: 2025-07-11*  
-*Current Status: v0.4.0 with 61 MCP tools and HTTP transport - Phases 1-5 complete*  
+*Last Updated: 2025-07-12*  
+*Current Status: v0.4.1 with 61 MCP tools, HTTP transport, and persistent volumes - Phases 1-5 complete*  
 *Next Priority: Phase 6 Trading Capabilities Implementation*

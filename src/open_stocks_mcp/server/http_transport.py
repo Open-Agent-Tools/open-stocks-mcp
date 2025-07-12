@@ -252,6 +252,7 @@ def create_http_server(mcp_server: FastMCP) -> FastAPI:
             params = json_request.get("params", {})
 
             try:
+                result: dict[str, Any]
                 if method == "initialize":
                     # Return server capabilities
                     result = {
@@ -281,7 +282,7 @@ def create_http_server(mcp_server: FastMCP) -> FastAPI:
                         }
                         serialized_tools.append(tool_dict)
 
-                    result = {"tools": serialized_tools}  # type: ignore[dict-item]
+                    result = {"tools": serialized_tools}
 
                 elif method == "tools/call":
                     # Use FastMCP's built-in call_tool method
@@ -321,7 +322,7 @@ def create_http_server(mcp_server: FastMCP) -> FastAPI:
                     else:
                         # Fallback to string representation
                         result = {
-                            "content": [  # type: ignore[list-item]
+                            "content": [
                                 {
                                     "type": "text",
                                     "text": json.dumps(
