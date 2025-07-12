@@ -18,7 +18,7 @@ A comprehensive stock trading agent that uses Google ADK to connect with our ope
    export ROBINHOOD_PASSWORD="your_robinhood_password"
    
    # MCP HTTP transport configuration
-   export MCP_HTTP_URL="http://localhost:3000/mcp"  # Optional, defaults to localhost:3000
+   export MCP_HTTP_URL="http://localhost:3001/mcp"  # Optional, defaults to localhost:3001
    ```
 
    Or create a `.env` file in the project root:
@@ -26,7 +26,7 @@ A comprehensive stock trading agent that uses Google ADK to connect with our ope
    GOOGLE_API_KEY=your-google-api-key
    ROBINHOOD_USERNAME=your_email@example.com
    ROBINHOOD_PASSWORD=your_robinhood_password
-   MCP_HTTP_URL=http://localhost:3000/mcp
+   MCP_HTTP_URL=http://localhost:3001/mcp
    ```
 
 ## Usage
@@ -35,7 +35,7 @@ The agent uses HTTP transport to connect to the MCP server, which must be runnin
 
 1. **Start the MCP server in HTTP mode:**
    ```bash
-   open-stocks-mcp-server --transport http --port 3000
+   open-stocks-mcp-server --transport http --port 3001
    ```
 
 2. **Run your agent:**

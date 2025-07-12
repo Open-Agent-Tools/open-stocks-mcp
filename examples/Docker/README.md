@@ -8,7 +8,7 @@ This setup uses a production-ready approach:
 1. **Dockerfile**: Creates a secure base image with the `open-stocks-mcp` library installed and verified
 2. **docker-compose.yml**: Orchestrates the server deployment with HTTP transport and proper configuration
 3. **Enhanced Authentication**: Automatic device verification and MFA support for seamless Robinhood integration
-4. **HTTP Transport**: Uses HTTP transport (port 3000) for better reliability and session management
+4. **HTTP Transport**: Uses HTTP transport (port 3001) for better reliability and session management
 
 ## Prerequisites
 
@@ -21,7 +21,7 @@ This setup uses a production-ready approach:
 ### 1. Choose Your Setup
 
 **Production (Recommended):**
-Uses the published PyPI package (v0.4.0 with HTTP transport support):
+Uses the published PyPI package (v0.4.1 with HTTP transport support):
 ```bash
 docker-compose up
 ```
@@ -82,25 +82,26 @@ INFO - Device verification prompt: Check robinhood app for device approvals meth
 INFO - Login successful with device verification
 INFO - Successfully authenticated user: your_username
 INFO - ✅ Successfully logged into Robinhood for user: your_username
-INFO - Starting HTTP MCP server on 0.0.0.0:3000
+INFO - Starting HTTP MCP server on 0.0.0.0:3001
 INFO - Available endpoints:
-INFO -   - MCP JSON-RPC: http://0.0.0.0:3000/mcp
-INFO -   - SSE Events: http://0.0.0.0:3000/sse
-INFO -   - Health Check: http://0.0.0.0:3000/health
+INFO -   - MCP JSON-RPC: http://0.0.0.0:3001/mcp
+INFO -   - SSE Events: http://0.0.0.0:3001/sse
+INFO -   - Health Check: http://0.0.0.0:3001/health
 ```
 
 **Success Indicators:**
 - ✅ Container status shows `healthy`
 - ✅ Logs show "Login successful with device verification"
-- ✅ Logs show "Starting HTTP MCP server on 0.0.0.0:3000"
-- ✅ Session file created at `/home/mcp/.tokens/robinhood.pickle`
-- ✅ Health check responds: `curl http://localhost:3000/health`
+- ✅ Logs show "Starting HTTP MCP server on 0.0.0.0:3001"
+- ✅ Session file created at `./data/tokens/robinhood.pickle` (persistent)
+- ✅ Log file created at `./data/logs/open_stocks_mcp.log` (persistent)
+- ✅ Health check responds: `curl http://localhost:3001/health`
 
 ### 5. Start the Server
 
 Run the server using Docker Compose:
 
-**Production (Recommended - v0.4.0 with HTTP transport):**
+**Production (Recommended - v0.4.1 with HTTP transport):**
 ```bash
 # Foreground (see logs)
 docker-compose up
@@ -137,25 +138,25 @@ docker inspect open-stocks-mcp-server --format='{{.State.Health.Status}}'
 
 ### Connecting to the Server
 
-The MCP server runs on port `3000` using **HTTP transport with Server-Sent Events (SSE)**. You can connect with any MCP-compatible client:
+The MCP server runs on port `3001` using **HTTP transport with Server-Sent Events (SSE)**. You can connect with any MCP-compatible client:
 
 ```bash
 # Test health endpoint
-curl http://localhost:3000/health
+curl http://localhost:3001/health
 
 # Test server status
-curl http://localhost:3000/status
+curl http://localhost:3001/status
 
 # Test available tools
-curl http://localhost:3000/tools
+curl http://localhost:3001/tools
 
 # MCP JSON-RPC endpoint
-curl -X POST http://localhost:3000/mcp \
+curl -X POST http://localhost:3001/mcp \
   -H "Content-Type: application/json" \
   -d '{"jsonrpc": "2.0", "method": "tools/list", "id": 1}'
 
 # SSE endpoint for real-time events
-curl -N -H "Accept: text/event-stream" http://localhost:3000/sse
+curl -N -H "Accept: text/event-stream" http://localhost:3001/sse
 ```
 
 ### Automated Validation
@@ -180,19 +181,19 @@ This script automatically:
 
 ```bash
 # Health check endpoint
-curl http://localhost:3000/health
-# Returns: {"status":"healthy","version":"0.4.0","transport":"http"}
+curl http://localhost:3001/health
+# Returns: {"status":"healthy","version":"0.4.1","transport":"http"}
 
 # Server information
-curl http://localhost:3000/
+curl http://localhost:3001/
 # Returns: Server details with available endpoints
 
 # Detailed status
-curl http://localhost:3000/status
+curl http://localhost:3001/status
 # Returns: Server status, session info, rate limiting, metrics
 
 # Available tools list
-curl http://localhost:3000/tools
+curl http://localhost:3001/tools
 # Returns: Complete list of 61 available MCP tools
 ```
 
@@ -274,6 +275,23 @@ docker-compose logs --since="1h"
 | `ROBINHOOD_USERNAME` | Yes | Your Robinhood account username |
 | `ROBINHOOD_PASSWORD` | Yes | Your Robinhood account password |
 
+### Persistent Storage
+
+The Docker setup includes persistent volumes to preserve data across container restarts:
+
+```
+data/
+├── tokens/     # Robinhood session tokens (robinhood.pickle)
+└── logs/       # Application logs (open_stocks_mcp.log)
+```
+
+**Benefits:**
+- **Session persistence**: Avoid re-authentication after container restarts
+- **Log retention**: Keep application logs for debugging and monitoring
+- **Data safety**: Protect against data loss during updates
+
+**Security Note**: The `data/` directory contains sensitive authentication tokens and should never be committed to version control.
+
 ### Resource Limits
 
 The Docker Compose configuration includes resource limits:
@@ -284,7 +302,7 @@ Adjust these in `docker-compose.yml` based on your needs.
 
 ## Version Information
 
-**Current Release: v0.4.0**
+**Current Release: v0.4.1**
 - ✅ HTTP transport with Server-Sent Events (SSE)
 - ✅ FastAPI-based server with comprehensive middleware
 - ✅ Security headers and CORS support
@@ -293,7 +311,7 @@ Adjust these in `docker-compose.yml` based on your needs.
 - ✅ Full backward compatibility with STDIO transport
 
 **Container Image:**
-- **Production**: Uses PyPI package `open-stocks-mcp==0.4.0`
+- **Production**: Uses PyPI package `open-stocks-mcp==0.4.1`
 - **Development**: Built from source with latest features
 - **Base**: Python 3.11-slim for security and performance
 

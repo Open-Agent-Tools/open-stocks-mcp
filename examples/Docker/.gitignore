@@ -1,14 +1,4 @@
-# Environment files with secrets
-.env
-
-# Docker volumes and data
-volumes/
-data/
-
-# Logs
-*.log
-logs/
-
-# Temporary files
-*.tmp
-*.pid
+# Persistent data directories - contains sensitive tokens and logs
+data/tokens/
+data/logs/
+!data/README.md

@@ -21,7 +21,7 @@ WORKDIR /usr/src/app
 
 # Install the open-stocks-mcp package from PyPI
 # Use the latest version with HTTP transport support
-RUN pip install --no-cache-dir open-stocks-mcp==0.4.0
+RUN pip install --no-cache-dir open-stocks-mcp==0.4.1
 
 # Verify that the package and its dependencies are installed correctly
 RUN pip check && \
@@ -35,10 +35,10 @@ USER mcp
 
 # Add health check to monitor container status using HTTP endpoint
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
-    CMD curl -f http://localhost:3000/health || exit 1
+    CMD curl -f http://localhost:3001/health || exit 1
 
 # Expose the HTTP transport port
-EXPOSE 3000
+EXPOSE 3001
 
 # Default command runs the MCP server with HTTP transport
-CMD ["open-stocks-mcp-server", "--transport", "http", "--host", "0.0.0.0", "--port", "3000"]
+CMD ["open-stocks-mcp-server", "--transport", "http", "--host", "0.0.0.0", "--port", "3001"]

@@ -1,13 +1,11 @@
-version: '3.8'
-
 services:
   open-stocks-mcp:
-    # Build the image from the Dockerfile with v0.4.0
+    # Build the image from the Dockerfile with v0.4.1
     build:
       context: .
       dockerfile: Dockerfile
     # Tag the built image for easier identification
-    image: open-stocks-mcp:0.4.0
+    image: open-stocks-mcp:0.4.1
     # Name the container for easier identification
     container_name: open-stocks-mcp-server
     # Restart the container automatically if it stops
@@ -16,12 +14,12 @@ services:
     # This is the recommended way to handle sensitive data like credentials
     env_file:
       - .env
-    # Map the container's port 3000 to the host's port 3000 (HTTP transport)
+    # Map the container's port 3001 to the host's port 3001 (HTTP transport)
     ports:
-      - "3000:3000"
+      - "3001:3001"
     # Health check configuration for HTTP transport
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health", "||", "exit", "1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:3001/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -43,15 +41,38 @@ services:
       open-stocks-mcp-server
       --transport http
       --host 0.0.0.0
-      --port 3000
+      --port 3001
     # Add logging configuration
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
+    # Persistent volumes for session data and logs
+    volumes:
+      - mcp_tokens:/home/mcp/.tokens
+      - mcp_logs:/home/mcp/.local/state/mcp-servers/logs
+
+# Named volumes for persistent data
+volumes:
+  mcp_tokens:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/tokens
+  mcp_logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/logs
 
 # Note:
 # Create a .env file in this directory with your Robinhood credentials:
 # ROBINHOOD_USERNAME=your_username
 # ROBINHOOD_PASSWORD=your_password
+#
+# Persistent data will be stored in:
+# - ./data/tokens/ (Robinhood session tokens)
+# - ./data/logs/ (Application logs)
