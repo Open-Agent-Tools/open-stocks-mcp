@@ -100,7 +100,7 @@ def create_http_server(mcp_server: FastMCP) -> FastAPI:
     app = FastAPI(
         title="Open Stocks MCP Server",
         description="Model Context Protocol server for stock market data",
-        version="0.4.0",
+        version="0.4.1",
         lifespan=lifespan,
     )
 
@@ -130,7 +130,7 @@ def create_http_server(mcp_server: FastMCP) -> FastAPI:
             return {
                 "status": "healthy",
                 "timestamp": time.time(),
-                "version": "0.4.0",
+                "version": "0.4.1",
                 "transport": "http",
                 "session": {
                     "authenticated": session_info.get("authenticated", False),
@@ -158,7 +158,7 @@ def create_http_server(mcp_server: FastMCP) -> FastAPI:
             return {
                 "server": {
                     "status": "running",
-                    "version": "0.4.0",
+                    "version": "0.4.1",
                     "transport": "http",
                     "timestamp": time.time(),
                 },
@@ -175,7 +175,7 @@ def create_http_server(mcp_server: FastMCP) -> FastAPI:
         """Root endpoint with server information"""
         return {
             "name": "Open Stocks MCP Server",
-            "version": "0.4.0",
+            "version": "0.4.1",
             "transport": "http",
             "endpoints": {
                 "mcp": "/mcp",
@@ -227,23 +227,30 @@ def create_http_server(mcp_server: FastMCP) -> FastAPI:
         try:
             # Get the request body
             body = await request.body()
-            
+
             # Parse the JSON-RPC request
             import json
+
             try:
                 json_request = json.loads(body.decode())
             except json.JSONDecodeError:
                 return Response(
-                    content=json.dumps({"jsonrpc": "2.0", "error": {"code": -32700, "message": "Parse error"}, "id": None}).encode(),
+                    content=json.dumps(
+                        {
+                            "jsonrpc": "2.0",
+                            "error": {"code": -32700, "message": "Parse error"},
+                            "id": None,
+                        }
+                    ).encode(),
                     status_code=400,
-                    headers={"content-type": "application/json"}
+                    headers={"content-type": "application/json"},
                 )
-            
+
             # Handle different MCP methods
             method = json_request.get("method")
             request_id = json_request.get("id")
             params = json_request.get("params", {})
-            
+
             try:
                 if method == "initialize":
                     # Return server capabilities
@@ -253,17 +260,14 @@ def create_http_server(mcp_server: FastMCP) -> FastAPI:
                             "tools": {},
                             "resources": {},
                             "prompts": {},
-                            "logging": {}
+                            "logging": {},
                         },
-                        "serverInfo": {
-                            "name": "Open Stocks MCP",
-                            "version": "0.4.0"
-                        }
+                        "serverInfo": {"name": "Open Stocks MCP", "version": "0.4.1"},
                     }
                 elif method == "tools/list":
                     # Use FastMCP's built-in list_tools method
                     tools_list = await mcp_server.list_tools()
-                    
+
                     # Convert Tool objects to MCP protocol format
                     serialized_tools = []
                     for tool in tools_list:
@@ -271,101 +275,105 @@ def create_http_server(mcp_server: FastMCP) -> FastAPI:
                         tool_dict = {
                             "name": tool.name,
                             "description": tool.description,
-                            "inputSchema": tool.inputSchema.model_dump() if hasattr(tool.inputSchema, 'model_dump') else tool.inputSchema
+                            "inputSchema": tool.inputSchema.model_dump()
+                            if hasattr(tool.inputSchema, "model_dump")
+                            else tool.inputSchema,
                         }
                         serialized_tools.append(tool_dict)
-                    
-                    result = {"tools": serialized_tools}
-                    
+
+                    result = {"tools": serialized_tools}  # type: ignore[dict-item]
+
                 elif method == "tools/call":
                     # Use FastMCP's built-in call_tool method
                     tool_name = params.get("name")
                     arguments = params.get("arguments", {})
-                    
+
                     # Call the tool using FastMCP's method
                     tool_result = await mcp_server.call_tool(tool_name, arguments)
-                    
+
                     # Convert CallToolResult to MCP protocol format
-                    if hasattr(tool_result, 'content'):
+                    if hasattr(tool_result, "content"):
                         # Convert content objects to dictionaries
                         content_list = []
                         for content_item in tool_result.content:
-                            if hasattr(content_item, 'model_dump'):
+                            if hasattr(content_item, "model_dump"):
                                 content_list.append(content_item.model_dump())
-                            elif hasattr(content_item, 'type') and hasattr(content_item, 'text'):
-                                content_list.append({"type": content_item.type, "text": content_item.text})
+                            elif hasattr(content_item, "type") and hasattr(
+                                content_item, "text"
+                            ):
+                                content_list.append(
+                                    {
+                                        "type": content_item.type,
+                                        "text": content_item.text,
+                                    }
+                                )
                             else:
                                 # Fallback to string representation
-                                content_list.append({"type": "text", "text": str(content_item)})
-                        
+                                content_list.append(
+                                    {"type": "text", "text": str(content_item)}
+                                )
+
                         result = {"content": content_list}
-                        
+
                         # Add isError if present
-                        if hasattr(tool_result, 'isError'):
+                        if hasattr(tool_result, "isError"):
                             result["isError"] = tool_result.isError
                     else:
                         # Fallback to string representation
                         result = {
-                            "content": [
+                            "content": [  # type: ignore[list-item]
                                 {
-                                    "type": "text", 
-                                    "text": json.dumps(tool_result, default=str, indent=2)
+                                    "type": "text",
+                                    "text": json.dumps(
+                                        tool_result, default=str, indent=2
+                                    ),
                                 }
                             ]
                         }
-                    
+
                 elif method == "notifications/initialized":
                     # Handle initialization notification (no response needed for notifications)
                     logger.info("Client initialization notification received")
                     return Response(status_code=200)
-                    
+
                 else:
                     raise ValueError(f"Unknown method: {method}")
-                
+
                 # Return successful response
-                response_data = {
-                    "jsonrpc": "2.0",
-                    "result": result,
-                    "id": request_id
-                }
-                
+                response_data = {"jsonrpc": "2.0", "result": result, "id": request_id}
+
                 return Response(
                     content=json.dumps(response_data).encode(),
                     status_code=200,
-                    headers={"content-type": "application/json"}
+                    headers={"content-type": "application/json"},
                 )
-                
+
             except Exception as e:
                 logger.error(f"MCP method '{method}' failed: {e}")
                 error_response = {
                     "jsonrpc": "2.0",
-                    "error": {
-                        "code": -32603,
-                        "message": str(e)
-                    },
-                    "id": request_id
+                    "error": {"code": -32603, "message": str(e)},
+                    "id": request_id,
                 }
                 return Response(
                     content=json.dumps(error_response).encode(),
                     status_code=500,
-                    headers={"content-type": "application/json"}
+                    headers={"content-type": "application/json"},
                 )
-            
+
         except Exception as e:
             logger.error(f"MCP endpoint error: {e}")
             import json
+
             error_response = {
                 "jsonrpc": "2.0",
-                "error": {
-                    "code": -32603,
-                    "message": f"Internal error: {str(e)}"
-                },
-                "id": None
+                "error": {"code": -32603, "message": f"Internal error: {e!s}"},
+                "id": None,
             }
             return Response(
                 content=json.dumps(error_response).encode(),
                 status_code=500,
-                headers={"content-type": "application/json"}
+                headers={"content-type": "application/json"},
             )
 
     return app
