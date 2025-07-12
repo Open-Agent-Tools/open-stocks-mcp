@@ -16,6 +16,10 @@ A comprehensive stock trading agent that uses Google ADK to connect with our ope
    # For Robinhood authentication (optional - enables environment-based login)
    export ROBINHOOD_USERNAME="your_email@example.com"
    export ROBINHOOD_PASSWORD="your_robinhood_password"
+   
+   # Transport configuration (optional, defaults to stdio)
+   export MCP_TRANSPORT="http"  # Use "http" or "stdio"
+   export MCP_HTTP_URL="http://localhost:3000/mcp"  # For HTTP transport
    ```
 
    Or create a `.env` file in the project root:
@@ -23,20 +27,51 @@ A comprehensive stock trading agent that uses Google ADK to connect with our ope
    GOOGLE_API_KEY=your-google-api-key
    ROBINHOOD_USERNAME=your_email@example.com
    ROBINHOOD_PASSWORD=your_robinhood_password
+   MCP_TRANSPORT=http
+   MCP_HTTP_URL=http://localhost:3000/mcp
    ```
 
 ## Usage
 
+### Using STDIO Transport (Default)
+
 ```python
 from examples.google_adk_agent import root_agent
 
-# The agent will automatically connect to the MCP server
+# The agent will automatically start and connect to the MCP server
 # and have access to stock trading tools
 
 # Example interaction:
 # User: "Show me my portfolio"
 # Agent: Will retrieve and display portfolio information
 ```
+
+### Using HTTP Transport
+
+When using HTTP transport, you need to start the MCP server separately:
+
+1. **Start the MCP server in HTTP mode:**
+   ```bash
+   open-stocks-mcp-server --transport http --port 3000
+   ```
+
+2. **Configure the agent to use HTTP:**
+   ```bash
+   export MCP_TRANSPORT=http
+   export MCP_HTTP_URL=http://localhost:3000/mcp
+   ```
+
+3. **Run your agent as usual:**
+   ```python
+   from examples.google_adk_agent import root_agent
+   # The agent will connect to the HTTP server
+   ```
+
+**Benefits of HTTP Transport:**
+- Better timeout control and reliability
+- Session management and persistence
+- Ability to run server and agent in separate processes
+- Health check endpoints for monitoring
 
 ## Available Tools
 
