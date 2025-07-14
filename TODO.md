@@ -1,11 +1,11 @@
 # TODO - Open Stocks MCP
 
-## Current Status (v0.4.1)
-- ✅ **61 MCP tools** across 8 categories
+## Current Status (v0.4.2)
+- ✅ **65 MCP tools** across 8 categories
 - ✅ **Complete read-only functionality** for market data, portfolios, and analysis
 - ✅ **Production-ready** with comprehensive error handling and monitoring
 - ✅ **HTTP transport with persistent volumes** - Docker examples with session persistence
-- ✅ **Phases 1-5 complete**: Foundation, Analytics, Options Trading, Watchlists, Profiles, HTTP Transport
+- ✅ **Phases 1-6 complete**: Foundation, Analytics, Options Trading, Watchlists, Profiles, HTTP Transport, Advanced Instrument Data
 
 ## Completed Phases Summary ✅
 
@@ -24,28 +24,15 @@
 - ✅ Health monitoring and session management
 - ✅ Security headers, CORS, and timeout handling
 
+### Phase 6: Advanced Instrument Data (v0.4.2)
+- ✅ **4 new advanced instrument tools** bringing total to 65 MCP tools
+- ✅ Enhanced instrument search and discovery capabilities
+- ✅ Direct access to Robinhood's internal instrument metadata
+- ✅ Level II market data support for Gold subscribers
+- ✅ Complete test coverage for all new tools
 
-## Phase 6: Advanced Instrument Data (v0.4.2) - **IMMEDIATE PRIORITY**
 
-### Enhanced Stock Instrument Tools (4 tools)
-- [ ] `get_instruments_by_symbols(symbols: list[str])` - Detailed instrument metadata for multiple symbols
-- [ ] `find_instrument_data(query: str)` - Search instrument information by various criteria  
-- [ ] `get_stock_quote_by_id(instrument_id: str)` - Get quote using internal Robinhood instrument ID
-- [ ] `get_pricebook_by_symbol(symbol: str)` - Level II order book data (Gold subscription required)
-
-**Benefits:**
-- Enhanced instrument search and discovery capabilities
-- Direct access to Robinhood's internal instrument metadata
-- Level II market data for advanced traders (Gold subscribers)
-- Better integration support for complex trading strategies
-
-**Implementation Notes:**
-- All tools use existing Robin Stocks API functions
-- Pure read-only functionality with no trading risk
-- Can be implemented quickly (1-2 days)
-- Brings total MCP tools to 65 before trading capabilities
-
-## Phase 7: Trading Capabilities (v0.5.0) - **MOVED FROM PHASE 6**
+## Phase 7: Trading Capabilities (v0.5.0) - **NEXT PRIORITY**
 
 ### Stock Order Placement (9 tools)
 - [ ] `order_buy_market(symbol, quantity)` - Market buy orders
@@ -149,6 +136,6 @@
 
 ---
 
-*Last Updated: 2025-07-12*  
-*Current Status: v0.4.1 with 61 MCP tools, HTTP transport, and persistent volumes - Phases 1-5 complete*  
-*Next Priority: Phase 6 Advanced Instrument Data Implementation*
+*Last Updated: 2025-07-14*  
+*Current Status: v0.4.2 with 65 MCP tools, HTTP transport, and persistent volumes - Phases 1-6 complete*  
+*Next Priority: Phase 7 Trading Capabilities Implementation*
