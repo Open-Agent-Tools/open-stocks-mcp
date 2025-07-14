@@ -24,7 +24,8 @@ Run test suite:
 Run ADK agent evaluation (from project root):
 1. Verify ADK installed: `adk --help`
 2. Set env vars: `GOOGLE_API_KEY`, `ROBINHOOD_USERNAME`, `ROBINHOOD_PASSWORD` 
-3. Run: `adk eval examples/google-adk-agent tests/evals/list_available_tools_test.json --config_file_path tests/evals/test_config.json`
+3. Start MCP server: `docker-compose up -d` (runs on port 3001)
+4. Run: `MCP_HTTP_URL="http://localhost:3001/mcp" adk eval examples/google_adk_agent tests/evals/list_available_tools_test.json --config_file_path tests/evals/test_config.json`
 
 ### `publish <version>`
 Release workflow:
@@ -40,13 +41,24 @@ Quick project status:
 3. `gh run list --limit=3` - CI status
 4. `uv build` - Package build test
 
+### `docker`
+Docker operations:
+1. `cd examples/Docker` - Navigate to Docker directory
+2. `docker-compose up -d` - Start server with persistent volumes
+3. `docker-compose logs -f` - Monitor logs
+4. `curl http://localhost:3001/health` - Test health endpoint
+5. `docker-compose down` - Stop server
+
 ## Project Overview
 
 **Open Stocks MCP** - Model Context Protocol server providing stock market data through Robin Stocks API.
+- **Current Version**: v0.4.1 with HTTP transport and persistent volumes
 - **Framework**: FastMCP for simplified MCP development
 - **API**: Robin Stocks for market data and trading
-- **Tools**: 60+ MCP tools for account, market data, options, orders
+- **Tools**: 61 MCP tools for account, market data, options, orders
+- **Transport**: HTTP with Server-Sent Events (SSE) on port 3001
 - **Agent Integration**: Google ADK evaluation tests
+- **Docker**: Production-ready with persistent session/log storage
 
 ## Quick Reference
 
@@ -77,11 +89,18 @@ mypy .                          # Type check
 
 ### MCP Development
 ```bash
-# Test server locally
+# Test server locally (HTTP transport)
+uv run open-stocks-mcp-server --transport http --port 3001
+
+# Test server locally (STDIO transport)
 uv run mcp dev src/open_stocks_mcp/server/app.py
 
 # Test tools individually  
 uv run python -c "from open_stocks_mcp.tools.robinhood_account_tools import get_account_info; print(get_account_info())"
+
+# open-stocks-mcp-docker development
+cd examples/open-stocks-mcp-docker && docker-compose up -d
+curl http://localhost:3001/health  # Test health endpoint
 ```
 
 ## MCP Architecture
@@ -162,6 +181,27 @@ ROBINHOOD_USERNAME="email@example.com"
 ROBINHOOD_PASSWORD="password"
 ```
 
+## Current Development Status
+
+### Completed Phases (v0.4.1)
+- ✅ **Phases 1-5**: 61 MCP tools with complete read-only functionality
+- ✅ **HTTP Transport**: Server-Sent Events (SSE) on port 3001
+- ✅ **Docker Infrastructure**: Persistent volumes for sessions and logs
+- ✅ **Test Coverage**: 148 tests covering all 61 tools (100%)
+- ✅ **Type Safety**: Zero MyPy errors across 58 source files
+
+### Next Phase Priority
+**Phase 6: Advanced Instrument Data (v0.4.2)** - 4 new read-only tools:
+1. `get_instruments_by_symbols()` - Metadata for multiple symbols
+2. `find_instrument_data()` - Search instrument information  
+3. `get_stock_quote_by_id()` - Quote by Robinhood instrument ID
+4. `get_pricebook_by_symbol()` - Level II order book (Gold required)
+
+### Future Phases
+- **Phase 7**: Trading capabilities (19 tools) - v0.5.0
+- **Phase 8**: Quality & reliability improvements - v0.6.0
+- **Phase 9**: Advanced features (technical analysis, alerts) - v0.7.0
+
 ## Common Tasks
 
 ### Adding New MCP Tool
@@ -180,14 +220,18 @@ ROBINHOOD_PASSWORD="password"
 ### Running ADK Evaluations
 1. Install: `pip install google-agent-developer-kit`
 2. Set environment variables (see above)
-3. From project root: `adk eval examples/google-adk-agent tests/evals/list_available_tools_test.json --config_file_path tests/evals/test_config.json`
-4. Expected: "✅ Passed" with tool listing evaluation
+3. Start Docker server: `cd examples/Docker && docker-compose up -d`
+4. From project root: `MCP_HTTP_URL="http://localhost:3001/mcp" adk eval examples/google_adk_agent tests/evals/list_available_tools_test.json --config_file_path tests/evals/test_config.json`
+5. Expected: "✅ Passed" with tool listing evaluation
 
 ## Important Notes
 
 - **Always run ADK from project root** - Path resolution requirement
 - **Use UV for dependencies** - Project uses UV package manager  
+- **HTTP transport default** - Server runs on port 3001 (not 3000)
+- **Docker persistent volumes** - Session tokens and logs survive restarts
 - **Async patterns required** - Robin Stocks is sync, tools are async
 - **JSON responses mandatory** - All tools return `{"result": data}` format
 - **Error handling critical** - Use decorators and try/catch patterns
 - **Rate limiting active** - Automatic rate limiting for Robin Stocks API
+- **Type safety maintained** - Zero MyPy errors across 58 source files

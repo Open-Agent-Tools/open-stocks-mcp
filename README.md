@@ -213,7 +213,7 @@ The Open Stocks MCP server includes production-ready Docker containerization wit
 ```bash
 # Clone the repository
 git clone https://github.com/Open-Agent-Tools/open-stocks-mcp.git
-cd open-stocks-mcp/examples/Docker
+cd open-stocks-mcp/examples/open-stocks-mcp-docker
 
 # Create credentials file
 cp .env.example .env
@@ -243,7 +243,7 @@ docker-compose down
 - Comprehensive logging
 - Port exposure (3001) for MCP clients
 
-**See the [Docker Example README](examples/Docker/README.md) for complete documentation.**
+**See the [Docker Example README](examples/open-stocks-mcp-docker/README.md) for complete documentation.**
 
 ## Current Functionality (v0.4.0)
 

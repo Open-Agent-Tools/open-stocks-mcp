@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Docker Setup Validation Script for Open Stocks MCP v0.4.0
-# This script validates the Docker setup and HTTP transport functionality
+# open-stocks-mcp-docker Setup Validation Script for Open Stocks MCP v0.4.0
+# This script validates the open-stocks-mcp-docker setup and HTTP transport functionality
 
 set -e
 
@@ -39,14 +39,14 @@ print_error() {
 check_prerequisites() {
     print_info "Checking prerequisites..."
     
-    # Check Docker
+    # Check open-stocks-mcp-docker
     if ! command -v docker &> /dev/null; then
         print_error "Docker is not installed"
         exit 1
     fi
     print_status "Docker is installed: $(docker --version)"
     
-    # Check Docker Compose
+    # Check open-stocks-mcp-docker Compose
     if ! command -v docker-compose &> /dev/null && ! docker compose version &> /dev/null; then
         print_error "Docker Compose is not installed"
         exit 1
@@ -107,7 +107,7 @@ validate_env_file() {
     print_status "Environment file validation passed"
 }
 
-# Function to build Docker image
+# Function to build open-stocks-mcp-docker image
 build_image() {
     print_info "Building Docker image..."
     
@@ -232,7 +232,7 @@ test_endpoints() {
     fi
 }
 
-# Function to test Docker health checks
+# Function to test open-stocks-mcp-docker health checks
 test_docker_health() {
     print_info "Testing Docker health checks..."
     

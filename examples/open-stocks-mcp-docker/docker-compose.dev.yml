@@ -3,7 +3,7 @@ services:
     # Build from source for development with HTTP transport
     build:
       context: ../../  # Build from project root
-      dockerfile: examples/Docker/Dockerfile.dev
+      dockerfile: /Dockerfile.dev
     # Name the container for easier identification
     container_name: open-stocks-mcp-server-dev
     # Restart the container automatically if it stops

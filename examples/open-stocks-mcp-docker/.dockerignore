@@ -26,7 +26,7 @@ logs/
 .DS_Store
 Thumbs.db
 
-# Docker files (not needed inside container)
+# open-stocks-mcp-docker files (not needed inside container)
 Dockerfile
 docker-compose.yml
 docker-compose.*.yml

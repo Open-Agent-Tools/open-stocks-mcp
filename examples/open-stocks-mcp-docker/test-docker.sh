@@ -1,6 +1,6 @@
 #!/bin/bash
-# Test script for Open Stocks MCP Docker setup
-# This script validates the Docker configuration and basic functionality
+# Test script for Open Stocks MCP open-stocks-mcp-docker setup
+# This script validates the open-stocks-mcp-docker configuration and basic functionality
 
 set -e  # Exit on any error
 
@@ -30,14 +30,14 @@ log_error() {
 echo
 log_info "Checking prerequisites..."
 
-# Check Docker
+# Check open-stocks-mcp-docker
 if ! command -v docker &> /dev/null; then
     log_error "Docker is not installed or not in PATH"
     exit 1
 fi
 log_info "Docker: $(docker --version)"
 
-# Check Docker Compose
+# Check open-stocks-mcp-docker Compose
 if ! command -v docker-compose &> /dev/null; then
     log_error "Docker Compose is not installed or not in PATH"
     exit 1
@@ -56,7 +56,7 @@ if [ ! -f ".env" ]; then
     fi
 fi
 
-# Validate Docker configuration files
+# Validate open-stocks-mcp-docker configuration files
 echo
 log_info "Validating configuration files..."
 
@@ -81,7 +81,7 @@ if ! docker-compose config &> /dev/null; then
 fi
 log_info "docker-compose.yml syntax is valid"
 
-# Build the Docker image
+# Build the open-stocks-mcp-docker image
 echo
 log_info "Building Docker image..."
 if docker build -t open-stocks-mcp-base:latest . ; then
