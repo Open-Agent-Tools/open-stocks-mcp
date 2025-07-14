@@ -21,7 +21,7 @@ WORKDIR /usr/src/app
 
 # Install the open-stocks-mcp package from PyPI
 # Use the latest version with HTTP transport support
-RUN pip install --no-cache-dir open-stocks-mcp==0.4.1
+RUN pip install --no-cache-dir open-stocks-mcp==0.4.2
 
 # Verify that the package and its dependencies are installed correctly
 RUN pip check && \
