@@ -79,6 +79,29 @@ from open_stocks_mcp.tools.robinhood_stock_tools import (
     search_stocks,
 )
 from open_stocks_mcp.tools.robinhood_tools import list_available_tools
+
+# Phase 7: Trading Capabilities Tools
+from open_stocks_mcp.tools.robinhood_trading_tools import (
+    cancel_all_option_orders,
+    cancel_all_stock_orders,
+    cancel_option_order,
+    cancel_stock_order,
+    get_all_open_option_orders,
+    get_all_open_stock_orders,
+    order_buy_fractional_by_price,
+    order_buy_limit,
+    order_buy_market,
+    order_buy_option_limit,
+    order_buy_stop_loss,
+    order_buy_trailing_stop,
+    order_option_credit_spread,
+    order_option_debit_spread,
+    order_sell_limit,
+    order_sell_market,
+    order_sell_option_limit,
+    order_sell_stop_loss,
+    order_sell_trailing_stop,
+)
 from open_stocks_mcp.tools.robinhood_user_profile_tools import (
     get_account_profile,
     get_account_settings,
@@ -650,6 +673,238 @@ async def complete_profile() -> dict[str, Any]:
 async def account_settings() -> dict[str, Any]:
     """Gets account settings and preferences."""
     return await get_account_settings()  # type: ignore[no-any-return]
+
+
+# Phase 7: Trading Capabilities Tools
+
+
+# Stock Order Placement Tools
+@mcp.tool()
+async def buy_stock_market(symbol: str, quantity: int) -> dict[str, Any]:
+    """Places a market buy order for a stock.
+
+    Args:
+        symbol: The stock symbol to buy (e.g., "AAPL")
+        quantity: The number of shares to buy
+    """
+    return await order_buy_market(symbol, quantity)  # type: ignore[no-any-return]
+
+
+@mcp.tool()
+async def sell_stock_market(symbol: str, quantity: int) -> dict[str, Any]:
+    """Places a market sell order for a stock.
+
+    Args:
+        symbol: The stock symbol to sell (e.g., "AAPL")
+        quantity: The number of shares to sell
+    """
+    return await order_sell_market(symbol, quantity)  # type: ignore[no-any-return]
+
+
+@mcp.tool()
+async def buy_stock_limit(
+    symbol: str, quantity: int, limit_price: float
+) -> dict[str, Any]:
+    """Places a limit buy order for a stock.
+
+    Args:
+        symbol: The stock symbol to buy (e.g., "AAPL")
+        quantity: The number of shares to buy
+        limit_price: The maximum price per share
+    """
+    return await order_buy_limit(symbol, quantity, limit_price)  # type: ignore[no-any-return]
+
+
+@mcp.tool()
+async def sell_stock_limit(
+    symbol: str, quantity: int, limit_price: float
+) -> dict[str, Any]:
+    """Places a limit sell order for a stock.
+
+    Args:
+        symbol: The stock symbol to sell (e.g., "AAPL")
+        quantity: The number of shares to sell
+        limit_price: The minimum price per share
+    """
+    return await order_sell_limit(symbol, quantity, limit_price)  # type: ignore[no-any-return]
+
+
+@mcp.tool()
+async def buy_stock_stop_loss(
+    symbol: str, quantity: int, stop_price: float
+) -> dict[str, Any]:
+    """Places a stop loss buy order for a stock.
+
+    Args:
+        symbol: The stock symbol to buy (e.g., "AAPL")
+        quantity: The number of shares to buy
+        stop_price: The stop price that triggers the order
+    """
+    return await order_buy_stop_loss(symbol, quantity, stop_price)  # type: ignore[no-any-return]
+
+
+@mcp.tool()
+async def sell_stock_stop_loss(
+    symbol: str, quantity: int, stop_price: float
+) -> dict[str, Any]:
+    """Places a stop loss sell order for a stock.
+
+    Args:
+        symbol: The stock symbol to sell (e.g., "AAPL")
+        quantity: The number of shares to sell
+        stop_price: The stop price that triggers the order
+    """
+    return await order_sell_stop_loss(symbol, quantity, stop_price)  # type: ignore[no-any-return]
+
+
+@mcp.tool()
+async def buy_stock_trailing_stop(
+    symbol: str, quantity: int, trail_amount: float
+) -> dict[str, Any]:
+    """Places a trailing stop buy order for a stock.
+
+    Args:
+        symbol: The stock symbol to buy (e.g., "AAPL")
+        quantity: The number of shares to buy
+        trail_amount: The trailing amount (percentage or dollar amount)
+    """
+    return await order_buy_trailing_stop(symbol, quantity, trail_amount)  # type: ignore[no-any-return]
+
+
+@mcp.tool()
+async def sell_stock_trailing_stop(
+    symbol: str, quantity: int, trail_amount: float
+) -> dict[str, Any]:
+    """Places a trailing stop sell order for a stock.
+
+    Args:
+        symbol: The stock symbol to sell (e.g., "AAPL")
+        quantity: The number of shares to sell
+        trail_amount: The trailing amount (percentage or dollar amount)
+    """
+    return await order_sell_trailing_stop(symbol, quantity, trail_amount)  # type: ignore[no-any-return]
+
+
+@mcp.tool()
+async def buy_fractional_stock(symbol: str, amount_in_dollars: float) -> dict[str, Any]:
+    """Places a fractional share buy order using dollar amount.
+
+    Args:
+        symbol: The stock symbol to buy (e.g., "AAPL")
+        amount_in_dollars: The dollar amount to invest
+    """
+    return await order_buy_fractional_by_price(symbol, amount_in_dollars)  # type: ignore[no-any-return]
+
+
+# Options Order Placement Tools
+@mcp.tool()
+async def buy_option_limit(
+    instrument_id: str, quantity: int, limit_price: float
+) -> dict[str, Any]:
+    """Places a limit buy order for an option.
+
+    Args:
+        instrument_id: The option instrument ID
+        quantity: The number of option contracts to buy
+        limit_price: The maximum price per contract
+    """
+    return await order_buy_option_limit(instrument_id, quantity, limit_price)  # type: ignore[no-any-return]
+
+
+@mcp.tool()
+async def sell_option_limit(
+    instrument_id: str, quantity: int, limit_price: float
+) -> dict[str, Any]:
+    """Places a limit sell order for an option.
+
+    Args:
+        instrument_id: The option instrument ID
+        quantity: The number of option contracts to sell
+        limit_price: The minimum price per contract
+    """
+    return await order_sell_option_limit(instrument_id, quantity, limit_price)  # type: ignore[no-any-return]
+
+
+@mcp.tool()
+async def option_credit_spread(
+    short_instrument_id: str,
+    long_instrument_id: str,
+    quantity: int,
+    credit_price: float,
+) -> dict[str, Any]:
+    """Places a credit spread order (sell short option, buy long option).
+
+    Args:
+        short_instrument_id: The option instrument ID to sell (short leg)
+        long_instrument_id: The option instrument ID to buy (long leg)
+        quantity: The number of spread contracts
+        credit_price: The net credit received per spread
+    """
+    return await order_option_credit_spread(
+        short_instrument_id, long_instrument_id, quantity, credit_price
+    )  # type: ignore[no-any-return]
+
+
+@mcp.tool()
+async def option_debit_spread(
+    short_instrument_id: str, long_instrument_id: str, quantity: int, debit_price: float
+) -> dict[str, Any]:
+    """Places a debit spread order (buy long option, sell short option).
+
+    Args:
+        short_instrument_id: The option instrument ID to sell (short leg)
+        long_instrument_id: The option instrument ID to buy (long leg)
+        quantity: The number of spread contracts
+        debit_price: The net debit paid per spread
+    """
+    return await order_option_debit_spread(
+        short_instrument_id, long_instrument_id, quantity, debit_price
+    )  # type: ignore[no-any-return]
+
+
+# Order Management Tools
+@mcp.tool()
+async def cancel_stock_order_by_id(order_id: str) -> dict[str, Any]:
+    """Cancels a specific stock order.
+
+    Args:
+        order_id: The ID of the order to cancel
+    """
+    return await cancel_stock_order(order_id)  # type: ignore[no-any-return]
+
+
+@mcp.tool()
+async def cancel_option_order_by_id(order_id: str) -> dict[str, Any]:
+    """Cancels a specific option order.
+
+    Args:
+        order_id: The ID of the order to cancel
+    """
+    return await cancel_option_order(order_id)  # type: ignore[no-any-return]
+
+
+@mcp.tool()
+async def cancel_all_stock_orders_tool() -> dict[str, Any]:
+    """Cancels all open stock orders."""
+    return await cancel_all_stock_orders()  # type: ignore[no-any-return]
+
+
+@mcp.tool()
+async def cancel_all_option_orders_tool() -> dict[str, Any]:
+    """Cancels all open option orders."""
+    return await cancel_all_option_orders()  # type: ignore[no-any-return]
+
+
+@mcp.tool()
+async def open_stock_orders() -> dict[str, Any]:
+    """Retrieves all open stock orders."""
+    return await get_all_open_stock_orders()  # type: ignore[no-any-return]
+
+
+@mcp.tool()
+async def open_option_orders() -> dict[str, Any]:
+    """Retrieves all open option orders."""
+    return await get_all_open_option_orders()  # type: ignore[no-any-return]
 
 
 def create_mcp_server(config: ServerConfig | None = None) -> FastMCP:

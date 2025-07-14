@@ -152,7 +152,6 @@ ROBINHOOD_PASSWORD="password"
 
 ### Future Phases
 - **Phase 8**: Quality & reliability improvements - v0.6.0
-- **Phase 9**: Advanced features (technical analysis, alerts) - v0.7.0
 
 ## Common Tasks
 
