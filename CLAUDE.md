@@ -91,11 +91,11 @@ await session_manager.ensure_authenticated()
 
 ```
 tests/
-├── unit/           # Fast isolated tests (18 tests)
-├── auth/           # Authentication tests (29 tests) 
-├── server/         # MCP server tests (10 tests)
-├── integration/    # Live API tests (4 tests)
-└── evals/          # ADK agent tests (1 test)
+├── unit/           # Fast isolated tests
+├── auth/           # Authentication tests
+├── server/         # MCP server tests
+├── integration/    # Live API tests
+└── evals/          # ADK agent tests
 ```
 
 **Test Markers:**
@@ -109,7 +109,7 @@ tests/
 ### Publishing
 Triggered by release creation:
 ```bash
-gh release create v0.3.1 --title "v0.3.1" --notes "Release notes"
+gh release create v0.4.2 --title "v0.4.2" --notes "Release notes"
 ```
 
 ### Development
@@ -136,22 +136,21 @@ ROBINHOOD_PASSWORD="password"
 
 ## Current Development Status
 
-### Completed Phases (v0.4.1)
-- ✅ **Phases 1-5**: 61 MCP tools with complete read-only functionality
+### Completed Phases (v0.4.2)
+- ✅ **Phases 1-6**: 65 MCP tools with complete read-only functionality
 - ✅ **HTTP Transport**: Server-Sent Events (SSE) on port 3001
 - ✅ **Docker Infrastructure**: Persistent volumes for sessions and logs
-- ✅ **Test Coverage**: 148 tests covering all 61 tools (100%)
-- ✅ **Type Safety**: Zero MyPy errors across 58 source files
+- ✅ **Advanced Instrument Data**: 4 new tools for enhanced market data access
+- ✅ **Test Coverage**: Comprehensive test suite covering all tools
+- ✅ **Type Safety**: Zero MyPy errors maintained across codebase
 
 ### Next Phase Priority
-**Phase 6: Advanced Instrument Data (v0.4.2)** - 4 new read-only tools:
-1. `get_instruments_by_symbols()` - Metadata for multiple symbols
-2. `find_instrument_data()` - Search instrument information  
-3. `get_stock_quote_by_id()` - Quote by Robinhood instrument ID
-4. `get_pricebook_by_symbol()` - Level II order book (Gold required)
+**Phase 7: Trading Capabilities (v0.5.0)** - 19 new trading tools:
+- Stock order placement (9 tools): market, limit, stop-loss, trailing stop orders
+- Options order placement (4 tools): buy/sell options, credit/debit spreads  
+- Order management (6 tools): cancel orders, view open positions
 
 ### Future Phases
-- **Phase 7**: Trading capabilities (19 tools) - v0.5.0
 - **Phase 8**: Quality & reliability improvements - v0.6.0
 - **Phase 9**: Advanced features (technical analysis, alerts) - v0.7.0
 
@@ -187,4 +186,4 @@ ROBINHOOD_PASSWORD="password"
 - **JSON responses mandatory** - All tools return `{"result": data}` format
 - **Error handling critical** - Use decorators and try/catch patterns
 - **Rate limiting active** - Automatic rate limiting for Robin Stocks API
-- **Type safety maintained** - Zero MyPy errors across 58 source files
+- **Type safety maintained** - Zero MyPy errors maintained across codebase
