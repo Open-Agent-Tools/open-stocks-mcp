@@ -131,30 +131,13 @@
 - [ ] **Performance Metrics** - Latency and throughput tracking
 - [ ] **Alert System** - Proactive monitoring
 
-## Phase 9: Advanced Features (v0.7.0)
+## Future Development
 
 **Note**: The following are explicitly out of scope for this project:
 - **Crypto tools**: `get_crypto_*()` functions (crypto trading/data)
 - **Banking tools**: `get_bank_*()` functions (ACH transfers, bank account management)  
 - **Deposit/Withdrawal**: Any functions involving money movement
 - **Account modifications**: Settings changes, profile updates
-
-### Technical Analysis Tools (~12 tools)
-- [ ] **Technical Indicators** - RSI, MACD, Moving Averages, Bollinger Bands
-- [ ] **Chart Pattern Recognition** - Support/resistance, trend analysis
-- [ ] **Volume Analysis** - Volume indicators and flow analysis
-- [ ] **Momentum Indicators** - Stochastic, Williams %R, ROC
-
-### Alerts & Notifications System (~8 tools)
-- [ ] **Price Alerts** - Threshold-based price notifications
-- [ ] **Portfolio Alerts** - Portfolio value and percentage change alerts
-- [ ] **News Alerts** - Keyword-based news monitoring
-- [ ] **Technical Alerts** - Indicator-based trading signals
-
-### Enhanced Market Data (~5 tools)
-- [ ] **Extended Hours Trading** - Pre/post market data and trading
-- [ ] **Sector Analysis** - Sector performance and rotation analysis
-- [ ] **Market Sentiment** - Social sentiment and retail trader metrics
 
 ## Infrastructure & Operations
 - [ ] **Documentation** - Interactive API docs, example notebooks
