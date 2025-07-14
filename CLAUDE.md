@@ -2,60 +2,13 @@
 
 Project guidance for Claude Code when working with the Open Stocks MCP server.
 
-## User Shortcuts
-
-### `cleanup`
-Complete code quality workflow:
-1. `uv run ruff check . --fix` - Fix linting issues
-2. `uv run ruff format .` - Format code  
-3. `uv run mypy .` - Type checking
-4. `uv run pytest` - Run tests
-5. Commit changes with detailed message
-
-### `test`
-Run test suite:
-1. `uv run pytest` - All tests (skips exception tests by default)
-2. `uv run pytest -m "not slow and not exception_test"` - Fast tests only (recommended for development)
-3. `uv run pytest -m integration` - Integration tests (needs credentials)
-4. `uv run pytest -m exception_test` - Exception/error state tests only
-5. `uv run pytest -m slow` - Slow performance tests only
-
-### `adk-eval`
-Run ADK agent evaluation (from project root):
-1. Verify ADK installed: `adk --help`
-2. Set env vars: `GOOGLE_API_KEY`, `ROBINHOOD_USERNAME`, `ROBINHOOD_PASSWORD` 
-3. Start MCP server: `docker-compose up -d` (runs on port 3001)
-4. Run: `MCP_HTTP_URL="http://localhost:3001/mcp" adk eval examples/google_adk_agent tests/evals/list_available_tools_test.json --config_file_path tests/evals/test_config.json`
-
-### `publish <version>`
-Release workflow:
-1. Run `cleanup` first
-2. Update versions in `pyproject.toml` and `__init__.py`
-3. `uv build` - Test package build
-4. `gh release create v<version>` - Trigger PyPI publishing
-
-### `check`
-Quick project status:
-1. `git status` - Working tree status
-2. `git log --oneline -3` - Recent commits
-3. `gh run list --limit=3` - CI status
-4. `uv build` - Package build test
-
-### `docker`
-Docker operations:
-1. `cd examples/Docker` - Navigate to Docker directory
-2. `docker-compose up -d` - Start server with persistent volumes
-3. `docker-compose logs -f` - Monitor logs
-4. `curl http://localhost:3001/health` - Test health endpoint
-5. `docker-compose down` - Stop server
-
 ## Project Overview
 
 **Open Stocks MCP** - Model Context Protocol server providing stock market data through Robin Stocks API.
-- **Current Version**: v0.4.1 with HTTP transport and persistent volumes
+- **Current Version**: v0.4.2 with HTTP transport and persistent volumes
 - **Framework**: FastMCP for simplified MCP development
 - **API**: Robin Stocks for market data and trading
-- **Tools**: 61 MCP tools for account, market data, options, orders
+- **Tools**: 65 MCP tools for account, market data, options, orders
 - **Transport**: HTTP with Server-Sent Events (SSE) on port 3001
 - **Agent Integration**: Google ADK evaluation tests
 - **Docker**: Production-ready with persistent session/log storage
@@ -98,7 +51,7 @@ uv run mcp dev src/open_stocks_mcp/server/app.py
 # Test tools individually  
 uv run python -c "from open_stocks_mcp.tools.robinhood_account_tools import get_account_info; print(get_account_info())"
 
-# open-stocks-mcp-docker development
+# Docker development
 cd examples/open-stocks-mcp-docker && docker-compose up -d
 curl http://localhost:3001/health  # Test health endpoint
 ```
@@ -220,7 +173,7 @@ ROBINHOOD_PASSWORD="password"
 ### Running ADK Evaluations
 1. Install: `pip install google-agent-developer-kit`
 2. Set environment variables (see above)
-3. Start Docker server: `cd examples/Docker && docker-compose up -d`
+3. Start Docker server: `cd examples/open-stocks-mcp-docker && docker-compose up -d`
 4. From project root: `MCP_HTTP_URL="http://localhost:3001/mcp" adk eval examples/google_adk_agent tests/evals/list_available_tools_test.json --config_file_path tests/evals/test_config.json`
 5. Expected: "✅ Passed" with tool listing evaluation
 
