@@ -1,206 +1,143 @@
-# Contributing to open-stocks-mcp
+# Contributing to Open Stocks MCP
 
-Thank you for your interest in contributing to open-stocks-mcp! We welcome contributions from everyone.
+Thank you for your interest in contributing! We welcome contributions from everyone.
 
-## Getting Started
+## Development Setup
 
 ### Prerequisites
-
-- Python 3.11 or higher
+- Python 3.11+
 - [UV](https://docs.astral.sh/uv/) for dependency management
 - Git for version control
 
-### Development Setup
-
-1. Fork the repository on GitHub
-2. Clone your fork locally:
+### Setup
+1. Fork and clone the repository:
    ```bash
    git clone https://github.com/Open-Agent-Tools/open-stocks-mcp.git
    cd open-stocks-mcp
    ```
 
-3. Create a virtual environment and install dependencies:
+2. Create virtual environment and install dependencies:
    ```bash
-   uv venv
-   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   uv venv && source .venv/bin/activate
    uv pip install -e ".[dev]"
-   ```
-
-4. Install pre-commit hooks:
-   ```bash
    uv run pre-commit install
    ```
 
 ## Development Workflow
 
-### Creating a Branch
-
-Create a new branch for your feature or bugfix:
-```bash
-git checkout -b feature/your-feature-name
-# or
-git checkout -b fix/your-bugfix-name
-```
-
 ### Making Changes
-
-1. Make your changes in the appropriate files
-2. Add or update tests as needed
-3. Update documentation if you're changing behavior
-
-### Code Style
-
-We use several tools to maintain code quality:
-
-- **Ruff** for linting and formatting
-- **Black** for additional formatting (if needed)
-- **MyPy** for type checking
-
-Run these before committing:
-```bash
-uv run ruff check . --fix
-uv run ruff format .
-uv run mypy .
-```
-
-Or let pre-commit handle it automatically when you commit.
-
-### Testing
-
-Run the test suite before submitting:
-```bash
-# Run all tests
-uv run pytest
-
-# Run tests excluding slow ones
-uv run pytest -m "not slow"
-
-# Run only integration tests (may require credentials)
-uv run pytest -m integration
-
-# Run specific test file
-uv run pytest tests/test_specific.py
-
-# Run tests matching a pattern
-uv run pytest -k "test_stock"
-```
-
-### Committing Changes
-
-Write clear, concise commit messages:
-```bash
-git add .
-git commit -m "feat: add real-time stock price updates"
-# or
-git commit -m "fix: handle empty portfolio response"
-```
-
-Follow conventional commits format:
-- `feat:` for new features
-- `fix:` for bug fixes
-- `docs:` for documentation changes
-- `style:` for formatting changes
-- `refactor:` for code refactoring
-- `test:` for test additions/changes
-- `chore:` for maintenance tasks
-
-## Submitting a Pull Request
-
-1. Push your branch to your fork:
+1. Create a feature branch:
    ```bash
+   git checkout -b feature/your-feature-name
+   ```
+
+2. Make your changes with tests and documentation updates
+
+3. Run quality checks:
+   ```bash
+   uv run ruff check . --fix
+   uv run ruff format .
+   uv run mypy .
+   uv run pytest -m "not slow and not exception_test"
+   ```
+
+4. Commit and push:
+   ```bash
+   git add .
+   git commit -m "feat: your descriptive commit message"
    git push origin feature/your-feature-name
    ```
 
-2. Go to the original repository on GitHub and create a Pull Request
-
-3. Fill out the PR template with:
-   - Clear description of changes
-   - Related issue numbers (if any)
-   - Test results
-   - Any breaking changes
-
-4. Wait for review and address any feedback
-
-## Pull Request Guidelines
-
-- PRs should focus on a single feature or fix
-- Include tests for new functionality
-- Update documentation as needed
-- Ensure all tests pass
-- Keep commits clean and atomic
-- Rebase on main if needed to avoid merge conflicts
+5. Create a pull request on GitHub
 
 ## Code Guidelines
 
-### Type Hints
-
-Always use type hints:
-```python
-def get_stock_price(symbol: str, exchange: str = "NYSE") -> float:
-    """Get current stock price."""
-    ...
-```
-
-### Docstrings
-
-Use Google-style docstrings:
-```python
-def process_order(order: Order) -> OrderResult:
-    """Process a stock order.
-    
-    Args:
-        order: The order to process
-        
-    Returns:
-        Result of the order processing
-        
-    Raises:
-        InvalidOrderError: If the order is invalid
-    """
-```
-
-### Error Handling
-
-Be explicit about errors:
-```python
-try:
-    result = api_call()
-except SpecificError as e:
-    logger.error(f"API call failed: {e}")
-    raise ProcessingError(f"Could not process: {e}") from e
-```
+### Code Style
+- Follow PEP 8 (enforced by Ruff)
+- Use type hints for all functions
+- Maintain zero MyPy errors
+- Write descriptive commit messages
 
 ### Testing
+- Add unit tests for new functionality
+- Use `@pytest.mark.integration` for tests requiring credentials
+- Use `@pytest.mark.slow` for long-running tests
+- Mock external API calls in unit tests
 
-Write tests for all new functionality:
+### MCP Tool Development
+All MCP tools should follow this pattern:
 ```python
-def test_stock_price_retrieval():
-    """Test that stock prices are retrieved correctly."""
-    price = get_stock_price("AAPL")
-    assert isinstance(price, float)
-    assert price > 0
+@mcp.tool()
+async def tool_name(param: str) -> dict[str, Any]:
+    """Clear description of what the tool does."""
+    try:
+        result = await execute_with_retry(rh.some_function, param)
+        return {"result": result}
+    except Exception as e:
+        return {"result": {"error": str(e), "status": "error"}}
 ```
 
-## Areas for Contribution
+### Key Conventions
+- Use async wrappers for Robin Stocks API
+- Include retry logic via `execute_with_retry`
+- Handle errors with `@handle_robin_stocks_errors`
+- Return JSON with `{"result": data}` format
+- Respect rate limiting
 
-- **New Tools**: Add MCP tools for additional stock market functionality
-- **Documentation**: Improve docs, add examples, fix typos
-- **Testing**: Increase test coverage, add edge cases
-- **Performance**: Optimize slow operations
-- **Bug Fixes**: Fix reported issues
-- **Features**: Implement requested features from issues
+## Project Structure
 
-## Questions?
+```
+src/open_stocks_mcp/
+├── server/           # MCP server implementation
+├── tools/            # MCP tool modules
+├── auth/             # Authentication and session management
+└── utils/            # Utilities and helpers
 
-- Check existing issues and discussions
-- Create a new issue for bugs or feature requests
-- Start a discussion for general questions
-- Tag maintainers if you need help
+tests/
+├── unit/             # Fast isolated tests
+├── integration/      # Live API tests (requires credentials)
+├── auth/             # Authentication tests
+└── evals/            # ADK evaluation tests
+```
 
-## Code of Conduct
+## Testing
 
-Please be respectful and constructive in all interactions. We aim to create a welcoming environment for all contributors.
+### Environment Variables
+For integration tests, set:
+```bash
+ROBINHOOD_USERNAME="email@example.com"
+ROBINHOOD_PASSWORD="password"
+```
+
+### Test Commands
+```bash
+pytest                           # All tests
+pytest tests/unit/               # Unit tests only
+pytest -m integration           # Integration tests
+pytest -m "not slow and not exception_test"  # Fast tests (recommended)
+```
+
+## Documentation
+
+- Update CLAUDE.md for development guidance
+- Update README.md for user-facing changes
+- Add docstrings to all public functions
+- Include examples in tool descriptions
+
+## Release Process
+
+1. Update version in `pyproject.toml` and `src/open_stocks_mcp/__init__.py`
+2. Update CHANGELOG.md with release notes
+3. Create and push release tag
+4. GitHub Actions will automatically publish to PyPI
+
+## Questions or Issues?
+
+- Open an issue on GitHub for bugs or feature requests
+- Check existing issues before creating new ones
+- Include minimal reproduction steps for bugs
+- Provide context and use cases for feature requests
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the Apache License 2.0.
+By contributing, you agree that your contributions will be licensed under the MIT License.

@@ -8,9 +8,7 @@ Project guidance for Claude Code when working with the Open Stocks MCP server.
 - **Current Version**: v0.5.0 with trading capabilities and 84 MCP tools
 - **Framework**: FastMCP for simplified MCP development
 - **API**: Robin Stocks for market data and trading
-- **Tools**: 84 MCP tools for account, market data, options, orders, and trading
 - **Transport**: HTTP with Server-Sent Events (SSE) on port 3001
-- **Agent Integration**: Google ADK evaluation tests
 - **Docker**: Production-ready with persistent session/log storage
 
 ## Quick Reference
@@ -26,11 +24,7 @@ uv pip install -e ".[dev]"
 pytest                           # All tests (skips exception tests by default)
 pytest tests/unit/               # Unit tests (fast)
 pytest tests/integration/ -m integration  # Integration (needs auth)
-pytest tests/evals/ -m agent_evaluation   # ADK evaluation
-pytest -m exception_test         # Run only exception/error state tests
-pytest -m slow                   # Run only slow performance tests
-pytest -m "not slow and not exception_test"  # Fast tests only (recommended for development)
-pytest -m "not exception_test"   # Run all tests except exception tests
+pytest -m "not slow and not exception_test"  # Fast tests (recommended)
 ```
 
 ### Code Quality
@@ -44,12 +38,6 @@ mypy .                          # Type check
 ```bash
 # Test server locally (HTTP transport)
 uv run open-stocks-mcp-server --transport http --port 3001
-
-# Test server locally (STDIO transport)
-uv run mcp dev src/open_stocks_mcp/server/app.py
-
-# Test tools individually  
-uv run python -c "from open_stocks_mcp.tools.robinhood_account_tools import get_account_info; print(get_account_info())"
 
 # Docker development
 cd examples/open-stocks-mcp-docker && docker-compose up -d
@@ -77,48 +65,6 @@ async def get_stock_quote(symbol: str) -> dict:
 - **Rate limiting** via `get_rate_limiter()`
 - **Session management** for authentication
 
-### Authentication
-```python
-# Server startup authentication
-from open_stocks_mcp.tools.session_manager import get_session_manager
-
-session_manager = get_session_manager()
-session_manager.set_credentials(username, password)
-await session_manager.ensure_authenticated()
-```
-
-## Test Structure
-
-```
-tests/
-├── unit/           # Fast isolated tests
-├── auth/           # Authentication tests
-├── server/         # MCP server tests
-├── integration/    # Live API tests
-└── evals/          # ADK agent tests
-```
-
-**Test Markers:**
-- `slow` - Long-running performance tests (watchlist operations, multiple API calls)
-- `integration` - Requires credentials
-- `agent_evaluation` - ADK evaluation tests
-- `exception_test` - Error state and exception handling tests (skipped by default)
-
-## GitHub Workflows
-
-### Publishing
-Triggered by release creation:
-```bash
-gh release create v0.4.2 --title "v0.4.2" --notes "Release notes"
-```
-
-### Development
-```bash
-gh repo view                    # Repository info
-gh run list                     # Workflow status
-gh pr create --title "feat: ..." --body "..."
-```
-
 ## Environment Variables
 
 ### Required for Live Testing
@@ -136,22 +82,18 @@ ROBINHOOD_PASSWORD="password"
 
 ## Current Development Status
 
-### Completed Phases (v0.5.0)
+### Completed (v0.5.0)
 - ✅ **Phases 1-7**: 84 MCP tools with complete trading functionality
 - ✅ **HTTP Transport**: Server-Sent Events (SSE) on port 3001
 - ✅ **Docker Infrastructure**: Persistent volumes for sessions and logs
-- ✅ **Advanced Instrument Data**: 4 new tools for enhanced market data access
 - ✅ **Test Coverage**: Comprehensive test suite covering all tools
 - ✅ **Type Safety**: Zero MyPy errors maintained across codebase
 
 ### Next Phase Priority
-**Phase 8: Quality & Reliability (v0.6.0)** - Enhanced reliability and monitoring:
+**Phase 8: Quality & Reliability (v0.6.0)** - Final phase:
 - Advanced error handling and recovery mechanisms
 - Performance optimization and caching strategies
 - Enhanced monitoring and observability features
-
-### Project Scope
-The project has reached feature completeness with Phase 8 (Quality & Reliability) as the final planned phase. Future development beyond Phase 8 is not currently planned.
 
 ## Common Tasks
 
@@ -162,27 +104,18 @@ The project has reached feature completeness with Phase 8 (Quality & Reliability
 4. Add to server registration in `server/app.py`
 5. Write unit tests in `tests/unit/`
 
-### Debugging Authentication Issues
-1. Check session status: `session_manager.get_session_info()`
-2. Test login: `session_manager.ensure_authenticated()`
-3. Verify credentials in environment variables
-4. Check Robin Stocks API status
-
 ### Running ADK Evaluations
 1. Install: `pip install google-agent-developer-kit`
 2. Set environment variables (see above)
 3. Start Docker server: `cd examples/open-stocks-mcp-docker && docker-compose up -d`
 4. From project root: `MCP_HTTP_URL="http://localhost:3001/mcp" adk eval examples/google_adk_agent tests/evals/list_available_tools_test.json --config_file_path tests/evals/test_config.json`
-5. Expected: "✅ Passed" with tool listing evaluation
 
 ## Important Notes
 
-- **Always run ADK from project root** - Path resolution requirement
 - **Use UV for dependencies** - Project uses UV package manager  
 - **HTTP transport default** - Server runs on port 3001 (not 3000)
 - **Docker persistent volumes** - Session tokens and logs survive restarts
 - **Async patterns required** - Robin Stocks is sync, tools are async
 - **JSON responses mandatory** - All tools return `{"result": data}` format
-- **Error handling critical** - Use decorators and try/catch patterns
 - **Rate limiting active** - Automatic rate limiting for Robin Stocks API
 - **Type safety maintained** - Zero MyPy errors maintained across codebase
