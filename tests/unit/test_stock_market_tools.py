@@ -6,10 +6,14 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from open_stocks_mcp.tools.robinhood_stock_tools import (
+    find_instrument_data,
+    get_instruments_by_symbols,
     get_market_hours,
     get_price_history,
+    get_pricebook_by_symbol,
     get_stock_info,
     get_stock_price,
+    get_stock_quote_by_id,
     search_stocks,
 )
 from open_stocks_mcp.tools.robinhood_tools import list_available_tools
@@ -456,3 +460,228 @@ class TestServerTools:
         assert result["result"]["health_status"] == "degraded"
         assert "High error rate: 15.0%" in result["result"]["issues"]
         assert result["result"]["metrics_summary"]["error_rate_percent"] == 15.0
+
+
+class TestAdvancedInstrumentTools:
+    """Test advanced instrument data tools with mocked responses."""
+
+    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_instruments_by_symbols")
+    @pytest.mark.asyncio
+    async def test_get_instruments_by_symbols_success(
+        self, mock_get_instruments: Any
+    ) -> None:
+        """Test successful instrument retrieval for multiple symbols."""
+        mock_get_instruments.return_value = [
+            {
+                "id": "450dfc6d-5510-4d40-abfb-f633b7d9be3e",
+                "url": "https://robinhood.com/instruments/450dfc6d-5510-4d40-abfb-f633b7d9be3e/",
+                "symbol": "AAPL",
+                "name": "Apple Inc.",
+                "tradeable": True,
+                "market": "NASDAQ",
+                "list_date": "1980-12-12",
+                "state": "active",
+                "type": "stock",
+                "tradability": "tradable",
+                "splits": "https://robinhood.com/instruments/450dfc6d-5510-4d40-abfb-f633b7d9be3e/splits/",
+                "fundamentals": "https://robinhood.com/instruments/450dfc6d-5510-4d40-abfb-f633b7d9be3e/fundamentals/",
+                "quote": "https://robinhood.com/quotes/AAPL/",
+                "simple_name": "Apple",
+                "min_tick_size": None,
+                "maintenance_ratio": "0.2500",
+                "day_trade_ratio": "0.2500",
+                "margin_initial_ratio": "0.5000",
+                "bloomberg_unique": "EQ0010169500001000",
+                "rhs_tradability": "tradable",
+                "tradable_chain_id": "1df78b0f-8362-4c73-9c41-6e8c5f7dc4a4",
+                "default_collar_fraction": "0.0500",
+                "fractional_tradability": "tradable",
+                "terminal_currencies": ["USD"],
+                "country": "US",
+                "day_trade_buying_power_ratio": "0.2500",
+                "symbol_description": "Apple Inc. - Common Stock",
+                "instrument_id": "450dfc6d-5510-4d40-abfb-f633b7d9be3e",
+            },
+            {
+                "id": "943c5009-a0bb-4665-8cf4-a95dab5874e4",
+                "url": "https://robinhood.com/instruments/943c5009-a0bb-4665-8cf4-a95dab5874e4/",
+                "symbol": "GOOGL",
+                "name": "Alphabet Inc. - Class A",
+                "tradeable": True,
+                "market": "NASDAQ",
+                "list_date": "2004-08-19",
+                "state": "active",
+                "type": "stock",
+                "tradability": "tradable",
+                "splits": "https://robinhood.com/instruments/943c5009-a0bb-4665-8cf4-a95dab5874e4/splits/",
+                "fundamentals": "https://robinhood.com/instruments/943c5009-a0bb-4665-8cf4-a95dab5874e4/fundamentals/",
+                "quote": "https://robinhood.com/quotes/GOOGL/",
+                "simple_name": "Alphabet",
+                "min_tick_size": None,
+                "maintenance_ratio": "0.2500",
+                "day_trade_ratio": "0.2500",
+                "margin_initial_ratio": "0.5000",
+                "bloomberg_unique": "EQ0010080100001000",
+                "rhs_tradability": "tradable",
+                "tradable_chain_id": "6df56bd0-0bf2-44ab-8875-f94fd8526942",
+                "default_collar_fraction": "0.0500",
+                "fractional_tradability": "tradable",
+                "terminal_currencies": ["USD"],
+                "country": "US",
+                "day_trade_buying_power_ratio": "0.2500",
+                "symbol_description": "Alphabet Inc. - Class A - Common Stock",
+                "instrument_id": "943c5009-a0bb-4665-8cf4-a95dab5874e4",
+            },
+        ]
+
+        result = await get_instruments_by_symbols(["AAPL", "GOOGL"])
+
+        assert "result" in result
+        assert result["result"]["status"] == "success"
+        assert len(result["result"]["instruments"]) == 2
+        assert result["result"]["instruments"][0]["symbol"] == "AAPL"
+        assert result["result"]["instruments"][0]["name"] == "Apple Inc."
+        assert result["result"]["instruments"][1]["symbol"] == "GOOGL"
+        assert result["result"]["instruments"][1]["name"] == "Alphabet Inc. - Class A"
+
+    @pytest.mark.asyncio
+    async def test_get_instruments_by_symbols_empty_list(self) -> None:
+        """Test get_instruments_by_symbols with empty symbol list."""
+        result = await get_instruments_by_symbols([])
+
+        assert "result" in result
+        assert result["result"]["status"] == "error"
+        assert "empty" in result["result"]["error"].lower()
+
+    @pytest.mark.asyncio
+    async def test_get_instruments_by_symbols_invalid_symbols(self) -> None:
+        """Test get_instruments_by_symbols with invalid symbol formats."""
+        result = await get_instruments_by_symbols(["", "INVALID$SYMBOL", "123"])
+
+        assert "result" in result
+        assert result["result"]["status"] == "error"
+        assert "invalid" in result["result"]["error"].lower()
+
+    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.find_instrument_data")
+    @pytest.mark.asyncio
+    async def test_find_instrument_data_success(
+        self, mock_find_instrument: Any
+    ) -> None:
+        """Test successful instrument data search."""
+        mock_find_instrument.return_value = [
+            {
+                "id": "450dfc6d-5510-4d40-abfb-f633b7d9be3e",
+                "url": "https://robinhood.com/instruments/450dfc6d-5510-4d40-abfb-f633b7d9be3e/",
+                "symbol": "AAPL",
+                "name": "Apple Inc.",
+                "tradeable": True,
+                "market": "NASDAQ",
+                "list_date": "1980-12-12",
+                "state": "active",
+                "type": "stock",
+                "simple_name": "Apple",
+                "country": "US",
+                "symbol_description": "Apple Inc. - Common Stock",
+            }
+        ]
+
+        result = await find_instrument_data("Apple")
+
+        assert "result" in result
+        assert result["result"]["status"] == "success"
+        assert len(result["result"]["instruments"]) == 1
+        assert result["result"]["instruments"][0]["symbol"] == "AAPL"
+        assert result["result"]["instruments"][0]["name"] == "Apple Inc."
+
+    @pytest.mark.asyncio
+    async def test_find_instrument_data_empty_query(self) -> None:
+        """Test find_instrument_data with empty query."""
+        result = await find_instrument_data("")
+
+        assert "result" in result
+        assert result["result"]["status"] == "error"
+        assert "empty" in result["result"]["error"].lower()
+
+    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_stock_quote_by_id")
+    @pytest.mark.asyncio
+    async def test_get_stock_quote_by_id_success(
+        self, mock_get_stock_quote_by_id: Any
+    ) -> None:
+        """Test successful stock quote retrieval by ID."""
+        mock_get_stock_quote_by_id.return_value = {
+            "ask_price": "150.30",
+            "ask_size": "100",
+            "bid_price": "150.20",
+            "bid_size": "200",
+            "last_trade_price": "150.25",
+            "last_extended_hours_trade_price": "150.00",
+            "previous_close": "148.50",
+            "adjusted_previous_close": "148.50",
+            "previous_close_date": "2024-01-12",
+            "symbol": "AAPL",
+            "trading_halted": False,
+            "has_traded": True,
+            "last_trade_price_source": "consolidated",
+            "updated_at": "2024-01-13T21:00:00Z",
+            "instrument": "https://robinhood.com/instruments/450dfc6d-5510-4d40-abfb-f633b7d9be3e/",
+            "instrument_id": "450dfc6d-5510-4d40-abfb-f633b7d9be3e",
+        }
+
+        result = await get_stock_quote_by_id("450dfc6d-5510-4d40-abfb-f633b7d9be3e")
+
+        assert "result" in result
+        assert result["result"]["status"] == "success"
+        assert (
+            result["result"]["instrument_id"] == "450dfc6d-5510-4d40-abfb-f633b7d9be3e"
+        )
+        assert result["result"]["symbol"] == "AAPL"
+        assert result["result"]["price"] == 150.25
+
+    @pytest.mark.asyncio
+    async def test_get_stock_quote_by_id_empty_id(self) -> None:
+        """Test get_stock_quote_by_id with empty ID."""
+        result = await get_stock_quote_by_id("")
+
+        assert "result" in result
+        assert result["result"]["status"] == "error"
+        assert "empty" in result["result"]["error"].lower()
+
+    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_pricebook_by_symbol")
+    @pytest.mark.asyncio
+    async def test_get_pricebook_by_symbol_success(
+        self, mock_get_pricebook: Any
+    ) -> None:
+        """Test successful pricebook retrieval."""
+        mock_get_pricebook.return_value = {
+            "asks": [
+                {"price": "150.30", "quantity": "100"},
+                {"price": "150.32", "quantity": "200"},
+                {"price": "150.35", "quantity": "150"},
+            ],
+            "bids": [
+                {"price": "150.20", "quantity": "200"},
+                {"price": "150.18", "quantity": "100"},
+                {"price": "150.15", "quantity": "300"},
+            ],
+            "symbol": "AAPL",
+            "updated_at": "2024-01-13T21:00:00Z",
+        }
+
+        result = await get_pricebook_by_symbol("AAPL")
+
+        assert "result" in result
+        assert result["result"]["status"] == "success"
+        assert result["result"]["symbol"] == "AAPL"
+        assert len(result["result"]["asks"]) == 3
+        assert len(result["result"]["bids"]) == 3
+        assert result["result"]["asks"][0]["price"] == 150.30
+        assert result["result"]["bids"][0]["price"] == 150.20
+
+    @pytest.mark.asyncio
+    async def test_get_pricebook_by_symbol_invalid_symbol(self) -> None:
+        """Test get_pricebook_by_symbol with invalid symbol."""
+        result = await get_pricebook_by_symbol("INVALID$SYMBOL")
+
+        assert "result" in result
+        assert result["result"]["status"] == "error"
+        assert "invalid" in result["result"]["error"].lower()

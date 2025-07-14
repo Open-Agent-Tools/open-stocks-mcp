@@ -68,10 +68,14 @@ from open_stocks_mcp.tools.robinhood_order_tools import (
     get_stock_orders,
 )
 from open_stocks_mcp.tools.robinhood_stock_tools import (
+    find_instrument_data,
+    get_instruments_by_symbols,
     get_market_hours,
     get_price_history,
+    get_pricebook_by_symbol,
     get_stock_info,
     get_stock_price,
+    get_stock_quote_by_id,
     search_stocks,
 )
 from open_stocks_mcp.tools.robinhood_tools import list_available_tools
@@ -258,6 +262,47 @@ async def price_history(symbol: str, period: str = "week") -> dict[str, Any]:
         period: Time period ("day", "week", "month", "3month", "year", "5year")
     """
     return await get_price_history(symbol, period)  # type: ignore[no-any-return]
+
+
+# Phase 6: Advanced Instrument Data Tools
+@mcp.tool()
+async def instruments_by_symbols(symbols: list[str]) -> dict[str, Any]:
+    """Gets detailed instrument metadata for multiple symbols.
+
+    Args:
+        symbols: List of stock ticker symbols (e.g., ["AAPL", "GOOGL", "MSFT"])
+    """
+    return await get_instruments_by_symbols(symbols)  # type: ignore[no-any-return]
+
+
+@mcp.tool()
+async def find_instruments(query: str) -> dict[str, Any]:
+    """Searches for instrument information by various criteria.
+
+    Args:
+        query: Search query string (can be symbol, company name, or other criteria)
+    """
+    return await find_instrument_data(query)  # type: ignore[no-any-return]
+
+
+@mcp.tool()
+async def stock_quote_by_id(instrument_id: str) -> dict[str, Any]:
+    """Gets stock quote using Robinhood's internal instrument ID.
+
+    Args:
+        instrument_id: Robinhood's internal instrument ID
+    """
+    return await get_stock_quote_by_id(instrument_id)  # type: ignore[no-any-return]
+
+
+@mcp.tool()
+async def pricebook_by_symbol(symbol: str) -> dict[str, Any]:
+    """Gets Level II order book data for a symbol (requires Gold subscription).
+
+    Args:
+        symbol: Stock ticker symbol (e.g., "AAPL")
+    """
+    return await get_pricebook_by_symbol(symbol)  # type: ignore[no-any-return]
 
 
 # Dividend & Income Tools
