@@ -5,10 +5,10 @@ Project guidance for Claude Code when working with the Open Stocks MCP server.
 ## Project Overview
 
 **Open Stocks MCP** - Model Context Protocol server providing stock market data through Robin Stocks API.
-- **Current Version**: v0.4.2 with HTTP transport and persistent volumes
+- **Current Version**: v0.5.0 with trading capabilities and 84 MCP tools
 - **Framework**: FastMCP for simplified MCP development
 - **API**: Robin Stocks for market data and trading
-- **Tools**: 65 MCP tools for account, market data, options, orders
+- **Tools**: 84 MCP tools for account, market data, options, orders, and trading
 - **Transport**: HTTP with Server-Sent Events (SSE) on port 3001
 - **Agent Integration**: Google ADK evaluation tests
 - **Docker**: Production-ready with persistent session/log storage
@@ -136,8 +136,8 @@ ROBINHOOD_PASSWORD="password"
 
 ## Current Development Status
 
-### Completed Phases (v0.4.2)
-- ✅ **Phases 1-6**: 65 MCP tools with complete read-only functionality
+### Completed Phases (v0.5.0)
+- ✅ **Phases 1-7**: 84 MCP tools with complete trading functionality
 - ✅ **HTTP Transport**: Server-Sent Events (SSE) on port 3001
 - ✅ **Docker Infrastructure**: Persistent volumes for sessions and logs
 - ✅ **Advanced Instrument Data**: 4 new tools for enhanced market data access
@@ -145,13 +145,13 @@ ROBINHOOD_PASSWORD="password"
 - ✅ **Type Safety**: Zero MyPy errors maintained across codebase
 
 ### Next Phase Priority
-**Phase 7: Trading Capabilities (v0.5.0)** - 19 new trading tools:
-- Stock order placement (9 tools): market, limit, stop-loss, trailing stop orders
-- Options order placement (4 tools): buy/sell options, credit/debit spreads  
-- Order management (6 tools): cancel orders, view open positions
+**Phase 8: Quality & Reliability (v0.6.0)** - Enhanced reliability and monitoring:
+- Advanced error handling and recovery mechanisms
+- Performance optimization and caching strategies
+- Enhanced monitoring and observability features
 
 ### Future Phases
-- **Phase 8**: Quality & reliability improvements - v0.6.0
+- **Phase 9**: Advanced analytics and technical analysis tools - v0.7.0
 
 ## Common Tasks
 
