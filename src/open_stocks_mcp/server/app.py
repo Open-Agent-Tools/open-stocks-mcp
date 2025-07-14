@@ -840,9 +840,10 @@ async def option_credit_spread(
         quantity: The number of spread contracts
         credit_price: The net credit received per spread
     """
-    return await order_option_credit_spread(
+    result: dict[str, Any] = await order_option_credit_spread(
         short_instrument_id, long_instrument_id, quantity, credit_price
-    )  # type: ignore[no-any-return]
+    )
+    return result
 
 
 @mcp.tool()
@@ -857,9 +858,10 @@ async def option_debit_spread(
         quantity: The number of spread contracts
         debit_price: The net debit paid per spread
     """
-    return await order_option_debit_spread(
+    result: dict[str, Any] = await order_option_debit_spread(
         short_instrument_id, long_instrument_id, quantity, debit_price
-    )  # type: ignore[no-any-return]
+    )
+    return result
 
 
 # Order Management Tools

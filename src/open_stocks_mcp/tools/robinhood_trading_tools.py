@@ -406,7 +406,9 @@ async def order_buy_stop_loss(
     Returns:
         A JSON object containing order confirmation in the result field.
     """
-    log_api_call("order_buy_stop_loss", symbol, quantity=quantity, stop_price=stop_price)
+    log_api_call(
+        "order_buy_stop_loss", symbol, quantity=quantity, stop_price=stop_price
+    )
 
     # Validation
     if not symbol or not isinstance(symbol, str):
@@ -496,7 +498,9 @@ async def order_sell_stop_loss(
     Returns:
         A JSON object containing order confirmation in the result field.
     """
-    log_api_call("order_sell_stop_loss", symbol, quantity=quantity, stop_price=stop_price)
+    log_api_call(
+        "order_sell_stop_loss", symbol, quantity=quantity, stop_price=stop_price
+    )
 
     # Validation
     if not symbol or not isinstance(symbol, str):
@@ -603,7 +607,9 @@ async def order_buy_trailing_stop(
     Returns:
         A JSON object containing order confirmation in the result field.
     """
-    log_api_call("order_buy_trailing_stop", symbol, quantity=quantity, trail_amount=trail_amount)
+    log_api_call(
+        "order_buy_trailing_stop", symbol, quantity=quantity, trail_amount=trail_amount
+    )
 
     # Validation
     if not symbol or not isinstance(symbol, str):
@@ -689,7 +695,9 @@ async def order_sell_trailing_stop(
     Returns:
         A JSON object containing order confirmation in the result field.
     """
-    log_api_call("order_sell_trailing_stop", symbol, quantity=quantity, trail_amount=trail_amount)
+    log_api_call(
+        "order_sell_trailing_stop", symbol, quantity=quantity, trail_amount=trail_amount
+    )
 
     # Validation
     if not symbol or not isinstance(symbol, str):
@@ -789,7 +797,9 @@ async def order_buy_fractional_by_price(
     Returns:
         A JSON object containing order confirmation in the result field.
     """
-    log_api_call("order_buy_fractional_by_price", symbol, amount_in_dollars=amount_in_dollars)
+    log_api_call(
+        "order_buy_fractional_by_price", symbol, amount_in_dollars=amount_in_dollars
+    )
 
     # Validation
     if not symbol or not isinstance(symbol, str):
@@ -882,7 +892,12 @@ async def order_buy_option_limit(
     Returns:
         A JSON object containing order confirmation in the result field.
     """
-    log_api_call("order_buy_option_limit", instrument_id, quantity=quantity, limit_price=limit_price)
+    log_api_call(
+        "order_buy_option_limit",
+        instrument_id,
+        quantity=quantity,
+        limit_price=limit_price,
+    )
 
     # Validation
     if not instrument_id or not isinstance(instrument_id, str):
@@ -992,7 +1007,12 @@ async def order_sell_option_limit(
     Returns:
         A JSON object containing order confirmation in the result field.
     """
-    log_api_call("order_sell_option_limit", instrument_id, quantity=quantity, limit_price=limit_price)
+    log_api_call(
+        "order_sell_option_limit",
+        instrument_id,
+        quantity=quantity,
+        limit_price=limit_price,
+    )
 
     # Validation
     if not instrument_id or not isinstance(instrument_id, str):
@@ -1116,7 +1136,13 @@ async def order_option_credit_spread(
     Returns:
         A JSON object containing order confirmation in the result field.
     """
-    log_api_call("order_option_credit_spread", short_instrument_id, long_instrument_id=long_instrument_id, quantity=quantity, credit_price=credit_price)
+    log_api_call(
+        "order_option_credit_spread",
+        short_instrument_id,
+        long_instrument_id=long_instrument_id,
+        quantity=quantity,
+        credit_price=credit_price,
+    )
 
     # Validation
     if not short_instrument_id or not isinstance(short_instrument_id, str):
@@ -1261,7 +1287,13 @@ async def order_option_debit_spread(
     Returns:
         A JSON object containing order confirmation in the result field.
     """
-    log_api_call("order_option_debit_spread", short_instrument_id, long_instrument_id=long_instrument_id, quantity=quantity, debit_price=debit_price)
+    log_api_call(
+        "order_option_debit_spread",
+        short_instrument_id,
+        long_instrument_id=long_instrument_id,
+        quantity=quantity,
+        debit_price=debit_price,
+    )
 
     # Validation
     if not short_instrument_id or not isinstance(short_instrument_id, str):
