@@ -1,9 +1,102 @@
 # TODO - Open Stocks MCP
 
-## Current Status (v0.5.0)
+## Current Status (v0.5.1)  
 - ✅ **83 MCP tools** with complete trading functionality
 - ✅ **Phases 1-7 complete**: Foundation → Analytics → Trading
 - ✅ **Production-ready**: HTTP transport, Docker volumes, comprehensive testing
+- ✅ **@MonitoredTool decorator conflicts resolved**: All tools properly registered
+
+## **TOP PRIORITY: ADK Evaluation Coverage for READ ONLY Tools**
+
+**Current Coverage: 13/83 tools (15.7%)** - **Need 54 additional READ ONLY tool evaluations**
+
+### 📋 Evaluation Coverage Analysis
+- **Total MCP Tools**: 83
+- **Currently Tested**: 13 tools across basic functionality 
+- **Untested READ ONLY Tools**: 54 tools requiring evaluation coverage
+- **Trading Tools (Skip)**: 16 tools (buy/sell/cancel operations - covered separately)
+
+### 🎯 High Priority Evaluation Categories
+
+#### 1. **Account & Portfolio Data (1_acc_*)** - 8 evaluations needed
+- `account_details` - Comprehensive account information
+- `build_holdings` - Holdings with dividend/performance data  
+- `day_trades` - Pattern day trading tracking
+- `dividends` - All dividend payment history
+- `dividends_by_instrument` - Dividend history per stock
+- `interest_payments` - Cash management interest
+- `stock_loan_payments` - Stock lending program payments
+- `total_dividends` - Total dividends across time
+
+#### 2. **Market Data & Research (2_mkt_*)** - 12 evaluations needed  
+- `find_instruments` - Search instrument metadata
+- `instruments_by_symbols` - Bulk instrument lookup
+- `price_history` - Historical price data
+- `search_stocks_tool` - Stock symbol search
+- `stock_earnings` - Earnings reports
+- `stock_events` - Corporate events (owned positions)
+- `stock_news` - News stories per stock
+- `stock_quote_by_id` - Quote by internal ID
+- `stock_ratings` - Analyst ratings
+- `stock_splits` - Stock split history
+- `top_100_stocks` - Popular stocks on platform
+- `top_movers_sp500` - S&P 500 movers
+
+#### 3. **Watchlist Management (3_wth_*)** - 4 evaluations needed
+- `all_watchlists` - List all user watchlists
+- `watchlist_by_name` - Get specific watchlist contents
+- `watchlist_performance` - Performance metrics per watchlist
+- `add_to_watchlist` - Add symbols to watchlist (READ ONLY test)
+
+#### 4. **Notifications & Alerts (4_ntf_*)** - 6 evaluations needed
+- `notifications` - Account notifications/alerts
+- `latest_notification` - Most recent notification
+- `margin_calls` - Margin call information  
+- `margin_interest` - Margin interest charges
+- `referrals` - Referral program info
+- `subscription_fees` - Robinhood Gold fees
+
+#### 5. **User Profile Data (6_prf_*)** - 6 evaluations needed
+- `account_features` - Account features/settings
+- `account_profile` - Trading account profile
+- `basic_profile` - Basic user information
+- `complete_profile` - Comprehensive user profile
+- `investment_profile` - Investment/risk profile
+- `security_profile` - Security settings
+
+#### 6. **Advanced Market Data (9_adv_*)** - 4 evaluations needed
+- `pricebook_by_symbol` - Level II data (Gold required)
+- `stock_level2_data` - Level II market data (Gold required) 
+- `top_movers` - Top 20 movers on platform
+- `option_historicals` - Historical options data
+
+#### 7. **System/Monitoring (0_sys_*)** - 4 evaluations needed
+- `metrics_summary` - Comprehensive metrics
+- `rate_limit_status` - Rate limit usage
+- `session_status` - Session/auth status
+- `account_settings` - Account preferences
+
+#### 8. **Options Data (8_opt_*)** - 6 evaluations needed  
+- `aggregate_option_positions` - Positions by underlying
+- `all_option_positions` - All positions ever held
+- `open_option_positions` - Currently open positions
+- `option_market_data` - Market data per contract
+- Plus 2 existing evaluations need refinement
+
+#### 9. **Order History/Status (5_ord_*)** - 4 evaluations needed
+- `open_stock_orders` - Currently open stock orders
+- `open_option_orders` - Currently open option orders
+- Plus 2 existing evaluations need refinement
+
+### 🚀 Implementation Priority
+1. **Account & Portfolio (1_acc_*)** - Core user data
+2. **Market Data & Research (2_mkt_*)** - Market intelligence  
+3. **Watchlists & Notifications (3_wth_*, 4_ntf_*)** - User management
+4. **Profiles & Advanced (6_prf_*, 9_adv_*)** - Complete coverage
+
+**Target: 100% READ ONLY tool coverage**
+
+---
 
 ## Phase 8: Quality & Reliability (v0.6.0) - **FINAL PHASE**
 
@@ -13,10 +106,10 @@
 - [ ] **Caching Strategy** - Redis/memory caching for frequent data
 - [ ] **Rate Limit Optimization** - Intelligent request batching
 
-### Timeout & Performance
-- [ ] **HTTP Request Timeouts** - Robin Stocks API timeout settings
-- [ ] **Test Timeout Protection** - pytest-timeout configuration  
-- [ ] **MCP Server Timeouts** - Tool execution timeout limits
+### Performance & Reliability
+- [ ] **HTTP Request Configuration** - Robin Stocks API settings
+- [ ] **Test Protection** - pytest configuration  
+- [ ] **MCP Server Limits** - Tool execution limits
 - [ ] **Rate Limiter Protection** - Circuit breaker patterns
 
 ### Testing Infrastructure
@@ -52,8 +145,8 @@
 **Phase 8 (Quality) Targets:**
 - 95%+ test coverage
 - Zero critical type errors  
-- 99.9% uptime
-- <50ms average response time
+- High availability
+- Low latency response
 
 ---
 
@@ -66,8 +159,8 @@
 - **Docker Container Status**: Healthy and running (v0.5.0 package, v0.4.1 compose)
 - **Code Quality**: 100% compliance (ruff, mypy, formatting)  
 - **API Endpoints**: All functional (health, status, tools, mcp, session)
-- **Authentication**: Active session with 20+ hours remaining
-- **Performance**: Response times <30ms (well under 2s requirement)
+- **Authentication**: Active session with extended duration remaining
+- **Performance**: Response times <30ms (well under requirements)
 
 ### Issues Found
 
@@ -118,7 +211,7 @@
 - ✅ Rate limiting: Functional with appropriate limits (30/min, 1000/hour)
 - ✅ API endpoints: All responding correctly with proper error handling
 - ✅ MCP tools: 81+ tools accessible and functional via HTTP transport
-- ✅ Performance: Response times well under 2s requirement (<30ms average)
+- ✅ Performance: Response times well under requirements (<30ms average)
 - ✅ Error handling: Comprehensive error classification and retry logic
 - ✅ Authentication: Persistent session with device verification support
 
@@ -127,7 +220,7 @@
 2. **HIGH PRIORITY**: Reorder decorators or modify MonitoredTool to be MCP-compatible 
 3. **MEDIUM PRIORITY**: Review MCP response serialization to eliminate nested format
 4. **LOW PRIORITY**: Update Docker image version to match project version (0.5.0)
-5. **MAINTENANCE**: Consider running full test suite with longer timeout for comprehensive validation
+5. **MAINTENANCE**: Consider running full test suite for comprehensive validation
 
 ### Security Validation - PASSED  
 - ✅ No credentials exposed in logs or responses
