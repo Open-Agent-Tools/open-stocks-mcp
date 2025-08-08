@@ -19,7 +19,7 @@
           "final_response": {
             "parts": [
               {
-                "text": "Here are the call options for Apple (AAPL) with strike prices near the current stock price:\n\n**AAPL Call Options:**\n\n*\n\n**Option Information:**\n- **Strike Price:** The price at which you can buy the stock\n- **Expiration Date:** When the option expires\n- **Premium:** Current cost of the option per share\n- **Volume:** Number of contracts traded today\n- **Open Interest:** Total outstanding contracts\n\nThese are live tradable options from the Robinhood platform."
+                "text": "I have determined the current stock price for Apple (AAPL) is $223.29. However, I was unable to find any tradable call options for AAPL with strike prices near the current stock price using the available tools. It's possible there are no tradable options available at this time or there is a limitation with the data provided by the tools."
               }
             ],
             "role": "model"
@@ -29,8 +29,31 @@
               {
                 "id": "adk-tool-use-id",
                 "args": {
+                  "symbol": "AAPL"
+                },
+                "name": "stock_price"
+              },
+              {
+                "id": "adk-tool-use-id",
+                "args": {
                   "symbol": "AAPL",
                   "option_type": "call"
+                },
+                "name": "find_options"
+              },
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "symbol": "AAPL"
+                },
+                "name": "options_chains"
+              },
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "symbol": "AAPL",
+                  "option_type": "call",
+                  "expiration_date": "2025-08-08"
                 },
                 "name": "find_options"
               }

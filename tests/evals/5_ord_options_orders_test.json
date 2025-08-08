@@ -19,7 +19,7 @@
           "final_response": {
             "parts": [
               {
-                "text": "Here is your recent options order history:\n\n**Recent Options Orders:**\n\n*\n\n**Options Order Information:**\n- **Direction:** Whether you bought (long) or sold (short) the option\n- **Strike Price:** The exercise price of the option\n- **Expiration:** When the option expires\n- **Premium:** The price paid/received per contract\n- **Quantity:** Number of contracts\n\nThis shows your actual options trading history from your Robinhood account."
+                "text": "Here is your recent options order history:\n\n*   **Stock:** F\n    *   **Type:** Limit\n    *   **Side:** CREDIT\n    *   **Quantity:** 1\n    *   **Price:** $0.27\n    *   **State:** Failed\n    *   **Created At:** 2025-08-04 13:35:25 UTC\n\n*   **Stock:** F\n    *   **Type:** Limit\n    *   **Side:** CREDIT\n    *   **Quantity:** 1\n    *   **Price:** $0.24\n    *   **State:** Filled\n    *   **Created At:** 2025-08-02 12:36:33 UTC\n\n*   **Stock:** F\n    *   **Type:** Limit\n    *   **Side:** CREDIT\n    *   **Quantity:** 1\n    *   **Price:** $0.39\n    *   **State:** Filled\n    *   **Created At:** 2025-07-23 13:33:05 UTC\n\n*   **Stock:** F\n    *   **Type:** Limit\n    *   **Side:** DEBIT\n    *   **Quantity:** 1\n    *   **Price:** $0.01\n    *   **State:** Filled\n    *   **Created At:** 2025-07-23 13:32:23 UTC\n\n*   **Stock:** F\n    *   **Type:** Limit\n    *   **Side:** DEBIT\n    *   **Quantity:** 1\n    *   **Price:** $0.01\n    *   **State:** Cancelled\n    *   **Created At:** 2025-07-11 16:13:25 UTC\n\nPlease remember that options trading involves significant risk and is not suitable for all investors."
               }
             ],
             "role": "model"

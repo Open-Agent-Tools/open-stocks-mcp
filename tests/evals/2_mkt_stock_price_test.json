@@ -19,7 +19,7 @@
           "final_response": {
             "parts": [
               {
-                "text": "Here's the information for Apple (AAPL):\n\n**Company Name:** Apple\n**Symbol:** AAPL\n**Sector:** Electronic Technology\n**Industry:** Telecommunications Equipment\n**Market Cap:** $3,296,052,840,000\n**P/E Ratio:** 32.42\n**Dividend Yield:** 0.47%\n**52-Week High:** $260.10\n**52-Week Low:** $169.21\n**Average Volume:** 67,815,625\n**Tradeable:** Yes\n\n**Disclaimer:** Investment in securities involves risks, including the potential loss of principal. Past performance is not indicative of future results."
+                "text": "The current stock price for Apple (AAPL) is $223.09.\n\n**Current Price:** $223.09\n**Change:** +$3.06 (+1.39%)\n**Previous Close:** $220.03\n**Ask:** $223.09\n**Bid:** $223.07\n**Last Trade:** $223.07\n\nThe stock is currently trading up from yesterday's close."
               }
             ],
             "role": "model"
@@ -31,7 +31,7 @@
                 "args": {
                   "symbol": "AAPL"
                 },
-                "name": "stock_info"
+                "name": "stock_price"
               }
             ],
             "intermediate_responses": []

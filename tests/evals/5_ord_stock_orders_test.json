@@ -19,7 +19,7 @@
           "final_response": {
             "parts": [
               {
-                "text": "Here is your recent stock order history:\n\n**Recent Stock Orders:**\n\n*\n\n**Order Status Legend:**\n- **Filled:** Order completed successfully\n- **Cancelled:** Order was cancelled\n- **Pending:** Order is still active\n- **Rejected:** Order was rejected\n\nThis shows your actual trading history from your Robinhood account."
+                "text": "Here is your recent stock order history:\n\n*   **Symbol:** CHPT, **Side:** SELL, **Quantity:** 200, **Average Price:** $2.64, **State:** filled, **Created At:** 2023-12-15 15:19:07 UTC\n*   **Symbol:** CHPT, **Side:** SELL, **Quantity:** 200, **Average Price:** $2.34, **State:** filled, **Created At:** 2023-12-11 18:27:19 UTC\n*   **Symbol:** CLOV, **Side:** SELL, **Quantity:** 200, **Average Price:** $1.32, **State:** filled, **Created At:** 2022-12-01 20:16:44 UTC\n*   **Symbol:** CLOV, **Side:** SELL, **Quantity:** 200, **Average Price:** N/A, **State:** cancelled, **Created At:** 2022-12-01 20:16:29 UTC\n*   **Symbol:** OCGN, **Side:** SELL, **Quantity:** 400, **Average Price:** $1.75, **State:** filled, **Created At:** 2022-11-14 12:00:00 UTC\n\nPlease note that \"N/A\" for average price indicates the order was cancelled before execution.\n\n***\n\n**Disclaimer:** Investment in securities involves risks, and you may lose money. Past performance does not guarantee future results."
               }
             ],
             "role": "model"
