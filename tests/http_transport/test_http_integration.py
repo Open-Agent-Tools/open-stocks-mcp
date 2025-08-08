@@ -69,6 +69,8 @@ async def mock_http_client(mcp_server_with_tools: FastMCP) -> Any:
         yield client
 
 
+@pytest.mark.integration
+@pytest.mark.journey_system
 class TestHTTPIntegration:
     """Integration tests for HTTP transport functionality"""
 
@@ -263,6 +265,8 @@ class TestHTTPIntegration:
             pass
 
 
+@pytest.mark.integration
+@pytest.mark.journey_system
 class TestHTTPTransportReliability:
     """Test HTTP transport reliability features"""
 

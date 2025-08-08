@@ -47,6 +47,8 @@ async def http_client(mcp_server: FastMCP) -> Any:
         yield client
 
 
+@pytest.mark.integration
+@pytest.mark.journey_system
 class TestHTTPErrorHandling:
     """Test HTTP error handling scenarios"""
 
@@ -127,6 +129,8 @@ class TestHTTPErrorHandling:
         assert "detail" in data
 
 
+@pytest.mark.integration
+@pytest.mark.journey_system
 class TestTimeoutHandling:
     """Test timeout handling scenarios"""
 
@@ -187,6 +191,8 @@ class TestTimeoutHandling:
         assert min_timeout > 0
 
 
+@pytest.mark.integration
+@pytest.mark.journey_system
 class TestConnectionHandling:
     """Test connection handling and reliability"""
 
@@ -251,6 +257,8 @@ class TestConnectionHandling:
             assert response.status_code in [400, 415, 422, 500]
 
 
+@pytest.mark.integration
+@pytest.mark.journey_system
 class TestSecurityErrorHandling:
     """Test security-related error handling"""
 
@@ -299,6 +307,8 @@ class TestSecurityErrorHandling:
         assert response.status_code in [200, 400, 413, 422, 500]
 
 
+@pytest.mark.integration
+@pytest.mark.journey_system
 class TestRecoveryMechanisms:
     """Test error recovery mechanisms"""
 

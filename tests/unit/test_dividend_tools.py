@@ -16,6 +16,8 @@ class TestDividendTools:
     """Test dividend tools with mocked responses."""
 
     @patch("open_stocks_mcp.tools.robinhood_dividend_tools.asyncio.get_event_loop")
+    @pytest.mark.journey_research
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_dividends_success(self, mock_loop: Any) -> None:
         """Test successful dividends retrieval."""
@@ -34,6 +36,8 @@ class TestDividendTools:
         assert isinstance(result["result"], dict)
 
     @patch("open_stocks_mcp.tools.robinhood_dividend_tools.asyncio.get_event_loop")
+    @pytest.mark.journey_research
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_total_dividends_success(self, mock_loop: Any) -> None:
         """Test successful total dividends calculation."""
@@ -49,6 +53,8 @@ class TestDividendTools:
         assert isinstance(result["result"], dict)
 
     @patch("open_stocks_mcp.tools.robinhood_dividend_tools.asyncio.get_event_loop")
+    @pytest.mark.journey_research
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_dividends_by_instrument_success(self, mock_loop: Any) -> None:
         """Test successful dividends by instrument retrieval."""
@@ -68,6 +74,8 @@ class TestDividendTools:
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_dividend_tools.asyncio.get_event_loop")
+    @pytest.mark.journey_research
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_dividends_error(self, mock_loop: Any) -> None:
         """Test error handling."""

@@ -7,6 +7,8 @@ from typing import Any
 import pytest
 
 
+@pytest.mark.integration
+@pytest.mark.journey_account
 class TestServerLoginFlow:
     """Test the complete server login flow with environment credentials."""
 

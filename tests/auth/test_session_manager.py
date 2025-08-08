@@ -9,6 +9,7 @@ import pytest
 from open_stocks_mcp.tools.session_manager import SessionManager, get_session_manager
 
 
+@pytest.mark.journey_account
 class TestSessionManager:
     """Test SessionManager class."""
 
@@ -231,6 +232,7 @@ class TestSessionManager:
         assert session_manager.login_time is None
 
 
+@pytest.mark.journey_account
 class TestSessionManagerGlobal:
     """Test global session manager functionality."""
 

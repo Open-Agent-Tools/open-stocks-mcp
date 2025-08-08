@@ -20,6 +20,8 @@ class TestBuildHoldings:
     """Test build holdings functionality."""
 
     @patch("open_stocks_mcp.tools.robinhood_advanced_portfolio_tools.rh.build_holdings")
+    @pytest.mark.journey_research
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_build_holdings_success(self, mock_build_holdings: Any) -> None:
         """Test successful holdings build."""
@@ -65,6 +67,8 @@ class TestBuildHoldings:
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_advanced_portfolio_tools.rh.build_holdings")
+    @pytest.mark.journey_research
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_build_holdings_no_data(self, mock_build_holdings: Any) -> None:
         """Test build holdings when no data is available."""
@@ -79,6 +83,8 @@ class TestBuildHoldings:
         assert "No holdings found" in result["result"]["message"]
 
     @patch("open_stocks_mcp.tools.robinhood_advanced_portfolio_tools.rh.build_holdings")
+    @pytest.mark.journey_research
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_build_holdings_empty_dict(self, mock_build_holdings: Any) -> None:
         """Test build holdings with empty dictionary."""
@@ -99,6 +105,8 @@ class TestBuildUserProfile:
     @patch(
         "open_stocks_mcp.tools.robinhood_advanced_portfolio_tools.rh.build_user_profile"
     )
+    @pytest.mark.journey_research
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_build_user_profile_success(
         self, mock_build_user_profile: Any
@@ -129,6 +137,8 @@ class TestBuildUserProfile:
     @patch(
         "open_stocks_mcp.tools.robinhood_advanced_portfolio_tools.rh.build_user_profile"
     )
+    @pytest.mark.journey_research
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_build_user_profile_no_data(
         self, mock_build_user_profile: Any
@@ -145,6 +155,8 @@ class TestBuildUserProfile:
     @patch(
         "open_stocks_mcp.tools.robinhood_advanced_portfolio_tools.rh.build_user_profile"
     )
+    @pytest.mark.journey_research
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_build_user_profile_partial_data(
         self, mock_build_user_profile: Any
@@ -170,6 +182,8 @@ class TestDayTrades:
     @patch(
         "open_stocks_mcp.tools.robinhood_advanced_portfolio_tools.rh.load_account_profile"
     )
+    @pytest.mark.journey_research
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_day_trades_success(self, mock_load_account: Any) -> None:
         """Test successful day trading info retrieval."""
@@ -194,6 +208,8 @@ class TestDayTrades:
     @patch(
         "open_stocks_mcp.tools.robinhood_advanced_portfolio_tools.rh.load_account_profile"
     )
+    @pytest.mark.journey_research
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_day_trades_pdt_status(self, mock_load_account: Any) -> None:
         """Test day trading info when user is pattern day trader."""
@@ -219,6 +235,8 @@ class TestDayTrades:
     @patch(
         "open_stocks_mcp.tools.robinhood_advanced_portfolio_tools.rh.load_account_profile"
     )
+    @pytest.mark.journey_research
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_day_trades_no_data(self, mock_load_account: Any) -> None:
         """Test day trading info when no account data is available."""
@@ -233,6 +251,8 @@ class TestDayTrades:
     @patch(
         "open_stocks_mcp.tools.robinhood_advanced_portfolio_tools.rh.load_account_profile"
     )
+    @pytest.mark.journey_research
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_day_trades_missing_fields(self, mock_load_account: Any) -> None:
         """Test day trading info with missing fields."""
@@ -259,6 +279,8 @@ class TestInterestPayments:
     @patch(
         "open_stocks_mcp.tools.robinhood_dividend_tools.rh.account.get_interest_payments"
     )
+    @pytest.mark.journey_research
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_interest_payments_success(
         self,
@@ -315,6 +337,8 @@ class TestInterestPayments:
     @patch(
         "open_stocks_mcp.tools.robinhood_dividend_tools.rh.account.get_interest_payments"
     )
+    @pytest.mark.journey_research
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_interest_payments_no_data(
         self,
@@ -355,6 +379,8 @@ class TestStockLoanPayments:
     @patch(
         "open_stocks_mcp.tools.robinhood_dividend_tools.rh.account.get_stock_loan_payments"
     )
+    @pytest.mark.journey_research
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_stock_loan_payments_success(
         self,
@@ -421,6 +447,8 @@ class TestStockLoanPayments:
     @patch(
         "open_stocks_mcp.tools.robinhood_dividend_tools.rh.account.get_stock_loan_payments"
     )
+    @pytest.mark.journey_research
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_stock_loan_payments_no_data(
         self, mock_loan_payments: Any, mock_session_manager: Any, mock_rate_limiter: Any
@@ -452,6 +480,8 @@ class TestServerMetrics:
     """Test server metrics and health check functionality."""
 
     @patch("open_stocks_mcp.server.app.get_metrics_collector")
+    @pytest.mark.journey_research
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_metrics_summary_success(
         self, mock_get_metrics_collector: Any
@@ -482,6 +512,8 @@ class TestServerMetrics:
         assert result["result"]["status"] == "success"
 
     @patch("open_stocks_mcp.server.app.get_metrics_collector")
+    @pytest.mark.journey_research
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_health_check_healthy(self, mock_get_metrics_collector: Any) -> None:
         """Test health check with healthy status."""
@@ -509,6 +541,8 @@ class TestServerMetrics:
         assert result["result"]["metrics_summary"]["avg_response_time_ms"] == 200.0
 
     @patch("open_stocks_mcp.server.app.get_metrics_collector")
+    @pytest.mark.journey_research
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_health_check_degraded(self, mock_get_metrics_collector: Any) -> None:
         """Test health check with degraded status."""

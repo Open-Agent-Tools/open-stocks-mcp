@@ -15,6 +15,8 @@ from open_stocks_mcp.tools.robinhood_market_data_tools import (
 class TestMarketTools:
     """Test market data tools with mocked responses."""
 
+    @pytest.mark.journey_market_data
+    @pytest.mark.unit
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.rh.get_top_movers")
     @pytest.mark.asyncio
     async def test_get_top_movers_success(self, mock_movers: Any) -> None:
@@ -30,6 +32,8 @@ class TestMarketTools:
         assert isinstance(result["result"], dict)
         # The actual structure depends on how the tool processes the data
 
+    @pytest.mark.journey_market_data
+    @pytest.mark.unit
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.rh.get_top_100")
     @pytest.mark.asyncio
     async def test_get_top_100_success(self, mock_top100: Any) -> None:
@@ -44,6 +48,8 @@ class TestMarketTools:
         assert "result" in result
         assert isinstance(result["result"], dict)
 
+    @pytest.mark.journey_market_data
+    @pytest.mark.unit
     @patch(
         "open_stocks_mcp.tools.robinhood_market_data_tools.rh.get_all_stocks_from_market_tag"
     )
@@ -62,6 +68,8 @@ class TestMarketTools:
 
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
+    @pytest.mark.journey_market_data
+    @pytest.mark.unit
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.rh.get_top_movers")
     @pytest.mark.asyncio
     async def test_get_top_movers_error(self, mock_movers: Any) -> None:

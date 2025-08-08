@@ -1,10 +1,12 @@
 """Tests for auth config module."""
 
+import pytest
 from pydantic import SecretStr
 
 from open_stocks_mcp.auth.config import RobinhoodConfig
 
 
+@pytest.mark.journey_account
 class TestRobinhoodConfig:
     """Test RobinhoodConfig class."""
 

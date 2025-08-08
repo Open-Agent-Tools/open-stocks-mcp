@@ -25,6 +25,8 @@ from open_stocks_mcp.tools.robinhood_order_tools import (
 class TestAccountTools:
     """Test account tools with mocked responses."""
 
+    @pytest.mark.journey_account
+    @pytest.mark.unit
     @patch("open_stocks_mcp.tools.robinhood_account_tools.rh.load_user_profile")
     @pytest.mark.asyncio
     async def test_get_account_info_success(self, mock_profile: Any) -> None:
@@ -40,6 +42,8 @@ class TestAccountTools:
         assert result["result"]["username"] == "testuser"
         assert result["result"]["created_at"] == "2023-01-01T00:00:00Z"
 
+    @pytest.mark.journey_account
+    @pytest.mark.unit
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_account_tools.rh.load_user_profile")
@@ -53,6 +57,8 @@ class TestAccountTools:
         assert "result" in result
         assert "error" in result["result"]
 
+    @pytest.mark.journey_portfolio
+    @pytest.mark.unit
     @patch("open_stocks_mcp.tools.robinhood_account_tools.rh.load_portfolio_profile")
     @pytest.mark.asyncio
     async def test_get_portfolio_success(self, mock_portfolio: Any) -> None:
@@ -69,6 +75,8 @@ class TestAccountTools:
         # The actual response structure depends on how the tool processes the data
         assert isinstance(result["result"], dict)
 
+    @pytest.mark.journey_portfolio
+    @pytest.mark.unit
     @patch("open_stocks_mcp.tools.robinhood_account_tools.rh.get_symbol_by_url")
     @patch("open_stocks_mcp.tools.robinhood_account_tools.rh.get_open_stock_positions")
     @pytest.mark.asyncio
@@ -103,6 +111,8 @@ class TestAccountTools:
         assert "count" in result["result"]
         assert result["result"]["count"] == 2
 
+    @pytest.mark.journey_account
+    @pytest.mark.unit
     @patch("open_stocks_mcp.tools.robinhood_account_tools.rh.load_phoenix_account")
     @pytest.mark.asyncio
     async def test_get_account_details_success(self, mock_account: Any) -> None:
@@ -117,6 +127,8 @@ class TestAccountTools:
         assert "result" in result
         assert isinstance(result["result"], dict)
 
+    @pytest.mark.journey_portfolio
+    @pytest.mark.unit
     @patch("open_stocks_mcp.tools.robinhood_advanced_portfolio_tools.rh.build_holdings")
     @pytest.mark.asyncio
     async def test_get_build_holdings_success(self, mock_holdings: Any) -> None:
@@ -157,6 +169,8 @@ class TestAccountTools:
         assert "AAPL" in result["result"]["holdings"]
         assert "GOOGL" in result["result"]["holdings"]
 
+    @pytest.mark.journey_portfolio
+    @pytest.mark.unit
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_advanced_portfolio_tools.rh.build_holdings")
@@ -172,6 +186,8 @@ class TestAccountTools:
         assert result["result"]["total_positions"] == 0
         assert result["result"]["holdings"] == {}
 
+    @pytest.mark.journey_portfolio
+    @pytest.mark.unit
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_advanced_portfolio_tools.rh.build_holdings")
@@ -185,6 +201,8 @@ class TestAccountTools:
         assert "result" in result
         assert "error" in result["result"]
 
+    @pytest.mark.journey_account
+    @pytest.mark.unit
     @patch(
         "open_stocks_mcp.tools.robinhood_advanced_portfolio_tools.rh.build_user_profile"
     )
@@ -210,6 +228,8 @@ class TestAccountTools:
 
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
+    @pytest.mark.journey_account
+    @pytest.mark.unit
     @patch(
         "open_stocks_mcp.tools.robinhood_advanced_portfolio_tools.rh.build_user_profile"
     )
@@ -224,6 +244,8 @@ class TestAccountTools:
         assert result["result"]["status"] == "no_data"
         assert "error" in result["result"]
 
+    @pytest.mark.journey_account
+    @pytest.mark.unit
     @patch(
         "open_stocks_mcp.tools.robinhood_advanced_portfolio_tools.rh.load_account_profile"
     )
@@ -249,6 +271,8 @@ class TestAccountTools:
 
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
+    @pytest.mark.journey_account
+    @pytest.mark.unit
     @patch(
         "open_stocks_mcp.tools.robinhood_advanced_portfolio_tools.rh.load_account_profile"
     )
@@ -263,6 +287,8 @@ class TestAccountTools:
         assert result["result"]["status"] == "no_data"
         assert "error" in result["result"]
 
+    @pytest.mark.journey_trading
+    @pytest.mark.unit
     @patch("open_stocks_mcp.tools.robinhood_order_tools.rh.get_symbol_by_url")
     @patch("open_stocks_mcp.tools.robinhood_order_tools.rh.get_all_stock_orders")
     @pytest.mark.asyncio
@@ -306,6 +332,8 @@ class TestAccountTools:
 
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
+    @pytest.mark.journey_trading
+    @pytest.mark.unit
     @patch("open_stocks_mcp.tools.robinhood_order_tools.rh.get_all_stock_orders")
     @pytest.mark.asyncio
     async def test_get_stock_orders_no_data(self, mock_orders: Any) -> None:
@@ -321,6 +349,8 @@ class TestAccountTools:
 
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
+    @pytest.mark.journey_trading
+    @pytest.mark.unit
     @patch("open_stocks_mcp.tools.robinhood_order_tools.rh.get_all_stock_orders")
     @pytest.mark.asyncio
     async def test_get_stock_orders_error(self, mock_orders: Any) -> None:
@@ -332,6 +362,8 @@ class TestAccountTools:
         assert "result" in result
         assert "error" in result["result"]
 
+    @pytest.mark.journey_options
+    @pytest.mark.unit
     @patch("open_stocks_mcp.tools.robinhood_order_tools.rh.get_all_option_orders")
     @pytest.mark.asyncio
     async def test_get_options_orders_success(self, mock_orders: Any) -> None:
@@ -371,6 +403,8 @@ class TestAccountTools:
 
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
+    @pytest.mark.journey_options
+    @pytest.mark.unit
     @patch("open_stocks_mcp.tools.robinhood_order_tools.rh.get_all_option_orders")
     @pytest.mark.asyncio
     async def test_get_options_orders_no_data(self, mock_orders: Any) -> None:
@@ -384,6 +418,8 @@ class TestAccountTools:
         assert result["result"]["orders"] == []
         assert "No recent options orders found" in result["result"]["message"]
 
+    @pytest.mark.journey_options
+    @pytest.mark.unit
     @patch("open_stocks_mcp.tools.robinhood_order_tools.rh.get_all_option_orders")
     @pytest.mark.asyncio
     async def test_get_options_orders_not_implemented(self, mock_orders: Any) -> None:
@@ -399,6 +435,8 @@ class TestAccountTools:
 
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
+    @pytest.mark.journey_options
+    @pytest.mark.unit
     @patch("open_stocks_mcp.tools.robinhood_order_tools.rh.get_all_option_orders")
     @pytest.mark.asyncio
     async def test_get_options_orders_error(self, mock_orders: Any) -> None:

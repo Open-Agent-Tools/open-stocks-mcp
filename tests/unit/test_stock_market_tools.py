@@ -22,6 +22,8 @@ from open_stocks_mcp.tools.robinhood_tools import list_available_tools
 class TestStockMarketTools:
     """Test stock market data tools with mocked responses."""
 
+    @pytest.mark.journey_market_data
+    @pytest.mark.unit
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_quotes")
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_latest_price")
     @pytest.mark.asyncio
@@ -53,6 +55,8 @@ class TestStockMarketTools:
 
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
+    @pytest.mark.journey_market_data
+    @pytest.mark.unit
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_quotes")
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_latest_price")
     @pytest.mark.asyncio
@@ -71,6 +75,8 @@ class TestStockMarketTools:
 
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
+    @pytest.mark.journey_market_data
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_stock_price_invalid_symbol(self) -> None:
         """Test stock price with invalid symbol format."""
@@ -80,6 +86,8 @@ class TestStockMarketTools:
         assert "error" in result["result"]
         assert result["result"]["status"] == "error"
 
+    @pytest.mark.journey_market_data
+    @pytest.mark.unit
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_name_by_symbol")
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_instruments_by_symbols")
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_fundamentals")
@@ -118,6 +126,8 @@ class TestStockMarketTools:
 
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
+    @pytest.mark.journey_market_data
+    @pytest.mark.unit
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_instruments_by_symbols")
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_fundamentals")
     @pytest.mark.asyncio
@@ -134,6 +144,8 @@ class TestStockMarketTools:
         assert result["result"]["status"] == "no_data"
         assert "No company information found" in result["result"]["message"]
 
+    @pytest.mark.journey_market_data
+    @pytest.mark.unit
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.find_instrument_data")
     @pytest.mark.asyncio
     async def test_search_stocks_success(self, mock_find_instrument: Any) -> None:
@@ -166,6 +178,8 @@ class TestStockMarketTools:
         assert result["result"]["results"][1]["symbol"] == "GOOGL"
         assert result["result"]["status"] == "success"
 
+    @pytest.mark.journey_market_data
+    @pytest.mark.unit
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.find_instrument_data")
     @pytest.mark.asyncio
     async def test_search_stocks_no_results(self, mock_find_instrument: Any) -> None:
@@ -181,6 +195,8 @@ class TestStockMarketTools:
         assert "No stocks found" in result["result"]["message"]
         assert result["result"]["status"] == "success"
 
+    @pytest.mark.journey_market_data
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_search_stocks_empty_query(self) -> None:
         """Test stock search with empty query."""
@@ -190,6 +206,8 @@ class TestStockMarketTools:
         assert "error" in result["result"]
         assert result["result"]["status"] == "error"
 
+    @pytest.mark.journey_market_data
+    @pytest.mark.unit
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_markets")
     @pytest.mark.asyncio
     async def test_get_market_hours_success(self, mock_markets: Any) -> None:
@@ -223,6 +241,8 @@ class TestStockMarketTools:
 
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
+    @pytest.mark.journey_market_data
+    @pytest.mark.unit
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_markets")
     @pytest.mark.asyncio
     async def test_get_market_hours_no_data(self, mock_markets: Any) -> None:
@@ -235,6 +255,8 @@ class TestStockMarketTools:
         assert result["result"]["status"] == "no_data"
         assert "No market data available" in result["result"]["message"]
 
+    @pytest.mark.journey_market_data
+    @pytest.mark.unit
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_stock_historicals")
     @pytest.mark.asyncio
     async def test_get_price_history_success(self, mock_historicals: Any) -> None:
@@ -272,6 +294,8 @@ class TestStockMarketTools:
 
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
+    @pytest.mark.journey_market_data
+    @pytest.mark.unit
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_stock_historicals")
     @pytest.mark.asyncio
     async def test_get_price_history_no_data(self, mock_historicals: Any) -> None:
@@ -286,6 +310,8 @@ class TestStockMarketTools:
 
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
+    @pytest.mark.journey_market_data
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_price_history_invalid_period(self) -> None:
         """Test price history with invalid period."""
@@ -296,6 +322,8 @@ class TestStockMarketTools:
         assert result["result"]["status"] == "error"
         assert "Invalid period" in result["result"]["error"]
 
+    @pytest.mark.journey_system
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_list_available_tools_success(self) -> None:
         """Test successful tools listing."""
@@ -329,6 +357,8 @@ class TestStockMarketTools:
 class TestServerTools:
     """Test server monitoring and session tools."""
 
+    @pytest.mark.journey_system
+    @pytest.mark.unit
     @patch("open_stocks_mcp.tools.session_manager.get_session_manager")
     @pytest.mark.asyncio
     async def test_session_status_success(self, mock_get_session_manager: Any) -> None:
@@ -354,6 +384,8 @@ class TestServerTools:
         assert result["result"]["username"] == "testuser"
         assert result["result"]["status"] == "success"
 
+    @pytest.mark.journey_system
+    @pytest.mark.unit
     @patch("open_stocks_mcp.server.app.get_rate_limiter")
     @pytest.mark.asyncio
     async def test_rate_limit_status_success(self, mock_get_rate_limiter: Any) -> None:
@@ -380,6 +412,8 @@ class TestServerTools:
         assert result["result"]["minute_usage_percent"] == 16.67
         assert result["result"]["status"] == "success"
 
+    @pytest.mark.journey_system
+    @pytest.mark.unit
     @patch("open_stocks_mcp.server.app.get_metrics_collector")
     @pytest.mark.asyncio
     async def test_metrics_summary_success(
@@ -408,6 +442,8 @@ class TestServerTools:
         assert result["result"]["avg_response_time_ms"] == 250.5
         assert result["result"]["status"] == "success"
 
+    @pytest.mark.journey_system
+    @pytest.mark.unit
     @patch("open_stocks_mcp.server.app.get_metrics_collector")
     @pytest.mark.asyncio
     async def test_health_check_success(self, mock_get_metrics_collector: Any) -> None:
@@ -435,6 +471,8 @@ class TestServerTools:
         assert result["result"]["metrics_summary"]["error_rate_percent"] == 1.5
         assert result["result"]["metrics_summary"]["avg_response_time_ms"] == 200.0
 
+    @pytest.mark.journey_system
+    @pytest.mark.unit
     @patch("open_stocks_mcp.server.app.get_metrics_collector")
     @pytest.mark.asyncio
     async def test_health_check_degraded(self, mock_get_metrics_collector: Any) -> None:
@@ -465,6 +503,8 @@ class TestServerTools:
 class TestAdvancedInstrumentTools:
     """Test advanced instrument data tools with mocked responses."""
 
+    @pytest.mark.journey_market_data
+    @pytest.mark.unit
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_instruments_by_symbols")
     @pytest.mark.asyncio
     async def test_get_instruments_by_symbols_success(
@@ -544,6 +584,8 @@ class TestAdvancedInstrumentTools:
         assert result["result"]["instruments"][1]["symbol"] == "GOOGL"
         assert result["result"]["instruments"][1]["name"] == "Alphabet Inc. - Class A"
 
+    @pytest.mark.journey_market_data
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_instruments_by_symbols_empty_list(self) -> None:
         """Test get_instruments_by_symbols with empty symbol list."""
@@ -553,6 +595,8 @@ class TestAdvancedInstrumentTools:
         assert result["result"]["status"] == "error"
         assert "empty" in result["result"]["error"].lower()
 
+    @pytest.mark.journey_market_data
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_instruments_by_symbols_invalid_symbols(self) -> None:
         """Test get_instruments_by_symbols with invalid symbol formats."""
@@ -562,6 +606,8 @@ class TestAdvancedInstrumentTools:
         assert result["result"]["status"] == "error"
         assert "invalid" in result["result"]["error"].lower()
 
+    @pytest.mark.journey_market_data
+    @pytest.mark.unit
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.find_instrument_data")
     @pytest.mark.asyncio
     async def test_find_instrument_data_success(
@@ -593,6 +639,8 @@ class TestAdvancedInstrumentTools:
         assert result["result"]["instruments"][0]["symbol"] == "AAPL"
         assert result["result"]["instruments"][0]["name"] == "Apple Inc."
 
+    @pytest.mark.journey_market_data
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_find_instrument_data_empty_query(self) -> None:
         """Test find_instrument_data with empty query."""
@@ -602,6 +650,8 @@ class TestAdvancedInstrumentTools:
         assert result["result"]["status"] == "error"
         assert "empty" in result["result"]["error"].lower()
 
+    @pytest.mark.journey_market_data
+    @pytest.mark.unit
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_stock_quote_by_id")
     @pytest.mark.asyncio
     async def test_get_stock_quote_by_id_success(
@@ -637,6 +687,8 @@ class TestAdvancedInstrumentTools:
         assert result["result"]["symbol"] == "AAPL"
         assert result["result"]["price"] == 150.25
 
+    @pytest.mark.journey_market_data
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_stock_quote_by_id_empty_id(self) -> None:
         """Test get_stock_quote_by_id with empty ID."""
@@ -646,6 +698,8 @@ class TestAdvancedInstrumentTools:
         assert result["result"]["status"] == "error"
         assert "empty" in result["result"]["error"].lower()
 
+    @pytest.mark.journey_market_data
+    @pytest.mark.unit
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_pricebook_by_symbol")
     @pytest.mark.asyncio
     async def test_get_pricebook_by_symbol_success(
@@ -677,6 +731,8 @@ class TestAdvancedInstrumentTools:
         assert result["result"]["asks"][0]["price"] == 150.30
         assert result["result"]["bids"][0]["price"] == 150.20
 
+    @pytest.mark.journey_market_data
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_pricebook_by_symbol_invalid_symbol(self) -> None:
         """Test get_pricebook_by_symbol with invalid symbol."""

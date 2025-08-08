@@ -7,6 +7,7 @@ import httpx
 import pytest
 
 
+@pytest.mark.journey_system
 class TestMCPHTTPClient:
     """Test MCP client communication over HTTP"""
 
@@ -65,6 +66,7 @@ class TestMCPHTTPClient:
 
 
 @pytest.mark.integration
+@pytest.mark.journey_system
 class TestLiveMCPCommunication:
     """Integration tests with live MCP server"""
 
@@ -109,6 +111,8 @@ class TestLiveMCPCommunication:
                 pytest.skip("HTTP server not running on localhost:3000")
 
 
+@pytest.mark.integration
+@pytest.mark.journey_system
 class TestHTTPTransportFeatures:
     """Test HTTP transport specific features"""
 

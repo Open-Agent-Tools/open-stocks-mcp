@@ -18,6 +18,8 @@ class TestGetAllWatchlists:
     """Test get all watchlists functionality."""
 
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
+    @pytest.mark.journey_watchlists
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_all_watchlists_success(
         self, mock_execute_with_retry: Any
@@ -51,6 +53,8 @@ class TestGetAllWatchlists:
         assert result["result"]["status"] == "success"
 
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
+    @pytest.mark.journey_watchlists
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_all_watchlists_no_data(
         self, mock_execute_with_retry: Any
@@ -67,6 +71,8 @@ class TestGetAllWatchlists:
         assert "No watchlists found" in result["result"]["message"]
 
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
+    @pytest.mark.journey_watchlists
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_all_watchlists_empty_list(
         self, mock_execute_with_retry: Any
@@ -83,6 +89,8 @@ class TestGetAllWatchlists:
         assert result["result"]["status"] == "no_data"
 
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
+    @pytest.mark.journey_watchlists
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_all_watchlists_missing_symbols(
         self, mock_execute_with_retry: Any
@@ -109,6 +117,8 @@ class TestGetWatchlistByName:
     """Test get watchlist by name functionality."""
 
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
+    @pytest.mark.journey_watchlists
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_watchlist_by_name_success(
         self, mock_execute_with_retry: Any
@@ -130,6 +140,8 @@ class TestGetWatchlistByName:
         assert result["result"]["status"] == "success"
 
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
+    @pytest.mark.journey_watchlists
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_watchlist_by_name_not_found(
         self, mock_execute_with_retry: Any
@@ -146,6 +158,8 @@ class TestGetWatchlistByName:
         assert result["result"]["status"] == "not_found"
         assert "not found" in result["result"]["message"]
 
+    @pytest.mark.journey_watchlists
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_watchlist_by_name_empty_name(self) -> None:
         """Test get watchlist by name with empty name."""
@@ -156,6 +170,8 @@ class TestGetWatchlistByName:
         assert "Watchlist name is required" in result["result"]["error"]
 
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
+    @pytest.mark.journey_watchlists
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_watchlist_by_name_no_symbols(
         self, mock_execute_with_retry: Any
@@ -180,6 +196,8 @@ class TestAddSymbolsToWatchlist:
     """Test add symbols to watchlist functionality."""
 
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
+    @pytest.mark.journey_watchlists
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_add_symbols_to_watchlist_success(
         self, mock_execute_with_retry: Any
@@ -200,6 +218,8 @@ class TestAddSymbolsToWatchlist:
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
+    @pytest.mark.journey_watchlists
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_add_symbols_to_watchlist_failure(
         self, mock_execute_with_retry: Any
@@ -216,6 +236,8 @@ class TestAddSymbolsToWatchlist:
         assert result["result"]["status"] == "error"
         assert "Failed to add symbols" in result["result"]["error"]
 
+    @pytest.mark.journey_watchlists
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_add_symbols_to_watchlist_empty_name(self) -> None:
         """Test add symbols with empty watchlist name."""
@@ -225,6 +247,8 @@ class TestAddSymbolsToWatchlist:
         assert result["result"]["status"] == "error"
         assert "Watchlist name is required" in result["result"]["error"]
 
+    @pytest.mark.journey_watchlists
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_add_symbols_to_watchlist_empty_symbols(self) -> None:
         """Test add symbols with empty symbols list."""
@@ -236,6 +260,8 @@ class TestAddSymbolsToWatchlist:
 
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
+    @pytest.mark.journey_watchlists
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_add_symbols_to_watchlist_invalid_symbols(self) -> None:
         """Test add symbols with invalid symbols."""
@@ -246,6 +272,8 @@ class TestAddSymbolsToWatchlist:
         assert "No valid symbols provided" in result["result"]["error"]
 
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
+    @pytest.mark.journey_watchlists
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_add_symbols_to_watchlist_format_symbols(
         self, mock_execute_with_retry: Any
@@ -265,6 +293,8 @@ class TestRemoveSymbolsFromWatchlist:
     """Test remove symbols from watchlist functionality."""
 
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
+    @pytest.mark.journey_watchlists
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_remove_symbols_from_watchlist_success(
         self, mock_execute_with_retry: Any
@@ -285,6 +315,8 @@ class TestRemoveSymbolsFromWatchlist:
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
+    @pytest.mark.journey_watchlists
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_remove_symbols_from_watchlist_failure(
         self, mock_execute_with_retry: Any
@@ -301,6 +333,8 @@ class TestRemoveSymbolsFromWatchlist:
         assert result["result"]["status"] == "error"
         assert "Failed to remove symbols" in result["result"]["error"]
 
+    @pytest.mark.journey_watchlists
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_remove_symbols_from_watchlist_empty_name(self) -> None:
         """Test remove symbols with empty watchlist name."""
@@ -310,6 +344,8 @@ class TestRemoveSymbolsFromWatchlist:
         assert result["result"]["status"] == "error"
         assert "Watchlist name is required" in result["result"]["error"]
 
+    @pytest.mark.journey_watchlists
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_remove_symbols_from_watchlist_empty_symbols(self) -> None:
         """Test remove symbols with empty symbols list."""
@@ -322,6 +358,8 @@ class TestRemoveSymbolsFromWatchlist:
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
+    @pytest.mark.journey_watchlists
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_remove_symbols_from_watchlist_exception(
         self, mock_execute_with_retry: Any
@@ -342,6 +380,8 @@ class TestGetWatchlistPerformance:
 
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.get_watchlist_by_name")
     @pytest.mark.slow
+    @pytest.mark.journey_watchlists
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_watchlist_performance_success(
         self, mock_get_watchlist: Any
@@ -382,6 +422,8 @@ class TestGetWatchlistPerformance:
         assert result["result"]["status"] == "success"
 
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.get_watchlist_by_name")
+    @pytest.mark.journey_watchlists
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_watchlist_performance_watchlist_not_found(
         self, mock_get_watchlist: Any
@@ -396,6 +438,8 @@ class TestGetWatchlistPerformance:
         assert "result" in result
         assert result["result"]["status"] == "not_found"
 
+    @pytest.mark.journey_watchlists
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_watchlist_performance_empty_name(self) -> None:
         """Test watchlist performance with empty name."""
@@ -406,6 +450,8 @@ class TestGetWatchlistPerformance:
         assert "Watchlist name is required" in result["result"]["error"]
 
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.get_watchlist_by_name")
+    @pytest.mark.journey_watchlists
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_watchlist_performance_empty_watchlist(
         self, mock_get_watchlist: Any
@@ -425,6 +471,8 @@ class TestGetWatchlistPerformance:
 
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.get_watchlist_by_name")
     @pytest.mark.slow
+    @pytest.mark.journey_watchlists
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_watchlist_performance_mixed_results(
         self, mock_get_watchlist: Any
@@ -454,6 +502,8 @@ class TestGetWatchlistPerformance:
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.get_watchlist_by_name")
+    @pytest.mark.journey_watchlists
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_watchlist_performance_api_error(
         self, mock_get_watchlist: Any

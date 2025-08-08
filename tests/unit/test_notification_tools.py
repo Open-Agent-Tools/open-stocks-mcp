@@ -21,6 +21,8 @@ class TestNotifications:
     """Test notifications functionality."""
 
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
+    @pytest.mark.journey_notifications
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_notifications_success(
         self, mock_execute_with_retry: Any
@@ -67,6 +69,8 @@ class TestNotifications:
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
+    @pytest.mark.journey_notifications
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_notifications_no_data(
         self, mock_execute_with_retry: Any
@@ -84,6 +88,8 @@ class TestNotifications:
         assert "No notifications found" in result["result"]["message"]
 
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
+    @pytest.mark.journey_notifications
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_notifications_empty_list(
         self, mock_execute_with_retry: Any
@@ -100,6 +106,8 @@ class TestNotifications:
         assert result["result"]["status"] == "no_data"
 
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
+    @pytest.mark.journey_notifications
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_notifications_count_limit(
         self, mock_execute_with_retry: Any
@@ -119,6 +127,8 @@ class TestNotifications:
         assert result["result"]["status"] == "success"
 
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
+    @pytest.mark.journey_notifications
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_notifications_mixed_read_status(
         self, mock_execute_with_retry: Any
@@ -145,6 +155,8 @@ class TestLatestNotification:
     """Test latest notification functionality."""
 
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
+    @pytest.mark.journey_notifications
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_latest_notification_success(
         self, mock_execute_with_retry: Any
@@ -171,6 +183,8 @@ class TestLatestNotification:
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
+    @pytest.mark.journey_notifications
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_latest_notification_no_data(
         self, mock_execute_with_retry: Any
@@ -191,6 +205,8 @@ class TestMarginCalls:
     """Test margin calls functionality."""
 
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
+    @pytest.mark.journey_notifications
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_margin_calls_success(self, mock_execute_with_retry: Any) -> None:
         """Test successful margin calls retrieval."""
@@ -224,6 +240,8 @@ class TestMarginCalls:
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
+    @pytest.mark.journey_notifications
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_margin_calls_no_data(self, mock_execute_with_retry: Any) -> None:
         """Test margin calls when no data is available."""
@@ -240,6 +258,8 @@ class TestMarginCalls:
         assert "No margin calls found" in result["result"]["message"]
 
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
+    @pytest.mark.journey_notifications
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_margin_calls_no_active_calls(
         self, mock_execute_with_retry: Any
@@ -273,6 +293,8 @@ class TestMarginCalls:
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
+    @pytest.mark.journey_notifications
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_margin_calls_invalid_amounts(
         self, mock_execute_with_retry: Any
@@ -309,6 +331,8 @@ class TestMarginInterest:
     """Test margin interest functionality."""
 
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
+    @pytest.mark.journey_notifications
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_margin_interest_success(
         self, mock_execute_with_retry: Any
@@ -347,6 +371,8 @@ class TestMarginInterest:
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
+    @pytest.mark.journey_notifications
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_margin_interest_no_data(
         self, mock_execute_with_retry: Any
@@ -367,6 +393,8 @@ class TestMarginInterest:
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
+    @pytest.mark.journey_notifications
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_margin_interest_invalid_amounts(
         self, mock_execute_with_retry: Any
@@ -398,6 +426,8 @@ class TestSubscriptionFees:
     """Test subscription fees functionality."""
 
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
+    @pytest.mark.journey_notifications
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_subscription_fees_success(
         self, mock_execute_with_retry: Any
@@ -437,6 +467,8 @@ class TestSubscriptionFees:
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
+    @pytest.mark.journey_notifications
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_subscription_fees_no_data(
         self, mock_execute_with_retry: Any
@@ -456,6 +488,8 @@ class TestSubscriptionFees:
         assert "No subscription fees found" in result["result"]["message"]
 
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
+    @pytest.mark.journey_notifications
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_subscription_fees_non_gold(
         self, mock_execute_with_retry: Any
@@ -484,6 +518,8 @@ class TestReferrals:
     """Test referrals functionality."""
 
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
+    @pytest.mark.journey_notifications
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_referrals_success_dict_format(
         self, mock_execute_with_retry: Any
@@ -530,6 +566,8 @@ class TestReferrals:
         assert result["result"]["status"] == "success"
 
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
+    @pytest.mark.journey_notifications
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_referrals_success_list_format(
         self, mock_execute_with_retry: Any
@@ -566,6 +604,8 @@ class TestReferrals:
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
+    @pytest.mark.journey_notifications
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_referrals_no_data(self, mock_execute_with_retry: Any) -> None:
         """Test referrals when no data is available."""
@@ -585,6 +625,8 @@ class TestReferrals:
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
+    @pytest.mark.journey_notifications
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_referrals_invalid_rewards(
         self, mock_execute_with_retry: Any
@@ -628,6 +670,8 @@ class TestAccountFeatures:
     @patch(
         "open_stocks_mcp.tools.robinhood_account_features_tools.get_subscription_fees"
     )
+    @pytest.mark.journey_notifications
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_account_features_success(
         self,
@@ -701,6 +745,8 @@ class TestAccountFeatures:
     @patch(
         "open_stocks_mcp.tools.robinhood_account_features_tools.get_subscription_fees"
     )
+    @pytest.mark.journey_notifications
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_account_features_partial_errors(
         self,
@@ -747,6 +793,8 @@ class TestAccountSettings:
     """Test account settings functionality."""
 
     @patch("open_stocks_mcp.tools.robinhood_user_profile_tools.get_account_profile")
+    @pytest.mark.journey_notifications
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_account_settings_success(
         self, mock_get_account_profile: Any
@@ -792,6 +840,8 @@ class TestAccountSettings:
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_user_profile_tools.get_account_profile")
+    @pytest.mark.journey_notifications
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_account_settings_no_data(
         self, mock_get_account_profile: Any
@@ -809,6 +859,8 @@ class TestAccountSettings:
         assert "Could not retrieve account settings" in result["result"]["error"]
 
     @patch("open_stocks_mcp.tools.robinhood_user_profile_tools.get_account_profile")
+    @pytest.mark.journey_notifications
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_account_settings_minimal_data(
         self, mock_get_account_profile: Any
@@ -839,6 +891,8 @@ class TestAccountSettings:
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_user_profile_tools.get_account_profile")
+    @pytest.mark.journey_notifications
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_account_settings_exception(
         self, mock_get_account_profile: Any

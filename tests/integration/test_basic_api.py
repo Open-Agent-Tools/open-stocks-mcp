@@ -38,6 +38,7 @@ def robinhood_session() -> Any:
 
 
 @pytest.mark.integration
+@pytest.mark.journey_account
 class TestBasicIntegration:
     """Test basic API functionality that should work reliably."""
 
@@ -64,6 +65,7 @@ class TestBasicIntegration:
 
 
 @pytest.mark.integration
+@pytest.mark.journey_account
 @pytest.mark.exception_test
 @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
 @pytest.mark.asyncio

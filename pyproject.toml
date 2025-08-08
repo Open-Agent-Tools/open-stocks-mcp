@@ -138,6 +138,21 @@ markers = [
     "asyncio: marks tests as asyncio tests",
     "agent_evaluation: marks tests as ADK agent evaluation tests",
     "exception_test: marks tests that handle exceptions and error states (skipped by default for faster test runs)",
+    "unit: marks tests as fast unit tests",
+    "performance: marks tests as performance/benchmark tests",
+    "auth_required: marks tests that require authentication",
+    "rate_limited: marks tests that may hit rate limits",
+    "journey_account: Account management tests (account_info, profiles, settings)",
+    "journey_portfolio: Portfolio & holdings tests (portfolio, positions, build_holdings)",
+    "journey_market_data: Stock quotes & market info tests (stock_price, market_hours, search)",
+    "journey_research: Earnings, ratings, news tests (stock_earnings, dividends, ratings)",
+    "journey_watchlists: Watchlist management tests (all_watchlists, add/remove)",
+    "journey_options: Options analysis tests (options_chains, positions, market_data)",
+    "journey_notifications: Alerts & notifications tests (notifications, margin_calls)",
+    "journey_system: Health & monitoring tests (health_check, metrics, session_status)",
+    "journey_advanced_data: Level II & premium features tests (pricebook, level2_data)",
+    "journey_market_intelligence: Movers & trends tests (top_movers, top_100_stocks)",
+    "journey_trading: Trading operations tests (buy/sell orders, cancellation)",
 ]
 
 [tool.uv]

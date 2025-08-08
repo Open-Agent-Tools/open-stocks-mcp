@@ -38,6 +38,8 @@ async def http_client(mcp_server: FastMCP) -> Any:
         yield client
 
 
+@pytest.mark.integration
+@pytest.mark.journey_system
 class TestHTTPEndpoints:
     """Test HTTP endpoint functionality"""
 
@@ -103,6 +105,8 @@ class TestHTTPEndpoints:
         assert headers.get("x-xss-protection") == "1; mode=block"
 
 
+@pytest.mark.integration
+@pytest.mark.journey_system
 class TestMCPIntegration:
     """Test MCP protocol integration over HTTP"""
 
@@ -120,6 +124,8 @@ class TestMCPIntegration:
         assert response.status_code != 404
 
 
+@pytest.mark.integration
+@pytest.mark.journey_system
 class TestErrorHandling:
     """Test error handling and timeout scenarios"""
 
@@ -145,6 +151,7 @@ class TestErrorHandling:
 
 
 @pytest.mark.integration
+@pytest.mark.journey_system
 class TestLiveHTTPServer:
     """Integration tests with actual HTTP server"""
 
@@ -176,6 +183,8 @@ class TestLiveHTTPServer:
                 await server_task
 
 
+@pytest.mark.integration
+@pytest.mark.journey_system
 class TestSessionManagement:
     """Test session management features"""
 

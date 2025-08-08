@@ -7,6 +7,7 @@ import pytest
 from open_stocks_mcp.server.app import attempt_login, create_mcp_server, mcp
 
 
+@pytest.mark.journey_system
 class TestServerApp:
     """Test server app functionality."""
 
@@ -39,6 +40,7 @@ class TestServerApp:
             mock_logging.assert_called_once_with(mock_config)
 
 
+@pytest.mark.journey_account
 class TestAttemptLogin:
     """Test attempt_login functionality."""
 
@@ -120,6 +122,7 @@ class TestAttemptLogin:
             mock_exit.assert_called_once_with(1)
 
 
+@pytest.mark.journey_system
 class TestToolRegistration:
     """Test that all tools are properly registered."""
 

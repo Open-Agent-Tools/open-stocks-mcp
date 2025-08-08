@@ -11,6 +11,8 @@ from open_stocks_mcp.tools.rate_limiter import RateLimiter, get_rate_limiter
 class TestSimpleRateLimiter:
     """Test RateLimiter with mocked time to avoid delays."""
 
+    @pytest.mark.journey_system
+    @pytest.mark.unit
     def test_rate_limiter_creation(self) -> None:
         """Test that rate limiter can be created."""
         limiter = RateLimiter(calls_per_minute=60)
@@ -18,6 +20,8 @@ class TestSimpleRateLimiter:
         assert limiter.calls_per_hour == 1800  # default
         assert limiter.burst_size == 10  # default
 
+    @pytest.mark.journey_system
+    @pytest.mark.unit
     def test_rate_limiter_custom_settings(self) -> None:
         """Test rate limiter with custom settings."""
         limiter = RateLimiter(calls_per_minute=30, calls_per_hour=900, burst_size=5)
@@ -25,6 +29,8 @@ class TestSimpleRateLimiter:
         assert limiter.calls_per_hour == 900
         assert limiter.burst_size == 5
 
+    @pytest.mark.journey_system
+    @pytest.mark.unit
     def test_get_stats(self) -> None:
         """Test that get_stats returns proper structure."""
         limiter = RateLimiter(calls_per_minute=60)
@@ -39,6 +45,8 @@ class TestSimpleRateLimiter:
         assert "minute_usage_percent" in stats
         assert "hour_usage_percent" in stats
 
+    @pytest.mark.journey_system
+    @pytest.mark.unit
     def test_get_rate_limiter_singleton(self) -> None:
         """Test that get_rate_limiter returns a RateLimiter instance."""
         limiter = get_rate_limiter()
@@ -50,6 +58,8 @@ class TestSimpleRateLimiter:
 
     @patch("open_stocks_mcp.tools.rate_limiter.time.time")
     @patch("open_stocks_mcp.tools.rate_limiter.asyncio.sleep")
+    @pytest.mark.journey_system
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_acquire_basic(self, mock_sleep: Any, mock_time: Any) -> None:
         """Test basic acquire functionality."""

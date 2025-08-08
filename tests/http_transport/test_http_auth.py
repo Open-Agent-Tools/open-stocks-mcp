@@ -34,6 +34,8 @@ async def http_client(mcp_server: FastMCP) -> Any:
         yield client
 
 
+@pytest.mark.integration
+@pytest.mark.journey_system
 class TestHTTPAuthentication:
     """Test authentication scenarios for HTTP transport"""
 
@@ -137,6 +139,8 @@ class TestHTTPAuthentication:
         assert "Session refresh failed" in data["detail"]
 
 
+@pytest.mark.integration
+@pytest.mark.journey_system
 class TestHTTPSessionStatus:
     """Test session status reporting"""
 
@@ -225,6 +229,8 @@ class TestHTTPSessionStatus:
         assert "Failed to list tools" in data["detail"]
 
 
+@pytest.mark.integration
+@pytest.mark.journey_system
 class TestHTTPSecurity:
     """Test HTTP transport security features"""
 
@@ -265,6 +271,8 @@ class TestHTTPSecurity:
         assert response.status_code in [400, 422, 500]  # Various valid error responses
 
 
+@pytest.mark.integration
+@pytest.mark.journey_system
 class TestHTTPErrorHandling:
     """Test error handling scenarios"""
 

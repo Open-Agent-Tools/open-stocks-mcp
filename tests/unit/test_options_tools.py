@@ -20,6 +20,8 @@ class TestOptionsChains:
     """Test options chains retrieval."""
 
     @patch("open_stocks_mcp.tools.robinhood_options_tools.rh.options.get_chains")
+    @pytest.mark.journey_options
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_options_chains_success(self, mock_chains: Any) -> None:
         """Test successful options chains retrieval."""
@@ -54,6 +56,8 @@ class TestOptionsChains:
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.robinhood_options_tools.rh.options.get_chains")
+    @pytest.mark.journey_options
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_options_chains_no_data(self, mock_chains: Any) -> None:
         """Test options chains when no data is available."""
@@ -67,6 +71,8 @@ class TestOptionsChains:
 
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
+    @pytest.mark.journey_options
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_options_chains_invalid_symbol(self) -> None:
         """Test options chains with invalid symbol."""
@@ -84,6 +90,8 @@ class TestFindOptions:
     @patch(
         "open_stocks_mcp.tools.robinhood_options_tools.rh.options.find_tradable_options"
     )
+    @pytest.mark.journey_options
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_find_options_no_filters(self, mock_find: Any) -> None:
         """Test finding options without filters."""
@@ -115,6 +123,8 @@ class TestFindOptions:
     @patch(
         "open_stocks_mcp.tools.robinhood_options_tools.rh.options.find_tradable_options"
     )
+    @pytest.mark.journey_options
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_find_options_with_filters(self, mock_find: Any) -> None:
         """Test finding options with expiration and type filters."""
@@ -141,6 +151,8 @@ class TestFindOptions:
 
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
+    @pytest.mark.journey_options
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_find_options_invalid_date_format(self) -> None:
         """Test finding options with invalid date format."""
@@ -158,6 +170,8 @@ class TestOptionMarketData:
     @patch(
         "open_stocks_mcp.tools.robinhood_options_tools.rh.options.get_option_market_data_by_id"
     )
+    @pytest.mark.journey_options
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_option_market_data_success(self, mock_market_data: Any) -> None:
         """Test successful option market data retrieval."""
@@ -192,6 +206,8 @@ class TestOptionMarketData:
     @patch(
         "open_stocks_mcp.tools.robinhood_options_tools.rh.options.get_option_market_data_by_id"
     )
+    @pytest.mark.journey_options
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_option_market_data_no_data(self, mock_market_data: Any) -> None:
         """Test option market data when no data is available."""
@@ -203,6 +219,8 @@ class TestOptionMarketData:
         assert result["result"]["status"] == "no_data"
         assert "No market data found" in result["result"]["error"]
 
+    @pytest.mark.journey_options
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_option_market_data_empty_id(self) -> None:
         """Test option market data with empty ID."""
@@ -219,6 +237,8 @@ class TestOptionHistoricals:
     @patch(
         "open_stocks_mcp.tools.robinhood_options_tools.rh.options.get_option_historicals"
     )
+    @pytest.mark.journey_options
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_option_historicals_success(self, mock_historicals: Any) -> None:
         """Test successful option historicals retrieval."""
@@ -255,6 +275,8 @@ class TestOptionHistoricals:
 
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
+    @pytest.mark.journey_options
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_option_historicals_invalid_type(self) -> None:
         """Test option historicals with invalid option type."""
@@ -271,6 +293,8 @@ class TestOptionHistoricals:
 
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
+    @pytest.mark.journey_options
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_option_historicals_invalid_interval(self) -> None:
         """Test option historicals with invalid interval."""
@@ -290,6 +314,8 @@ class TestOptionPositions:
     @patch(
         "open_stocks_mcp.tools.robinhood_options_tools.rh.options.get_aggregate_positions"
     )
+    @pytest.mark.journey_options
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_aggregate_positions_success(self, mock_aggregate: Any) -> None:
         """Test successful aggregate positions retrieval."""
@@ -326,6 +352,8 @@ class TestOptionPositions:
     @patch(
         "open_stocks_mcp.tools.robinhood_options_tools.rh.options.get_aggregate_positions"
     )
+    @pytest.mark.journey_options
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_aggregate_positions_empty(self, mock_aggregate: Any) -> None:
         """Test aggregate positions when empty."""
@@ -341,6 +369,8 @@ class TestOptionPositions:
     @patch(
         "open_stocks_mcp.tools.robinhood_options_tools.rh.options.get_all_option_positions"
     )
+    @pytest.mark.journey_options
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_all_option_positions_success(
         self, mock_all_positions: Any
@@ -383,6 +413,8 @@ class TestOptionPositions:
     @patch(
         "open_stocks_mcp.tools.robinhood_options_tools.rh.options.get_open_option_positions"
     )
+    @pytest.mark.journey_options
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_open_option_positions_success(
         self, mock_open_positions: Any
@@ -413,6 +445,8 @@ class TestOptionPositions:
     @patch(
         "open_stocks_mcp.tools.robinhood_options_tools.rh.options.get_open_option_positions"
     )
+    @pytest.mark.journey_options
+    @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_open_option_positions_none(
         self, mock_open_positions: Any

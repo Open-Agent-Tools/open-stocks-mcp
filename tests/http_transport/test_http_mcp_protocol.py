@@ -4,7 +4,10 @@ import asyncio
 import json
 from typing import Any
 
+import pytest
 
+
+@pytest.mark.journey_system
 class TestMCPProtocolCompliance:
     """Test MCP protocol compliance over HTTP"""
 
@@ -81,6 +84,8 @@ class TestMCPProtocolCompliance:
         assert "result" not in error_response
 
 
+@pytest.mark.integration
+@pytest.mark.journey_system
 class TestHTTPTransportReliability:
     """Test HTTP transport reliability features"""
 
@@ -148,6 +153,7 @@ class TestHTTPTransportReliability:
         assert error_codes["internal_error"] == -32603
 
 
+@pytest.mark.journey_system
 class TestHTTPTransportFeatures:
     """Test HTTP transport specific features"""
 
@@ -210,6 +216,8 @@ class TestHTTPTransportFeatures:
         assert status_codes["internal_error"] == 500
 
 
+@pytest.mark.integration
+@pytest.mark.journey_system
 class TestMCPToolIntegration:
     """Test MCP tool integration over HTTP"""
 
@@ -265,6 +273,7 @@ class TestMCPToolIntegration:
         assert tool_error["result"]["status"] == "error"
 
 
+@pytest.mark.journey_system
 class TestHTTPMiddleware:
     """Test HTTP middleware functionality"""
 
