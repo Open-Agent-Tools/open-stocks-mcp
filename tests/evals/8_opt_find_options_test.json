@@ -1,0 +1,49 @@
+{
+  "eval_set_id": "find_options_test_set",
+  "name": "Find Options Test", 
+  "description": "Test case for finding tradable options through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "find_options_test",
+      "conversation": [
+        {
+          "invocation_id": "find-options-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Find call options for Apple (AAPL) with strike prices near the current stock price."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here are the call options for Apple (AAPL) with strike prices near the current stock price:\n\n**AAPL Call Options:**\n\n*\n\n**Option Information:**\n- **Strike Price:** The price at which you can buy the stock\n- **Expiration Date:** When the option expires\n- **Premium:** Current cost of the option per share\n- **Volume:** Number of contracts traded today\n- **Open Interest:** Total outstanding contracts\n\nThese are live tradable options from the Robinhood platform."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "symbol": "AAPL",
+                  "option_type": "call"
+                },
+                "name": "find_options"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

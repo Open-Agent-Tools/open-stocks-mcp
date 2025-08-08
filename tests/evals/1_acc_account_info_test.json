@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "account_info_test_set",
+  "name": "Account Info Test",
+  "description": "Test case for retrieving basic Robinhood account information through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "account_info_test",
+      "conversation": [
+        {
+          "invocation_id": "account-info-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me my account information in a bulleted list."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here is your basic account information:\n\n*   **Username**: jamese12682\n*   **Account Created**: 2019-03-19T13:33:56.821078-04:00\n*   **Status**: success"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "account_info"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

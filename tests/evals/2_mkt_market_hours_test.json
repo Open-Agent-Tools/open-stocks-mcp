@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "market_hours_test_set",
+  "name": "Market Hours Test",
+  "description": "Test case for checking current market hours and status through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "market_hours_test",
+      "conversation": [
+        {
+          "invocation_id": "market-hours-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "What are the current market hours and is the market open right now?"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "The retrieved information provides details about several exchanges including IEX Market, OTC Markets, NYSE Mkt LLC, NYSE Arca, and New York Stock Exchange, Inc. All listed exchanges operate on the 'US/Eastern' timezone.\n\nHowever, the current tool output does not specify if the market is open right now, nor does it provide the exact operating hours for these markets.\n\nGenerally, the U.S. stock market (NYSE and Nasdaq) operates from 9:30 AM to 4:00 PM Eastern Time, Monday through Friday, excluding holidays. Pre-market and after-hours trading may occur outside of these times.\n\nPlease note that this is general information, and specific market hours can vary by exchange and may be subject to change due to holidays or other events. I cannot confirm the current open status of the market with the available information."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "market_hours"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

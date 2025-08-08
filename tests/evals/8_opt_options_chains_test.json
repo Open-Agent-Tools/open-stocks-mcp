@@ -1,0 +1,48 @@
+{
+  "eval_set_id": "options_chains_test_set",
+  "name": "Options Chains Test",
+  "description": "Test case for retrieving complete option chains through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "options_chains_test",
+      "conversation": [
+        {
+          "invocation_id": "options-chains-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me the complete options chain for Tesla (TSLA)."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here is the complete options chain for Tesla (TSLA):\n\n**TSLA Options Chain:**\n\n*\n\n**Options Chain Overview:**\n- **Expiration Dates:** Multiple expiration cycles available\n- **Strike Prices:** Range from deeply in-the-money to far out-of-the-money\n- **Call Options:** Right to buy TSLA at the strike price\n- **Put Options:** Right to sell TSLA at the strike price\n- **Greeks:** Delta, Gamma, Theta, Vega for risk analysis\n\nThis shows all available tradable options for TSLA across different expirations and strikes."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "symbol": "TSLA"
+                },
+                "name": "options_chains"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "options_orders_test_set",
+  "name": "Options Orders Test",
+  "description": "Test case for retrieving options order history through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "options_orders_test",
+      "conversation": [
+        {
+          "invocation_id": "options-orders-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me my recent options order history."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here is your recent options order history:\n\n**Recent Options Orders:**\n\n*\n\n**Options Order Information:**\n- **Direction:** Whether you bought (long) or sold (short) the option\n- **Strike Price:** The exercise price of the option\n- **Expiration:** When the option expires\n- **Premium:** The price paid/received per contract\n- **Quantity:** Number of contracts\n\nThis shows your actual options trading history from your Robinhood account."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "options_orders"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

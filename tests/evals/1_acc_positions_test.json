@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "positions_test_set",
+  "name": "Positions Test",
+  "description": "Test case for retrieving current stock positions through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "positions_test",
+      "conversation": [
+        {
+          "invocation_id": "positions-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me my current stock positions."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here are your current stock positions:\n\n*   **Symbol:** F\n*   **Quantity:** 100 shares\n*   **Average Buy Price:** $11.00\n*   **Last Updated:** 2025-08-04 13:35:27 UTC\n\n**Disclaimer:** Investing in stocks involves risks, including the potential loss of principal. Past performance is not indicative of future results."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-positions",
+                "args": {},
+                "name": "positions"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

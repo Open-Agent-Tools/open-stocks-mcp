@@ -5,7 +5,7 @@ An MCP (Model Context Protocol) server providing access to stock market data and
 ## Features
 
 **🚀 Current Status: v0.5.0 - Complete BETA Trading Capabilities**
-- ✅ **84 MCP tools** across 9 categories
+- ✅ **83 MCP tools** across 9 categories
 - ✅ **Complete trading functionality** - stocks, options, order management  
 - ✅ **Production-ready** - HTTP transport, Docker support, comprehensive testing
 - ✅ **Phases 1-7 complete** - Foundation → Analytics → Trading

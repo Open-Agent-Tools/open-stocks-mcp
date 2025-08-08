@@ -1,0 +1,48 @@
+{
+  "eval_set_id": "search_stocks_test_set",
+  "name": "Search Stocks Test",
+  "description": "Test case for searching stocks by symbol or company name through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "search_stocks_test",
+      "conversation": [
+        {
+          "invocation_id": "search-stocks-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Search for electric vehicle companies."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "I'm sorry, I was unable to find any stocks using the tag \"electric vehicles.\" It's possible that the tag is not supported or there are no stocks categorized under that specific tag.\n\nI can search for stocks by other categories if you have another one in mind, or you can try a more general search for a company by name or symbol."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "tag": "electric vehicles"
+                },
+                "name": "stocks_by_tag"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

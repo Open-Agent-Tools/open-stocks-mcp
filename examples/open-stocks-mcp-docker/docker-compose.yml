@@ -1,11 +1,11 @@
 services:
   open-stocks-mcp:
-    # Build the image from the Dockerfile with v0.4.1
+    # Build the image from the Dockerfile with v0.5.0
     build:
       context: .
       dockerfile: Dockerfile
     # Tag the built image for easier identification
-    image: open-stocks-mcp:0.4.1
+    image: open-stocks-mcp:0.5.0
     # Name the container for easier identification
     container_name: open-stocks-mcp-server
     # Restart the container automatically if it stops

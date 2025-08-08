@@ -227,14 +227,29 @@ def get_metrics_collector() -> MetricsCollector:
 
 
 class MonitoredTool:
-    """Decorator for monitoring tool execution."""
+    """Decorator for monitoring tool execution.
+    
+    NOTE: This decorator is deprecated for MCP tools as it interferes with 
+    MCP framework registration. Use only for core trading service functions.
+    For MCP tools, metrics are collected via the metrics_summary() tool instead.
+    """
 
     def __init__(self, tool_name: str):
         """Initialize monitored tool decorator.
 
         Args:
             tool_name: Name of the tool for metrics
+            
+        Warning:
+            Do not use this decorator on functions decorated with @mcp.tool()
+            as it prevents proper MCP registration.
         """
+        import warnings
+        warnings.warn(
+            "MonitoredTool is deprecated for MCP tools. Use only for core trading service functions.",
+            DeprecationWarning,
+            stacklevel=2
+        )
         self.tool_name = tool_name
         self.metrics = get_metrics_collector()
 

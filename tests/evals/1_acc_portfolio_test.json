@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "portfolio_test_set",
+  "name": "Portfolio Test",
+  "description": "Test case for retrieving portfolio overview through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "portfolio_test",
+      "conversation": [
+        {
+          "invocation_id": "portfolio-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me my portfolio overview."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here is a summary of your portfolio:\n\n*   **Total Equity:** $9716.87\n*   **Cash:** $8729.77\n*   **Total Dividends Received:** $241.77\n\nPlease remember that investing in the stock market involves risks, and the value of investments can fluctuate."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-portfolio",
+                "args": {},
+                "name": "build_user_profile"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

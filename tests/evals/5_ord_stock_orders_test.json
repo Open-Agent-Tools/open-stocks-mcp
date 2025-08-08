@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "stock_orders_test_set",
+  "name": "Stock Orders Test",
+  "description": "Test case for retrieving stock order history through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "stock_orders_test",
+      "conversation": [
+        {
+          "invocation_id": "stock-orders-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me my recent stock order history."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here is your recent stock order history:\n\n**Recent Stock Orders:**\n\n*\n\n**Order Status Legend:**\n- **Filled:** Order completed successfully\n- **Cancelled:** Order was cancelled\n- **Pending:** Order is still active\n- **Rejected:** Order was rejected\n\nThis shows your actual trading history from your Robinhood account."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "stock_orders"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "eval_set_id": "stock_info_test_set",
+  "name": "Stock Info Test",
+  "description": "Test case for retrieving detailed stock information through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "stock_info_test",
+      "conversation": [
+        {
+          "invocation_id": "stock-info-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Get detailed information about Microsoft (MSFT) stock."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here is the detailed information about Microsoft (MSFT) stock:\n\n**Company Name:** Microsoft\n**Symbol:** MSFT\n**Sector:** Technology Services\n**Industry:** Packaged Software\n\n**Description:**\nMicrosoft Corp. engages in the development and support of software, services, devices, and solutions. It operates through the following segments: Productivity and Business Processes, Intelligent Cloud, and More Personal Computing. The Productivity and Business Processes segment is composed of products and services relating to productivity, communication, and information services such as Office Commercial, Office Consumer, LinkedIn, and Dynamics business solutions. The Intelligent Cloud segment consists of public, private, and hybrid server products and cloud services for businesses and developers, as well as enterprise and partner services. The More Personal Computing segment refers to products and services including Windows operating system, Windows cloud services, Surface, HoloLens, personal computer accessories, Xbox hardware, Xbox Cloud Gaming, Microsoft News, and Microsoft Edge. The company was founded by Paul Gardner Allen and William Henry Gates, III in 1975 and is headquartered in Redmond, WA.\n\n**Key Metrics:**\n*   **Market Cap:** $3,886,135,607,700 (approximately 3.89 Trillion)\n*   **P/E Ratio:** 38.48\n*   **Dividend Yield:** 0.617%\n*   **52-Week High:** $555.45\n*   **52-Week Low:** $344.79\n*   **Average Volume:** 23,883,376.80\n*   **Tradeable:** Yes\n\n**Disclaimer:** Investment in securities involves risks, and you may lose money. The provided data is for informational purposes only and not investment advice."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "symbol": "MSFT"
+                },
+                "name": "stock_info"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "eval_set_id": "stock_price_test_set",
+  "name": "Stock Price Test",
+  "description": "Test case for retrieving current stock price through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "stock_price_test",
+      "conversation": [
+        {
+          "invocation_id": "stock-price-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Get the current stock price for AAPL."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here's the information for Apple (AAPL):\n\n**Company Name:** Apple\n**Symbol:** AAPL\n**Sector:** Electronic Technology\n**Industry:** Telecommunications Equipment\n**Market Cap:** $3,296,052,840,000\n**P/E Ratio:** 32.42\n**Dividend Yield:** 0.47%\n**52-Week High:** $260.10\n**52-Week Low:** $169.21\n**Average Volume:** 67,815,625\n**Tradeable:** Yes\n\n**Disclaimer:** Investment in securities involves risks, including the potential loss of principal. Past performance is not indicative of future results."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "symbol": "AAPL"
+                },
+                "name": "stock_info"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

@@ -326,7 +326,7 @@ def run_evaluation(test_file):
         }
 
 if __name__ == "__main__":
-    tests = ["tests/evals/list_available_tools_test.json"]
+    tests = ["tests/evals/0_list_available_tools_test.json"]
     
     for test in tests:
         print(f"Running {test}...")

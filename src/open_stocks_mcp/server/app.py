@@ -11,7 +11,7 @@ from mcp.server.fastmcp import FastMCP
 
 from open_stocks_mcp.config import ServerConfig, load_config
 from open_stocks_mcp.logging_config import logger, setup_logging
-from open_stocks_mcp.monitoring import MonitoredTool, get_metrics_collector
+from open_stocks_mcp.monitoring import get_metrics_collector
 from open_stocks_mcp.tools.rate_limiter import get_rate_limiter
 from open_stocks_mcp.tools.robinhood_account_features_tools import (
     get_account_features,
@@ -141,14 +141,12 @@ async def account_info() -> dict[str, Any]:
 
 
 @mcp.tool()
-@MonitoredTool("portfolio")
 async def portfolio() -> dict[str, Any]:
     """Provides a high-level overview of the portfolio."""
     return await get_portfolio()  # type: ignore[no-any-return]
 
 
 @mcp.tool()
-@MonitoredTool("stock_orders")
 async def stock_orders() -> dict[str, Any]:
     """Retrieves a list of recent stock order history and their statuses."""
     return await get_stock_orders()  # type: ignore[no-any-return]
@@ -240,7 +238,6 @@ async def health_check() -> dict[str, Any]:
 
 # Market Data Tools
 @mcp.tool()
-@MonitoredTool("stock_price")
 async def stock_price(symbol: str) -> dict[str, Any]:
     """Gets current stock price and basic metrics.
 

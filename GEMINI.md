@@ -4,7 +4,7 @@ Technical guidance for Gemini when working with the Open Stocks MCP server codeb
 
 ## Project Status (v0.5.0)
 
-- **84 MCP tools** with complete trading functionality
+- **83 MCP tools** with complete trading functionality
 - **HTTP transport** with Server-Sent Events (SSE) on port 3001
 - **Docker deployment** with persistent volumes
 - **Comprehensive test coverage** with performance optimization
@@ -63,7 +63,7 @@ pytest -m "not slow and not exception_test"
 ## Current Development Phase
 
 ### Current Status: Phase 7 Complete - Trading Capabilities (v0.5.0)
-✅ **84 MCP tools implemented** including full trading functionality:
+✅ **83 MCP tools implemented** including full trading functionality:
 - Stock order placement (9 tools): market, limit, stop-loss, trailing stop orders
 - Options order placement (4 tools): buy/sell options, credit/debit spreads  
 - Order management (6 tools): cancel orders, view open positions
