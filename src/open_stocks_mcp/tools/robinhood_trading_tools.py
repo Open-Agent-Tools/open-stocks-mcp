@@ -43,11 +43,12 @@ async def order_buy_market(symbol: str, quantity: int) -> dict[str, Any]:
 
     # Check if symbol exists
     try:
-        quote = await execute_with_retry(rh.stocks.get_quote, symbol)
-        if not quote or not quote.get("last_trade_price"):
+        quote_data = await execute_with_retry(rh.get_quotes, symbol)
+        if not quote_data or not quote_data[0].get("last_trade_price"):
             return create_success_response(
                 {"error": f"Symbol {symbol} not found", "status": "error"}
             )
+        quote = quote_data[0]
     except Exception as e:
         return create_success_response(
             {"error": f"Failed to validate symbol: {e!s}", "status": "error"}
@@ -634,11 +635,12 @@ async def order_buy_trailing_stop(
 
     # Check if symbol exists
     try:
-        quote = await execute_with_retry(rh.stocks.get_quote, symbol)
-        if not quote or not quote.get("last_trade_price"):
+        quote_data = await execute_with_retry(rh.get_quotes, symbol)
+        if not quote_data or not quote_data[0].get("last_trade_price"):
             return create_success_response(
                 {"error": f"Symbol {symbol} not found", "status": "error"}
             )
+        quote = quote_data[0]
     except Exception as e:
         return create_success_response(
             {"error": f"Failed to validate symbol: {e!s}", "status": "error"}
@@ -814,11 +816,12 @@ async def order_buy_fractional_by_price(
 
     # Check if symbol exists
     try:
-        quote = await execute_with_retry(rh.stocks.get_quote, symbol)
-        if not quote or not quote.get("last_trade_price"):
+        quote_data = await execute_with_retry(rh.get_quotes, symbol)
+        if not quote_data or not quote_data[0].get("last_trade_price"):
             return create_success_response(
                 {"error": f"Symbol {symbol} not found", "status": "error"}
             )
+        quote = quote_data[0]
     except Exception as e:
         return create_success_response(
             {"error": f"Failed to validate symbol: {e!s}", "status": "error"}
