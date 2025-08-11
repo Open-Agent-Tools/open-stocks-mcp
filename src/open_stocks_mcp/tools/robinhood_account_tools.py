@@ -77,8 +77,62 @@ async def get_account_details() -> dict[str, Any]:
     """
     Retrieves comprehensive account details including buying power and cash balances.
 
+    All monetary values are returned as currency objects with amount, currency_code,
+    and currency_id fields for internationalization support.
+
     Returns:
-        A JSON object containing detailed account information in the result field.
+        A JSON object containing detailed account information in the result field:
+        {
+            "result": {
+                "portfolio_equity": {
+                    "amount": "9723.99",
+                    "currency_code": "USD",
+                    "currency_id": "1072fc76-1862-41ab-82c2-485837590762"
+                },
+                "total_equity": {
+                    "amount": "9723.99",
+                    "currency_code": "USD",
+                    "currency_id": "1072fc76-1862-41ab-82c2-485837590762"
+                },
+                "account_buying_power": {
+                    "amount": "1029.63",
+                    "currency_code": "USD",
+                    "currency_id": "1072fc76-1862-41ab-82c2-485837590762"
+                },
+                "options_buying_power": {
+                    "amount": "1029.63",
+                    "currency_code": "USD",
+                    "currency_id": "1072fc76-1862-41ab-82c2-485837590762"
+                },
+                "crypto_buying_power": {
+                    "amount": "1029.63",
+                    "currency_code": "USD",
+                    "currency_id": "1072fc76-1862-41ab-82c2-485837590762"
+                },
+                "uninvested_cash": {
+                    "amount": "7629.63",
+                    "currency_code": "USD",
+                    "currency_id": "1072fc76-1862-41ab-82c2-485837590762"
+                },
+                "withdrawable_cash": {
+                    "amount": "1029.63",
+                    "currency_code": "USD",
+                    "currency_id": "1072fc76-1862-41ab-82c2-485837590762"
+                },
+                "cash_available_from_instant_deposits": {
+                    "amount": "0",
+                    "currency_code": "USD",
+                    "currency_id": "1072fc76-1862-41ab-82c2-485837590762"
+                },
+                "cash_held_for_orders": {
+                    "amount": "0",
+                    "currency_code": "USD",
+                    "currency_id": "1072fc76-1862-41ab-82c2-485837590762"
+                },
+                "near_margin_call": false,
+                "status": "success"
+            }
+        }
     """
     log_api_call("get_account_details")
 

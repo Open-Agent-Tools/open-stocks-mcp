@@ -89,7 +89,10 @@ async def get_top_movers_sp500(direction: str = "up") -> dict[str, Any]:
 
 @handle_robin_stocks_errors
 async def get_top_100() -> dict[str, Any]:
-    """Get top 100 most popular stocks on Robinhood.
+    """Get top 100 most popular stocks on Robinhood with full quote data.
+
+    Returns detailed market data for the 100 most popular stocks including
+    bid/ask prices, sizes, timestamps, and trading status.
 
     Returns:
         JSON object with top 100 stocks in "result" field:
@@ -97,15 +100,31 @@ async def get_top_100() -> dict[str, Any]:
             "result": {
                 "stocks": [
                     {
-                        "symbol": "AAPL",
-                        "last_trade_price": "150.00",
-                        "previous_close": "149.50",
-                        "ask_price": "150.10",
-                        "bid_price": "149.90",
-                        "updated_at": "2024-07-09T16:00:00Z",
+                        "ask_price": "345.330000",
+                        "ask_size": 103,
+                        "venue_ask_time": "2025-08-11T16:14:47.706648946Z",
+                        "bid_price": "345.310000",
+                        "bid_size": 169,
+                        "venue_bid_time": "2025-08-11T16:14:47.706648946Z",
+                        "last_trade_price": "345.325000",
+                        "venue_last_trade_time": "2025-08-11T16:14:48.232372322Z",
+                        "last_extended_hours_trade_price": null,
+                        "last_non_reg_trade_price": null,
+                        "venue_last_non_reg_trade_time": null,
+                        "previous_close": "329.650000",
+                        "adjusted_previous_close": "329.650000",
+                        "previous_close_date": "2025-08-08",
+                        "symbol": "TSLA",
                         "trading_halted": false,
-                        "has_traded": true
-                    }
+                        "has_traded": true,
+                        "last_trade_price_source": "nls",
+                        "last_non_reg_trade_price_source": "",
+                        "updated_at": "2025-08-11T16:14:48Z",
+                        "instrument": "https://api.robinhood.com/instruments/e39ed23a-7bd1-4587-b060-71988d9ef483/",
+                        "instrument_id": "e39ed23a-7bd1-4587-b060-71988d9ef483",
+                        "state": "active"
+                    },
+                    ...
                 ],
                 "count": 100
             }
@@ -143,7 +162,10 @@ async def get_top_100() -> dict[str, Any]:
 
 @handle_robin_stocks_errors
 async def get_top_movers() -> dict[str, Any]:
-    """Get top 20 movers on Robinhood.
+    """Get top 20 movers on Robinhood with full quote data.
+
+    Returns detailed market data for the top 20 moving stocks including
+    bid/ask prices, sizes, timestamps, and trading status.
 
     Returns:
         JSON object with top movers in "result" field:
@@ -151,15 +173,31 @@ async def get_top_movers() -> dict[str, Any]:
             "result": {
                 "movers": [
                     {
-                        "symbol": "TSLA",
-                        "last_trade_price": "250.00",
-                        "previous_close": "240.00",
-                        "ask_price": "250.10",
-                        "bid_price": "249.90",
-                        "updated_at": "2024-07-09T16:00:00Z",
+                        "ask_price": "14.950000",
+                        "ask_size": 776,
+                        "venue_ask_time": "2025-08-11T16:09:42.253516091Z",
+                        "bid_price": "14.940000",
+                        "bid_size": 1968,
+                        "venue_bid_time": "2025-08-11T16:09:42.253516091Z",
+                        "last_trade_price": "14.941200",
+                        "venue_last_trade_time": "2025-08-11T16:09:51.820785219Z",
+                        "last_extended_hours_trade_price": null,
+                        "last_non_reg_trade_price": null,
+                        "venue_last_non_reg_trade_time": null,
+                        "previous_close": "9.280000",
+                        "adjusted_previous_close": "9.280000",
+                        "previous_close_date": "2025-08-08",
+                        "symbol": "IMXI",
                         "trading_halted": false,
-                        "has_traded": true
-                    }
+                        "has_traded": true,
+                        "last_trade_price_source": "nls",
+                        "last_non_reg_trade_price_source": "",
+                        "updated_at": "2025-08-11T16:09:51Z",
+                        "instrument": "https://api.robinhood.com/instruments/25b0a9ce-e04e-4bf3-9ebf-918839ff28bc/",
+                        "instrument_id": "25b0a9ce-e04e-4bf3-9ebf-918839ff28bc",
+                        "state": "active"
+                    },
+                    ...
                 ],
                 "count": 20
             }
