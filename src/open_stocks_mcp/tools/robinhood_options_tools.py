@@ -97,9 +97,11 @@ async def find_tradable_options(
     and option type filters.
 
     Args:
-        symbol: Stock ticker symbol (e.g., "AAPL", "GOOGL")
-        expiration_date: Optional expiration date in YYYY-MM-DD format
-        option_type: Optional option type ("call" or "put")
+        symbol: Stock ticker symbol (e.g., "AAPL", "GOOGL"). Required.
+        expiration_date: Optional expiration date in YYYY-MM-DD format (e.g., "2025-09-12"). 
+                        If provided in incorrect format, may return no results.
+        option_type: Optional option type. Must be "call" or "put" (case insensitive). 
+                    Invalid values will return an error.
 
     Returns:
         Dict containing filtered option contracts:
@@ -112,11 +114,28 @@ async def find_tradable_options(
                 },
                 "options": [
                     {
-                        "strike_price": "150.00",
+                        "chain_id": "b905e24f-f046-458c-af25-244dbe46616c",
+                        "chain_symbol": "AAPL",
+                        "created_at": "2025-08-01T01:04:29.754918Z",
                         "expiration_date": "2024-01-19",
+                        "id": "fed6fe71-a605-4340-812a-3b0df7d1bbc3",
+                        "issue_date": "2025-08-01",
+                        "min_ticks": {
+                            "above_tick": "0.05",
+                            "below_tick": "0.01",
+                            "cutoff_price": "3.00"
+                        },
+                        "rhs_tradability": "position_closing_only",
+                        "state": "active",
+                        "strike_price": "150.0000",
+                        "tradability": "tradable",
                         "type": "call",
-                        "id": "option_id",
-                        "tradeable": true
+                        "updated_at": "2025-08-01T01:04:29.754932Z",
+                        "url": "https://api.robinhood.com/options/instruments/fed6fe71-a605-4340-812a-3b0df7d1bbc3/",
+                        "sellout_datetime": "2024-01-19T19:30:00+00:00",
+                        "long_strategy_code": "fed6fe71-a605-4340-812a-3b0df7d1bbc3_L1",
+                        "short_strategy_code": "fed6fe71-a605-4340-812a-3b0df7d1bbc3_S1",
+                        "underlying_type": "equity"
                     },
                     ...
                 ],
