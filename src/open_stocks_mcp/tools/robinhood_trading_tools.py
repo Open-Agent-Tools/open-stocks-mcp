@@ -1289,30 +1289,45 @@ async def order_option_credit_spread(
 
     # Place spread order
     try:
-        # Create spread order legs
-        legs = [
+        # Extract symbol from instrument data
+        symbol = short_instrument.get("chain_symbol")
+        if not symbol:
+            return create_success_response(
+                {"error": "Could not extract symbol from instrument", "status": "error"}
+            )
+
+        # Create spread array with correct Robin Stocks format
+        spread = [
             {
-                "position_effect": "open",
-                "side": "sell",
-                "option": short_instrument_id,
-                "ratio_quantity": 1,
+                "expirationDate": short_instrument.get("expiration_date"),
+                "strike": short_instrument.get("strike_price"),
+                "optionType": short_instrument.get("type"),
+                "effect": "open",
+                "action": "sell",  # Short leg = sell
             },
             {
-                "position_effect": "open",
-                "side": "buy",
-                "option": long_instrument_id,
-                "ratio_quantity": 1,
+                "expirationDate": long_instrument.get("expiration_date"),
+                "strike": long_instrument.get("strike_price"),
+                "optionType": long_instrument.get("type"),
+                "effect": "open", 
+                "action": "buy",  # Long leg = buy
             },
         ]
 
+        # Use correct Robin Stocks API: order_option_credit_spread(price, symbol, quantity, spread, timeInForce='gtc')
         order_result = await execute_with_retry(
-            rh.order_option_spread, "credit", credit_price, legs, quantity
+            rh.order_option_credit_spread, credit_price, symbol, quantity, spread, timeInForce='gfd'
         )
 
         if not order_result:
             return create_success_response(
                 {"error": "Spread order placement failed", "status": "error"}
             )
+
+        # Check for API error responses
+        if isinstance(order_result, dict) and 'non_field_errors' in order_result:
+            error_msgs = order_result['non_field_errors']
+            return create_success_response({"error": f"Order failed: {'; '.join(error_msgs)}", "status": "error"})
 
         order_result = sanitize_api_response(order_result)
 
@@ -1437,30 +1452,45 @@ async def order_option_debit_spread(
 
     # Place spread order
     try:
-        # Create spread order legs
-        legs = [
+        # Extract symbol from instrument data
+        symbol = short_instrument.get("chain_symbol")
+        if not symbol:
+            return create_success_response(
+                {"error": "Could not extract symbol from instrument", "status": "error"}
+            )
+
+        # Create spread array with correct Robin Stocks format
+        spread = [
             {
-                "position_effect": "open",
-                "side": "buy",
-                "option": long_instrument_id,
-                "ratio_quantity": 1,
+                "expirationDate": short_instrument.get("expiration_date"),
+                "strike": short_instrument.get("strike_price"),
+                "optionType": short_instrument.get("type"),
+                "effect": "open",
+                "action": "sell",  # Short leg = sell
             },
             {
-                "position_effect": "open",
-                "side": "sell",
-                "option": short_instrument_id,
-                "ratio_quantity": 1,
+                "expirationDate": long_instrument.get("expiration_date"),
+                "strike": long_instrument.get("strike_price"),
+                "optionType": long_instrument.get("type"),
+                "effect": "open", 
+                "action": "buy",  # Long leg = buy
             },
         ]
 
+        # Use correct Robin Stocks API: order_option_debit_spread(price, symbol, quantity, spread, timeInForce='gtc')
         order_result = await execute_with_retry(
-            rh.order_option_spread, "debit", debit_price, legs, quantity
+            rh.order_option_debit_spread, debit_price, symbol, quantity, spread, timeInForce='gfd'
         )
 
         if not order_result:
             return create_success_response(
                 {"error": "Spread order placement failed", "status": "error"}
             )
+
+        # Check for API error responses
+        if isinstance(order_result, dict) and 'non_field_errors' in order_result:
+            error_msgs = order_result['non_field_errors']
+            return create_success_response({"error": f"Order failed: {'; '.join(error_msgs)}", "status": "error"})
 
         order_result = sanitize_api_response(order_result)
 

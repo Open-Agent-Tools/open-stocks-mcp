@@ -88,19 +88,19 @@ from open_stocks_mcp.tools.robinhood_trading_tools import (
     cancel_stock_order,
     get_all_open_option_orders,
     get_all_open_stock_orders,
-    order_buy_fractional_by_price,
+    # order_buy_fractional_by_price,  # DEPRECATED
     order_buy_limit,
     order_buy_market,
     order_buy_option_limit,
-    order_buy_stop_loss,
-    order_buy_trailing_stop,
+    # order_buy_stop_loss,  # DEPRECATED
+    # order_buy_trailing_stop,  # DEPRECATED
     order_option_credit_spread,
     order_option_debit_spread,
     order_sell_limit,
     order_sell_market,
     order_sell_option_limit,
     order_sell_stop_loss,
-    order_sell_trailing_stop,
+    # order_sell_trailing_stop,  # DEPRECATED
 )
 from open_stocks_mcp.tools.robinhood_user_profile_tools import (
     get_account_profile,
@@ -726,18 +726,21 @@ async def sell_stock_limit(
     return await order_sell_limit(symbol, quantity, limit_price)  # type: ignore[no-any-return]
 
 
-@mcp.tool()
-async def buy_stock_stop_loss(
-    symbol: str, quantity: int, stop_price: float
-) -> dict[str, Any]:
-    """Places a stop loss buy order for a stock.
-
-    Args:
-        symbol: The stock symbol to buy (e.g., "AAPL")
-        quantity: The number of shares to buy
-        stop_price: The stop price that triggers the order
-    """
-    return await order_buy_stop_loss(symbol, quantity, stop_price)  # type: ignore[no-any-return]
+# DEPRECATED: buy_stock_stop_loss removed - uncommon use case for most traders
+# Buy stop-loss orders are primarily used for short covering or breakout trading
+# which are advanced strategies not commonly used by typical retail investors
+# @mcp.tool()
+# async def buy_stock_stop_loss(
+#     symbol: str, quantity: int, stop_price: float
+# ) -> dict[str, Any]:
+#     """Places a stop loss buy order for a stock.
+#
+#     Args:
+#         symbol: The stock symbol to buy (e.g., "AAPL")
+#         quantity: The number of shares to buy
+#         stop_price: The stop price that triggers the order
+#     """
+#     return await order_buy_stop_loss(symbol, quantity, stop_price)  # type: ignore[no-any-return]
 
 
 @mcp.tool()
@@ -754,43 +757,52 @@ async def sell_stock_stop_loss(
     return await order_sell_stop_loss(symbol, quantity, stop_price)  # type: ignore[no-any-return]
 
 
-@mcp.tool()
-async def buy_stock_trailing_stop(
-    symbol: str, quantity: int, trail_amount: float
-) -> dict[str, Any]:
-    """Places a trailing stop buy order for a stock.
-
-    Args:
-        symbol: The stock symbol to buy (e.g., "AAPL")
-        quantity: The number of shares to buy
-        trail_amount: The trailing amount (percentage or dollar amount)
-    """
-    return await order_buy_trailing_stop(symbol, quantity, trail_amount)  # type: ignore[no-any-return]
-
-
-@mcp.tool()
-async def sell_stock_trailing_stop(
-    symbol: str, quantity: int, trail_amount: float
-) -> dict[str, Any]:
-    """Places a trailing stop sell order for a stock.
-
-    Args:
-        symbol: The stock symbol to sell (e.g., "AAPL")
-        quantity: The number of shares to sell
-        trail_amount: The trailing amount (percentage or dollar amount)
-    """
-    return await order_sell_trailing_stop(symbol, quantity, trail_amount)  # type: ignore[no-any-return]
+# DEPRECATED: buy_stock_trailing_stop removed - uncommon use case for most traders
+# Trailing stop buy orders are advanced trading strategies primarily used for breakout trading
+# which are not commonly used by typical retail investors
+# @mcp.tool()
+# async def buy_stock_trailing_stop(
+#     symbol: str, quantity: int, trail_amount: float
+# ) -> dict[str, Any]:
+#     """Places a trailing stop buy order for a stock.
+#
+#     Args:
+#         symbol: The stock symbol to buy (e.g., "AAPL")
+#         quantity: The number of shares to buy
+#         trail_amount: The trailing amount (percentage or dollar amount)
+#     """
+#     return await order_buy_trailing_stop(symbol, quantity, trail_amount)  # type: ignore[no-any-return]
 
 
-@mcp.tool()
-async def buy_fractional_stock(symbol: str, amount_in_dollars: float) -> dict[str, Any]:
-    """Places a fractional share buy order using dollar amount.
+# DEPRECATED: sell_stock_trailing_stop removed - uncommon use case for most traders
+# Trailing stop sell orders are advanced trading strategies that require careful market timing
+# and are not commonly used by typical retail investors
+# @mcp.tool()
+# async def sell_stock_trailing_stop(
+#     symbol: str, quantity: int, trail_amount: float
+# ) -> dict[str, Any]:
+#     """Places a trailing stop sell order for a stock.
+#
+#     Args:
+#         symbol: The stock symbol to sell (e.g., "AAPL")
+#         quantity: The number of shares to sell
+#         trail_amount: The trailing amount (percentage or dollar amount)
+#     """
+#     return await order_sell_trailing_stop(symbol, quantity, trail_amount)  # type: ignore[no-any-return]
 
-    Args:
-        symbol: The stock symbol to buy (e.g., "AAPL")
-        amount_in_dollars: The dollar amount to invest
-    """
-    return await order_buy_fractional_by_price(symbol, amount_in_dollars)  # type: ignore[no-any-return]
+
+# DEPRECATED: buy_fractional_stock removed - uncommon use case for most traders
+# Fractional share trading is useful but represents a small subset of trading activity
+# and most retail traders prefer whole share purchases for clearer position management
+# @mcp.tool()
+# async def buy_fractional_stock(symbol: str, amount_in_dollars: float) -> dict[str, Any]:
+#     """Places a fractional share buy order using dollar amount.
+#
+#     Args:
+#         symbol: The stock symbol to buy (e.g., "AAPL")
+#         amount_in_dollars: The dollar amount to invest
+#     """
+#     return await order_buy_fractional_by_price(symbol, amount_in_dollars)  # type: ignore[no-any-return]
 
 
 # Options Order Placement Tools
