@@ -1,6 +1,6 @@
 # TODO - Open Stocks MCP
 
-## **✅ TRADING TOOL TESTING COMPLETE (v0.5.6-dev)**
+## **✅ TRADING TOOL TESTING COMPLETE (v0.5.7)**
 
 ### **📋 TRADING FUNCTION VALIDATION - ALL COMPLETE**
 
@@ -32,7 +32,7 @@
 
 ---
 
-## Current Status (v0.5.6-dev)  
+## Current Status (v0.5.7)  
 - ✅ **79 MCP tools** with complete trading functionality (4 tools deprecated)
 - ✅ **Phases 0-7 complete**: Journey Testing → Foundation → Analytics → Trading
 - ✅ **Production-ready**: HTTP transport, Docker volumes, comprehensive testing

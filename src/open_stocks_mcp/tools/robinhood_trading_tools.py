@@ -74,7 +74,9 @@ async def order_buy_market(symbol: str, quantity: int) -> dict[str, Any]:
 
     # Place order
     try:
-        order_result = await execute_with_retry(rh.order_buy_market, symbol, quantity, timeInForce='gfd')
+        order_result = await execute_with_retry(
+            rh.order_buy_market, symbol, quantity, timeInForce="gfd"
+        )
 
         if not order_result:
             return create_success_response(
@@ -82,8 +84,8 @@ async def order_buy_market(symbol: str, quantity: int) -> dict[str, Any]:
             )
 
         # Check for Robin Stocks API errors
-        if isinstance(order_result, dict) and 'non_field_errors' in order_result:
-            error_msgs = order_result['non_field_errors']
+        if isinstance(order_result, dict) and "non_field_errors" in order_result:
+            error_msgs = order_result["non_field_errors"]
             return create_success_response(
                 {"error": f"Order failed: {'; '.join(error_msgs)}", "status": "error"}
             )
@@ -165,7 +167,9 @@ async def order_sell_market(symbol: str, quantity: int) -> dict[str, Any]:
 
     # Place order
     try:
-        order_result = await execute_with_retry(rh.order_sell_market, symbol, quantity, timeInForce='gfd')
+        order_result = await execute_with_retry(
+            rh.order_sell_market, symbol, quantity, timeInForce="gfd"
+        )
 
         if not order_result:
             return create_success_response(
@@ -173,8 +177,8 @@ async def order_sell_market(symbol: str, quantity: int) -> dict[str, Any]:
             )
 
         # Check for Robin Stocks API errors
-        if isinstance(order_result, dict) and 'non_field_errors' in order_result:
-            error_msgs = order_result['non_field_errors']
+        if isinstance(order_result, dict) and "non_field_errors" in order_result:
+            error_msgs = order_result["non_field_errors"]
             return create_success_response(
                 {"error": f"Order failed: {'; '.join(error_msgs)}", "status": "error"}
             )
@@ -388,8 +392,8 @@ async def order_sell_limit(
             )
 
         # Check for Robin Stocks API errors
-        if isinstance(order_result, dict) and 'non_field_errors' in order_result:
-            error_msgs = order_result['non_field_errors']
+        if isinstance(order_result, dict) and "non_field_errors" in order_result:
+            error_msgs = order_result["non_field_errors"]
             return create_success_response(
                 {"error": f"Order failed: {'; '.join(error_msgs)}", "status": "error"}
             )
@@ -1309,14 +1313,19 @@ async def order_option_credit_spread(
                 "expirationDate": long_instrument.get("expiration_date"),
                 "strike": long_instrument.get("strike_price"),
                 "optionType": long_instrument.get("type"),
-                "effect": "open", 
+                "effect": "open",
                 "action": "buy",  # Long leg = buy
             },
         ]
 
         # Use correct Robin Stocks API: order_option_credit_spread(price, symbol, quantity, spread, timeInForce='gtc')
         order_result = await execute_with_retry(
-            rh.order_option_credit_spread, credit_price, symbol, quantity, spread, timeInForce='gfd'
+            rh.order_option_credit_spread,
+            credit_price,
+            symbol,
+            quantity,
+            spread,
+            timeInForce="gfd",
         )
 
         if not order_result:
@@ -1325,9 +1334,11 @@ async def order_option_credit_spread(
             )
 
         # Check for API error responses
-        if isinstance(order_result, dict) and 'non_field_errors' in order_result:
-            error_msgs = order_result['non_field_errors']
-            return create_success_response({"error": f"Order failed: {'; '.join(error_msgs)}", "status": "error"})
+        if isinstance(order_result, dict) and "non_field_errors" in order_result:
+            error_msgs = order_result["non_field_errors"]
+            return create_success_response(
+                {"error": f"Order failed: {'; '.join(error_msgs)}", "status": "error"}
+            )
 
         order_result = sanitize_api_response(order_result)
 
@@ -1472,14 +1483,19 @@ async def order_option_debit_spread(
                 "expirationDate": long_instrument.get("expiration_date"),
                 "strike": long_instrument.get("strike_price"),
                 "optionType": long_instrument.get("type"),
-                "effect": "open", 
+                "effect": "open",
                 "action": "buy",  # Long leg = buy
             },
         ]
 
         # Use correct Robin Stocks API: order_option_debit_spread(price, symbol, quantity, spread, timeInForce='gtc')
         order_result = await execute_with_retry(
-            rh.order_option_debit_spread, debit_price, symbol, quantity, spread, timeInForce='gfd'
+            rh.order_option_debit_spread,
+            debit_price,
+            symbol,
+            quantity,
+            spread,
+            timeInForce="gfd",
         )
 
         if not order_result:
@@ -1488,9 +1504,11 @@ async def order_option_debit_spread(
             )
 
         # Check for API error responses
-        if isinstance(order_result, dict) and 'non_field_errors' in order_result:
-            error_msgs = order_result['non_field_errors']
-            return create_success_response({"error": f"Order failed: {'; '.join(error_msgs)}", "status": "error"})
+        if isinstance(order_result, dict) and "non_field_errors" in order_result:
+            error_msgs = order_result["non_field_errors"]
+            return create_success_response(
+                {"error": f"Order failed: {'; '.join(error_msgs)}", "status": "error"}
+            )
 
         order_result = sanitize_api_response(order_result)
 

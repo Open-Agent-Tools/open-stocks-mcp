@@ -52,7 +52,7 @@ async def get_all_watchlists() -> dict[str, Any]:
 
     # Get all watchlists
     watchlists_data = await execute_with_retry(
-        func=rh.get_all_watchlists, func_name="get_all_watchlists", max_retries=3
+        rh.get_all_watchlists, func_name="get_all_watchlists", max_retries=3
     )
 
     if not watchlists_data:
@@ -66,10 +66,28 @@ async def get_all_watchlists() -> dict[str, Any]:
             }
         }
 
+    # Extract watchlists from the response (API returns dict with 'results' key)
+    if isinstance(watchlists_data, dict) and "results" in watchlists_data:
+        watchlist_items = watchlists_data["results"]
+    elif isinstance(watchlists_data, list):
+        watchlist_items = watchlists_data
+    else:
+        logger.warning(f"Unexpected watchlists data format: {type(watchlists_data)}")
+        return {
+            "result": {
+                "watchlists": [],
+                "total_watchlists": 0,
+                "message": "Unexpected data format",
+                "status": "error",
+            }
+        }
+
+    logger.info(f"Found {len(watchlist_items)} watchlists")
+
     # Process watchlists to add symbol counts
     processed_watchlists = []
-    if isinstance(watchlists_data, list):
-        for watchlist in watchlists_data:
+    if isinstance(watchlist_items, list):
+        for watchlist in watchlist_items:
             if isinstance(watchlist, dict):
                 # Get symbols for this watchlist if available
                 symbols = watchlist.get("symbols", [])
@@ -129,10 +147,10 @@ async def get_watchlist_by_name(watchlist_name: str) -> dict[str, Any]:
 
     # Get watchlist by name
     watchlist_data = await execute_with_retry(
-        func=rh.get_watchlist_by_name,
+        rh.get_watchlist_by_name,
+        watchlist_name,
         func_name="get_watchlist_by_name",
         max_retries=3,
-        name=watchlist_name,
     )
 
     if not watchlist_data:
@@ -214,12 +232,15 @@ async def add_symbols_to_watchlist(
 
     # Add symbols to watchlist
     try:
+        # Use functools.partial to bind the name parameter
+        from functools import partial
+
+        post_with_name = partial(rh.post_symbols_to_watchlist, name=watchlist_name)
         result = await execute_with_retry(
-            func=rh.post_symbols_to_watchlist,
+            post_with_name,
+            formatted_symbols,
             func_name="post_symbols_to_watchlist",
             max_retries=3,
-            watchlist_name=watchlist_name,
-            symbols=formatted_symbols,
         )
 
         if result:
@@ -311,12 +332,17 @@ async def remove_symbols_from_watchlist(
 
     # Remove symbols from watchlist
     try:
+        # Use functools.partial to bind the name parameter
+        from functools import partial
+
+        delete_with_name = partial(
+            rh.delete_symbols_from_watchlist, name=watchlist_name
+        )
         result = await execute_with_retry(
-            func=rh.delete_symbols_from_watchlist,
+            delete_with_name,
+            formatted_symbols,
             func_name="delete_symbols_from_watchlist",
             max_retries=3,
-            watchlist_name=watchlist_name,
-            symbols=formatted_symbols,
         )
 
         if result:
