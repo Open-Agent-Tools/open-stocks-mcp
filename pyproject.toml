@@ -1,6 +1,6 @@
 [project]
 name = "open-stocks-mcp"
-version = "0.5.5"
+version = "0.5.6"
 description = "MCP Server based on open stock API packages like Robin Stocks"
 readme = "README.md"
 requires-python = ">=3.11"

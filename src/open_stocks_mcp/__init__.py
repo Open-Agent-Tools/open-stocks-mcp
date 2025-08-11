@@ -1,6 +1,6 @@
 """Open Stocks MCP - MCP Server for stock market data via Robin Stocks."""
 
-__version__ = "0.5.5"
+__version__ = "0.5.6"
 __author__ = "Wes Etheredge"
 __email__ = "jwesleye@gmail.com"
 __all__ = ["__version__"]

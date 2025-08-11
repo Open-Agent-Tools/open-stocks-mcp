@@ -974,14 +974,14 @@ async def order_buy_option_limit(
     try:
         order_result = await execute_with_retry(
             rh.order_buy_option_limit,
-            "open",              # positionEffect
-            "debit",             # creditOrDebit - buying = paying debit
-            limit_price,         # price
-            symbol,              # symbol (e.g., 'F')
-            quantity,            # quantity
-            expiration_date,     # expirationDate (YYYY-MM-DD)
-            strike_price,        # strike
-            option_type,         # optionType ('call' or 'put')
+            "open",  # positionEffect
+            "debit",  # creditOrDebit - buying = paying debit
+            limit_price,  # price
+            symbol,  # symbol (e.g., 'F')
+            quantity,  # quantity
+            expiration_date,  # expirationDate (YYYY-MM-DD)
+            strike_price,  # strike
+            option_type,  # optionType ('call' or 'put')
         )
 
         if not order_result:
@@ -1116,14 +1116,14 @@ async def order_sell_option_limit(
     try:
         order_result = await execute_with_retry(
             rh.order_sell_option_limit,
-            position_effect,      # 'open' or 'close'
-            'credit',            # creditOrDebit - selling = receiving credit
-            limit_price,         # price
-            symbol,              # symbol (e.g., 'F')
-            quantity,            # quantity
-            expiration_date,     # expirationDate (YYYY-MM-DD)
-            strike_price,        # strike
-            option_type,         # optionType ('call' or 'put')
+            position_effect,  # 'open' or 'close'
+            "credit",  # creditOrDebit - selling = receiving credit
+            limit_price,  # price
+            symbol,  # symbol (e.g., 'F')
+            quantity,  # quantity
+            expiration_date,  # expirationDate (YYYY-MM-DD)
+            strike_price,  # strike
+            option_type,  # optionType ('call' or 'put')
         )
 
         if not order_result:

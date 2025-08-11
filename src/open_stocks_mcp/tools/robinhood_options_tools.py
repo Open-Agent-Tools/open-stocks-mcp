@@ -215,7 +215,7 @@ async def find_tradable_options(
                 max_retries=3,
             )
         except AttributeError:
-            logger.error(f"Could not find correct Robin Stocks options API function")
+            logger.error("Could not find correct Robin Stocks options API function")
             return {
                 "result": {
                     "symbol": symbol,
