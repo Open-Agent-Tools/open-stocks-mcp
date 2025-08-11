@@ -21,7 +21,7 @@ This setup uses a production-ready approach:
 ### 1. Choose Your Setup
 
 **Production (Recommended):**
-Uses the published PyPI package (v0.4.1 with HTTP transport support):
+Uses the published PyPI package (v0.5.5 with full trading support):
 ```bash
 docker-compose up
 ```
@@ -101,7 +101,7 @@ INFO -   - Health Check: http://0.0.0.0:3001/health
 
 Run the server using Docker Compose:
 
-**Production (Recommended - v0.4.1 with HTTP transport):**
+**Production (Recommended - v0.5.5 with trading support):**
 ```bash
 # Foreground (see logs)
 docker-compose up
@@ -182,7 +182,7 @@ This script automatically:
 ```bash
 # Health check endpoint
 curl http://localhost:3001/health
-# Returns: {"status":"healthy","version":"0.4.1","transport":"http"}
+# Returns: {"status":"healthy","version":"0.5.5","transport":"http"}
 
 # Server information
 curl http://localhost:3001/
@@ -194,7 +194,7 @@ curl http://localhost:3001/status
 
 # Available tools list
 curl http://localhost:3001/tools
-# Returns: Complete list of 61 available MCP tools
+# Returns: Complete list of 83 available MCP tools
 ```
 
 ✅ **Security features validated:**
@@ -210,7 +210,7 @@ curl http://localhost:3001/tools
 
 ### Available Tools
 
-The server provides **61 MCP tools** across **10 categories**:
+The server provides **83 MCP tools** across **11 categories**:
 
 - **Account Management**: `account_info`, `portfolio`, `account_details`, `positions`
 - **Market Data**: `stock_price`, `stock_info`, `search_stocks_tool`, `market_hours`, `price_history`
@@ -220,6 +220,7 @@ The server provides **61 MCP tools** across **10 categories**:
 - **Market Research**: `top_movers_sp500`, `stock_ratings`, `stock_earnings`, `stock_news`
 - **Account Features**: `notifications`, `margin_calls`, `subscription_fees`, `referrals`
 - **User Profiles**: `account_profile`, `basic_profile`, `investment_profile`, `security_profile`
+- **Trading Operations**: `buy_stock_market`, `buy_stock_limit`, `sell_stock_market`, `cancel_stock_order_by_id`
 - **System Management**: `session_status`, `rate_limit_status`, `metrics_summary`, `health_check`
 - **Utility**: `list_tools`
 
@@ -302,18 +303,27 @@ Adjust these in `docker-compose.yml` based on your needs.
 
 ## Version Information
 
-**Current Release: v0.4.1**
+**Current Release: v0.5.5**
 - ✅ HTTP transport with Server-Sent Events (SSE)
 - ✅ FastAPI-based server with comprehensive middleware
 - ✅ Security headers and CORS support
 - ✅ Health check and monitoring endpoints
-- ✅ Timeout handling and graceful degradation
+- ✅ Complete trading functionality (83 MCP tools)
+- ✅ Live trading validation (market/limit orders tested)
+- ✅ Trading API bugs fixed (`rh.get_quotes()` corrections)
 - ✅ Full backward compatibility with STDIO transport
 
 **Container Image:**
-- **Production**: Uses PyPI package `open-stocks-mcp==0.4.1`
+- **Production**: Uses PyPI package `open-stocks-mcp==0.5.5`
 - **Development**: Built from source with latest features
 - **Base**: Python 3.11-slim for security and performance
+
+### Trading Features Validated
+- ✅ **Market Orders**: `buy_stock_market` tested with XOM
+- ✅ **Limit Orders**: `buy_stock_limit` tested with XOM at $95
+- ✅ **Order Cancellation**: Both individual and bulk cancellation tested
+- ✅ **API Reliability**: Fixed critical trading API bugs in v0.5.5
+- ✅ **Safety Features**: Robinhood safety mechanisms working (market → limit conversion)
 
 ## Security Features
 

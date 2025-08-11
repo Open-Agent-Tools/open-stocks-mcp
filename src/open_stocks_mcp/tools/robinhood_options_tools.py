@@ -196,14 +196,33 @@ async def find_tradable_options(
                 }
             }
 
-    # Find tradable options
-    options_data = await execute_with_retry(
-        rh.options.find_tradable_options,
-        symbol,
-        expiration_date,
-        option_type,
-        max_retries=3,
-    )
+    # Find tradable options using correct Robin Stocks API
+    try:
+        options_data = await execute_with_retry(
+            rh.find_options_by_expiration,
+            symbol,
+            expiration_date,
+            option_type,
+            max_retries=3,
+        )
+    except AttributeError:
+        # Fallback: try alternative API function names
+        try:
+            options_data = await execute_with_retry(
+                rh.get_option_contracts_by_ticker,
+                symbol,
+                expiration_date,
+                max_retries=3,
+            )
+        except AttributeError:
+            logger.error(f"Could not find correct Robin Stocks options API function")
+            return {
+                "result": {
+                    "symbol": symbol,
+                    "error": "Options API function not available",
+                    "status": "error",
+                }
+            }
 
     if not options_data:
         logger.warning(f"No tradable options found for {symbol}")

@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: Dockerfile
     # Tag the built image for easier identification
-    image: open-stocks-mcp:0.5.4
+    image: open-stocks-mcp:0.5.5
     # Name the container for easier identification
     container_name: open-stocks-mcp-server
     # Restart the container automatically if it stops

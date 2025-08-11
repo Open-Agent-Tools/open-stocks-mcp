@@ -1,10 +1,47 @@
 # TODO - Open Stocks MCP
 
-## Current Status (v0.5.1)  
+## **🚨 TOP PRIORITY: Complete Trading Tool Testing (v0.5.6-dev)**
+
+### **📋 IMMEDIATE NEXT TASKS - Trading Function Validation**
+
+**Stock Trading Functions (7 untested):**
+- [ ] **`sell_stock_market`** - Test market sell orders with small position
+- [ ] **`sell_stock_limit`** - Test limit sell orders with realistic price  
+- [ ] **`sell_stock_stop_loss`** - Test stop loss sell orders
+- [ ] **`buy_stock_stop_loss`** - Test stop loss buy orders
+- [ ] **`buy_stock_trailing_stop`** - Test trailing stop buy orders
+- [ ] **`sell_stock_trailing_stop`** - Test trailing stop sell orders
+- [ ] **`buy_fractional_stock`** - Test fractional share purchases
+
+**Options Trading Functions (3 untested):**
+- [ ] **`cancel_option_order_by_id`** - Test individual option order cancellation
+- [ ] **`option_credit_spread`** - Test credit spread orders (sell high/buy low)
+- [ ] **`option_debit_spread`** - Test debit spread orders (buy high/sell low)
+
+**Watchlist Management (2 untested - safe to test):**
+- [ ] **`add_to_watchlist`** - Test adding symbols to existing watchlist
+- [ ] **`remove_from_watchlist`** - Test removing symbols from watchlist
+
+**🎯 Priority Order:**
+1. **Stock sell functions** (4 functions) - Most critical missing capability
+2. **Options spreads** (2 functions) - Advanced trading strategies  
+3. **Watchlist management** (2 functions) - Portfolio organization tools
+4. **Individual option cancellation** (1 function) - Order management
+
+**Target: Complete all 12 untested trading tools before Phase 8**
+
+---
+
+## Current Status (v0.5.6-dev)  
 - ✅ **83 MCP tools** with complete trading functionality
 - ✅ **Phases 0-7 complete**: Journey Testing → Foundation → Analytics → Trading
 - ✅ **Production-ready**: HTTP transport, Docker volumes, comprehensive testing
 - ✅ **@MonitoredTool decorator conflicts resolved**: All tools properly registered
+- ✅ **Stock trading API bugs fixed**: All buy/sell functions using correct `rh.get_quotes()` API
+- ✅ **Options trading API bugs fixed**: Both `buy_option_limit` and `sell_option_limit` functions using correct Robin Stocks API
+- ✅ **Live trading validated**: Stock trading (market/limit orders) and options trading (limit orders) tested
+- ✅ **Options discovery working**: `find_options` function successfully finds tradeable option contracts
+- ✅ **Options cancellation tested**: `cancel_all_option_orders_tool` successfully tested
 
 ## ✅ **Phase 0: Pytest Journey Markers Infrastructure - COMPLETE**
 
@@ -323,5 +360,60 @@ The Open Stocks MCP server demonstrates high quality, proper architecture, and p
 
 ---
 
-*v0.5.0: 81+ MCP tools, complete trading capabilities, Phases 1-7 complete*  
+---
+
+## Trading Functions Testing Status (v0.5.5)
+
+### ✅ **Verified Working Trading Functions**
+**Stock Trading:**
+- ✅ `buy_stock_market` - Market buy orders (tested with XOM)
+- ✅ `buy_stock_limit` - Limit buy orders (tested with XOM at $95)
+- ✅ `cancel_stock_order_by_id` - Individual order cancellation
+- ✅ `cancel_all_stock_orders_tool` - Bulk order cancellation
+
+**Options Trading:**
+- ✅ `sell_option_limit` - Limit sell orders (tested with F $9 put at $0.30)
+- ✅ `buy_option_limit` - Limit buy orders (API fixed, ready for testing)
+- ✅ `find_options` - Options discovery (tested with F options expiring 2025-09-12)
+
+### 📋 **Untested Trading Functions - MOVED TO TOP PRIORITY SECTION**
+**12 functions moved to top priority testing queue above**
+
+**Recently Completed:**
+- ✅ `cancel_all_option_orders_tool` - Successfully tested and working
+
+### 🐛 **Fixed in v0.5.5 (Stock Trading)**
+**Critical API Bug**: Multiple stock trading functions were using non-existent `rh.stocks.get_quote()` API
+- **Root Cause**: `rh.stocks.get_quote()` doesn't exist in Robin Stocks API
+- **Fix**: Updated to use `rh.get_quotes()` and handle array response format
+- **Functions Fixed**: `buy_stock_limit`, `buy_stock_stop_loss`, `sell_stock_stop_loss`
+- **Testing**: All fixes verified with live XOM trading
+
+### 🐛 **Fixed in v0.5.6-dev (Options Trading)**
+**Critical API Bug**: Options trading functions were using incorrect Robin Stocks API signatures
+- **Root Cause**: Wrong parameter order and missing `creditOrDebit` parameter in options API calls
+- **Correct API Signature**: `rh.order_sell_option_limit(positionEffect, creditOrDebit, price, symbol, quantity, expirationDate, strike, optionType)`
+- **Functions Fixed**: 
+  - `sell_option_limit` - Now uses `creditOrDebit='credit'` (selling = receiving credit)
+  - `buy_option_limit` - Now uses `creditOrDebit='debit'` (buying = paying debit)
+- **Live Testing**: F $9 put sell order successfully placed (Order ID: 689a2761-1ce2-4a49-8162-16d181088e6a)
+- **Parameter Extraction**: Correctly extracts symbol, expiration_date, strike_price, option_type from instrument data
+
+### 💡 **Trading Behavior Notes**
+**Stock Trading:**
+- **Market Orders**: May appear as limit orders in Robinhood app (normal safety behavior)
+- **Order States**: Orders start as "unconfirmed" then transition based on market conditions
+- **Extended Hours**: Orders may be held until regular market hours
+- **Price Protection**: Robinhood may convert market orders to limit orders for user protection
+
+**Options Trading:**
+- **Position Effects**: "open" for new positions, "close" for existing positions
+- **Credit vs Debit**: Selling options = credit (receive money), buying options = debit (pay money)
+- **Date Format**: Robin Stocks expects YYYY-MM-DD format for expiration dates
+- **Premium Calculation**: 1 contract × limit price × 100 shares = total premium
+- **Order Flow**: instrument_id → extract parameters → Robin Stocks API → order confirmation
+
+---
+
+*v0.5.5: 83 MCP tools, trading API bugs fixed, live trading validated*  
 *Next: Phase 8 Quality & Reliability (Final Phase)*

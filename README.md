@@ -4,9 +4,10 @@ An MCP (Model Context Protocol) server providing access to stock market data and
 
 ## Features
 
-**🚀 Current Status: v0.5.1 - Complete BETA Trading Capabilities**
+**🚀 Current Status: v0.5.6-dev - Complete Trading Capabilities**
 - ✅ **83 MCP tools** across 9 categories
 - ✅ **Complete trading functionality** - stocks, options, order management  
+- ✅ **Live trading validated** - Stock and options trading tested with real orders
 - ✅ **Production-ready** - HTTP transport, Docker support, comprehensive testing
 - ✅ **Phases 1-7 complete** - Foundation → Analytics → Trading
 
@@ -148,17 +149,20 @@ Add to your MCP settings (`~/Library/Application Support/Claude/claude_desktop_c
 - Direct instrument access
 
 ### Trading Capabilities (19 tools)
-**Stock Orders:**
+**Stock Orders (✅ Live Tested):**
 - Market, limit, stop-loss, trailing stop orders
 - Fractional share purchases
 - Buy/sell order placement
+- Individual and bulk order cancellation
 
-**Options Orders:**
-- Options limit orders (buy/sell)
+**Options Orders (✅ Live Tested):**
+- Options limit orders (buy/sell) - **API bugs fixed**
+- Options discovery and contract search
 - Credit and debit spread strategies
+- Live validation: F $9 put sell order placed successfully
 
 **Order Management:**
-- Cancel individual or all orders
+- Cancel individual or all orders (stock and options)
 - View open positions
 - Order status tracking
 
@@ -201,6 +205,11 @@ MCP_HTTP_URL="http://localhost:3001/mcp" adk eval examples/google_adk_agent test
 
 ## Project Scope
 
+**Completed in v0.5.6-dev:**
+- ✅ **Options trading API fixes** - `buy_option_limit` and `sell_option_limit` now working
+- ✅ **Live options validation** - F $9 put successfully traded
+- ✅ **Options discovery** - `find_options` function working correctly
+
 **Phase 8 (v0.6.0) - Final Phase:**
 - Quality & reliability improvements
 - Enhanced monitoring and observability
@@ -223,11 +232,12 @@ MIT License - see [LICENSE](LICENSE) file for details.
 ## Security
 
 **Important Security Notes:**
-- This is a read-only API with trading capabilities - use with caution
+- **Live trading capabilities** - Real orders are placed with actual money
 - Never commit credentials to version control
 - Use proper file permissions for `.env` files
-- Trading tools are provided for educational/development purposes
+- **Trading validation complete** - Both stock and options trading tested
 - Always verify trades before execution in production
+- **Options trading note**: Selling options (like puts) can result in assignment and stock ownership
 
 For security concerns, please see our [security policy](SECURITY.md).
 

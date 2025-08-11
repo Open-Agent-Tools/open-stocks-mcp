@@ -894,12 +894,7 @@ async def order_buy_option_limit(
     Returns:
         A JSON object containing order confirmation in the result field.
     """
-    log_api_call(
-        "order_buy_option_limit",
-        instrument_id,
-        quantity=quantity,
-        limit_price=limit_price,
-    )
+    # Will log with actual symbol after instrument lookup
 
     # Validation
     if not instrument_id or not isinstance(instrument_id, str):
@@ -957,10 +952,36 @@ async def order_buy_option_limit(
             {"error": f"Failed to check buying power: {e!s}", "status": "error"}
         )
 
-    # Place order
+    # Extract parameters needed for Robin Stocks API
+    symbol = instrument.get("chain_symbol", "")
+    expiration_date = instrument.get("expiration_date", "")  # Keep YYYY-MM-DD format
+    strike_price = float(instrument.get("strike_price", 0))
+    option_type = instrument.get("type", "")
+
+    # Log the API call with correct parameters
+    log_api_call(
+        "order_buy_option_limit",
+        symbol,
+        quantity=quantity,
+        expiration_date=expiration_date,
+        strike_price=strike_price,
+        option_type=option_type,
+        limit_price=limit_price,
+    )
+
+    # Place order using correct Robin Stocks API parameters
+    # Signature: order_buy_option_limit(positionEffect, creditOrDebit, price, symbol, quantity, expirationDate, strike, optionType)
     try:
         order_result = await execute_with_retry(
-            rh.order_buy_option_limit, "open", instrument_id, quantity, limit_price
+            rh.order_buy_option_limit,
+            "open",              # positionEffect
+            "debit",             # creditOrDebit - buying = paying debit
+            limit_price,         # price
+            symbol,              # symbol (e.g., 'F')
+            quantity,            # quantity
+            expiration_date,     # expirationDate (YYYY-MM-DD)
+            strike_price,        # strike
+            option_type,         # optionType ('call' or 'put')
         )
 
         if not order_result:
@@ -971,7 +992,7 @@ async def order_buy_option_limit(
         order_result = sanitize_api_response(order_result)
 
         logger.info(
-            f"Option buy limit order placed for {quantity} contracts of {instrument_id} at ${limit_price}"
+            f"Option buy limit order placed for {quantity} contracts of {symbol} ${strike_price} {option_type} at ${limit_price}"
         )
         return create_success_response(
             {
@@ -1009,12 +1030,7 @@ async def order_sell_option_limit(
     Returns:
         A JSON object containing order confirmation in the result field.
     """
-    log_api_call(
-        "order_sell_option_limit",
-        instrument_id,
-        quantity=quantity,
-        limit_price=limit_price,
-    )
+    # Will log with actual symbol after instrument lookup
 
     # Validation
     if not instrument_id or not isinstance(instrument_id, str):
@@ -1078,14 +1094,36 @@ async def order_sell_option_limit(
         logger.warning(f"Failed to check position, assuming naked sell: {e}")
         position_effect = "open"
 
-    # Place order
+    # Extract parameters needed for Robin Stocks API
+    symbol = instrument.get("chain_symbol", "")
+    expiration_date = instrument.get("expiration_date", "")  # Keep YYYY-MM-DD format
+    strike_price = float(instrument.get("strike_price", 0))
+    option_type = instrument.get("type", "")
+
+    # Log the API call with correct parameters
+    log_api_call(
+        "order_sell_option_limit",
+        symbol,
+        quantity=quantity,
+        expiration_date=expiration_date,
+        strike_price=strike_price,
+        option_type=option_type,
+        limit_price=limit_price,
+    )
+
+    # Place order using correct Robin Stocks API parameters
+    # Signature: order_sell_option_limit(positionEffect, creditOrDebit, price, symbol, quantity, expirationDate, strike, optionType)
     try:
         order_result = await execute_with_retry(
             rh.order_sell_option_limit,
-            position_effect,
-            instrument_id,
-            quantity,
-            limit_price,
+            position_effect,      # 'open' or 'close'
+            'credit',            # creditOrDebit - selling = receiving credit
+            limit_price,         # price
+            symbol,              # symbol (e.g., 'F')
+            quantity,            # quantity
+            expiration_date,     # expirationDate (YYYY-MM-DD)
+            strike_price,        # strike
+            option_type,         # optionType ('call' or 'put')
         )
 
         if not order_result:
@@ -1096,7 +1134,7 @@ async def order_sell_option_limit(
         order_result = sanitize_api_response(order_result)
 
         logger.info(
-            f"Option sell limit order placed for {quantity} contracts of {instrument_id} at ${limit_price}"
+            f"Option sell limit order placed for {quantity} contracts of {symbol} ${strike_price} {option_type} at ${limit_price}"
         )
         return create_success_response(
             {
