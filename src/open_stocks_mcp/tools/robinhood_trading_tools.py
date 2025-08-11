@@ -221,12 +221,12 @@ async def order_buy_limit(
 
     # Check if symbol exists and validate limit price
     try:
-        quote = await execute_with_retry(rh.stocks.get_quote, symbol)
-        if not quote or not quote.get("last_trade_price"):
+        quote_data = await execute_with_retry(rh.get_quotes, symbol)
+        if not quote_data or not quote_data[0].get("last_trade_price"):
             return create_success_response(
                 {"error": f"Symbol {symbol} not found", "status": "error"}
             )
-
+        quote = quote_data[0]
         current_price = float(quote["last_trade_price"])
         if (
             limit_price > current_price * 1.5
@@ -429,12 +429,12 @@ async def order_buy_stop_loss(
 
     # Check if symbol exists and validate stop price
     try:
-        quote = await execute_with_retry(rh.stocks.get_quote, symbol)
-        if not quote or not quote.get("last_trade_price"):
+        quote_data = await execute_with_retry(rh.get_quotes, symbol)
+        if not quote_data or not quote_data[0].get("last_trade_price"):
             return create_success_response(
                 {"error": f"Symbol {symbol} not found", "status": "error"}
             )
-
+        quote = quote_data[0]
         current_price = float(quote["last_trade_price"])
         if stop_price <= current_price:
             return create_success_response(
@@ -543,7 +543,8 @@ async def order_sell_stop_loss(
             )
 
         # Validate stop price
-        quote = await execute_with_retry(rh.stocks.get_quote, symbol)
+        quote_data = await execute_with_retry(rh.get_quotes, symbol)
+        quote = quote_data[0]
         current_price = float(quote["last_trade_price"])
         if stop_price >= current_price:
             return create_success_response(

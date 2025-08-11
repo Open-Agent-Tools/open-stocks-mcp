@@ -5,7 +5,7 @@ Project guidance for Claude Code when working with the Open Stocks MCP server.
 ## Project Overview
 
 **Open Stocks MCP** - Model Context Protocol server providing stock market data through Robin Stocks API.
-- **Current Version**: v0.5.4 with trading capabilities and 83 MCP tools
+- **Current Version**: v0.5.5 with trading capabilities and 83 MCP tools
 - **Framework**: FastMCP for simplified MCP development
 - **API**: Robin Stocks for market data and trading
 - **Transport**: HTTP with Server-Sent Events (SSE) on port 3001
@@ -82,7 +82,7 @@ ROBINHOOD_PASSWORD="password"
 
 ## Current Development Status
 
-### Completed (v0.5.4)
+### Completed (v0.5.5)
 - ✅ **Phases 1-7**: 83 MCP tools with complete trading functionality
 - ✅ **HTTP Transport**: Server-Sent Events (SSE) on port 3001
 - ✅ **Docker Infrastructure**: Persistent volumes for sessions and logs
@@ -115,11 +115,11 @@ ROBINHOOD_PASSWORD="password"
    ```bash
    cd examples/open-stocks-mcp-docker
    docker-compose down
-   docker-compose pull  # Get latest published version
+   docker-compose build --no-cache  # Rebuilds with latest PyPI version
    docker-compose up -d
    curl http://localhost:3001/health  # Verify version updated
    ```
-3. **Important**: Docker containers pull from PyPI releases, not local codebase
+3. **Important**: Docker containers install from PyPI during build, not local codebase. Use `build --no-cache` to ensure latest version is fetched.
 
 ### Running ADK Evaluations
 1. Install: `pip install google-agent-developer-kit`
