@@ -5,7 +5,7 @@ Project guidance for Claude Code when working with the Open Stocks MCP server.
 ## Project Overview
 
 **Open Stocks MCP** - Model Context Protocol server providing stock market data through Robin Stocks API.
-- **Current Version**: v0.5.5 with trading capabilities and 83 MCP tools
+- **Current Version**: v0.5.7 with complete trading capabilities and 79 MCP tools
 - **Framework**: FastMCP for simplified MCP development
 - **API**: Robin Stocks for market data and trading
 - **Transport**: HTTP with Server-Sent Events (SSE) on port 3001
@@ -134,14 +134,38 @@ ROBINHOOD_PASSWORD="password"
 - Performance optimization and caching strategies
 - Enhanced monitoring and observability features
 
-## Common Tasks
+## Critical Development Patterns
+
+### Trading Function Requirements
+```python
+# All trading functions must follow this pattern:
+import functools
+
+# 1. Use execute_with_retry with functools.partial
+order_result = await execute_with_retry(rh.order_sell_market, symbol, quantity, timeInForce='gfd')
+
+# 2. Check for API error responses
+if isinstance(order_result, dict) and 'non_field_errors' in order_result:
+    error_msgs = order_result['non_field_errors']
+    return create_success_response({"error": f"Order failed: {'; '.join(error_msgs)}", "status": "error"})
+
+# 3. Use correct timeInForce for order types
+# - Market orders: timeInForce='gfd' (Good For Day)
+# - Limit orders: timeInForce='gtc' or 'gfd' (both valid)
+```
+
+### Common API Bugs Fixed in v0.5.7
+- **execute_with_retry argument binding**: Use `functools.partial` for keyword args
+- **Market order timeInForce**: Must be 'gfd', not 'gtc' 
+- **Error detection**: Check for 'non_field_errors' in API responses
+- **Options spread signatures**: Use correct Robin Stocks API calls
 
 ### Adding New MCP Tool
 1. Create tool function in appropriate `tools/robinhood_*.py` file
-2. Use `@mcp.tool()` decorator
-3. Follow async pattern with error handling
+2. Use `@mcp.tool()` decorator with async pattern
+3. Follow error handling patterns (see Trading Function Requirements)
 4. Add to server registration in `server/app.py`
-5. Write unit tests in `tests/unit/`
+5. Write unit tests with journey markers in `tests/unit/`
 
 ### Creating New Release and Updating Docker
 1. **Create GitHub Release**: 
@@ -164,6 +188,12 @@ ROBINHOOD_PASSWORD="password"
 2. Set environment variables (see above)
 3. Start Docker server: `cd examples/open-stocks-mcp-docker && docker-compose up -d`
 4. From project root: `MCP_HTTP_URL="http://localhost:3001/mcp" adk eval examples/google_adk_agent tests/evals/list_available_tools_test.json --config_file_path tests/evals/test_config.json`
+
+### Phase 8 Development Priorities
+- **Advanced Error Handling**: Granular recovery and circuit breaker patterns
+- **Performance Optimization**: Caching strategies and request batching
+- **Enhanced Monitoring**: OpenTelemetry integration and health checks
+- **Test Coverage**: Complete ADK evaluations for all 79 tools
 
 ## Important Notes
 
