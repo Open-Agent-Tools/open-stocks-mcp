@@ -179,8 +179,11 @@ The server handles Robinhood's authentication requirements:
 ### Testing
 ```bash
 pytest                           # All tests
-pytest tests/unit/               # Unit tests (fast)
+pytest -m "journey_account"      # Fast account tests (~1.8s)
+pytest -m "journey_market_data"  # Market data tests (~3.8s) 
 pytest -m "not slow and not exception_test"  # Recommended for development
+
+# See CLAUDE.md for complete journey testing guide
 ```
 
 ### Code Quality

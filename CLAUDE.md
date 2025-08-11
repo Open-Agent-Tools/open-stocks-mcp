@@ -20,12 +20,49 @@ uv pip install -e ".[dev]"
 ```
 
 ### Testing
+
+**Journey-Based Testing** - 11 user journey categories for focused testing:
+
 ```bash
-pytest                           # All tests (skips exception tests by default)
-pytest tests/unit/               # Unit tests (fast)
-pytest tests/integration/ -m integration  # Integration (needs auth)
-pytest -m "not slow and not exception_test"  # Fast tests (recommended)
+# All tests (skips exception tests by default)
+pytest                           
+
+# Fast journey testing (<30s each)
+pytest -m "journey_account"      # Account management (16 tests, ~1.8s)
+pytest -m "journey_portfolio"    # Portfolio & holdings (3 tests, ~1.7s)  
+pytest -m "journey_market_data"  # Stock quotes & market info (19 tests, ~3.8s)
+pytest -m "journey_research"     # Earnings, ratings, news (23 tests, ~3.0s)
+pytest -m "journey_watchlists"   # Watchlist management (20 tests, ~16.7s)
+pytest -m "journey_options"      # Options analysis (13 tests, ~9.7s)
+pytest -m "journey_notifications" # Alerts & notifications (15 tests, ~1.6s)
+pytest -m "journey_system"       # Health & monitoring (11 tests, ~1.9s)
+pytest -m "journey_trading"      # Trading operations (1 test, ~1.6s)
+
+# Combined journeys
+pytest -m "journey_account or journey_portfolio"          # User account flows
+pytest -m "journey_market_data or journey_research"       # Market intelligence
+pytest -m "journey_options or journey_trading"            # Trading related
+
+# Development workflows
+pytest -m "not slow and not exception_test"               # Fast tests (recommended)
+pytest -m "unit and journey_account"                      # Quick unit feedback
+pytest tests/unit/                                        # Unit tests (fast)
+pytest tests/integration/ -m integration                  # Integration (needs auth)
+
+# READ ONLY journeys (perfect for ADK evaluations)
+pytest -m "journey_account or journey_portfolio or journey_market_data or journey_research or journey_notifications or journey_system"
 ```
+
+**Journey Categories:**
+- `journey_account` - Account info, profiles, settings, day trades
+- `journey_portfolio` - Portfolio overview, positions, holdings
+- `journey_market_data` - Stock prices, quotes, instruments, search
+- `journey_research` - Earnings, ratings, news, dividends, splits
+- `journey_watchlists` - Watchlist CRUD, performance tracking
+- `journey_options` - Options chains, positions, market data
+- `journey_notifications` - Alerts, margin calls, subscription fees
+- `journey_system` - Health checks, metrics, session status
+- `journey_trading` - Buy/sell orders, cancellation, order management
 
 ### Code Quality
 ```bash
@@ -82,13 +119,14 @@ ROBINHOOD_PASSWORD="password"
 
 ## Current Development Status
 
-### Completed (v0.5.5)
-- ✅ **Phases 1-7**: 83 MCP tools with complete trading functionality
+### Completed (v0.5.7)
+- ✅ **Phases 0-7**: 79 MCP tools with complete trading functionality (4 deprecated)
+- ✅ **Journey Testing**: 11 user journey categories for organized testing
 - ✅ **HTTP Transport**: Server-Sent Events (SSE) on port 3001
 - ✅ **Docker Infrastructure**: Persistent volumes for sessions and logs
-- ✅ **Test Coverage**: Comprehensive test suite covering all tools
+- ✅ **Test Coverage**: Comprehensive test suite with journey-based markers
 - ✅ **Type Safety**: Zero MyPy errors maintained across codebase
-- ✅ **Trading Bug Fixes**: Fixed API method calls in trading functions
+- ✅ **Trading Validation**: All functions live-tested or API-corrected
 
 ### Next Phase Priority
 **Phase 8: Quality & Reliability (v0.6.0)** - Final phase:
