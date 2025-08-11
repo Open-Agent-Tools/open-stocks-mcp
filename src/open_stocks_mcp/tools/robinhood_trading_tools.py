@@ -74,11 +74,18 @@ async def order_buy_market(symbol: str, quantity: int) -> dict[str, Any]:
 
     # Place order
     try:
-        order_result = await execute_with_retry(rh.order_buy_market, symbol, quantity)
+        order_result = await execute_with_retry(rh.order_buy_market, symbol, quantity, timeInForce='gfd')
 
         if not order_result:
             return create_success_response(
                 {"error": "Order placement failed", "status": "error"}
+            )
+
+        # Check for Robin Stocks API errors
+        if isinstance(order_result, dict) and 'non_field_errors' in order_result:
+            error_msgs = order_result['non_field_errors']
+            return create_success_response(
+                {"error": f"Order failed: {'; '.join(error_msgs)}", "status": "error"}
             )
 
         order_result = sanitize_api_response(order_result)
@@ -89,6 +96,7 @@ async def order_buy_market(symbol: str, quantity: int) -> dict[str, Any]:
                 "order_id": order_result.get("id"),
                 "symbol": symbol,
                 "quantity": quantity,
+                "price": None,  # Market orders have no set price
                 "order_type": "market",
                 "side": "buy",
                 "state": order_result.get("state"),
@@ -130,7 +138,7 @@ async def order_sell_market(symbol: str, quantity: int) -> dict[str, Any]:
 
     # Check position
     try:
-        positions = await execute_with_retry(rh.get_current_positions)
+        positions = await execute_with_retry(rh.get_open_stock_positions)
         position = None
         for pos in positions:
             if pos.get("symbol") == symbol:
@@ -157,11 +165,18 @@ async def order_sell_market(symbol: str, quantity: int) -> dict[str, Any]:
 
     # Place order
     try:
-        order_result = await execute_with_retry(rh.order_sell_market, symbol, quantity)
+        order_result = await execute_with_retry(rh.order_sell_market, symbol, quantity, timeInForce='gfd')
 
         if not order_result:
             return create_success_response(
                 {"error": "Order placement failed", "status": "error"}
+            )
+
+        # Check for Robin Stocks API errors
+        if isinstance(order_result, dict) and 'non_field_errors' in order_result:
+            error_msgs = order_result['non_field_errors']
+            return create_success_response(
+                {"error": f"Order failed: {'; '.join(error_msgs)}", "status": "error"}
             )
 
         order_result = sanitize_api_response(order_result)
@@ -172,6 +187,7 @@ async def order_sell_market(symbol: str, quantity: int) -> dict[str, Any]:
                 "order_id": order_result.get("id"),
                 "symbol": symbol,
                 "quantity": quantity,
+                "price": None,  # Market orders have no set price
                 "order_type": "market",
                 "side": "sell",
                 "state": order_result.get("state"),
@@ -281,7 +297,7 @@ async def order_buy_limit(
                 "order_id": order_result.get("id"),
                 "symbol": symbol,
                 "quantity": quantity,
-                "limit_price": limit_price,
+                "price": limit_price,  # Limit orders have set price
                 "order_type": "limit",
                 "side": "buy",
                 "state": order_result.get("state"),
@@ -331,7 +347,7 @@ async def order_sell_limit(
 
     # Check position
     try:
-        positions = await execute_with_retry(rh.get_current_positions)
+        positions = await execute_with_retry(rh.get_open_stock_positions)
         position = None
         for pos in positions:
             if pos.get("symbol") == symbol:
@@ -362,12 +378,24 @@ async def order_sell_limit(
             rh.order_sell_limit, symbol, quantity, limit_price
         )
 
+        # Debug: Log the actual response
+        logger.info(f"DEBUG: Raw limit sell order_result = {order_result}")
+        logger.info(f"DEBUG: order_result type = {type(order_result)}")
+
         if not order_result:
             return create_success_response(
                 {"error": "Order placement failed", "status": "error"}
             )
 
+        # Check for Robin Stocks API errors
+        if isinstance(order_result, dict) and 'non_field_errors' in order_result:
+            error_msgs = order_result['non_field_errors']
+            return create_success_response(
+                {"error": f"Order failed: {'; '.join(error_msgs)}", "status": "error"}
+            )
+
         order_result = sanitize_api_response(order_result)
+        logger.info(f"DEBUG: Sanitized limit sell order_result = {order_result}")
 
         logger.info(
             f"Limit sell order placed for {quantity} shares of {symbol} at ${limit_price}"
@@ -377,7 +405,7 @@ async def order_sell_limit(
                 "order_id": order_result.get("id"),
                 "symbol": symbol,
                 "quantity": quantity,
-                "limit_price": limit_price,
+                "price": limit_price,  # Limit orders have set price
                 "order_type": "limit",
                 "side": "sell",
                 "state": order_result.get("state"),
@@ -521,7 +549,7 @@ async def order_sell_stop_loss(
 
     # Check position and validate stop price
     try:
-        positions = await execute_with_retry(rh.get_current_positions)
+        positions = await execute_with_retry(rh.get_open_stock_positions)
         position = None
         for pos in positions:
             if pos.get("symbol") == symbol:
@@ -724,7 +752,7 @@ async def order_sell_trailing_stop(
 
     # Check position
     try:
-        positions = await execute_with_retry(rh.get_current_positions)
+        positions = await execute_with_retry(rh.get_open_stock_positions)
         position = None
         for pos in positions:
             if pos.get("symbol") == symbol:

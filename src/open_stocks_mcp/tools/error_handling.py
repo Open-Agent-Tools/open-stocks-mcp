@@ -218,7 +218,10 @@ async def execute_with_retry(
                 result = await func(*args, **kwargs)
             else:
                 loop = asyncio.get_event_loop()
-                result = await loop.run_in_executor(None, func, *args, **kwargs)
+                # Use functools.partial to bind all arguments for executor
+                import functools
+                bound_func = functools.partial(func, *args, **kwargs)
+                result = await loop.run_in_executor(None, bound_func)
 
             # Update last successful call on success
             session_manager.update_last_successful_call()

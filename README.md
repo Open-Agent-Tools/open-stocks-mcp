@@ -118,8 +118,8 @@ Add to your MCP settings (`~/Library/Application Support/Claude/claude_desktop_c
 - Historical options data
 - Options instrument search
 
-### Watchlists & Profiles (8 tools)
-- Watchlist management
+### Watchlists & Profiles (8 tools) ✅ Watchlist Management Tested
+- **Watchlist management** - All 5 tools working (add/remove symbols tested with AMC)
 - User profile and settings
 - Investment preferences
 - Account features
@@ -150,9 +150,10 @@ Add to your MCP settings (`~/Library/Application Support/Claude/claude_desktop_c
 
 ### Trading Capabilities (19 tools)
 **Stock Orders (✅ Live Tested):**
-- Market, limit, stop-loss, trailing stop orders
+- ✅ Market orders - Buy/sell tested with XOM and AMC
+- ✅ Limit orders - Buy/sell tested with XOM ($106) and AMC ($3) 
+- Stop-loss, trailing stop orders
 - Fractional share purchases
-- Buy/sell order placement
 - Individual and bulk order cancellation
 
 **Options Orders (✅ Live Tested):**
@@ -206,9 +207,13 @@ MCP_HTTP_URL="http://localhost:3001/mcp" adk eval examples/google_adk_agent test
 ## Project Scope
 
 **Completed in v0.5.6-dev:**
+- ✅ **Stock trading API fixes** - Market and limit buy/sell functions now working correctly
+- ✅ **Live stock trading validation** - XOM and AMC orders successfully placed
 - ✅ **Options trading API fixes** - `buy_option_limit` and `sell_option_limit` now working
 - ✅ **Live options validation** - F $9 put successfully traded
 - ✅ **Options discovery** - `find_options` function working correctly
+- ✅ **Watchlist management complete** - All 5 watchlist tools working with live testing
+- ✅ **Watchlist API fixes** - Fixed response format changes and parameter binding issues
 
 **Phase 8 (v0.6.0) - Final Phase:**
 - Quality & reliability improvements

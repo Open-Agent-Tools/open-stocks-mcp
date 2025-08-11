@@ -4,31 +4,31 @@
 
 ### **📋 IMMEDIATE NEXT TASKS - Trading Function Validation**
 
-**Stock Trading Functions (7 untested):**
-- [ ] **`sell_stock_market`** - Test market sell orders with small position
-- [ ] **`sell_stock_limit`** - Test limit sell orders with realistic price  
+**Stock Trading Functions (5 untested):**
+- [x] **`sell_stock_market`** - ✅ **FIXED AND TESTED** - Market sell orders working (XOM: 2 orders, AMC: 1 order)
+- [x] **`sell_stock_limit`** - ✅ **TESTED** - Limit sell orders working (XOM: $106, AMC: $3)  
 - [ ] **`sell_stock_stop_loss`** - Test stop loss sell orders
 - [ ] **`buy_stock_stop_loss`** - Test stop loss buy orders
 - [ ] **`buy_stock_trailing_stop`** - Test trailing stop buy orders
 - [ ] **`sell_stock_trailing_stop`** - Test trailing stop sell orders
 - [ ] **`buy_fractional_stock`** - Test fractional share purchases
 
-**Options Trading Functions (3 untested):**
-- [ ] **`cancel_option_order_by_id`** - Test individual option order cancellation
+**Options Trading Functions (2 untested):**
+- [x] **`cancel_option_order_by_id`** - ✅ Individual option order cancellation (previously tested)
 - [ ] **`option_credit_spread`** - Test credit spread orders (sell high/buy low)
 - [ ] **`option_debit_spread`** - Test debit spread orders (buy high/sell low)
 
-**Watchlist Management (2 untested - safe to test):**
-- [ ] **`add_to_watchlist`** - Test adding symbols to existing watchlist
-- [ ] **`remove_from_watchlist`** - Test removing symbols from watchlist
+**Watchlist Management (2 tested - COMPLETE):**
+- [x] **`add_to_watchlist`** - ✅ Successfully tested with AMC on "Watch" watchlist
+- [x] **`remove_from_watchlist`** - ✅ Successfully tested removing AMC from "Watch" watchlist
 
 **🎯 Priority Order:**
 1. **Stock sell functions** (4 functions) - Most critical missing capability
 2. **Options spreads** (2 functions) - Advanced trading strategies  
-3. **Watchlist management** (2 functions) - Portfolio organization tools
-4. **Individual option cancellation** (1 function) - Order management
+3. ✅ **Individual option cancellation** (1 function) - Order management - **COMPLETE**
+4. ✅ **Watchlist management** (2 functions) - Portfolio organization tools - **COMPLETE**
 
-**Target: Complete all 12 untested trading tools before Phase 8**
+**Target: Complete remaining 7 untested trading tools before Phase 8**
 
 ---
 
@@ -42,6 +42,7 @@
 - ✅ **Live trading validated**: Stock trading (market/limit orders) and options trading (limit orders) tested
 - ✅ **Options discovery working**: `find_options` function successfully finds tradeable option contracts
 - ✅ **Options cancellation tested**: `cancel_all_option_orders_tool` successfully tested
+- ✅ **Watchlist management validated**: Both `add_to_watchlist` and `remove_from_watchlist` successfully tested with AMC
 
 ## ✅ **Phase 0: Pytest Journey Markers Infrastructure - COMPLETE**
 
@@ -376,11 +377,18 @@ The Open Stocks MCP server demonstrates high quality, proper architecture, and p
 - ✅ `buy_option_limit` - Limit buy orders (API fixed, ready for testing)
 - ✅ `find_options` - Options discovery (tested with F options expiring 2025-09-12)
 
+**Watchlist Management:**
+- ✅ `add_to_watchlist` - Successfully tested adding AMC to "Watch" watchlist
+- ✅ `remove_from_watchlist` - Successfully tested removing AMC from "Watch" watchlist
+
 ### 📋 **Untested Trading Functions - MOVED TO TOP PRIORITY SECTION**
-**12 functions moved to top priority testing queue above**
+**9 functions moved to top priority testing queue above** (down from 12)
 
 **Recently Completed:**
 - ✅ `cancel_all_option_orders_tool` - Successfully tested and working
+- ✅ `cancel_option_order_by_id` - Individual option order cancellation tested
+- ✅ `add_to_watchlist` - Successfully tested adding AMC to "Watch" watchlist  
+- ✅ `remove_from_watchlist` - Successfully tested removing AMC from "Watch" watchlist
 
 ### 🐛 **Fixed in v0.5.5 (Stock Trading)**
 **Critical API Bug**: Multiple stock trading functions were using non-existent `rh.stocks.get_quote()` API
@@ -388,6 +396,32 @@ The Open Stocks MCP server demonstrates high quality, proper architecture, and p
 - **Fix**: Updated to use `rh.get_quotes()` and handle array response format
 - **Functions Fixed**: `buy_stock_limit`, `buy_stock_stop_loss`, `sell_stock_stop_loss`
 - **Testing**: All fixes verified with live XOM trading
+
+### 🐛 **Fixed in v0.5.6-dev (Watchlist Management)**
+**Critical API Bugs**: Multiple watchlist functions had parameter passing and response format issues
+- **Root Cause 1**: Robin Stocks API response format changed to return `{results: [...]}` instead of direct array
+- **Root Cause 2**: Function arguments being passed in wrong order to Robin Stocks API
+- **Root Cause 3**: `execute_with_retry` couldn't handle keyword arguments with `run_in_executor`
+- **Functions Fixed**:
+  - `get_all_watchlists` - Fixed response format extraction from `results` key
+  - `add_to_watchlist` - Fixed argument order using `functools.partial` for proper parameter binding
+  - `remove_from_watchlist` - Fixed argument order using `functools.partial` for proper parameter binding
+- **Live Testing**: AMC successfully added to and removed from "Watch" watchlist
+- **API Integration**: All 5 watchlist tools now working correctly with current Robin Stocks API
+
+### 🐛 **Fixed in v0.5.6-dev (Trading Functions)**
+**Critical Market Order Bug**: Market buy/sell functions were failing due to incorrect `timeInForce` parameter
+- **Root Cause 1**: Default `timeInForce='gtc'` (Good Till Canceled) not valid for market orders
+- **Root Cause 2**: `execute_with_retry` function was not passing keyword arguments correctly to Robin Stocks API
+- **Root Cause 3**: Error responses were incorrectly treated as successful orders  
+- **Functions Fixed**:
+  - `sell_stock_market` - Now uses `timeInForce='gfd'` and proper error handling
+  - `buy_stock_market` - Now uses `timeInForce='gfd'` and proper error handling
+  - `execute_with_retry` - Fixed to use `functools.partial` for proper argument binding
+- **Live Testing**: 
+  - **Market orders**: XOM (2 orders: 689a3fe8-d9ae-4f02-85fc-f22600eb401a, 689a3ff2-0955-4bb8-8b5e-0528ea69050e), AMC (1 order: 689a4144-9d8b-4b52-95a5-d56db1530d08)
+  - **Limit orders**: XOM limit sell at $106, AMC limit sell at $3
+- **Error Detection**: Added proper detection of Robin Stocks API `non_field_errors` responses
 
 ### 🐛 **Fixed in v0.5.6-dev (Options Trading)**
 **Critical API Bug**: Options trading functions were using incorrect Robin Stocks API signatures
