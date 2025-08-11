@@ -459,36 +459,59 @@ async def get_option_historicals(
 @handle_robin_stocks_errors
 async def get_aggregate_positions() -> dict[str, Any]:
     """
-    Get aggregated option positions collapsed by underlying stock.
+    Get all option positions (not actually aggregated).
 
-    This function retrieves all option positions and collapses them by
-    underlying stock symbol for a consolidated view.
+    Despite the name, this function returns individual option position objects
+    from Robin Stocks, not aggregated data. Each position includes detailed 
+    information about strategy, legs, prices, and clearing data.
 
     Returns:
-        Dict containing aggregated option positions:
+        Dict containing array of individual option positions:
         {
             "result": {
-                "positions": {
-                    "AAPL": {
-                        "total_contracts": 5,
-                        "net_quantity": 3,
-                        "average_price": "2.50",
-                        "total_equity": "750.00",
-                        "positions": [
+                "positions": [
+                    {
+                        "id": "d97ac32e-45f6-42e9-bc2b-a4cff8c6c488",
+                        "chain": "https://api.robinhood.com/options/chains/b905e24f-f046-458c-af25-244dbe46616c/",
+                        "account": "https://api.robinhood.com/accounts/894785138/",
+                        "account_number": "894785138",
+                        "symbol": "F",
+                        "strategy": "short_call",
+                        "average_open_price": "29.0000",
+                        "legs": [
                             {
-                                "strike_price": "150.00",
-                                "expiration_date": "2024-01-19",
-                                "type": "call",
-                                "quantity": "3",
-                                "average_price": "2.50"
-                            },
-                            ...
-                        ]
+                                "id": "c77d0bd5-bb53-4b06-a93f-0a281fb5b2bf",
+                                "ratio_quantity": 1,
+                                "position": "https://api.robinhood.com/options/positions/7dd81e42-0d94-4630-a668-873c38164a1b/",
+                                "position_type": "short",
+                                "option": "https://api.robinhood.com/options/instruments/845df489-f082-4141-9e39-e6b7654f5f75/",
+                                "option_id": "845df489-f082-4141-9e39-e6b7654f5f75",
+                                "expiration_date": "2025-09-12",
+                                "strike_price": "11.5000",
+                                "option_type": "call",
+                                "settle_on_open": false
+                            }
+                        ],
+                        "quantity": "1.0000",
+                        "intraday_average_open_price": "29.0000",
+                        "intraday_quantity": "1",
+                        "direction": "credit",
+                        "intraday_direction": "credit",
+                        "trade_value_multiplier": "100.0000",
+                        "created_at": "2025-08-11T13:42:16.553634Z",
+                        "updated_at": "2025-08-11T13:42:16.548478Z",
+                        "strategy_code": "845df489-f082-4141-9e39-e6b7654f5f75_S1",
+                        "clearing_running_quantity": "1.0000",
+                        "clearing_cost_basis": "29.0000",
+                        "clearing_intraday_running_quantity": "1",
+                        "clearing_intraday_cost_basis": "29.0000",
+                        "clearing_direction": "credit",
+                        "clearing_intraday_direction": "credit",
+                        "underlying_type": "equity"
                     },
                     ...
-                },
-                "total_symbols": 5,
-                "total_contracts": 15,
+                ],
+                "total_positions": 15,
                 "status": "success"
             }
         }
@@ -539,32 +562,52 @@ async def get_aggregate_positions() -> dict[str, Any]:
 @handle_robin_stocks_errors
 async def get_all_option_positions() -> dict[str, Any]:
     """
-    Get all option positions ever held.
+    Get all individual option positions ever held.
 
-    This function retrieves a complete history of all option positions
-    that have been held, including both open and closed positions.
+    This function retrieves all option position records from Robin Stocks, 
+    including both long and short sides of each contract, both open and closed positions.
+    Each position represents one side of an option contract.
 
     Returns:
-        Dict containing all option positions:
+        Dict containing array of individual option position records:
         {
             "result": {
                 "positions": [
                     {
-                        "symbol": "AAPL",
-                        "strike_price": "150.00",
-                        "expiration_date": "2024-01-19",
-                        "type": "call",
-                        "quantity": "3",
-                        "average_price": "2.50",
-                        "current_price": "2.75",
-                        "total_equity": "825.00",
-                        "status": "held"
+                        "account": "https://api.robinhood.com/accounts/894785138/",
+                        "account_number": "894785138",
+                        "average_price": "-29.0000",
+                        "chain_id": "b905e24f-f046-458c-af25-244dbe46616c",
+                        "chain_symbol": "F",
+                        "id": "7dd81e42-0d94-4630-a668-873c38164a1b",
+                        "option": "https://api.robinhood.com/options/instruments/845df489-f082-4141-9e39-e6b7654f5f75/",
+                        "type": "short",
+                        "pending_buy_quantity": "0.0000",
+                        "pending_expired_quantity": "0.0000",
+                        "pending_expiration_quantity": "0.0000",
+                        "pending_exercise_quantity": "0.0000",
+                        "pending_assignment_quantity": "0.0000",
+                        "pending_sell_quantity": "0.0000",
+                        "quantity": "1.0000",
+                        "intraday_quantity": "1.0000",
+                        "intraday_average_open_price": "-29.0000",
+                        "created_at": "2025-08-09T21:06:05.831182Z",
+                        "expiration_date": "2025-09-12",
+                        "trade_value_multiplier": "100.0000",
+                        "updated_at": "2025-08-11T13:42:16.580899Z",
+                        "url": "https://api.robinhood.com/options/positions/7dd81e42-0d94-4630-a668-873c38164a1b/",
+                        "option_id": "845df489-f082-4141-9e39-e6b7654f5f75",
+                        "clearing_running_quantity": "1.0000",
+                        "clearing_cost_basis": "29.0000",
+                        "clearing_direction": "credit",
+                        "clearing_intraday_running_quantity": "1.0000",
+                        "clearing_intraday_cost_basis": "29.0000",
+                        "clearing_intraday_direction": "credit",
+                        "opened_at": "2025-08-09T21:06:05.835367Z"
                     },
                     ...
                 ],
                 "total_positions": 25,
-                "open_positions": 8,
-                "closed_positions": 17,
                 "status": "success"
             }
         }
@@ -623,10 +666,10 @@ async def get_all_option_positions() -> dict[str, Any]:
 @handle_robin_stocks_errors
 async def get_open_option_positions() -> dict[str, Any]:
     """
-    Get currently open option positions.
+    Get currently open option positions with summary totals.
 
     This function retrieves only the option positions that are currently
-    open and active.
+    open and active, along with portfolio summary information.
 
     Returns:
         Dict containing open option positions:
@@ -634,22 +677,42 @@ async def get_open_option_positions() -> dict[str, Any]:
             "result": {
                 "positions": [
                     {
-                        "symbol": "AAPL",
-                        "strike_price": "150.00",
-                        "expiration_date": "2024-01-19",
-                        "type": "call",
-                        "quantity": "3",
-                        "average_price": "2.50",
-                        "current_price": "2.75",
-                        "total_equity": "825.00",
-                        "unrealized_pnl": "75.00",
-                        "unrealized_pnl_percent": "10.00%"
+                        "account": "https://api.robinhood.com/accounts/894785138/",
+                        "account_number": "894785138",
+                        "average_price": "-29.0000",
+                        "chain_id": "b905e24f-f046-458c-af25-244dbe46616c",
+                        "chain_symbol": "F",
+                        "id": "7dd81e42-0d94-4630-a668-873c38164a1b",
+                        "option": "https://api.robinhood.com/options/instruments/845df489-f082-4141-9e39-e6b7654f5f75/",
+                        "type": "short",
+                        "pending_buy_quantity": "0.0000",
+                        "pending_expired_quantity": "0.0000",
+                        "pending_expiration_quantity": "0.0000",
+                        "pending_exercise_quantity": "0.0000",
+                        "pending_assignment_quantity": "0.0000",
+                        "pending_sell_quantity": "0.0000",
+                        "quantity": "1.0000",
+                        "intraday_quantity": "1.0000",
+                        "intraday_average_open_price": "-29.0000",
+                        "created_at": "2025-08-09T21:06:05.831182Z",
+                        "expiration_date": "2025-09-12",
+                        "trade_value_multiplier": "100.0000",
+                        "updated_at": "2025-08-11T13:42:16.580899Z",
+                        "url": "https://api.robinhood.com/options/positions/7dd81e42-0d94-4630-a668-873c38164a1b/",
+                        "option_id": "845df489-f082-4141-9e39-e6b7654f5f75",
+                        "clearing_running_quantity": "1.0000",
+                        "clearing_cost_basis": "29.0000",
+                        "clearing_direction": "credit",
+                        "clearing_intraday_running_quantity": "1.0000",
+                        "clearing_intraday_cost_basis": "29.0000",
+                        "clearing_intraday_direction": "credit",
+                        "opened_at": "2025-08-09T21:06:05.835367Z"
                     },
                     ...
                 ],
-                "total_open_positions": 8,
-                "total_equity": "5250.00",
-                "total_unrealized_pnl": "325.00",
+                "total_open_positions": 6,
+                "total_equity": "0.00",
+                "total_unrealized_pnl": "0.00",
                 "status": "success"
             }
         }
