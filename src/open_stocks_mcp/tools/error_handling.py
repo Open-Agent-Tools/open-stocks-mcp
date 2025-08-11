@@ -220,6 +220,7 @@ async def execute_with_retry(
                 loop = asyncio.get_event_loop()
                 # Use functools.partial to bind all arguments for executor
                 import functools
+
                 bound_func = functools.partial(func, *args, **kwargs)
                 result = await loop.run_in_executor(None, bound_func)
 
