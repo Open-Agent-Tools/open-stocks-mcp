@@ -41,7 +41,7 @@ async def order_buy_market(symbol: str, quantity: int) -> dict[str, Any]:
             {"error": "Quantity must be a positive integer", "status": "error"}
         )
 
-    # Check if symbol exists
+    # Check if symbol exists and get quote
     try:
         quote_data = await execute_with_retry(rh.get_quotes, symbol)
         if not quote_data or not quote_data[0].get("last_trade_price"):
@@ -640,7 +640,6 @@ async def order_buy_trailing_stop(
             return create_success_response(
                 {"error": f"Symbol {symbol} not found", "status": "error"}
             )
-        quote = quote_data[0]
     except Exception as e:
         return create_success_response(
             {"error": f"Failed to validate symbol: {e!s}", "status": "error"}
@@ -821,7 +820,6 @@ async def order_buy_fractional_by_price(
             return create_success_response(
                 {"error": f"Symbol {symbol} not found", "status": "error"}
             )
-        quote = quote_data[0]
     except Exception as e:
         return create_success_response(
             {"error": f"Failed to validate symbol: {e!s}", "status": "error"}

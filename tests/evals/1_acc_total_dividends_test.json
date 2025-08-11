@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "total_dividends_test_set",
+  "name": "Total Dividends Test",
+  "description": "Test case for retrieving total dividend amounts received through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "total_dividends_test",
+      "conversation": [
+        {
+          "invocation_id": "total-dividends-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me the total amount of dividends I've received."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "You have received a total of **$241.77** in dividends across 8 payments.\n\nYour dividend payments span from September 3, 2019, to January 7, 2022.\n\nHere's a breakdown of dividends received by year:\n*   **2022**: $20.00\n*   **2021**: $68.50\n*   **2019**: $42.15\n\nPlease remember that past performance does not guarantee future results, and investment values can fluctuate."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "total_dividends"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

@@ -5,7 +5,7 @@ Project guidance for Claude Code when working with the Open Stocks MCP server.
 ## Project Overview
 
 **Open Stocks MCP** - Model Context Protocol server providing stock market data through Robin Stocks API.
-- **Current Version**: v0.5.1 with trading capabilities and 83 MCP tools
+- **Current Version**: v0.5.4 with trading capabilities and 83 MCP tools
 - **Framework**: FastMCP for simplified MCP development
 - **API**: Robin Stocks for market data and trading
 - **Transport**: HTTP with Server-Sent Events (SSE) on port 3001
@@ -82,12 +82,13 @@ ROBINHOOD_PASSWORD="password"
 
 ## Current Development Status
 
-### Completed (v0.5.1)
+### Completed (v0.5.4)
 - ✅ **Phases 1-7**: 83 MCP tools with complete trading functionality
 - ✅ **HTTP Transport**: Server-Sent Events (SSE) on port 3001
 - ✅ **Docker Infrastructure**: Persistent volumes for sessions and logs
 - ✅ **Test Coverage**: Comprehensive test suite covering all tools
 - ✅ **Type Safety**: Zero MyPy errors maintained across codebase
+- ✅ **Trading Bug Fixes**: Fixed API method calls in trading functions
 
 ### Next Phase Priority
 **Phase 8: Quality & Reliability (v0.6.0)** - Final phase:
@@ -103,6 +104,22 @@ ROBINHOOD_PASSWORD="password"
 3. Follow async pattern with error handling
 4. Add to server registration in `server/app.py`
 5. Write unit tests in `tests/unit/`
+
+### Creating New Release and Updating Docker
+1. **Create GitHub Release**: 
+   ```bash
+   git tag v0.x.x && git push origin v0.x.x
+   gh release create v0.x.x --generate-notes
+   ```
+2. **Update Docker Container** (Docker uses PyPI, not local code):
+   ```bash
+   cd examples/open-stocks-mcp-docker
+   docker-compose down
+   docker-compose pull  # Get latest published version
+   docker-compose up -d
+   curl http://localhost:3001/health  # Verify version updated
+   ```
+3. **Important**: Docker containers pull from PyPI releases, not local codebase
 
 ### Running ADK Evaluations
 1. Install: `pip install google-agent-developer-kit`

@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "day_trades_test_set",
+  "name": "Day Trades Test",
+  "description": "Test case for retrieving day trading information and pattern day trader status through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "day_trades_test",
+      "conversation": [
+        {
+          "invocation_id": "day-trades-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me my day trading information including how many day trades I've made and my pattern day trader status."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Based on your day trading information:\n\n*   **Day Trade Count:** [day_trades_count]\n*   **Remaining Day Trades:** [remaining_trades]\n*   **Pattern Day Trader Status:** [pdt_status]\n\nYou have [status_description] and are currently [pdt_description]. You have [remaining_trades] day trades remaining.\n\n**Disclaimer:** Please remember that investing in the stock market involves risks, and past performance is not indicative of future results. Day trading carries significant risks, and it's important to understand these before engaging in such activities."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "day_trades"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

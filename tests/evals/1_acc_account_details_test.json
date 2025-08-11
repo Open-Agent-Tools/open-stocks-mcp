@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "account_details_test_set",
+  "name": "Account Details Test",
+  "description": "Test case for retrieving detailed Robinhood account information including account number, buying power, and balances through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "account_details_test",
+      "conversation": [
+        {
+          "invocation_id": "account-details-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me my detailed account information including account number, buying power, and account balances."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here is a summary of your detailed account information:\n\n*   **Portfolio Equity**: $[portfolio_equity]\n*   **Total Equity**: $[total_equity]\n*   **Account Buying Power**: $[buying_power]\n*   **Options Buying Power**: $[options_buying_power]\n*   **Crypto Buying Power**: $[crypto_buying_power]\n*   **Uninvested Cash**: $[uninvested_cash]\n*   **Withdrawable Cash**: $[withdrawable_cash]\n*   **Cash Available from Instant Deposits**: $[instant_deposits]\n*   **Cash Held for Orders**: $[cash_held]\n*   **Near Margin Call**: [margin_call_status]\n\n**Disclaimer**: Please remember that all investments involve risk, and the value of your investments may fluctuate."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "account_details"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

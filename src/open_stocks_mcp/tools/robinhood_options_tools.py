@@ -27,7 +27,7 @@ async def get_options_chains(symbol: str) -> dict[str, Any]:
     Get option chain metadata for a stock symbol.
 
     This function retrieves option chain information including available expiration dates,
-    trading rules, and underlying instrument details. Use find_tradable_options() to get 
+    trading rules, and underlying instrument details. Use find_tradable_options() to get
     individual option contracts.
 
     Args:
@@ -130,9 +130,9 @@ async def find_tradable_options(
 
     Args:
         symbol: Stock ticker symbol (e.g., "AAPL", "GOOGL"). Required.
-        expiration_date: Optional expiration date in YYYY-MM-DD format (e.g., "2025-09-12"). 
+        expiration_date: Optional expiration date in YYYY-MM-DD format (e.g., "2025-09-12").
                         If provided in incorrect format, may return no results.
-        option_type: Optional option type. Must be "call" or "put" (case insensitive). 
+        option_type: Optional option type. Must be "call" or "put" (case insensitive).
                     Invalid values will return an error.
 
     Returns:
@@ -462,7 +462,7 @@ async def get_aggregate_positions() -> dict[str, Any]:
     Get all option positions (not actually aggregated).
 
     Despite the name, this function returns individual option position objects
-    from Robin Stocks, not aggregated data. Each position includes detailed 
+    from Robin Stocks, not aggregated data. Each position includes detailed
     information about strategy, legs, prices, and clearing data.
 
     Returns:
@@ -564,7 +564,7 @@ async def get_all_option_positions() -> dict[str, Any]:
     """
     Get all individual option positions ever held.
 
-    This function retrieves all option position records from Robin Stocks, 
+    This function retrieves all option position records from Robin Stocks,
     including both long and short sides of each contract, both open and closed positions.
     Each position represents one side of an option contract.
 

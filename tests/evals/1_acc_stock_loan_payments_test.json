@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "stock_loan_payments_test_set",
+  "name": "Stock Loan Payments Test",
+  "description": "Test case for retrieving stock loan payment history through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "stock_loan_payments_test",
+      "conversation": [
+        {
+          "invocation_id": "stock-loan-payments-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me my stock loan payment history."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "I do not show any stock loan payment history for your account. It appears you have not received any payments from the stock lending program, and your account is not currently enrolled."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "stock_loan_payments"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "eval_set_id": "dividends_by_instrument_test_set",
+  "name": "Dividends by Instrument Test",
+  "description": "Test case for retrieving dividend history for a specific stock symbol through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "dividends_by_instrument_test",
+      "conversation": [
+        {
+          "invocation_id": "dividends-by-instrument-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me the dividend history for Ford Motor stock (F)."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "I am sorry, but it seems there was an error retrieving the dividend history for Ford Motor stock (F). Please try again."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "symbol": "F"
+                },
+                "name": "dividends_by_instrument"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

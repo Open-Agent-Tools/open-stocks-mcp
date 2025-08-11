@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "build_holdings_test_set",
+  "name": "Build Holdings Test",
+  "description": "Test case for retrieving detailed portfolio holdings with dividend and performance data through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "build_holdings_test",
+      "conversation": [
+        {
+          "invocation_id": "build-holdings-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me my portfolio holdings with detailed information including dividend yields, performance, and current values."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here are your current portfolio holdings:\n\n**[Company Name] ([Symbol])**\n*   **Current Price:** $[current_price]\n*   **Quantity:** [quantity] shares\n*   **Average Buy Price:** $[average_price]\n*   **Current Equity Value:** $[equity_value]\n*   **Overall Performance:**\n    *   **Percentage Change:** [percentage_change]%\n    *   **Equity Change:** [equity_change]\n\nPlease note that dividend yield information is not available through this specific tool.\n\n***\n\n**Disclaimer:** Investment in securities involves risks, and you may lose money. The provided information is for informational purposes only and should not be considered financial advice."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "build_holdings"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

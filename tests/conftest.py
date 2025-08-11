@@ -9,47 +9,47 @@ def pytest_configure(config) -> None:
     """Configure pytest with journey markers for organized testing."""
     config.addinivalue_line(
         "markers",
-        "journey_account: Account management tests (account_info, profiles, settings)"
+        "journey_account: Account management tests (account_info, profiles, settings)",
     )
     config.addinivalue_line(
         "markers",
-        "journey_portfolio: Portfolio & holdings tests (portfolio, positions, build_holdings)"
+        "journey_portfolio: Portfolio & holdings tests (portfolio, positions, build_holdings)",
     )
     config.addinivalue_line(
         "markers",
-        "journey_market_data: Stock quotes & market info tests (stock_price, market_hours, search)"
+        "journey_market_data: Stock quotes & market info tests (stock_price, market_hours, search)",
     )
     config.addinivalue_line(
         "markers",
-        "journey_research: Earnings, ratings, news tests (stock_earnings, dividends, ratings)"
+        "journey_research: Earnings, ratings, news tests (stock_earnings, dividends, ratings)",
     )
     config.addinivalue_line(
         "markers",
-        "journey_watchlists: Watchlist management tests (all_watchlists, add/remove)"
+        "journey_watchlists: Watchlist management tests (all_watchlists, add/remove)",
     )
     config.addinivalue_line(
         "markers",
-        "journey_options: Options analysis tests (options_chains, positions, market_data)"
+        "journey_options: Options analysis tests (options_chains, positions, market_data)",
     )
     config.addinivalue_line(
         "markers",
-        "journey_notifications: Alerts & notifications tests (notifications, margin_calls)"
+        "journey_notifications: Alerts & notifications tests (notifications, margin_calls)",
     )
     config.addinivalue_line(
         "markers",
-        "journey_system: Health & monitoring tests (health_check, metrics, session_status)"
+        "journey_system: Health & monitoring tests (health_check, metrics, session_status)",
     )
     config.addinivalue_line(
         "markers",
-        "journey_advanced_data: Level II & premium features tests (pricebook, level2_data)"
+        "journey_advanced_data: Level II & premium features tests (pricebook, level2_data)",
     )
     config.addinivalue_line(
         "markers",
-        "journey_market_intelligence: Movers & trends tests (top_movers, top_100_stocks)"
+        "journey_market_intelligence: Movers & trends tests (top_movers, top_100_stocks)",
     )
     config.addinivalue_line(
         "markers",
-        "journey_trading: Trading operations tests (buy/sell orders, cancellation)"
+        "journey_trading: Trading operations tests (buy/sell orders, cancellation)",
     )
 
 
@@ -90,6 +90,7 @@ def sample_portfolio_data() -> dict[str, str]:
 
 # Journey-specific fixtures
 
+
 @pytest.fixture
 def journey_account_data() -> dict[str, str]:
     """Account management journey fixture data."""
@@ -112,7 +113,7 @@ def journey_account_data() -> dict[str, str]:
             "reason": "",
             "reinstatement_date": None,
             "reversal": "",
-            "state": "ok"
+            "state": "ok",
         },
         "margin_balances": {
             "cash": "500.00",
@@ -127,7 +128,7 @@ def journey_account_data() -> dict[str, str]:
             "overnight_buying_power_held_for_orders": "0.00",
             "overnight_ratio": "0.00",
             "unallocated_margin_cash": "500.00",
-            "unsettled_debit": "0.00"
+            "unsettled_debit": "0.00",
         },
         "max_ach_early_access_amount": "1000.00",
         "overnight_buying_power": "1000.00",
@@ -142,7 +143,7 @@ def journey_account_data() -> dict[str, str]:
         "uncleared_deposits": "0.00",
         "unsettled_funds": "0.00",
         "updated_at": "2023-01-01T12:00:00.000000Z",
-        "withdrawal_halted": False
+        "withdrawal_halted": False,
     }
 
 
@@ -167,7 +168,7 @@ def journey_portfolio_data() -> dict[str, any]:
                 "shares_pending_from_options_events": "0.00000000",
                 "symbol": "AAPL",
                 "updated_at": "2023-01-01T16:00:00.000000Z",
-                "url": "https://robinhood.com/positions/12345678/450dfc6d-5510-4d40-abfb-f633b7d9be3e/"
+                "url": "https://robinhood.com/positions/12345678/450dfc6d-5510-4d40-abfb-f633b7d9be3e/",
             }
         ]
     }
@@ -192,7 +193,7 @@ def journey_market_data() -> dict[str, any]:
         "last_trade_price_source": "consolidated",
         "updated_at": "2023-12-30T20:59:59.000000Z",
         "instrument": "https://robinhood.com/instruments/450dfc6d-5510-4d40-abfb-f633b7d9be3e/",
-        "instrument_id": "450dfc6d-5510-4d40-abfb-f633b7d9be3e"
+        "instrument_id": "450dfc6d-5510-4d40-abfb-f633b7d9be3e",
     }
 
 
@@ -203,25 +204,16 @@ def journey_research_data() -> dict[str, any]:
         "earnings": [
             {
                 "symbol": "AAPL",
-                "eps": {
-                    "estimate": 1.45,
-                    "actual": 1.52
-                },
-                "revenue": {
-                    "estimate": 117500000000,
-                    "actual": 119580000000
-                },
+                "eps": {"estimate": 1.45, "actual": 1.52},
+                "revenue": {"estimate": 117500000000, "actual": 119580000000},
                 "year": 2023,
                 "quarter": 4,
-                "call": {
-                    "datetime": "2024-01-25T21:30:00.000Z",
-                    "broadcast_url": None
-                },
+                "call": {"datetime": "2024-01-25T21:30:00.000Z", "broadcast_url": None},
                 "report": {
                     "date": "2024-01-25",
                     "timing": "after_market",
-                    "verified": True
-                }
+                    "verified": True,
+                },
             }
         ],
         "dividends": [
@@ -237,9 +229,9 @@ def journey_research_data() -> dict[str, any]:
                 "rate": "0.23",
                 "record_date": "2023-11-13",
                 "symbol": "AAPL",
-                "withholding": "0.00"
+                "withholding": "0.00",
             }
-        ]
+        ],
     }
 
 
@@ -256,14 +248,14 @@ def journey_watchlist_data() -> dict[str, any]:
                     {
                         "symbol": "AAPL",
                         "name": "Apple Inc.",
-                        "instrument_url": "https://robinhood.com/instruments/450dfc6d-5510-4d40-abfb-f633b7d9be3e/"
+                        "instrument_url": "https://robinhood.com/instruments/450dfc6d-5510-4d40-abfb-f633b7d9be3e/",
                     },
                     {
-                        "symbol": "MSFT", 
+                        "symbol": "MSFT",
                         "name": "Microsoft Corporation",
-                        "instrument_url": "https://robinhood.com/instruments/50810c35-d215-4866-9758-0ada4ac79ffa/"
-                    }
-                ]
+                        "instrument_url": "https://robinhood.com/instruments/50810c35-d215-4866-9758-0ada4ac79ffa/",
+                    },
+                ],
             }
         ]
     }
@@ -284,7 +276,7 @@ def journey_options_data() -> dict[str, any]:
                 "min_ticks": {
                     "above_tick": "0.05",
                     "below_tick": "0.01",
-                    "cutoff_price": "3.00"
+                    "cutoff_price": "3.00",
                 },
                 "rhs_tradability": "tradable",
                 "state": "active",
@@ -292,7 +284,7 @@ def journey_options_data() -> dict[str, any]:
                 "tradability": "tradable",
                 "type": "call",
                 "updated_at": "2023-01-01T12:00:00.000000Z",
-                "url": "https://robinhood.com/options/instruments/opt123/"
+                "url": "https://robinhood.com/options/instruments/opt123/",
             }
         ]
     }
@@ -312,7 +304,7 @@ def journey_notifications_data() -> dict[str, any]:
                 "category": "order_execution",
                 "priority": "normal",
                 "seen": False,
-                "url": "https://robinhood.com/notifications/notif123/"
+                "url": "https://robinhood.com/notifications/notif123/",
             }
         ]
     }
@@ -328,13 +320,13 @@ def journey_system_data() -> dict[str, any]:
             "current_usage": 15,
             "limit_per_minute": 30,
             "limit_per_hour": 1000,
-            "reset_time": "2023-12-30T21:01:00.000000Z"
+            "reset_time": "2023-12-30T21:01:00.000000Z",
         },
         "metrics": {
             "total_requests": 1500,
             "successful_requests": 1485,
             "failed_requests": 15,
             "average_response_time": 250,
-            "uptime": "99.9%"
-        }
+            "uptime": "99.9%",
+        },
     }

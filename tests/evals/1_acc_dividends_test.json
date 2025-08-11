@@ -1,0 +1,51 @@
+{
+  "eval_set_id": "dividends_test_set",
+  "name": "Dividends Test", 
+  "description": "Test case for retrieving dividend payment history through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "dividends_test",
+      "conversation": [
+        {
+          "invocation_id": "dividends-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me my dividend payment history including all dividend payments received."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here is your dividend payment history and total dividends received:\n\n**Total Dividends Received:** $241.77\n\n**Dividend Payment Overview:**\n*   **Number of Payments:** 8 unique dividend payments (Note: While there are 16 entries in your detailed history, this total reflects the unique and non-voided payments aggregated for your total income.)\n*   **First Payment Date:** September 3, 2019\n*   **Last Payment Date:** January 7, 2022\n\n**Dividends by Year:**\n*   **2022:** $20.00\n*   **2021:** $68.50\n*   **2019:** $42.15\n\n**Detailed Dividend Payment History:**\n\nHere is a breakdown of your dividend payments, including their status (paid, reinvested, or voided):\n\n*   **UWMC (UWM):**\n    *   $20.00 (Voided) - Record Date: 2021-12-10, Payable Date: 2022-01-06\n    *   $20.00 (Paid) - Paid At: 2022-01-07, Record Date: 2021-12-10, Payable Date: 2022-01-06\n    *   $20.00 (Paid) - Paid At: 2021-10-07, Record Date: 2021-09-10, Payable Date: 2021-10-06\n    *   $10.00 (Paid) - Paid At: 2021-07-07, Record Date: 2021-06-10, Payable Date: 2021-07-06\n\n*   **F (Ford Motor):**\n    *   $15.00 (Voided) - Record Date: 2019-10-22, Payable Date: 2019-12-02\n    *   $15.00 (Paid) - Paid At: 2019-12-03, Record Date: 2019-10-22, Payable Date: 2019-12-02\n    *   $9.75 (Paid) - Paid At: 2019-09-03, Record Date: 2019-07-23, Payable Date: 2019-09-03\n\n*   **XOM (Exxon Mobil):**\n    *   $8.70 (Voided) - Record Date: 2019-08-13, Payable Date: 2019-09-10\n    *   $8.70 (Voided) - Record Date: 2019-05-13, Payable Date: 2019-06-10\n    *   $34.15 (Reinvested) - Paid At: 2021-06-11, Record Date: 2021-05-13, Payable Date: 2021-06-10\n    *   $38.50 (Paid) - Paid At: 2021-03-11, Record Date: 2021-02-10, Payable Date: 2021-03-10\n    *   $29.22 (Reinvested) - Paid At: 2020-12-11, Record Date: 2020-11-11, Payable Date: 2020-12-10\n    *   $21.75 (Reinvested) - Paid At: 2020-09-11, Record Date: 2020-08-13, Payable Date: 2020-09-10\n    *   $8.70 (Paid) - Paid At: 2019-09-27, Record Date: 2019-05-13, Payable Date: 2019-06-10\n    *   $8.70 (Paid) - Paid At: 2019-09-10, Record Date: 2019-08-13, Payable Date: 2019-09-10\n\n*   **T (AT&T):**\n    *   $26.00 (Reinvested) - Paid At: 2021-05-04, Record Date: 2021-04-09, Payable Date: 2021-05-03\n\n**Disclaimer:** Investment in securities involves risks, and you may lose money. Dividend payments are not guaranteed and can be changed or discontinued by the company at any time."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "dividends"
+              },
+              {
+                "id": "adk-tool-use-id2",
+                "args": {},
+                "name": "total_dividends"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

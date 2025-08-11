@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "interest_payments_test_set",
+  "name": "Interest Payments Test",
+  "description": "Test case for retrieving cash management interest payments history through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "interest_payments_test",
+      "conversation": [
+        {
+          "invocation_id": "interest-payments-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me my interest payments history from cash management."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here is your interest payment history from cash management:\n\nI found 61 interest payments. However, the exact date each payment was made is not available in the current data.\n\nHere are the amounts of the payments:\n* $2.98\n* $2.30\n* $2.11\n* $1.63\n* $2.22\n* $1.57\n* $6.21\n* $9.42\n* $8.78\n* $8.07\n* $3.09\n* $1.16\n* $0.49\n* $0.22\n* $0.85\n* $1.45\n* $4.87\n* $5.78\n* $1.83\n* $2.38\n* $0.63\n* $1.14\n* $7.90\n* $1.69\n* $5.32\n* $7.12\n* $0.72\n* $0.29\n* $0.72\n* $1.03\n* $0.02\n* $0.77\n* $7.06\n* $2.16\n* $1.79\n* $0.89\n* $0.65\n* $0.43\n* $0.21\n* $0.07\n* $0.03\n* $0.14\n* $0.18\n* $0.35\n* $0.15\n* $0.08\n* $0.06\n* $0.10\n* $0.05\n* $0.01\n* $0.06\n* $0.01\n* $0.03\n* $0.02\n* $0.06\n* $0.02\n* $0.03\n* $0.01\n* $0.03\n* $0.01\n* $0.06\n\nPlease note that the \"total_interest\" field in the data shows $0.00, which might be a discrepancy with the individual payment amounts listed."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "interest_payments"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}
