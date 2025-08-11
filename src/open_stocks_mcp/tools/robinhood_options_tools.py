@@ -24,30 +24,62 @@ from open_stocks_mcp.tools.error_handling import (
 @handle_robin_stocks_errors
 async def get_options_chains(symbol: str) -> dict[str, Any]:
     """
-    Get complete option chains for a stock symbol.
+    Get option chain metadata for a stock symbol.
 
-    This function retrieves all available option contracts for a given stock,
-    including all expiration dates, strike prices, and contract types.
+    This function retrieves option chain information including available expiration dates,
+    trading rules, and underlying instrument details. Use find_tradable_options() to get 
+    individual option contracts.
 
     Args:
         symbol: Stock ticker symbol (e.g., "AAPL", "GOOGL")
 
     Returns:
-        Dict containing option chain data:
+        Dict containing option chain metadata:
         {
             "result": {
                 "symbol": "AAPL",
-                "chains": [
-                    {
-                        "expiration_date": "2024-01-19",
-                        "strike_price": "150.00",
-                        "type": "call",
-                        "id": "option_id_here",
-                        "tradeable": true
+                "chains": {
+                    "id": "7dd906e5-7d4b-4161-a3fe-2c3b62038482",
+                    "symbol": "AAPL",
+                    "can_open_position": true,
+                    "cash_component": null,
+                    "expiration_dates": [
+                        "2025-08-15",
+                        "2025-08-22",
+                        "2025-09-12",
+                        ...
+                    ],
+                    "trade_value_multiplier": "100.0000",
+                    "underlying_instruments": [
+                        {
+                            "id": "3b1b2528-8887-4410-bce4-b5128eac4a86",
+                            "instrument": "https://api.robinhood.com/instruments/450dfc6d-5510-4d40-abfb-f633b7d9be3e/",
+                            "quantity": 100
+                        }
+                    ],
+                    "min_ticks": {
+                        "above_tick": "0.05",
+                        "below_tick": "0.01",
+                        "cutoff_price": "3.00"
                     },
-                    ...
-                ],
-                "total_contracts": 250,
+                    "min_ticks_multileg": {
+                        "above_tick": "0.01",
+                        "below_tick": "0.01",
+                        "cutoff_price": "0.00"
+                    },
+                    "late_close_state": "disabled",
+                    "underlyings": [
+                        {
+                            "type": "equity",
+                            "id": "450dfc6d-5510-4d40-abfb-f633b7d9be3e",
+                            "quantity": 100,
+                            "symbol": "AAPL"
+                        }
+                    ],
+                    "settle_on_open": false,
+                    "sellout_time_to_expiration": 1800
+                },
+                "total_contracts": 1,
                 "status": "success"
             }
         }
@@ -219,26 +251,46 @@ async def get_option_market_data(option_id: str) -> dict[str, Any]:
         Dict containing option market data:
         {
             "result": {
-                "option_id": "option_id_here",
-                "symbol": "AAPL",
-                "strike_price": "150.00",
-                "expiration_date": "2024-01-19",
-                "type": "call",
-                "greeks": {
-                    "delta": 0.65,
-                    "gamma": 0.025,
-                    "theta": -0.12,
-                    "vega": 0.85,
-                    "rho": 0.15
-                },
-                "market_data": {
-                    "bid_price": "2.50",
-                    "ask_price": "2.55",
-                    "last_trade_price": "2.52",
-                    "volume": 1250,
-                    "open_interest": 5000,
-                    "implied_volatility": 0.25
-                },
+                "option_id": "fed6fe71-a605-4340-812a-3b0df7d1bbc3",
+                "market_data": [
+                    {
+                        "adjusted_mark_price": "5.780000",
+                        "adjusted_mark_price_round_down": "5.770000",
+                        "ask_price": "5.900000",
+                        "ask_size": 90,
+                        "bid_price": "5.650000",
+                        "bid_size": 192,
+                        "break_even_price": "11.220000",
+                        "high_price": "0.000000",
+                        "instrument": "https://api.robinhood.com/options/instruments/fed6fe71-a605-4340-812a-3b0df7d1bbc3/",
+                        "instrument_id": "fed6fe71-a605-4340-812a-3b0df7d1bbc3",
+                        "last_trade_price": null,
+                        "last_trade_size": null,
+                        "low_price": "0.000000",
+                        "mark_price": "5.775000",
+                        "open_interest": 0,
+                        "previous_close_date": "2025-08-08",
+                        "previous_close_price": "5.650000",
+                        "updated_at": "2025-08-11T16:05:11.998328415Z",
+                        "volume": 0,
+                        "symbol": "F",
+                        "occ_symbol": "F     250912P00017000",
+                        "state": "active",
+                        "chance_of_profit_long": "0.000000",
+                        "chance_of_profit_short": "1.000000",
+                        "delta": "0.000000",
+                        "gamma": "0.000000",
+                        "implied_volatility": "0.000671",
+                        "rho": "0.000000",
+                        "theta": "0.000000",
+                        "vega": "340.500000",
+                        "pricing_model": "Bjerksund-Stensland 1993",
+                        "high_fill_rate_buy_price": "5.842000",
+                        "high_fill_rate_sell_price": "5.707000",
+                        "low_fill_rate_buy_price": "5.720000",
+                        "low_fill_rate_sell_price": "5.829000"
+                    }
+                ],
                 "status": "success"
             }
         }
@@ -311,12 +363,15 @@ async def get_option_historicals(
                 "span": "week",
                 "historicals": [
                     {
-                        "begins_at": "2024-01-15T09:30:00Z",
-                        "open_price": "2.50",
-                        "high_price": "2.65",
-                        "low_price": "2.45",
-                        "close_price": "2.60",
-                        "volume": 150
+                        "begins_at": "2025-08-04T00:00:00Z",
+                        "open_price": "6.150000",
+                        "close_price": "6.700000",
+                        "high_price": "7.180000",
+                        "low_price": "5.750000",
+                        "volume": 0,
+                        "session": "reg",
+                        "interpolated": false,
+                        "symbol": "F"
                     },
                     ...
                 ],
