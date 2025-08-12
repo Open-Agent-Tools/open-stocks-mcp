@@ -4,8 +4,8 @@ An MCP (Model Context Protocol) server providing access to stock market data and
 
 ## Features
 
-**🚀 Current Status: v0.5.7 - Complete Trading Capabilities**
-- ✅ **79 MCP tools** across 9 categories (4 deprecated)
+**🚀 Current Status: v0.6.0 - Enhanced Options Tools**
+- ✅ **80 MCP tools** across 9 categories (4 deprecated)
 - ✅ **Complete trading functionality** - stocks, options, order management  
 - ✅ **Live trading validated** - Stock and options trading tested with real orders
 - ✅ **Production-ready** - HTTP transport, Docker support, comprehensive testing
@@ -209,7 +209,8 @@ MCP_HTTP_URL="http://localhost:3001/mcp" adk eval examples/google_adk_agent test
 
 ## Project Scope
 
-**Completed in v0.5.7:**
+**Completed in v0.6.0:**
+- ✅ **Enhanced Options Tools** - New `open_option_positions_with_details()` enriches positions with call/put type
 - ✅ **Stock trading API fixes** - Market, limit, and stop-loss buy/sell functions now working correctly
 - ✅ **Live stock trading validation** - XOM and AMC orders successfully placed (market, limit, stop-loss)
 - ✅ **Tool deprecation** - Removed 4 uncommon trading functions (buy_stock_stop_loss, trailing stops, fractional shares)

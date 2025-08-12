@@ -5,7 +5,7 @@ Project guidance for Claude Code when working with the Open Stocks MCP server.
 ## Project Overview
 
 **Open Stocks MCP** - Model Context Protocol server providing stock market data through Robin Stocks API.
-- **Current Version**: v0.5.7 with complete trading capabilities and 79 MCP tools
+- **Current Version**: v0.6.0 with enhanced options tools and 80 MCP tools
 - **Framework**: FastMCP for simplified MCP development
 - **API**: Robin Stocks for market data and trading
 - **Transport**: HTTP with Server-Sent Events (SSE) on port 3001
@@ -119,8 +119,9 @@ ROBINHOOD_PASSWORD="password"
 
 ## Current Development Status
 
-### Completed (v0.5.7)
+### Completed (v0.6.0)
 - ✅ **Phases 0-7**: 79 MCP tools with complete trading functionality (4 deprecated)
+- ✅ **Enhanced Options Tools**: New `get_open_option_positions_with_details()` with call/put enrichment
 - ✅ **Journey Testing**: 11 user journey categories for organized testing
 - ✅ **HTTP Transport**: Server-Sent Events (SSE) on port 3001
 - ✅ **Docker Infrastructure**: Persistent volumes for sessions and logs
@@ -154,7 +155,7 @@ if isinstance(order_result, dict) and 'non_field_errors' in order_result:
 # - Limit orders: timeInForce='gtc' or 'gfd' (both valid)
 ```
 
-### Common API Bugs Fixed in v0.5.7
+### Common API Bugs Fixed in v0.5.7-v0.6.0
 - **execute_with_retry argument binding**: Use `functools.partial` for keyword args
 - **Market order timeInForce**: Must be 'gfd', not 'gtc' 
 - **Error detection**: Check for 'non_field_errors' in API responses

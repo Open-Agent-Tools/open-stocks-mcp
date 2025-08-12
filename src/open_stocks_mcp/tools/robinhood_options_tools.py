@@ -10,6 +10,7 @@ This module provides comprehensive options trading analytics tools including:
 All functions use Robin Stocks API with proper error handling and async support.
 """
 
+import contextlib
 from typing import Any
 
 import robin_stocks.robinhood as rh
@@ -785,6 +786,192 @@ async def get_open_option_positions() -> dict[str, Any]:
             "total_open_positions": total_open_positions,
             "total_equity": f"{total_equity:.2f}",
             "total_unrealized_pnl": f"{total_unrealized_pnl:.2f}",
+            "status": "success",
+        }
+    }
+
+
+@handle_robin_stocks_errors
+async def get_open_option_positions_with_details() -> dict[str, Any]:
+    """
+    Get currently open option positions with complete option details including call/put type.
+
+    This enhanced function retrieves open option positions and enriches each position
+    with detailed option instrument data including strike price, expiration date,
+    and most importantly the option type (call or put).
+
+    Returns:
+        Dict containing open option positions with enriched details:
+        {
+            "result": {
+                "positions": [
+                    {
+                        "account": "https://api.robinhood.com/accounts/894785138/",
+                        "account_number": "894785138",
+                        "average_price": "-29.0000",
+                        "chain_id": "b905e24f-f046-458c-af25-244dbe46616c",
+                        "chain_symbol": "F",
+                        "id": "7dd81e42-0d94-4630-a668-873c38164a1b",
+                        "option": "https://api.robinhood.com/options/instruments/845df489-f082-4141-9e39-e6b7654f5f75/",
+                        "type": "short",
+                        "quantity": "1.0000",
+                        "expiration_date": "2025-09-12",
+                        "option_id": "845df489-f082-4141-9e39-e6b7654f5f75",
+
+                        // Enhanced fields from option instrument data:
+                        "option_type": "call",           // ← "call" or "put"
+                        "strike_price": "11.5000",       // ← Strike price
+                        "option_symbol": "F250912C00011500",  // ← OCC symbol
+                        "tradability": "tradable",       // ← Trading status
+                        "state": "active",               // ← Option state
+                        "underlying_symbol": "F",        // ← Underlying stock
+
+                        // ... other existing position fields
+                    },
+                    ...
+                ],
+                "total_open_positions": 6,
+                "total_equity": "0.00",
+                "total_unrealized_pnl": "0.00",
+                "enrichment_success_rate": "100%",
+                "status": "success"
+            }
+        }
+    """
+    logger.info("Getting open option positions with detailed option information")
+
+    # Step 1: Get base open option positions
+    positions_data = await execute_with_retry(
+        rh.options.get_open_option_positions,
+        max_retries=3,
+    )
+
+    if not positions_data:
+        logger.warning("No open option positions found")
+        return {
+            "result": {
+                "positions": [],
+                "total_open_positions": 0,
+                "total_equity": "0.00",
+                "total_unrealized_pnl": "0.00",
+                "enrichment_success_rate": "0%",
+                "message": "No open option positions found",
+                "status": "no_data",
+            }
+        }
+
+    # Step 2: Enrich each position with option instrument details
+    enriched_positions = []
+    enrichment_successes = 0
+    total_positions = len(positions_data) if isinstance(positions_data, list) else 0
+
+    if isinstance(positions_data, list):
+        for position in positions_data:
+            if not isinstance(position, dict):
+                enriched_positions.append(position)
+                continue
+
+            # Extract option_id from position
+            option_id = position.get("option_id")
+            if not option_id:
+                # Try to extract from option URL
+                option_url = position.get("option")
+                if option_url and isinstance(option_url, str):
+                    # Extract ID from URL like "https://api.robinhood.com/options/instruments/845df489.../""
+                    url_parts = option_url.rstrip("/").split("/")
+                    option_id = url_parts[-1] if url_parts else None
+
+            # Create enriched position starting with original data
+            enriched_position = position.copy()
+
+            if option_id:
+                try:
+                    # Step 3: Fetch option instrument details
+                    logger.debug(f"Fetching option details for ID: {option_id}")
+                    option_details = await execute_with_retry(
+                        rh.options.get_option_instrument_data_by_id,
+                        option_id,
+                        max_retries=2,
+                    )
+
+                    if option_details and isinstance(option_details, dict):
+                        # Step 4: Add enriched fields to position
+                        enriched_position.update(
+                            {
+                                "option_type": option_details.get("type", "unknown"),
+                                "strike_price": option_details.get(
+                                    "strike_price", "0.0000"
+                                ),
+                                "option_symbol": option_details.get("occ_symbol", ""),
+                                "tradability": option_details.get(
+                                    "tradability", "unknown"
+                                ),
+                                "state": option_details.get("state", "unknown"),
+                                "underlying_symbol": option_details.get(
+                                    "chain_symbol", ""
+                                ),
+                                "expiration_date": option_details.get(
+                                    "expiration_date", ""
+                                ),
+                                "rhs_tradability": option_details.get(
+                                    "rhs_tradability", "unknown"
+                                ),
+                            }
+                        )
+                        enrichment_successes += 1
+                        logger.debug(f"Successfully enriched position for {option_id}")
+                    else:
+                        logger.warning(
+                            f"No option details found for option_id: {option_id}"
+                        )
+                        enriched_position["option_type"] = "unknown"
+
+                except Exception as e:
+                    logger.warning(
+                        f"Failed to fetch option details for {option_id}: {e}"
+                    )
+                    enriched_position["option_type"] = "unknown"
+            else:
+                logger.warning("No option_id found in position data")
+                enriched_position["option_type"] = "unknown"
+
+            enriched_positions.append(enriched_position)
+
+    # Calculate totals (same as original function)
+    total_equity = 0.0
+    total_unrealized_pnl = 0.0
+
+    for position in enriched_positions:
+        if isinstance(position, dict):
+            equity = position.get("total_equity", "0")
+            if equity:
+                with contextlib.suppress(ValueError, TypeError):
+                    total_equity += float(equity)
+
+            pnl = position.get("unrealized_pnl", "0")
+            if pnl:
+                with contextlib.suppress(ValueError, TypeError):
+                    total_unrealized_pnl += float(pnl)
+
+    # Calculate enrichment success rate
+    enrichment_rate = (
+        f"{(enrichment_successes / total_positions * 100):.0f}%"
+        if total_positions > 0
+        else "0%"
+    )
+
+    logger.info(
+        f"Found {total_positions} open positions with total equity: ${total_equity:.2f} "
+        f"(enrichment success: {enrichment_rate})"
+    )
+
+    return {
+        "result": {
+            "positions": enriched_positions,
+            "total_open_positions": total_positions,
+            "total_equity": f"{total_equity:.2f}",
+            "total_unrealized_pnl": f"{total_unrealized_pnl:.2f}",
+            "enrichment_success_rate": enrichment_rate,
             "status": "success",
         }
     }

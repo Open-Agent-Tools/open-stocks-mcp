@@ -59,6 +59,7 @@ from open_stocks_mcp.tools.robinhood_options_tools import (
     get_aggregate_positions,
     get_all_option_positions,
     get_open_option_positions,
+    get_open_option_positions_with_details,
     get_option_historicals,
     get_option_market_data,
     get_options_chains,
@@ -529,6 +530,24 @@ async def all_option_positions() -> dict[str, Any]:
 async def open_option_positions() -> dict[str, Any]:
     """Gets currently open option positions."""
     return await get_open_option_positions()  # type: ignore[no-any-return]
+
+
+@mcp.tool()
+async def open_option_positions_with_details() -> dict[str, Any]:
+    """Gets currently open option positions with enriched details including call/put type.
+
+    This enhanced version includes complete option instrument details for each position:
+    - option_type: "call" or "put"
+    - strike_price: Strike price of the option
+    - option_symbol: OCC option symbol
+    - tradability: Trading status
+    - state: Option state (active, expired, etc.)
+    - underlying_symbol: Underlying stock symbol
+    - enrichment_success_rate: Percentage of positions successfully enriched
+
+    Use this instead of open_option_positions() when you need complete option details.
+    """
+    return await get_open_option_positions_with_details()  # type: ignore[no-any-return]
 
 
 # Phase 3: Watchlist Management Tools

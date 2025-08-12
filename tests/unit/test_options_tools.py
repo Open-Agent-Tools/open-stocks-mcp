@@ -10,6 +10,7 @@ from open_stocks_mcp.tools.robinhood_options_tools import (
     get_aggregate_positions,
     get_all_option_positions,
     get_open_option_positions,
+    get_open_option_positions_with_details,
     get_option_historicals,
     get_option_market_data,
     get_options_chains,
@@ -459,5 +460,85 @@ class TestOptionPositions:
         assert "result" in result
         assert result["result"]["total_open_positions"] == 0
         assert result["result"]["positions"] == []
+        assert result["result"]["message"] == "No open option positions found"
+        assert result["result"]["status"] == "no_data"
+
+    @patch(
+        "open_stocks_mcp.tools.robinhood_options_tools.rh.options.get_option_instrument_data_by_id"
+    )
+    @patch(
+        "open_stocks_mcp.tools.robinhood_options_tools.rh.options.get_open_option_positions"
+    )
+    @pytest.mark.journey_options
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    async def test_get_open_option_positions_with_details_success(
+        self, mock_open_positions: Any, mock_instrument_data: Any
+    ) -> None:
+        """Test successful open option positions with details retrieval."""
+        # Mock position data
+        mock_open_positions.return_value = [
+            {
+                "id": "position123",
+                "chain_symbol": "AAPL",
+                "type": "short",
+                "quantity": "1.0000",
+                "option_id": "option456",
+                "option": "https://api.robinhood.com/options/instruments/option456/",
+                "total_equity": "25.50",
+                "unrealized_pnl": "5.25",
+            }
+        ]
+
+        # Mock option instrument data
+        mock_instrument_data.return_value = {
+            "type": "call",
+            "strike_price": "150.0000",
+            "occ_symbol": "AAPL240119C00150000",
+            "tradability": "tradable",
+            "state": "active",
+            "chain_symbol": "AAPL",
+            "expiration_date": "2024-01-19",
+            "rhs_tradability": "position_closing_only",
+        }
+
+        result = await get_open_option_positions_with_details()
+
+        assert "result" in result
+        assert result["result"]["total_open_positions"] == 1
+        assert result["result"]["enrichment_success_rate"] == "100%"
+        assert result["result"]["status"] == "success"
+
+        # Check enriched position data
+        position = result["result"]["positions"][0]
+        assert position["option_type"] == "call"
+        assert position["strike_price"] == "150.0000"
+        assert position["option_symbol"] == "AAPL240119C00150000"
+        assert position["tradability"] == "tradable"
+        assert position["state"] == "active"
+        assert position["underlying_symbol"] == "AAPL"
+
+        # Verify API calls
+        mock_open_positions.assert_called_once()
+        mock_instrument_data.assert_called_once_with("option456")
+
+    @patch(
+        "open_stocks_mcp.tools.robinhood_options_tools.rh.options.get_open_option_positions"
+    )
+    @pytest.mark.journey_options
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    async def test_get_open_option_positions_with_details_no_positions(
+        self, mock_open_positions: Any
+    ) -> None:
+        """Test open option positions with details when no positions exist."""
+        mock_open_positions.return_value = None
+
+        result = await get_open_option_positions_with_details()
+
+        assert "result" in result
+        assert result["result"]["total_open_positions"] == 0
+        assert result["result"]["positions"] == []
+        assert result["result"]["enrichment_success_rate"] == "0%"
         assert result["result"]["message"] == "No open option positions found"
         assert result["result"]["status"] == "no_data"
