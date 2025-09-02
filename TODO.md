@@ -1,6 +1,6 @@
 # TODO - Open Stocks MCP
 
-## **📋 NEXT PHASE: Phase 8 - Quality & Reliability (v0.6.0)**
+## **📋 NEXT PHASE: Phase 8 - Quality & Reliability (v0.6.1)**
 
 **Phase 7 Complete** - All 79 MCP tools validated and ready for production
 

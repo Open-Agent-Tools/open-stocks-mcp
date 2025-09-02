@@ -89,7 +89,7 @@ class TestFindOptions:
     """Test find tradable options functionality."""
 
     @patch(
-        "open_stocks_mcp.tools.robinhood_options_tools.rh.options.find_tradable_options"
+        "open_stocks_mcp.tools.robinhood_options_tools.rh.find_options_by_expiration"
     )
     @pytest.mark.journey_options
     @pytest.mark.unit
@@ -122,7 +122,7 @@ class TestFindOptions:
         assert result["result"]["status"] == "success"
 
     @patch(
-        "open_stocks_mcp.tools.robinhood_options_tools.rh.options.find_tradable_options"
+        "open_stocks_mcp.tools.robinhood_options_tools.rh.find_options_by_expiration"
     )
     @pytest.mark.journey_options
     @pytest.mark.unit

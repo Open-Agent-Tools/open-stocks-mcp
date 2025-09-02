@@ -5,7 +5,7 @@ Project guidance for Claude Code when working with the Open Stocks MCP server.
 ## Project Overview
 
 **Open Stocks MCP** - Model Context Protocol server providing stock market data through Robin Stocks API.
-- **Current Version**: v0.6.0 with enhanced options tools and 80 MCP tools
+- **Current Version**: v0.6.1 with enhanced options tools and 80 MCP tools
 - **Framework**: FastMCP for simplified MCP development
 - **API**: Robin Stocks for market data and trading
 - **Transport**: HTTP with Server-Sent Events (SSE) on port 3001
@@ -119,7 +119,7 @@ ROBINHOOD_PASSWORD="password"
 
 ## Current Development Status
 
-### Completed (v0.6.0)
+### Completed (v0.6.1)
 - ✅ **Phases 0-7**: 79 MCP tools with complete trading functionality (4 deprecated)
 - ✅ **Enhanced Options Tools**: New `get_open_option_positions_with_details()` with call/put enrichment
 - ✅ **Journey Testing**: 11 user journey categories for organized testing
@@ -130,7 +130,7 @@ ROBINHOOD_PASSWORD="password"
 - ✅ **Trading Validation**: All functions live-tested or API-corrected
 
 ### Next Phase Priority
-**Phase 8: Quality & Reliability (v0.6.0)** - Final phase:
+**Phase 8: Quality & Reliability (v0.6.1)** - Final phase:
 - Advanced error handling and recovery mechanisms
 - Performance optimization and caching strategies
 - Enhanced monitoring and observability features

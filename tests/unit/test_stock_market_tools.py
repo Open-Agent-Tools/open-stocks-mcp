@@ -359,7 +359,7 @@ class TestServerTools:
 
     @pytest.mark.journey_system
     @pytest.mark.unit
-    @patch("open_stocks_mcp.tools.session_manager.get_session_manager")
+    @patch("open_stocks_mcp.server.app.get_session_manager")
     @pytest.mark.asyncio
     async def test_session_status_success(self, mock_get_session_manager: Any) -> None:
         """Test successful session status retrieval."""
