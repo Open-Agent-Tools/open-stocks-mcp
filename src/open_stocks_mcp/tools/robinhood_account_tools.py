@@ -137,28 +137,37 @@ async def get_account_details() -> dict[str, Any]:
     log_api_call("get_account_details")
 
     # Get account data with retry logic
-    account_data = await execute_with_retry(rh.load_phoenix_account)
+    account_response = await execute_with_retry(rh.load_phoenix_account)
 
-    if not account_data:
+    if not account_response or not account_response.get("results"):
         return create_no_data_response("No account data found")
+
+    # Extract account data from results (it's a list with first element containing data)
+    account_data = account_response["results"][0] if account_response["results"] else {}
 
     # Sanitize sensitive data
     account_data = sanitize_api_response(account_data)
 
+    # Helper function to extract amount from currency objects
+    def get_currency_amount(field_data: Any) -> str:
+        if isinstance(field_data, dict) and "amount" in field_data:
+            return str(field_data["amount"])
+        return str(field_data) if field_data is not None else "N/A"
+
     logger.info("Successfully retrieved account details.")
     return create_success_response(
         {
-            "portfolio_equity": account_data.get("portfolio_equity", "N/A"),
-            "total_equity": account_data.get("total_equity", "N/A"),
-            "account_buying_power": account_data.get("account_buying_power", "N/A"),
-            "options_buying_power": account_data.get("options_buying_power", "N/A"),
-            "crypto_buying_power": account_data.get("crypto_buying_power", "N/A"),
-            "uninvested_cash": account_data.get("uninvested_cash", "N/A"),
-            "withdrawable_cash": account_data.get("withdrawable_cash", "N/A"),
-            "cash_available_from_instant_deposits": account_data.get(
-                "cash_available_from_instant_deposits", "N/A"
+            "portfolio_equity": get_currency_amount(account_data.get("portfolio_equity")),
+            "total_equity": get_currency_amount(account_data.get("total_equity")),
+            "account_buying_power": get_currency_amount(account_data.get("account_buying_power")),
+            "options_buying_power": get_currency_amount(account_data.get("options_buying_power")),
+            "crypto_buying_power": get_currency_amount(account_data.get("crypto_buying_power")),
+            "uninvested_cash": get_currency_amount(account_data.get("uninvested_cash")),
+            "withdrawable_cash": get_currency_amount(account_data.get("withdrawable_cash")),
+            "cash_available_from_instant_deposits": get_currency_amount(
+                account_data.get("cash_available_from_instant_deposits")
             ),
-            "cash_held_for_orders": account_data.get("cash_held_for_orders", "N/A"),
+            "cash_held_for_orders": get_currency_amount(account_data.get("cash_held_for_orders")),
             "near_margin_call": account_data.get("near_margin_call", "N/A"),
         }
     )
