@@ -40,11 +40,12 @@
 
 ---
 
-## Current Status (v0.5.7)  
+## Current Status (v0.6.3)  
 - ✅ **79 MCP tools** with complete trading functionality (4 tools deprecated)
 - ✅ **Phases 0-7 complete**: Journey Testing → Foundation → Analytics → Trading
 - ✅ **Production-ready**: HTTP transport, Docker volumes, comprehensive testing
 - ✅ **All trading functions validated**: Live tested or API-corrected and ready
+- ✅ **Account details fixed**: Real financial data instead of N/A values
 
 ## **📋 ADK Evaluation Coverage for READ ONLY Tools**
 
@@ -76,4 +77,4 @@
 - Low latency response (<100ms average)
 - Complete ADK evaluation coverage
 
-*v0.5.7: 79 MCP tools, trading validation complete, ready for Phase 8*
+*v0.6.3: 79 MCP tools, trading validation complete, account details fixed*
