@@ -264,7 +264,10 @@ def create_http_server(mcp_server: FastMCP) -> FastAPI:
                             "prompts": {},
                             "logging": {},
                         },
-                        "serverInfo": {"name": "Open Stocks MCP", "version": __version__},
+                        "serverInfo": {
+                            "name": "Open Stocks MCP",
+                            "version": __version__,
+                        },
                     }
                 elif method == "tools/list":
                     # Use FastMCP's built-in list_tools method

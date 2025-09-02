@@ -559,7 +559,7 @@ wheels = [
 
 [[package]]
 name = "open-stocks-mcp"
-version = "0.6.0"
+version = "0.6.3"
 source = { editable = "." }
 dependencies = [
     { name = "aiofiles" },

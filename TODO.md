@@ -1,12 +1,13 @@
 # TODO - Open Stocks MCP
 
-## **📋 NEXT PHASE: Phase 8 - Quality & Reliability (v0.6.1)**
+## **📋 NEXT PHASE: Phase 8 - Quality & Reliability (v0.6.3)**
 
 **Phase 7 Complete** - All 79 MCP tools validated and ready for production
 
 ### **🚀 Phase 8 Priorities**
 
 #### Technical Debt & Code Quality
+- [x] **Account Details Fix** - Fixed load_phoenix_account parsing for real financial data (v0.6.3)
 - [ ] **Advanced Error Handling** - Granular error recovery and reporting
 - [ ] **Caching Strategy** - Redis/memory caching for frequent data
 - [ ] **Rate Limit Optimization** - Intelligent request batching

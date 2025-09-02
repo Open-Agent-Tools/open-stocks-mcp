@@ -157,17 +157,29 @@ async def get_account_details() -> dict[str, Any]:
     logger.info("Successfully retrieved account details.")
     return create_success_response(
         {
-            "portfolio_equity": get_currency_amount(account_data.get("portfolio_equity")),
+            "portfolio_equity": get_currency_amount(
+                account_data.get("portfolio_equity")
+            ),
             "total_equity": get_currency_amount(account_data.get("total_equity")),
-            "account_buying_power": get_currency_amount(account_data.get("account_buying_power")),
-            "options_buying_power": get_currency_amount(account_data.get("options_buying_power")),
-            "crypto_buying_power": get_currency_amount(account_data.get("crypto_buying_power")),
+            "account_buying_power": get_currency_amount(
+                account_data.get("account_buying_power")
+            ),
+            "options_buying_power": get_currency_amount(
+                account_data.get("options_buying_power")
+            ),
+            "crypto_buying_power": get_currency_amount(
+                account_data.get("crypto_buying_power")
+            ),
             "uninvested_cash": get_currency_amount(account_data.get("uninvested_cash")),
-            "withdrawable_cash": get_currency_amount(account_data.get("withdrawable_cash")),
+            "withdrawable_cash": get_currency_amount(
+                account_data.get("withdrawable_cash")
+            ),
             "cash_available_from_instant_deposits": get_currency_amount(
                 account_data.get("cash_available_from_instant_deposits")
             ),
-            "cash_held_for_orders": get_currency_amount(account_data.get("cash_held_for_orders")),
+            "cash_held_for_orders": get_currency_amount(
+                account_data.get("cash_held_for_orders")
+            ),
             "near_margin_call": account_data.get("near_margin_call", "N/A"),
         }
     )
