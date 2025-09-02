@@ -12,6 +12,7 @@ from fastapi.responses import JSONResponse
 from mcp.server.fastmcp import FastMCP
 from starlette.middleware.base import BaseHTTPMiddleware
 
+from open_stocks_mcp import __version__
 from open_stocks_mcp.logging_config import logger
 from open_stocks_mcp.monitoring import get_metrics_collector
 from open_stocks_mcp.tools.rate_limiter import get_rate_limiter
@@ -100,7 +101,7 @@ def create_http_server(mcp_server: FastMCP) -> FastAPI:
     app = FastAPI(
         title="Open Stocks MCP Server",
         description="Model Context Protocol server for stock market data",
-        version="0.4.1",
+        version=__version__,
         lifespan=lifespan,
     )
 
@@ -130,7 +131,7 @@ def create_http_server(mcp_server: FastMCP) -> FastAPI:
             return {
                 "status": "healthy",
                 "timestamp": time.time(),
-                "version": "0.4.1",
+                "version": __version__,
                 "transport": "http",
                 "session": {
                     "authenticated": session_info.get("authenticated", False),
@@ -158,7 +159,7 @@ def create_http_server(mcp_server: FastMCP) -> FastAPI:
             return {
                 "server": {
                     "status": "running",
-                    "version": "0.4.1",
+                    "version": __version__,
                     "transport": "http",
                     "timestamp": time.time(),
                 },
@@ -175,7 +176,7 @@ def create_http_server(mcp_server: FastMCP) -> FastAPI:
         """Root endpoint with server information"""
         return {
             "name": "Open Stocks MCP Server",
-            "version": "0.4.1",
+            "version": __version__,
             "transport": "http",
             "endpoints": {
                 "mcp": "/mcp",
@@ -263,7 +264,7 @@ def create_http_server(mcp_server: FastMCP) -> FastAPI:
                             "prompts": {},
                             "logging": {},
                         },
-                        "serverInfo": {"name": "Open Stocks MCP", "version": "0.4.1"},
+                        "serverInfo": {"name": "Open Stocks MCP", "version": __version__},
                     }
                 elif method == "tools/list":
                     # Use FastMCP's built-in list_tools method
