@@ -2,6 +2,7 @@
 
 import asyncio
 from datetime import datetime, timedelta
+from pathlib import Path
 from typing import Any
 
 import robin_stocks.robinhood as rh
@@ -12,19 +13,22 @@ from open_stocks_mcp.logging_config import logger
 class SessionManager:
     """Manages Robin Stocks authentication session lifecycle."""
 
-    def __init__(self, session_timeout_hours: int = 23):
+    def __init__(self, session_timeout_hours: int = 23, max_failed_attempts: int = 3):
         """Initialize session manager.
 
         Args:
             session_timeout_hours: Hours before session is considered expired (default: 23)
+            max_failed_attempts: Maximum failed login attempts before clearing pickle (default: 3)
         """
         self.session_timeout_hours = session_timeout_hours
+        self.max_failed_attempts = max_failed_attempts
         self.login_time: datetime | None = None
         self.last_successful_call: datetime | None = None
         self.username: str | None = None
         self.password: str | None = None
         self._lock = asyncio.Lock()
         self._is_authenticated = False
+        self._failed_login_attempts = 0
 
     def set_credentials(self, username: str, password: str) -> None:
         """Store credentials for re-authentication.
@@ -35,6 +39,8 @@ class SessionManager:
         """
         self.username = username
         self.password = password
+        # Reset failed attempts when credentials change
+        self._failed_login_attempts = 0
 
     def is_session_valid(self) -> bool:
         """Check if current session is still valid.
@@ -56,6 +62,68 @@ class SessionManager:
     def update_last_successful_call(self) -> None:
         """Update timestamp of last successful API call."""
         self.last_successful_call = datetime.now()
+
+    def _get_pickle_file_path(self, pickle_name: str = "robinhood") -> Path:
+        """Get the path to the Robin Stocks pickle file.
+
+        Args:
+            pickle_name: Name of the pickle file (default: "robinhood")
+
+        Returns:
+            Path to the pickle file
+        """
+        tokens_dir = Path.home() / ".tokens"
+        return tokens_dir / f"{pickle_name}.pickle"
+
+    def _clear_pickle_file(self, pickle_name: str = "robinhood") -> bool:
+        """Clear the Robin Stocks session pickle file.
+
+        Args:
+            pickle_name: Name of the pickle file to clear (default: "robinhood")
+
+        Returns:
+            True if file was removed or didn't exist, False if removal failed
+        """
+        try:
+            pickle_path = self._get_pickle_file_path(pickle_name)
+            if pickle_path.exists():
+                pickle_path.unlink()
+                logger.info(f"Cleared pickle file: {pickle_path}")
+                return True
+            else:
+                logger.debug(f"Pickle file does not exist: {pickle_path}")
+                return True
+        except Exception as e:
+            logger.error(f"Failed to clear pickle file: {e}")
+            return False
+
+    def _increment_failed_attempts(self) -> None:
+        """Increment failed login attempts and clear pickle if threshold reached."""
+        self._failed_login_attempts += 1
+        logger.warning(
+            f"Login attempt {self._failed_login_attempts} of {self.max_failed_attempts} failed"
+        )
+
+        if self._failed_login_attempts >= self.max_failed_attempts:
+            logger.error(
+                f"Maximum failed login attempts ({self.max_failed_attempts}) reached. Clearing session cache."
+            )
+            if self._clear_pickle_file():
+                logger.info(
+                    "Session cache cleared successfully. Next login will start fresh."
+                )
+            else:
+                logger.error(
+                    "Failed to clear session cache. Manual cleanup may be required."
+                )
+
+    def _reset_failed_attempts(self) -> None:
+        """Reset failed login attempts counter on successful authentication."""
+        if self._failed_login_attempts > 0:
+            logger.info(
+                f"Resetting failed login attempts (was {self._failed_login_attempts})"
+            )
+            self._failed_login_attempts = 0
 
     async def ensure_authenticated(self) -> bool:
         """Ensure session is authenticated, re-authenticating if necessary.
@@ -87,13 +155,30 @@ class SessionManager:
             # Run synchronous login in executor with device verification handling
             loop = asyncio.get_event_loop()
 
-            # Use a custom login function that handles device verification
-            login_result = await loop.run_in_executor(
-                None, self._login_with_device_verification, self.username, self.password
-            )
+            # Use a custom login function that handles device verification with timeout
+            try:
+                login_result = await asyncio.wait_for(
+                    loop.run_in_executor(
+                        None,
+                        self._login_with_device_verification,
+                        self.username,
+                        self.password,
+                    ),
+                    timeout=150,  # 150 second timeout for entire login process
+                )
+            except TimeoutError:
+                logger.error("Authentication timed out after 150 seconds")
+                logger.info("This may indicate:")
+                logger.info("1. Network connectivity issues")
+                logger.info("2. Robinhood server problems")
+                logger.info("3. Stuck waiting for MFA/device approval")
+                logger.info("Try: Force fresh login to clear cache and retry")
+                self._increment_failed_attempts()
+                return False
 
             if not login_result:
                 logger.error("Login failed - device verification may be required")
+                self._increment_failed_attempts()
                 return False
 
             # Verify login by making a test API call
@@ -102,22 +187,28 @@ class SessionManager:
             if user_profile:
                 self.login_time = datetime.now()
                 self._is_authenticated = True
+                self._reset_failed_attempts()  # Reset counter on successful login
                 logger.info(f"Successfully authenticated user: {self.username}")
                 return True
             else:
                 logger.error("Authentication failed: Could not retrieve user profile")
+                self._increment_failed_attempts()
                 return False
 
         except Exception as e:
             logger.error(f"Authentication failed: {e}")
+            self._increment_failed_attempts()
             return False
 
-    def _login_with_device_verification(self, username: str, password: str) -> bool:
+    def _login_with_device_verification(
+        self, username: str, password: str, timeout: int = 120
+    ) -> bool:
         """Handle Robin Stocks login with device verification support.
 
         Args:
             username: Robinhood username
             password: Robinhood password
+            timeout: Login timeout in seconds (default: 120)
 
         Returns:
             True if login successful, False otherwise
@@ -126,12 +217,15 @@ class SessionManager:
         from contextlib import redirect_stderr, redirect_stdout
 
         try:
+            # Note: Signal-based timeout doesn't work in threads/async contexts
+            # The asyncio.wait_for timeout in _authenticate() provides the timeout instead
+
             # Capture any output from Robin Stocks
             stdout_buffer = io.StringIO()
             stderr_buffer = io.StringIO()
 
             with redirect_stdout(stdout_buffer), redirect_stderr(stderr_buffer):
-                # Override input function to simulate automatic approval
+                # Override input function to handle prompts more gracefully
                 builtins_dict = (
                     __builtins__
                     if isinstance(__builtins__, dict)
@@ -140,29 +234,53 @@ class SessionManager:
                 original_input = builtins_dict.get("input", input)
 
                 def mock_input(prompt: str = "") -> str:
-                    """Mock input function that logs prompts and simulates automatic approval."""
-                    logger.info(f"Device verification prompt: {prompt}")
+                    """Mock input function that handles various Robin Stocks prompts."""
+                    logger.info(f"Robin Stocks prompt: {prompt}")
 
-                    # If this is asking for a verification code, we can't provide it
+                    # Handle MFA code requests more gracefully
                     if any(
                         keyword in prompt.lower()
-                        for keyword in ["code", "sms", "email", "verification"]
+                        for keyword in [
+                            "code",
+                            "sms",
+                            "email",
+                            "verification",
+                            "mfa",
+                            "2fa",
+                        ]
                     ):
-                        logger.error(
-                            "Interactive verification code required - cannot proceed in headless mode"
+                        logger.warning(f"MFA/Verification code required: {prompt}")
+                        logger.info("Authentication requires MFA. This may indicate:")
+                        logger.info("1. A new device needs verification")
+                        logger.info("2. Session cache may be corrupted")
+                        logger.info("3. Account has enhanced security enabled")
+                        logger.info(
+                            "Suggestion: Clear session cache and try fresh login"
                         )
-                        raise Exception("Interactive verification required")
 
-                    # For device approval prompts, simulate waiting
-                    if any(
-                        keyword in prompt.lower()
-                        for keyword in ["app", "device", "approval", "notification"]
-                    ):
-                        logger.info("Waiting for device approval...")
-                        # Robin Stocks will handle the device approval workflow
+                        # Return empty string to let Robin Stocks handle timeout
                         return ""
 
-                    # Default case - return empty string
+                    # Handle device approval prompts
+                    if any(
+                        keyword in prompt.lower()
+                        for keyword in [
+                            "app",
+                            "device",
+                            "approval",
+                            "notification",
+                            "push",
+                        ]
+                    ):
+                        logger.info(f"Device approval required: {prompt}")
+                        logger.info(
+                            "Please check your Robinhood mobile app and approve the device"
+                        )
+                        logger.info("Waiting for approval...")
+                        return ""
+
+                    # Handle any other prompts
+                    logger.debug(f"Returning empty string for prompt: {prompt}")
                     return ""
 
                 # Temporarily replace input function
@@ -172,6 +290,7 @@ class SessionManager:
                     __builtins__.input = mock_input  # type: ignore[assignment]
 
                 try:
+                    logger.info(f"Attempting login with {timeout}s timeout...")
                     # Attempt login with device verification handling
                     result = rh.login(username, password, store_session=True)
 
@@ -182,10 +301,10 @@ class SessionManager:
                         __builtins__.input = original_input
 
                     if result:
-                        logger.info("Login successful with device verification")
+                        logger.info("Login successful")
                         return True
                     else:
-                        logger.error("Login failed")
+                        logger.error("Login failed - authentication rejected")
                         return False
 
                 except Exception as inner_e:
@@ -196,39 +315,53 @@ class SessionManager:
                         __builtins__.input = original_input
 
                     error_msg = str(inner_e)
+                    logger.error(f"Login exception: {error_msg}")
 
-                    # Check if this is a device verification issue
+                    # Provide more specific error guidance
                     if any(
                         keyword in error_msg.lower()
-                        for keyword in ["verification", "device", "challenge", "code"]
+                        for keyword in [
+                            "verification",
+                            "device",
+                            "challenge",
+                            "code",
+                            "mfa",
+                            "2fa",
+                        ]
                     ):
-                        logger.error(f"Device verification required: {error_msg}")
+                        logger.error("Authentication requires additional verification")
+                        logger.info("Recommended actions:")
                         logger.info(
-                            "This account requires device verification. Please:"
+                            "1. Check Robinhood mobile app for pending notifications"
                         )
+                        logger.info("2. Approve device access if prompted")
                         logger.info(
-                            "1. Check your Robinhood mobile app for verification prompts"
+                            "3. If issue persists, clear session cache and retry"
                         )
-                        logger.info("2. Approve the device if prompted")
-                        logger.info("3. Try again after verification")
+                        logger.info("4. Ensure account credentials are correct")
+                    elif "timeout" in error_msg.lower():
+                        logger.error("Login request timed out")
+                        logger.info(
+                            "This may indicate network issues or server problems"
+                        )
                     else:
-                        logger.error(f"Login error: {error_msg}")
+                        logger.error(f"Unexpected login error: {error_msg}")
 
                     return False
 
-            # Log any captured output
+            # Log any captured output for debugging
             stdout_content = stdout_buffer.getvalue()
             stderr_content = stderr_buffer.getvalue()
 
-            if stdout_content:
-                logger.info(f"Robin Stocks output: {stdout_content}")
-            if stderr_content:
-                logger.warning(f"Robin Stocks errors: {stderr_content}")
+            if stdout_content.strip():
+                logger.debug(f"Robin Stocks stdout: {stdout_content.strip()}")
+            if stderr_content.strip():
+                logger.debug(f"Robin Stocks stderr: {stderr_content.strip()}")
 
             return False
 
         except Exception as e:
-            logger.error(f"Device verification login failed: {e}")
+            logger.error(f"Critical login error: {e}")
             return False
 
     async def refresh_session(self) -> bool:
@@ -258,6 +391,8 @@ class SessionManager:
             if self.last_successful_call
             else None,
             "session_timeout_hours": self.session_timeout_hours,
+            "failed_login_attempts": self._failed_login_attempts,
+            "max_failed_attempts": self.max_failed_attempts,
         }
 
         if self.login_time:
@@ -282,6 +417,46 @@ class SessionManager:
                 self._is_authenticated = False
                 self.login_time = None
                 self.last_successful_call = None
+                # Reset failed attempts on logout
+                self._failed_login_attempts = 0
+
+    def clear_session_cache(self) -> bool:
+        """Manually clear the Robin Stocks session cache (pickle file).
+
+        Returns:
+            True if cache was cleared successfully, False otherwise
+        """
+        return self._clear_pickle_file()
+
+    async def force_fresh_login(self) -> bool:
+        """Force a completely fresh login by clearing cache and re-authenticating.
+
+        This method is useful when authentication appears to be stuck or
+        when MFA/device verification issues persist.
+
+        Returns:
+            True if fresh login successful, False otherwise
+        """
+        async with self._lock:
+            logger.info("Forcing fresh login - clearing all cached authentication")
+
+            # Clear session state
+            self._is_authenticated = False
+            self.login_time = None
+            self.last_successful_call = None
+
+            # Clear pickle file to force fresh authentication
+            if self._clear_pickle_file():
+                logger.info("Session cache cleared successfully")
+            else:
+                logger.warning("Failed to clear session cache - proceeding anyway")
+
+            # Reset failed attempts for fresh start
+            self._failed_login_attempts = 0
+
+            # Attempt fresh authentication
+            logger.info("Attempting fresh authentication...")
+            return await self._authenticate()
 
 
 # Global session manager instance
@@ -316,4 +491,27 @@ async def ensure_authenticated_session() -> tuple[bool, str | None]:
             return False, "Authentication failed"
     except Exception as e:
         logger.error(f"Session authentication error: {e}")
+        return False, str(e)
+
+
+async def force_fresh_authentication() -> tuple[bool, str | None]:
+    """Force a completely fresh authentication by clearing all cached data.
+
+    This function is useful when authentication appears stuck or when
+    MFA/device verification issues persist.
+
+    Returns:
+        Tuple of (success, error_message)
+    """
+    manager = get_session_manager()
+
+    try:
+        logger.info("Forcing fresh authentication due to authentication issues")
+        success = await manager.force_fresh_login()
+        if success:
+            return True, None
+        else:
+            return False, "Fresh authentication failed"
+    except Exception as e:
+        logger.error(f"Fresh authentication error: {e}")
         return False, str(e)

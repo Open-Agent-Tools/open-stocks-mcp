@@ -1,13 +1,13 @@
 # TODO - Open Stocks MCP
 
-## **📋 NEXT PHASE: Phase 8 - Quality & Reliability (v0.6.3)**
+## **📋 NEXT PHASE: Phase 8 - Quality & Reliability (v0.6.4)**
 
 **Phase 7 Complete** - All 79 MCP tools validated and ready for production
 
 ### **🚀 Phase 8 Priorities**
 
 #### Technical Debt & Code Quality
-- [x] **Account Details Fix** - Fixed load_phoenix_account parsing for real financial data (v0.6.3)
+- [x] **Account Details Fix** - Fixed load_phoenix_account parsing for real financial data (v0.6.4)
 - [ ] **Advanced Error Handling** - Granular error recovery and reporting
 - [ ] **Caching Strategy** - Redis/memory caching for frequent data
 - [ ] **Rate Limit Optimization** - Intelligent request batching
@@ -41,7 +41,7 @@
 
 ---
 
-## Current Status (v0.6.3)  
+## Current Status (v0.6.4)  
 - ✅ **79 MCP tools** with complete trading functionality (4 tools deprecated)
 - ✅ **Phases 0-7 complete**: Journey Testing → Foundation → Analytics → Trading
 - ✅ **Production-ready**: HTTP transport, Docker volumes, comprehensive testing
@@ -78,4 +78,4 @@
 - Low latency response (<100ms average)
 - Complete ADK evaluation coverage
 
-*v0.6.3: 79 MCP tools, trading validation complete, account details fixed*
+*v0.6.4: 79 MCP tools, trading validation complete, enhanced authentication*

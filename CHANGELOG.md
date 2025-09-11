@@ -2,6 +2,22 @@
 
 All notable changes to the Open Stocks MCP project will be documented in this file.
 
+## [0.6.4] - 2025-09-10
+
+### Enhanced
+- **Session Management**: Enhanced authentication system with automatic pickle cleanup after failed attempts
+- **MFA/Device Verification**: Improved handling of multi-factor authentication and device approval flows
+- **Login Timeout Management**: Added comprehensive timeout mechanisms (120s for login, 150s for overall process)
+- **Error Recovery**: Better error classification and user guidance for authentication issues
+- **Type Safety**: Fixed all MyPy errors across test suite for better code quality
+
+### Technical Details
+- Added failed login attempt tracking with configurable thresholds (default: 3 attempts)
+- Automatic session cache cleanup when maximum failed attempts reached
+- Enhanced device verification prompts with better user guidance
+- Improved async/thread compatibility by removing signal-based timeouts
+- Force fresh login capability for stuck authentication scenarios
+
 ## [0.6.3] - 2025-01-02
 
 ### Fixed

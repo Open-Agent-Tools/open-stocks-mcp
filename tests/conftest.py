@@ -1,11 +1,12 @@
 """Shared pytest fixtures for open-stocks-mcp tests."""
 
+from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
 
 
-def pytest_configure(config) -> None:
+def pytest_configure(config: Any) -> None:
     """Configure pytest with journey markers for organized testing."""
     config.addinivalue_line(
         "markers",
@@ -78,7 +79,7 @@ def sample_stock_data() -> dict[str, float | int | str]:
 
 
 @pytest.fixture
-def sample_portfolio_data() -> dict[str, str]:
+def sample_portfolio_data() -> dict[str, Any]:
     """Sample portfolio data for testing."""
     return {
         "total_return_today": "25.50",
@@ -92,7 +93,7 @@ def sample_portfolio_data() -> dict[str, str]:
 
 
 @pytest.fixture
-def journey_account_data() -> dict[str, str]:
+def journey_account_data() -> dict[str, Any]:
     """Account management journey fixture data."""
     return {
         "account_number": "12345678",
@@ -148,7 +149,7 @@ def journey_account_data() -> dict[str, str]:
 
 
 @pytest.fixture
-def journey_portfolio_data() -> dict[str, any]:
+def journey_portfolio_data() -> dict[str, Any]:
     """Portfolio & holdings journey fixture data."""
     return {
         "results": [
@@ -175,7 +176,7 @@ def journey_portfolio_data() -> dict[str, any]:
 
 
 @pytest.fixture
-def journey_market_data() -> dict[str, any]:
+def journey_market_data() -> dict[str, Any]:
     """Market data journey fixture data."""
     return {
         "ask_price": "150.25",
@@ -198,7 +199,7 @@ def journey_market_data() -> dict[str, any]:
 
 
 @pytest.fixture
-def journey_research_data() -> dict[str, any]:
+def journey_research_data() -> dict[str, Any]:
     """Research journey fixture data."""
     return {
         "earnings": [
@@ -236,7 +237,7 @@ def journey_research_data() -> dict[str, any]:
 
 
 @pytest.fixture
-def journey_watchlist_data() -> dict[str, any]:
+def journey_watchlist_data() -> dict[str, Any]:
     """Watchlist journey fixture data."""
     return {
         "results": [
@@ -262,7 +263,7 @@ def journey_watchlist_data() -> dict[str, any]:
 
 
 @pytest.fixture
-def journey_options_data() -> dict[str, any]:
+def journey_options_data() -> dict[str, Any]:
     """Options journey fixture data."""
     return {
         "results": [
@@ -291,7 +292,7 @@ def journey_options_data() -> dict[str, any]:
 
 
 @pytest.fixture
-def journey_notifications_data() -> dict[str, any]:
+def journey_notifications_data() -> dict[str, Any]:
     """Notifications journey fixture data."""
     return {
         "results": [
@@ -311,7 +312,7 @@ def journey_notifications_data() -> dict[str, any]:
 
 
 @pytest.fixture
-def journey_system_data() -> dict[str, any]:
+def journey_system_data() -> dict[str, Any]:
     """System & monitoring journey fixture data."""
     return {
         "health_status": "ok",

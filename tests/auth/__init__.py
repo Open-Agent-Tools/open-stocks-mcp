@@ -1,1 +1,0 @@
-"""Authentication and configuration tests."""
