@@ -119,6 +119,40 @@ from open_stocks_mcp.tools.robinhood_watchlist_tools import (
     get_watchlist_performance,
     remove_symbols_from_watchlist,
 )
+
+# Schwab Tools
+from open_stocks_mcp.tools.schwab_account_tools import (
+    get_schwab_account,
+    get_schwab_account_balances,
+    get_schwab_account_numbers,
+    get_schwab_accounts,
+    get_schwab_portfolio,
+)
+from open_stocks_mcp.tools.schwab_market_tools import (
+    get_schwab_instrument,
+    get_schwab_price_history,
+    get_schwab_quote,
+    get_schwab_quotes,
+    search_schwab_instruments,
+)
+from open_stocks_mcp.tools.schwab_options_tools import (
+    get_schwab_option_chain,
+    get_schwab_option_chain_by_expiration,
+    get_schwab_option_expirations,
+    get_schwab_options_positions,
+    schwab_option_buy_to_open,
+    schwab_option_sell_to_close,
+)
+from open_stocks_mcp.tools.schwab_trading_tools import (
+    cancel_schwab_order,
+    get_schwab_order_by_id,
+    get_schwab_orders,
+    place_schwab_order,
+    schwab_buy_limit,
+    schwab_buy_market,
+    schwab_sell_limit,
+    schwab_sell_market,
+)
 from open_stocks_mcp.tools.session_manager import get_session_manager
 
 # Load environment variables from .env file
@@ -1013,6 +1047,256 @@ async def open_stock_orders() -> dict[str, Any]:
 async def open_option_orders() -> dict[str, Any]:
     """Retrieves all open option orders."""
     return await get_all_open_option_orders()  # type: ignore[no-any-return]
+
+
+# Schwab Account Tools
+@mcp.tool()
+async def schwab_account_numbers() -> dict[str, Any]:
+    """Get Schwab account numbers and their hashes."""
+    return await get_schwab_account_numbers()  # type: ignore[no-any-return]
+
+
+@mcp.tool()
+async def schwab_account(account_hash: str, include_positions: bool = True) -> dict[str, Any]:
+    """Get Schwab account details including balances and positions.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+        include_positions: Whether to include positions (default: True)
+    """
+    return await get_schwab_account(account_hash, include_positions)  # type: ignore[no-any-return]
+
+
+@mcp.tool()
+async def schwab_accounts(include_positions: bool = True) -> dict[str, Any]:
+    """Get all Schwab linked accounts with balances and positions.
+
+    Args:
+        include_positions: Whether to include positions (default: True)
+    """
+    return await get_schwab_accounts(include_positions)  # type: ignore[no-any-return]
+
+
+@mcp.tool()
+async def schwab_portfolio(account_hash: str) -> dict[str, Any]:
+    """Get Schwab portfolio positions for a specific account.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+    """
+    return await get_schwab_portfolio(account_hash)  # type: ignore[no-any-return]
+
+
+@mcp.tool()
+async def schwab_account_balances(account_hash: str) -> dict[str, Any]:
+    """Get account balances for a Schwab account.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+    """
+    return await get_schwab_account_balances(account_hash)  # type: ignore[no-any-return]
+
+
+# Schwab Market Data Tools
+@mcp.tool()
+async def schwab_quote(symbol: str) -> dict[str, Any]:
+    """Get current quote for a stock symbol from Schwab.
+
+    Args:
+        symbol: Stock ticker symbol (e.g., 'AAPL', 'TSLA')
+    """
+    return await get_schwab_quote(symbol)  # type: ignore[no-any-return]
+
+
+@mcp.tool()
+async def schwab_quotes(symbols: list[str]) -> dict[str, Any]:
+    """Get current quotes for multiple stock symbols from Schwab.
+
+    Args:
+        symbols: List of stock ticker symbols
+    """
+    return await get_schwab_quotes(symbols)  # type: ignore[no-any-return]
+
+
+@mcp.tool()
+async def schwab_price_history(
+    symbol: str,
+    period_type: str = "day",
+    period: int = 1,
+    frequency_type: str = "minute",
+    frequency: int = 1,
+) -> dict[str, Any]:
+    """Get price history for a stock symbol.
+
+    Args:
+        symbol: Stock ticker symbol
+        period_type: Type of period ('day', 'month', 'year', 'ytd')
+        period: Number of periods
+        frequency_type: Frequency type ('minute', 'daily', 'weekly', 'monthly')
+        frequency: Frequency value
+    """
+    return await get_schwab_price_history(symbol, period_type, period, frequency_type, frequency)  # type: ignore[no-any-return]
+
+
+@mcp.tool()
+async def schwab_instrument(symbol: str) -> dict[str, Any]:
+    """Get instrument information for a symbol.
+
+    Args:
+        symbol: Stock ticker symbol
+    """
+    return await get_schwab_instrument(symbol)  # type: ignore[no-any-return]
+
+
+@mcp.tool()
+async def schwab_search_instruments(query: str) -> dict[str, Any]:
+    """Search for instruments by symbol or name.
+
+    Args:
+        query: Symbol or company name to search
+    """
+    return await search_schwab_instruments(query)  # type: ignore[no-any-return]
+
+
+# Schwab Trading Tools
+@mcp.tool()
+async def schwab_buy_stock_market(account_hash: str, symbol: str, quantity: int) -> dict[str, Any]:
+    """Place a market buy order for stock.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+        symbol: Stock ticker symbol
+        quantity: Number of shares to buy
+    """
+    return await schwab_buy_market(account_hash, symbol, quantity)  # type: ignore[no-any-return]
+
+
+@mcp.tool()
+async def schwab_sell_stock_market(account_hash: str, symbol: str, quantity: int) -> dict[str, Any]:
+    """Place a market sell order for stock.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+        symbol: Stock ticker symbol
+        quantity: Number of shares to sell
+    """
+    return await schwab_sell_market(account_hash, symbol, quantity)  # type: ignore[no-any-return]
+
+
+@mcp.tool()
+async def schwab_buy_stock_limit(account_hash: str, symbol: str, quantity: int, price: float) -> dict[str, Any]:
+    """Place a limit buy order for stock.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+        symbol: Stock ticker symbol
+        quantity: Number of shares to buy
+        price: Limit price
+    """
+    return await schwab_buy_limit(account_hash, symbol, quantity, price)  # type: ignore[no-any-return]
+
+
+@mcp.tool()
+async def schwab_sell_stock_limit(account_hash: str, symbol: str, quantity: int, price: float) -> dict[str, Any]:
+    """Place a limit sell order for stock.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+        symbol: Stock ticker symbol
+        quantity: Number of shares to sell
+        price: Limit price
+    """
+    return await schwab_sell_limit(account_hash, symbol, quantity, price)  # type: ignore[no-any-return]
+
+
+@mcp.tool()
+async def schwab_orders(account_hash: str, max_results: int = 50) -> dict[str, Any]:
+    """Get orders for a Schwab account.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+        max_results: Maximum number of orders to return (default: 50)
+    """
+    return await get_schwab_orders(account_hash, max_results)  # type: ignore[no-any-return]
+
+
+@mcp.tool()
+async def schwab_cancel_order(account_hash: str, order_id: str) -> dict[str, Any]:
+    """Cancel a specific Schwab order.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+        order_id: Order ID to cancel
+    """
+    return await cancel_schwab_order(account_hash, order_id)  # type: ignore[no-any-return]
+
+
+@mcp.tool()
+async def schwab_get_order(account_hash: str, order_id: str) -> dict[str, Any]:
+    """Get details for a specific Schwab order.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+        order_id: Order ID to retrieve
+    """
+    return await get_schwab_order_by_id(account_hash, order_id)  # type: ignore[no-any-return]
+
+
+# Schwab Options Tools
+@mcp.tool()
+async def schwab_option_chain(
+    symbol: str,
+    contract_type: str | None = None,
+    strike_count: int | None = None,
+    include_underlying_quote: bool = True,
+) -> dict[str, Any]:
+    """Get option chain for a symbol.
+
+    Args:
+        symbol: Stock ticker symbol
+        contract_type: Type of contracts ('CALL', 'PUT', 'ALL')
+        strike_count: Number of strikes above/below at-the-money price
+        include_underlying_quote: Whether to include underlying quote
+    """
+    return await get_schwab_option_chain(symbol, contract_type, strike_count, include_underlying_quote)  # type: ignore[no-any-return]
+
+
+@mcp.tool()
+async def schwab_option_chain_by_expiration(
+    symbol: str,
+    from_date: str | None = None,
+    to_date: str | None = None,
+    contract_type: str | None = None,
+) -> dict[str, Any]:
+    """Get option chain filtered by expiration dates.
+
+    Args:
+        symbol: Stock ticker symbol
+        from_date: Only return expirations after this date (YYYY-MM-DD)
+        to_date: Only return expirations before this date (YYYY-MM-DD)
+        contract_type: Type of contracts ('CALL', 'PUT', 'ALL')
+    """
+    return await get_schwab_option_chain_by_expiration(symbol, from_date, to_date, contract_type)  # type: ignore[no-any-return]
+
+
+@mcp.tool()
+async def schwab_option_expirations(symbol: str) -> dict[str, Any]:
+    """Get option expiration dates for a symbol.
+
+    Args:
+        symbol: Stock ticker symbol
+    """
+    return await get_schwab_option_expirations(symbol)  # type: ignore[no-any-return]
+
+
+@mcp.tool()
+async def schwab_options_positions(account_hash: str) -> dict[str, Any]:
+    """Get current options positions for an account.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+    """
+    return await get_schwab_options_positions(account_hash)  # type: ignore[no-any-return]
 
 
 def create_mcp_server(config: ServerConfig | None = None) -> FastMCP:
