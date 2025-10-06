@@ -177,6 +177,20 @@ def handle_robin_stocks_sync_errors(func: Callable[..., Any]) -> Callable[..., A
     return wrapper
 
 
+def handle_schwab_errors(func: Callable[..., Any]) -> Callable[..., Any]:
+    """Decorator to handle Schwab API errors consistently."""
+
+    @functools.wraps(func)
+    async def wrapper(*args: Any, **kwargs: Any) -> dict[str, Any]:
+        context = f"in {func.__name__}"
+        try:
+            return await func(*args, **kwargs)  # type: ignore[no-any-return]
+        except Exception as e:
+            return create_error_response(e, context)
+
+    return wrapper
+
+
 async def execute_with_retry(
     func: Callable[..., Any],
     *args: Any,
