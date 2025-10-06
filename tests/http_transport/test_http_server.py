@@ -50,7 +50,7 @@ class TestHTTPEndpoints:
 
         data = response.json()
         assert data["name"] == "Open Stocks MCP Server"
-        assert data["version"] == "0.4.0"
+        assert data["version"] == "0.6.4"
         assert data["transport"] == "http"
         assert "endpoints" in data
 
@@ -61,7 +61,7 @@ class TestHTTPEndpoints:
 
         data = response.json()
         assert data["status"] == "healthy"
-        assert data["version"] == "0.4.0"
+        assert data["version"] == "0.6.4"
         assert data["transport"] == "http"
         assert "timestamp" in data
 

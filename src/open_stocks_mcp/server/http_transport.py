@@ -171,7 +171,7 @@ def create_http_server(mcp_server: FastMCP) -> FastAPI:
             logger.error(f"Status check failed: {e}")
             raise HTTPException(status_code=500, detail="Status check failed") from e
 
-    @app.get("/info")
+    @app.get("/")
     async def root() -> dict[str, Any]:
         """Root endpoint with server information"""
         return {
@@ -186,6 +186,11 @@ def create_http_server(mcp_server: FastMCP) -> FastAPI:
             },
             "documentation": "/docs",
         }
+
+    @app.get("/info")
+    async def info() -> dict[str, Any]:
+        """Info endpoint (alias for root)"""
+        return await root()
 
     # Session management endpoints
     @app.post("/session/refresh")
@@ -380,6 +385,49 @@ def create_http_server(mcp_server: FastMCP) -> FastAPI:
                 status_code=500,
                 headers={"content-type": "application/json"},
             )
+
+    # SSE endpoint for server-sent events
+    @app.get("/sse")
+    async def sse_endpoint(request: Request) -> Response:
+        """Server-Sent Events endpoint for MCP streaming"""
+        from sse_starlette import EventSourceResponse
+
+        async def event_generator() -> AsyncGenerator[dict[str, Any], None]:
+            """Generate SSE events"""
+            try:
+                # Send initial connection event
+                yield {
+                    "event": "connected",
+                    "data": {
+                        "server": "Open Stocks MCP Server",
+                        "version": __version__,
+                        "timestamp": time.time(),
+                    },
+                }
+
+                # Keep connection alive with periodic heartbeat
+                while True:
+                    if await request.is_disconnected():
+                        logger.info("SSE client disconnected")
+                        break
+
+                    # Send heartbeat every 30 seconds
+                    yield {
+                        "event": "heartbeat",
+                        "data": {"timestamp": time.time()},
+                    }
+                    await asyncio.sleep(30)
+
+            except asyncio.CancelledError:
+                logger.info("SSE connection cancelled")
+            except Exception as e:
+                logger.error(f"SSE error: {e}")
+                yield {
+                    "event": "error",
+                    "data": {"error": str(e)},
+                }
+
+        return EventSourceResponse(event_generator())
 
     return app
 

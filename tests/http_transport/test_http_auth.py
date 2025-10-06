@@ -185,7 +185,7 @@ class TestHTTPSessionStatus:
 
         data = response.json()
         assert data["server"]["status"] == "running"
-        assert data["server"]["version"] == "0.4.0"
+        assert data["server"]["version"] == "0.6.4"
         assert data["server"]["transport"] == "http"
         assert data["session"]["authenticated"] is True
         assert data["rate_limiting"]["total_requests"] == 100
@@ -253,7 +253,7 @@ class TestHTTPSecurity:
 
         data = response.json()
         assert data["name"] == "Open Stocks MCP Server"
-        assert data["version"] == "0.4.0"
+        assert data["version"] == "0.6.4"
         assert data["transport"] == "http"
         assert "endpoints" in data
         assert data["endpoints"]["mcp"] == "/mcp"

@@ -210,6 +210,84 @@ async def session_status() -> dict[str, Any]:
 
 
 @mcp.tool()
+async def broker_status() -> dict[str, Any]:
+    """Gets authentication status for all configured brokers.
+
+    Returns information about which brokers are available, authenticated,
+    or experiencing issues. Use this to troubleshoot authentication problems.
+
+    Returns:
+        Dictionary with broker authentication status for each broker
+    """
+    from open_stocks_mcp.brokers.registry import get_broker_registry
+
+    try:
+        registry = await get_broker_registry()
+        auth_status = registry.get_auth_status()
+        available_brokers = registry.get_available_brokers()
+
+        return {
+            "result": {
+                "brokers": auth_status,
+                "available_brokers": available_brokers,
+                "total_configured": len(registry.list_brokers()),
+                "total_authenticated": len(available_brokers),
+                "status": "success",
+            }
+        }
+    except Exception as e:
+        logger.error(f"Error getting broker status: {e}")
+        return {
+            "result": {
+                "error": str(e),
+                "status": "error",
+            }
+        }
+
+
+@mcp.tool()
+async def list_brokers() -> dict[str, Any]:
+    """Lists all registered brokers and their availability.
+
+    Returns:
+        List of broker names and their authentication status
+    """
+    from open_stocks_mcp.brokers.registry import get_broker_registry
+
+    try:
+        registry = await get_broker_registry()
+        brokers = registry.list_brokers()
+        available = registry.get_available_brokers()
+
+        broker_info = []
+        for broker_name in brokers:
+            broker = registry.get_broker(broker_name)
+            if broker:
+                broker_info.append({
+                    "name": broker_name,
+                    "available": broker_name in available,
+                    "status": broker.auth_info.status.value,
+                    "configured": broker.is_configured(),
+                })
+
+        return {
+            "result": {
+                "brokers": broker_info,
+                "count": len(brokers),
+                "status": "success",
+            }
+        }
+    except Exception as e:
+        logger.error(f"Error listing brokers: {e}")
+        return {
+            "result": {
+                "error": str(e),
+                "status": "error",
+            }
+        }
+
+
+@mcp.tool()
 async def rate_limit_status() -> dict[str, Any]:
     """Gets current rate limit usage and statistics."""
     rate_limiter = get_rate_limiter()
@@ -946,12 +1024,67 @@ def create_mcp_server(config: ServerConfig | None = None) -> FastMCP:
     return mcp
 
 
+async def setup_brokers(username: str | None, password: str | None) -> None:
+    """
+    Setup and register all configured brokers.
+
+    This function is NON-BLOCKING - the server will start even if
+    authentication fails for all brokers.
+
+    Args:
+        username: Robinhood username (optional)
+        password: Robinhood password (optional)
+    """
+    from open_stocks_mcp.brokers.registry import get_broker_registry
+    from open_stocks_mcp.brokers.robinhood import RobinhoodBroker
+    from open_stocks_mcp.brokers.auth_coordinator import attempt_broker_logins
+
+    logger.info("Setting up broker integrations...")
+
+    # Get the global registry
+    registry = await get_broker_registry()
+
+    # Setup Robinhood broker if credentials provided
+    if username and password:
+        logger.info("Configuring Robinhood broker...")
+        session_manager = get_session_manager()
+        robinhood_broker = RobinhoodBroker(
+            username=username,
+            password=password,
+            session_manager=session_manager,
+        )
+        registry.register(robinhood_broker)
+        logger.info("✓ Robinhood broker registered")
+    else:
+        logger.warning(
+            "⚠️  Robinhood credentials not provided - skipping Robinhood integration"
+        )
+        logger.info(
+            "   Set ROBINHOOD_USERNAME and ROBINHOOD_PASSWORD to enable Robinhood"
+        )
+
+    # TODO: Add Schwab broker registration when implemented
+    # if schwab_api_key and schwab_app_secret:
+    #     schwab_broker = SchwabBroker(...)
+    #     registry.register(schwab_broker)
+
+    # Attempt to authenticate all registered brokers
+    await attempt_broker_logins(require_at_least_one=False)
+
+
 def attempt_login(username: str, password: str) -> None:
     """
-    Attempt to log in to Robinhood using the session manager.
+    DEPRECATED: Legacy synchronous login function.
 
-    It verifies success by fetching the user profile.
+    This function is maintained for backward compatibility but will
+    be removed in favor of async setup_brokers() function.
+
+    Use setup_brokers() instead for graceful multi-broker authentication.
     """
+    logger.warning(
+        "attempt_login() is deprecated - use setup_brokers() for graceful auth"
+    )
+
     try:
         logger.info(f"Attempting login for user: {username}")
 
@@ -971,12 +1104,14 @@ def attempt_login(username: str, password: str) -> None:
             session_info = session_manager.get_session_info()
             logger.info(f"Session info: {session_info}")
         else:
+            # DON'T exit - let server start anyway
             logger.error("❌ Login failed: Could not authenticate with Robinhood.")
-            sys.exit(1)
+            logger.warning("   Server will start but Robinhood tools will be unavailable")
 
     except Exception as e:
+        # DON'T exit - let server start anyway
         logger.error(f"❌ An unexpected error occurred during login: {e}")
-        sys.exit(1)
+        logger.warning("   Server will start but Robinhood tools will be unavailable")
 
 
 @click.command()
@@ -997,32 +1132,62 @@ def attempt_login(username: str, password: str) -> None:
 def main(
     port: int, host: str, transport: str, username: str | None, password: str | None
 ) -> int:
-    """Run the server with specified transport and handle authentication."""
-    if not username:
-        username = click.prompt("Please enter your Robinhood username")
-    if not password:
-        password = click.prompt("Please enter your Robinhood password", hide_input=True)
+    """Run the server with specified transport and handle authentication.
 
-    # Perform login with stored session if available
-    attempt_login(username, password)
+    The server uses graceful authentication - it will start even if
+    broker authentication fails. Tools will return appropriate errors
+    when accessed without authentication.
+    """
+    # Prompt for credentials if not provided (interactive mode)
+    # In non-interactive mode (Docker, systemd), credentials come from env vars
+    if not username and not password and sys.stdin.isatty():
+        logger.info("No credentials provided - prompting for Robinhood credentials")
+        logger.info("(Press Ctrl+C to skip and start without Robinhood)")
+        try:
+            username = click.prompt(
+                "Robinhood username (or press Ctrl+C to skip)", default=""
+            )
+            if username:
+                password = click.prompt(
+                    "Robinhood password", hide_input=True, default=""
+                )
+        except (KeyboardInterrupt, click.Abort):
+            logger.info("\nSkipping Robinhood authentication")
+            username = None
+            password = None
 
+    # Create MCP server
     server = create_mcp_server()
 
+    # Setup broker authentication (non-blocking)
+    logger.info("Initializing broker authentication...")
+    asyncio.run(setup_brokers(username, password))
+
+    # Start server regardless of authentication status
     try:
         if transport == "stdio":
             logger.info("Starting MCP server with STDIO transport")
+            logger.info("Server ready - broker tools available based on authentication status")
             asyncio.run(server.run_stdio_async())
         else:
             # Use our enhanced HTTP transport
             from open_stocks_mcp.server.http_transport import run_http_server
 
+            logger.info(f"Starting MCP server with HTTP transport on {host}:{port}")
+            logger.info("Server ready - broker tools available based on authentication status")
             asyncio.run(run_http_server(server, host, port))
         return 0
     except KeyboardInterrupt:
-        logger.info("Server stopped by user")
-        # Use session manager for logout
-        session_manager = get_session_manager()
-        asyncio.run(session_manager.logout())
+        logger.info("\nServer stopped by user")
+        # Logout all brokers
+        from open_stocks_mcp.brokers.registry import get_broker_registry_sync
+
+        try:
+            registry = get_broker_registry_sync()
+            asyncio.run(registry.logout_all())
+        except RuntimeError:
+            # Registry not initialized - no brokers to logout
+            pass
         return 0
     except Exception as e:
         logger.error(f"Failed to start server: {e}", exc_info=True)
