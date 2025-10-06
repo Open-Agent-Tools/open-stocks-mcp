@@ -1,15 +1,16 @@
 # Open Stocks MCP
 
-An MCP (Model Context Protocol) server providing access to stock market data and trading capabilities through Robin Stocks API.
+An MCP (Model Context Protocol) server providing access to stock market data and trading capabilities through multiple broker APIs.
 
 ## Features
 
-**🚀 Current Status: v0.6.4 - Enhanced Authentication & Session Management**
-- ✅ **80 MCP tools** across 9 categories (4 deprecated)
-- ✅ **Complete trading functionality** - stocks, options, order management  
-- ✅ **Live trading validated** - Stock and options trading tested with real orders
+**🚀 Current Status: v0.7.0-dev - Multi-Broker Support (Robinhood + Schwab)**
+- ✅ **104 MCP tools** total - 80 Robinhood + 24 Schwab (4 deprecated)
+- ✅ **Multi-broker architecture** - Support for Robinhood and Charles Schwab
+- ✅ **Complete trading functionality** - stocks, options, order management
+- ✅ **Live trading validated** - Robinhood stock and options trading tested with real orders
 - ✅ **Production-ready** - HTTP transport, Docker support, comprehensive testing
-- ✅ **Phases 1-7 complete** - Foundation → Analytics → Trading
+- ✅ **Schwab integration complete** - OAuth authentication, 24 tools ready for testing
 - 🔧 **Account details fixed** - Real financial data instead of N/A values
 
 ## Installation
@@ -30,10 +31,25 @@ uv pip install -e .
 ### 1. Set Up Credentials
 
 Create a `.env` file:
+
+**For Robinhood:**
 ```bash
 ROBINHOOD_USERNAME=your_email@example.com
 ROBINHOOD_PASSWORD=your_password
 ```
+
+**For Schwab (optional):**
+```bash
+SCHWAB_API_KEY=your_api_key
+SCHWAB_APP_SECRET=your_app_secret
+SCHWAB_CALLBACK_URL=https://127.0.0.1:8182/
+SCHWAB_TOKEN_PATH=~/.tokens/schwab_token.json
+
+# Enable both brokers
+ENABLED_BROKERS=robinhood,schwab
+```
+
+**Note:** Schwab requires a developer account and API approval (several days). See `docs/SCHWAB_INTEGRATION_PLAN.md` for details.
 
 ### 2. Start the Server
 
@@ -100,6 +116,24 @@ Add to your MCP settings (`~/Library/Application Support/Claude/claude_desktop_c
 ```
 
 ## Available Tools
+
+### 🏦 Multi-Broker Support
+
+**Robinhood Tools (80 tools)**:
+- All existing Robinhood functionality maintained
+- No breaking changes to existing API
+
+**Schwab Tools (24 tools)**:
+- Account & Portfolio (5 tools) - account numbers, balances, positions
+- Market Data (5 tools) - quotes, price history, instrument search
+- Trading (8 tools) - market/limit buy/sell, order management
+- Options (6 tools) - chains, expirations, positions, buy/sell
+
+All Schwab tools use `schwab_` prefix (e.g., `schwab_get_portfolio`, `schwab_buy_stock_market`).
+
+---
+
+### Robinhood Tools by Category
 
 ### Account & Portfolio (15 tools)
 - Account information and details
@@ -210,6 +244,13 @@ MCP_HTTP_URL="http://localhost:3001/mcp" adk eval examples/google_adk_agent test
 
 ## Project Scope
 
+**Completed in v0.7.0-dev:**
+- ✅ **Multi-broker architecture** - Abstract broker layer supporting multiple brokers
+- ✅ **Schwab integration** - 24 tools across account, market data, trading, and options
+- ✅ **OAuth authentication** - Schwab OAuth 2.0 flow with automatic token refresh
+- ✅ **Graceful degradation** - Server starts even if broker authentication fails
+- ✅ **Backward compatibility** - All Robinhood tools unchanged, no breaking changes
+
 **Completed in v0.6.4:**
 - ✅ **Enhanced Options Tools** - New `open_option_positions_with_details()` enriches positions with call/put type
 - ✅ **Stock trading API fixes** - Market, limit, and stop-loss buy/sell functions now working correctly
@@ -223,11 +264,11 @@ MCP_HTTP_URL="http://localhost:3001/mcp" adk eval examples/google_adk_agent test
 - ✅ **Watchlist API fixes** - Fixed response format changes and parameter binding issues
 - ✅ **All trading functions ready** - Phase 7 complete, ready for Phase 8
 
-**Phase 8 (v0.6.4) - Final Phase (Ready to Begin):**
-- Quality & reliability improvements
-- Enhanced monitoring and observability  
-- Performance optimization
-- All trading functions validated and ready for production
+**Next Priority (Schwab Testing):**
+- ⏳ Schwab journey tests (blocked by API credentials)
+- ⏳ Live Schwab trading validation
+- ⏳ Multi-broker integration tests
+- ⏳ Schwab-specific documentation
 
 **Out of Scope:**
 - Crypto trading tools
