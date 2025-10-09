@@ -27,7 +27,7 @@ async def get_schwab_account_numbers() -> dict[str, Any]:
 
     try:
         # Execute in thread pool since schwab-py is synchronous
-        def _get_account_numbers():
+        def _get_account_numbers() -> Any:
             response = broker.client.get_account_numbers()
             return response.json()
 
@@ -48,7 +48,7 @@ async def get_schwab_account_numbers() -> dict[str, Any]:
 
     except Exception as e:
         logger.error(f"Error getting Schwab account numbers: {e}")
-        return create_error_response(str(e))
+        return create_error_response(e)
 
 
 @handle_schwab_errors
@@ -78,7 +78,7 @@ async def get_schwab_account(
             fields = Client.Account.Fields.POSITIONS
 
         # Execute in thread pool
-        def _get_account():
+        def _get_account() -> Any:
             response = broker.client.get_account(account_hash, fields=fields)
             return response.json()
 
@@ -88,7 +88,7 @@ async def get_schwab_account(
 
     except Exception as e:
         logger.error(f"Error getting Schwab account: {e}")
-        return create_error_response(str(e))
+        return create_error_response(e)
 
 
 @handle_schwab_errors
@@ -115,7 +115,7 @@ async def get_schwab_accounts(include_positions: bool = True) -> dict[str, Any]:
             fields = Client.Account.Fields.POSITIONS
 
         # Execute in thread pool
-        def _get_accounts():
+        def _get_accounts() -> Any:
             response = broker.client.get_accounts(fields=fields)
             return response.json()
 
@@ -128,7 +128,7 @@ async def get_schwab_accounts(include_positions: bool = True) -> dict[str, Any]:
 
     except Exception as e:
         logger.error(f"Error getting Schwab accounts: {e}")
-        return create_error_response(str(e))
+        return create_error_response(e)
 
 
 @handle_schwab_errors
@@ -151,7 +151,7 @@ async def get_schwab_portfolio(account_hash: str) -> dict[str, Any]:
         # Get account with positions
         from schwab.client import Client
 
-        def _get_account():
+        def _get_account() -> Any:
             response = broker.client.get_account(
                 account_hash, fields=Client.Account.Fields.POSITIONS
             )
@@ -183,7 +183,7 @@ async def get_schwab_portfolio(account_hash: str) -> dict[str, Any]:
 
     except Exception as e:
         logger.error(f"Error getting Schwab portfolio: {e}")
-        return create_error_response(str(e))
+        return create_error_response(e)
 
 
 @handle_schwab_errors
@@ -201,7 +201,7 @@ async def get_schwab_account_balances(account_hash: str) -> dict[str, Any]:
         return error
 
     try:
-        def _get_account():
+        def _get_account() -> Any:
             # Get account without positions for faster response
             response = broker.client.get_account(account_hash)
             return response.json()
@@ -230,4 +230,4 @@ async def get_schwab_account_balances(account_hash: str) -> dict[str, Any]:
 
     except Exception as e:
         logger.error(f"Error getting Schwab account balances: {e}")
-        return create_error_response(str(e))
+        return create_error_response(e)

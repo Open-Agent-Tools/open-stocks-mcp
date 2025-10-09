@@ -140,14 +140,11 @@ from open_stocks_mcp.tools.schwab_options_tools import (
     get_schwab_option_chain_by_expiration,
     get_schwab_option_expirations,
     get_schwab_options_positions,
-    schwab_option_buy_to_open,
-    schwab_option_sell_to_close,
 )
 from open_stocks_mcp.tools.schwab_trading_tools import (
     cancel_schwab_order,
     get_schwab_order_by_id,
     get_schwab_orders,
-    place_schwab_order,
     schwab_buy_limit,
     schwab_buy_market,
     schwab_sell_limit,
@@ -1319,9 +1316,9 @@ async def setup_brokers(username: str | None, password: str | None) -> None:
         username: Robinhood username (optional)
         password: Robinhood password (optional)
     """
+    from open_stocks_mcp.brokers.auth_coordinator import attempt_broker_logins
     from open_stocks_mcp.brokers.registry import get_broker_registry
     from open_stocks_mcp.brokers.robinhood import RobinhoodBroker
-    from open_stocks_mcp.brokers.auth_coordinator import attempt_broker_logins
 
     logger.info("Setting up broker integrations...")
 

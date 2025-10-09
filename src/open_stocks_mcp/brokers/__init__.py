@@ -9,7 +9,7 @@ __all__ = [
     "BaseBroker",
     "BrokerAuthStatus",
     "BrokerRegistry",
-    "get_broker_registry",
     "RobinhoodBroker",
     "SchwabBroker",
+    "get_broker_registry",
 ]

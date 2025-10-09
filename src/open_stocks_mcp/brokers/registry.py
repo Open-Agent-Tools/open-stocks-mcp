@@ -18,7 +18,7 @@ class BrokerRegistry:
     - Route tool calls to appropriate brokers
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize broker registry."""
         self._brokers: dict[str, BaseBroker] = {}
         self._active_broker: str | None = None
@@ -270,7 +270,7 @@ class BrokerRegistry:
 
         results = await asyncio.gather(*logout_tasks, return_exceptions=True)
 
-        for broker_name, result in zip(self._brokers.keys(), results):
+        for broker_name, result in zip(self._brokers.keys(), results, strict=False):
             if isinstance(result, Exception):
                 logger.error(f"Error logging out {broker_name}: {result}")
             else:

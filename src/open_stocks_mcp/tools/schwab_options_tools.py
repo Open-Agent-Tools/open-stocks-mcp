@@ -51,10 +51,10 @@ async def get_schwab_option_chain(
             ct = contract_type_map.get(contract_type.lower())
             if not ct:
                 return create_error_response(
-                    f"Invalid contract_type. Valid options: {list(contract_type_map.keys())}"
+                    ValueError(f"Invalid contract_type. Valid options: {list(contract_type_map.keys())}")
                 )
 
-        def _get_option_chain():
+        def _get_option_chain() -> Any:
             response = broker.client.get_option_chain(
                 symbol.upper(),
                 contract_type=ct,
@@ -69,7 +69,7 @@ async def get_schwab_option_chain(
 
     except Exception as e:
         logger.error(f"Error getting Schwab option chain for {symbol}: {e}")
-        return create_error_response(str(e))
+        return create_error_response(e)
 
 
 @handle_schwab_errors
@@ -117,7 +117,7 @@ async def get_schwab_option_chain_by_expiration(
         if to_date:
             to_dt = date.fromisoformat(to_date)
 
-        def _get_option_chain():
+        def _get_option_chain() -> Any:
             response = broker.client.get_option_chain(
                 symbol.upper(),
                 contract_type=ct,
@@ -133,7 +133,7 @@ async def get_schwab_option_chain_by_expiration(
 
     except Exception as e:
         logger.error(f"Error getting Schwab option chain for {symbol}: {e}")
-        return create_error_response(str(e))
+        return create_error_response(e)
 
 
 @handle_schwab_errors
@@ -151,7 +151,7 @@ async def get_schwab_option_expirations(symbol: str) -> dict[str, Any]:
         return error
 
     try:
-        def _get_option_chain():
+        def _get_option_chain() -> Any:
             response = broker.client.get_option_expiration_chain(symbol.upper())
             return response.json()
 
@@ -168,7 +168,7 @@ async def get_schwab_option_expirations(symbol: str) -> dict[str, Any]:
 
     except Exception as e:
         logger.error(f"Error getting Schwab option expirations for {symbol}: {e}")
-        return create_error_response(str(e))
+        return create_error_response(e)
 
 
 @handle_schwab_errors
@@ -189,7 +189,7 @@ async def get_schwab_options_positions(account_hash: str) -> dict[str, Any]:
         # Import client
         from schwab.client import Client
 
-        def _get_account():
+        def _get_account() -> Any:
             response = broker.client.get_account(
                 account_hash, fields=Client.Account.Fields.POSITIONS
             )
@@ -227,7 +227,7 @@ async def get_schwab_options_positions(account_hash: str) -> dict[str, Any]:
 
     except Exception as e:
         logger.error(f"Error getting Schwab options positions: {e}")
-        return create_error_response(str(e))
+        return create_error_response(e)
 
 
 @handle_schwab_errors
@@ -268,7 +268,7 @@ async def schwab_option_buy_to_open(
         # Create order spec
         order_spec = option_buy_to_open_market(option_symbol, quantity)
 
-        def _place_order():
+        def _place_order() -> Any:
             response = broker.client.place_order(account_hash, order_spec)
             return response
 
@@ -291,12 +291,12 @@ async def schwab_option_buy_to_open(
             })
         else:
             return create_error_response(
-                f"Option order failed with status {response.status_code}: {response.text}"
+                ValueError(f"Option order failed with status {response.status_code}: {response.text}")
             )
 
     except Exception as e:
         logger.error(f"Error placing Schwab option buy order: {e}")
-        return create_error_response(str(e))
+        return create_error_response(e)
 
 
 @handle_schwab_errors
@@ -335,7 +335,7 @@ async def schwab_option_sell_to_close(
         # Create order spec
         order_spec = option_sell_to_close_market(option_symbol, quantity)
 
-        def _place_order():
+        def _place_order() -> Any:
             response = broker.client.place_order(account_hash, order_spec)
             return response
 
@@ -358,9 +358,9 @@ async def schwab_option_sell_to_close(
             })
         else:
             return create_error_response(
-                f"Option order failed with status {response.status_code}: {response.text}"
+                ValueError(f"Option order failed with status {response.status_code}: {response.text}")
             )
 
     except Exception as e:
         logger.error(f"Error placing Schwab option sell order: {e}")
-        return create_error_response(str(e))
+        return create_error_response(e)

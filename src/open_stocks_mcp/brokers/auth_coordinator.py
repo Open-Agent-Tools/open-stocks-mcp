@@ -1,10 +1,10 @@
 """Authentication coordinator for managing multi-broker login flows."""
 
-import asyncio
 from datetime import datetime
+from typing import Any
 
 from open_stocks_mcp.brokers.base import BrokerAuthStatus
-from open_stocks_mcp.brokers.registry import BrokerRegistry, get_broker_registry
+from open_stocks_mcp.brokers.registry import get_broker_registry
 from open_stocks_mcp.logging_config import logger
 
 
@@ -95,7 +95,7 @@ async def attempt_broker_logins(
 
 def create_unauthenticated_tool_response(
     broker_name: str | None = None,
-) -> dict[str, any]:
+) -> dict[str, Any]:
     """Create error response when no broker is authenticated.
 
     Args:
@@ -127,7 +127,7 @@ def create_unauthenticated_tool_response(
 async def get_authenticated_broker_or_error(
     broker_name: str | None = None,
     operation: str = "operation",
-):
+) -> tuple[Any, dict[str, Any] | None]:
     """Get an authenticated broker or return an error response.
 
     Args:

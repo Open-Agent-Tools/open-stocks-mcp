@@ -1,7 +1,6 @@
 """Schwab market data MCP tools using schwab-py library."""
 
 import asyncio
-from datetime import datetime, timedelta
 from typing import Any
 
 from open_stocks_mcp.brokers.auth_coordinator import get_authenticated_broker_or_error
@@ -28,7 +27,7 @@ async def get_schwab_quote(symbol: str) -> dict[str, Any]:
         return error
 
     try:
-        def _get_quote():
+        def _get_quote() -> Any:
             response = broker.client.get_quote(symbol.upper())
             return response.json()
 
@@ -60,7 +59,7 @@ async def get_schwab_quote(symbol: str) -> dict[str, Any]:
 
     except Exception as e:
         logger.error(f"Error getting Schwab quote for {symbol}: {e}")
-        return create_error_response(str(e))
+        return create_error_response(e)
 
 
 @handle_schwab_errors
@@ -81,7 +80,7 @@ async def get_schwab_quotes(symbols: list[str]) -> dict[str, Any]:
         # Convert to uppercase
         symbols_upper = [s.upper() for s in symbols]
 
-        def _get_quotes():
+        def _get_quotes() -> Any:
             response = broker.client.get_quotes(symbols_upper)
             return response.json()
 
@@ -109,7 +108,7 @@ async def get_schwab_quotes(symbols: list[str]) -> dict[str, Any]:
 
     except Exception as e:
         logger.error(f"Error getting Schwab quotes: {e}")
-        return create_error_response(str(e))
+        return create_error_response(e)
 
 
 @handle_schwab_errors
@@ -160,12 +159,14 @@ async def get_schwab_price_history(
 
         if not pt or not ft:
             return create_error_response(
-                f"Invalid period_type or frequency_type. "
-                f"Valid period_types: {list(period_type_map.keys())}, "
-                f"Valid frequency_types: {list(frequency_type_map.keys())}"
+                ValueError(
+                    f"Invalid period_type or frequency_type. "
+                    f"Valid period_types: {list(period_type_map.keys())}, "
+                    f"Valid frequency_types: {list(frequency_type_map.keys())}"
+                )
             )
 
-        def _get_price_history():
+        def _get_price_history() -> Any:
             response = broker.client.get_price_history(
                 symbol.upper(),
                 period_type=pt,
@@ -188,7 +189,7 @@ async def get_schwab_price_history(
 
     except Exception as e:
         logger.error(f"Error getting Schwab price history for {symbol}: {e}")
-        return create_error_response(str(e))
+        return create_error_response(e)
 
 
 @handle_schwab_errors
@@ -207,7 +208,7 @@ async def get_schwab_instrument(symbol: str) -> dict[str, Any]:
 
     try:
         # Use quote to get instrument info
-        def _get_quote():
+        def _get_quote() -> Any:
             response = broker.client.get_quote(symbol.upper())
             return response.json()
 
@@ -227,7 +228,7 @@ async def get_schwab_instrument(symbol: str) -> dict[str, Any]:
 
     except Exception as e:
         logger.error(f"Error getting Schwab instrument for {symbol}: {e}")
-        return create_error_response(str(e))
+        return create_error_response(e)
 
 
 @handle_schwab_errors
@@ -249,7 +250,7 @@ async def search_schwab_instruments(query: str) -> dict[str, Any]:
 
     try:
         # Try to get quote for the query (assuming it's a symbol)
-        def _get_quote():
+        def _get_quote() -> Any:
             response = broker.client.get_quote(query.upper())
             return response.json()
 
@@ -273,5 +274,5 @@ async def search_schwab_instruments(query: str) -> dict[str, Any]:
     except Exception as e:
         logger.error(f"Error searching Schwab instruments for '{query}': {e}")
         return create_error_response(
-            f"No results found for '{query}'. Try using exact ticker symbol."
+            ValueError(f"No results found for '{query}'. Try using exact ticker symbol.")
         )

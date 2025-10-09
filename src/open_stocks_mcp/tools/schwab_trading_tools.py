@@ -30,7 +30,7 @@ async def place_schwab_order(
         return error
 
     try:
-        def _place_order():
+        def _place_order() -> Any:
             response = broker.client.place_order(account_hash, order_spec)
             return response
 
@@ -49,12 +49,12 @@ async def place_schwab_order(
             })
         else:
             return create_error_response(
-                f"Order placement failed with status {response.status_code}: {response.text}"
+                ValueError(f"Order placement failed with status {response.status_code}: {response.text}")
             )
 
     except Exception as e:
         logger.error(f"Error placing Schwab order: {e}")
-        return create_error_response(str(e))
+        return create_error_response(e)
 
 
 @handle_schwab_errors
@@ -82,7 +82,7 @@ async def schwab_buy_market(
         # Create order spec
         order_spec = equity_buy_market(symbol.upper(), quantity)
 
-        def _place_order():
+        def _place_order() -> Any:
             response = broker.client.place_order(account_hash, order_spec)
             return response
 
@@ -103,12 +103,12 @@ async def schwab_buy_market(
             })
         else:
             return create_error_response(
-                f"Buy order failed with status {response.status_code}: {response.text}"
+                ValueError(f"Buy order failed with status {response.status_code}: {response.text}")
             )
 
     except Exception as e:
         logger.error(f"Error placing Schwab buy order for {symbol}: {e}")
-        return create_error_response(str(e))
+        return create_error_response(e)
 
 
 @handle_schwab_errors
@@ -136,7 +136,7 @@ async def schwab_sell_market(
         # Create order spec
         order_spec = equity_sell_market(symbol.upper(), quantity)
 
-        def _place_order():
+        def _place_order() -> Any:
             response = broker.client.place_order(account_hash, order_spec)
             return response
 
@@ -157,12 +157,12 @@ async def schwab_sell_market(
             })
         else:
             return create_error_response(
-                f"Sell order failed with status {response.status_code}: {response.text}"
+                ValueError(f"Sell order failed with status {response.status_code}: {response.text}")
             )
 
     except Exception as e:
         logger.error(f"Error placing Schwab sell order for {symbol}: {e}")
-        return create_error_response(str(e))
+        return create_error_response(e)
 
 
 @handle_schwab_errors
@@ -191,7 +191,7 @@ async def schwab_buy_limit(
         # Create order spec
         order_spec = equity_buy_limit(symbol.upper(), quantity, price)
 
-        def _place_order():
+        def _place_order() -> Any:
             response = broker.client.place_order(account_hash, order_spec)
             return response
 
@@ -213,12 +213,12 @@ async def schwab_buy_limit(
             })
         else:
             return create_error_response(
-                f"Limit buy order failed with status {response.status_code}: {response.text}"
+                ValueError(f"Limit buy order failed with status {response.status_code}: {response.text}")
             )
 
     except Exception as e:
         logger.error(f"Error placing Schwab limit buy order for {symbol}: {e}")
-        return create_error_response(str(e))
+        return create_error_response(e)
 
 
 @handle_schwab_errors
@@ -247,7 +247,7 @@ async def schwab_sell_limit(
         # Create order spec
         order_spec = equity_sell_limit(symbol.upper(), quantity, price)
 
-        def _place_order():
+        def _place_order() -> Any:
             response = broker.client.place_order(account_hash, order_spec)
             return response
 
@@ -269,12 +269,12 @@ async def schwab_sell_limit(
             })
         else:
             return create_error_response(
-                f"Limit sell order failed with status {response.status_code}: {response.text}"
+                ValueError(f"Limit sell order failed with status {response.status_code}: {response.text}")
             )
 
     except Exception as e:
         logger.error(f"Error placing Schwab limit sell order for {symbol}: {e}")
-        return create_error_response(str(e))
+        return create_error_response(e)
 
 
 @handle_schwab_errors
@@ -293,7 +293,7 @@ async def get_schwab_orders(account_hash: str, max_results: int = 50) -> dict[st
         return error
 
     try:
-        def _get_orders():
+        def _get_orders() -> Any:
             response = broker.client.get_orders_for_account(
                 account_hash, max_results=max_results
             )
@@ -308,7 +308,7 @@ async def get_schwab_orders(account_hash: str, max_results: int = 50) -> dict[st
 
     except Exception as e:
         logger.error(f"Error getting Schwab orders: {e}")
-        return create_error_response(str(e))
+        return create_error_response(e)
 
 
 @handle_schwab_errors
@@ -327,7 +327,7 @@ async def cancel_schwab_order(account_hash: str, order_id: str) -> dict[str, Any
         return error
 
     try:
-        def _cancel_order():
+        def _cancel_order() -> Any:
             response = broker.client.cancel_order(order_id, account_hash)
             return response
 
@@ -341,12 +341,12 @@ async def cancel_schwab_order(account_hash: str, order_id: str) -> dict[str, Any
             })
         else:
             return create_error_response(
-                f"Order cancellation failed with status {response.status_code}: {response.text}"
+                ValueError(f"Order cancellation failed with status {response.status_code}: {response.text}")
             )
 
     except Exception as e:
         logger.error(f"Error cancelling Schwab order {order_id}: {e}")
-        return create_error_response(str(e))
+        return create_error_response(e)
 
 
 @handle_schwab_errors
@@ -365,7 +365,7 @@ async def get_schwab_order_by_id(account_hash: str, order_id: str) -> dict[str, 
         return error
 
     try:
-        def _get_order():
+        def _get_order() -> Any:
             response = broker.client.get_order(order_id, account_hash)
             return response.json()
 
@@ -375,4 +375,4 @@ async def get_schwab_order_by_id(account_hash: str, order_id: str) -> dict[str, 
 
     except Exception as e:
         logger.error(f"Error getting Schwab order {order_id}: {e}")
-        return create_error_response(str(e))
+        return create_error_response(e)
