@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 GitHub Discussions
+    url: https://github.com/Open-Agent-Tools/open-stocks-mcp/discussions
+    about: Ask questions, share ideas, or discuss the project
+  - name: 🔒 Security Vulnerability
+    url: https://github.com/Open-Agent-Tools/open-stocks-mcp/security/advisories/new
+    about: Report a security vulnerability privately
+  - name: 📚 Documentation
+    url: https://github.com/Open-Agent-Tools/open-stocks-mcp#readme
+    about: Read the documentation
