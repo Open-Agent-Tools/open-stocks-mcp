@@ -1,15 +1,17 @@
 """Unit tests for authentication coordinator."""
 
-import pytest
 from datetime import datetime
-from unittest.mock import AsyncMock, patch
-from open_stocks_mcp.brokers.base import BaseBroker, BrokerAuthStatus
-from open_stocks_mcp.brokers.registry import BrokerRegistry
+from unittest.mock import patch
+
+import pytest
+
 from open_stocks_mcp.brokers.auth_coordinator import (
     attempt_broker_logins,
     create_unauthenticated_tool_response,
     get_authenticated_broker_or_error,
 )
+from open_stocks_mcp.brokers.base import BaseBroker, BrokerAuthStatus
+from open_stocks_mcp.brokers.registry import BrokerRegistry
 
 
 class MockBroker(BaseBroker):

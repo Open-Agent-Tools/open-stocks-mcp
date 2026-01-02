@@ -1,7 +1,9 @@
 """Unit tests for broker registry management."""
 
-import pytest
 from datetime import datetime
+
+import pytest
+
 from open_stocks_mcp.brokers.base import BaseBroker, BrokerAuthStatus
 from open_stocks_mcp.brokers.registry import BrokerRegistry, get_broker_registry
 

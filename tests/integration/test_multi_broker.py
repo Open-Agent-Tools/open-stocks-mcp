@@ -4,7 +4,7 @@ These tests verify that multiple brokers can work together correctly.
 They use mocked broker responses to avoid requiring real credentials.
 """
 
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 

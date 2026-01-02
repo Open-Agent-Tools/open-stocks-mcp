@@ -1,6 +1,5 @@
 """Unit tests for Schwab options tools."""
 
-from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest

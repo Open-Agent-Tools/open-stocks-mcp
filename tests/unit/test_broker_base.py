@@ -1,8 +1,10 @@
 """Unit tests for broker base classes and authentication status."""
 
-import pytest
 from datetime import datetime
-from open_stocks_mcp.brokers.base import BaseBroker, BrokerAuthStatus, BrokerAuthInfo
+
+import pytest
+
+from open_stocks_mcp.brokers.base import BaseBroker, BrokerAuthInfo, BrokerAuthStatus
 
 
 class MockBroker(BaseBroker):
