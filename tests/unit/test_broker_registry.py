@@ -11,7 +11,9 @@ from open_stocks_mcp.brokers.registry import BrokerRegistry, get_broker_registry
 class MockBroker(BaseBroker):
     """Mock broker for testing registry."""
 
-    def __init__(self, name: str, should_auth_succeed: bool = True, configured: bool = True):
+    def __init__(
+        self, name: str, should_auth_succeed: bool = True, configured: bool = True
+    ):
         super().__init__(name)
         self._should_auth_succeed = should_auth_succeed
         self._auth_call_count = 0
@@ -263,7 +265,9 @@ class TestBrokerRegistry:
     @pytest.mark.asyncio
     async def test_get_broker_or_error_not_registered(self, registry):
         """Test get_broker_or_error with non-existent broker."""
-        result_broker, error = registry.get_broker_or_error("nonexistent", "test operation")
+        result_broker, error = registry.get_broker_or_error(
+            "nonexistent", "test operation"
+        )
 
         assert result_broker is None
         assert error is not None

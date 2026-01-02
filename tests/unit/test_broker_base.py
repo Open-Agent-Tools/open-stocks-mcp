@@ -87,8 +87,7 @@ class TestBrokerAuthInfo:
     def test_default_initialization(self):
         """Test default auth info values."""
         info = BrokerAuthInfo(
-            status=BrokerAuthStatus.NOT_CONFIGURED,
-            broker_name="test_broker"
+            status=BrokerAuthStatus.NOT_CONFIGURED, broker_name="test_broker"
         )
         assert info.status == BrokerAuthStatus.NOT_CONFIGURED
         assert info.broker_name == "test_broker"
@@ -207,7 +206,9 @@ class TestBaseBroker:
             BrokerAuthStatus.MFA_REQUIRED,
         ]:
             broker._auth_info.status = status
-            assert broker.is_available() is False, f"Should not be available when {status}"
+            assert broker.is_available() is False, (
+                f"Should not be available when {status}"
+            )
 
     @pytest.mark.asyncio
     async def test_is_configured_with_credentials(self):

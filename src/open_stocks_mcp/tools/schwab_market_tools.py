@@ -22,11 +22,14 @@ async def get_schwab_quote(symbol: str) -> dict[str, Any]:
     Returns:
         Dict with quote data including price, volume, bid/ask
     """
-    broker, error = await get_authenticated_broker_or_error("schwab", f"get quote for {symbol}")
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", f"get quote for {symbol}"
+    )
     if error:
         return error
 
     try:
+
         def _get_quote() -> Any:
             response = broker.client.get_quote(symbol.upper())
             return response.json()
@@ -36,26 +39,28 @@ async def get_schwab_quote(symbol: str) -> dict[str, Any]:
         # Extract quote from response
         quote = quote_data.get(symbol.upper(), {}).get("quote", {})
 
-        return create_success_response({
-            "symbol": symbol.upper(),
-            "last_price": quote.get("lastPrice"),
-            "bid_price": quote.get("bidPrice"),
-            "ask_price": quote.get("askPrice"),
-            "bid_size": quote.get("bidSize"),
-            "ask_size": quote.get("askSize"),
-            "volume": quote.get("totalVolume"),
-            "open_price": quote.get("openPrice"),
-            "high_price": quote.get("highPrice"),
-            "low_price": quote.get("lowPrice"),
-            "close_price": quote.get("closePrice"),
-            "change": quote.get("netChange"),
-            "change_percent": quote.get("netPercentChange"),
-            "52_week_high": quote.get("52WkHigh"),
-            "52_week_low": quote.get("52WkLow"),
-            "market_cap": quote.get("marketCap"),
-            "pe_ratio": quote.get("peRatio"),
-            "dividend_yield": quote.get("divYield"),
-        })
+        return create_success_response(
+            {
+                "symbol": symbol.upper(),
+                "last_price": quote.get("lastPrice"),
+                "bid_price": quote.get("bidPrice"),
+                "ask_price": quote.get("askPrice"),
+                "bid_size": quote.get("bidSize"),
+                "ask_size": quote.get("askSize"),
+                "volume": quote.get("totalVolume"),
+                "open_price": quote.get("openPrice"),
+                "high_price": quote.get("highPrice"),
+                "low_price": quote.get("lowPrice"),
+                "close_price": quote.get("closePrice"),
+                "change": quote.get("netChange"),
+                "change_percent": quote.get("netPercentChange"),
+                "52_week_high": quote.get("52WkHigh"),
+                "52_week_low": quote.get("52WkLow"),
+                "market_cap": quote.get("marketCap"),
+                "pe_ratio": quote.get("peRatio"),
+                "dividend_yield": quote.get("divYield"),
+            }
+        )
 
     except Exception as e:
         logger.error(f"Error getting Schwab quote for {symbol}: {e}")
@@ -72,7 +77,9 @@ async def get_schwab_quotes(symbols: list[str]) -> dict[str, Any]:
     Returns:
         Dict with quotes for all symbols
     """
-    broker, error = await get_authenticated_broker_or_error("schwab", f"get quotes for {len(symbols)} symbols")
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", f"get quotes for {len(symbols)} symbols"
+    )
     if error:
         return error
 
@@ -101,10 +108,12 @@ async def get_schwab_quotes(symbols: list[str]) -> dict[str, Any]:
                 "ask_price": quote.get("askPrice"),
             }
 
-        return create_success_response({
-            "quotes": quotes,
-            "count": len(quotes),
-        })
+        return create_success_response(
+            {
+                "quotes": quotes,
+                "count": len(quotes),
+            }
+        )
 
     except Exception as e:
         logger.error(f"Error getting Schwab quotes: {e}")
@@ -131,7 +140,9 @@ async def get_schwab_price_history(
     Returns:
         Dict with historical price data (candles)
     """
-    broker, error = await get_authenticated_broker_or_error("schwab", f"get price history for {symbol}")
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", f"get price history for {symbol}"
+    )
     if error:
         return error
 
@@ -180,12 +191,14 @@ async def get_schwab_price_history(
 
         candles = history_data.get("candles", [])
 
-        return create_success_response({
-            "symbol": symbol.upper(),
-            "candles": candles,
-            "count": len(candles),
-            "empty": history_data.get("empty", False),
-        })
+        return create_success_response(
+            {
+                "symbol": symbol.upper(),
+                "candles": candles,
+                "count": len(candles),
+                "empty": history_data.get("empty", False),
+            }
+        )
 
     except Exception as e:
         logger.error(f"Error getting Schwab price history for {symbol}: {e}")
@@ -202,7 +215,9 @@ async def get_schwab_instrument(symbol: str) -> dict[str, Any]:
     Returns:
         Dict with instrument details
     """
-    broker, error = await get_authenticated_broker_or_error("schwab", f"get instrument {symbol}")
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", f"get instrument {symbol}"
+    )
     if error:
         return error
 
@@ -217,14 +232,16 @@ async def get_schwab_instrument(symbol: str) -> dict[str, Any]:
         symbol_data = quote_data.get(symbol.upper(), {})
         reference = symbol_data.get("reference", {})
 
-        return create_success_response({
-            "symbol": symbol.upper(),
-            "description": reference.get("description"),
-            "exchange": reference.get("exchange"),
-            "exchange_name": reference.get("exchangeName"),
-            "asset_type": symbol_data.get("assetMainType"),
-            "cusip": reference.get("cusip"),
-        })
+        return create_success_response(
+            {
+                "symbol": symbol.upper(),
+                "description": reference.get("description"),
+                "exchange": reference.get("exchange"),
+                "exchange_name": reference.get("exchangeName"),
+                "asset_type": symbol_data.get("assetMainType"),
+                "cusip": reference.get("cusip"),
+            }
+        )
 
     except Exception as e:
         logger.error(f"Error getting Schwab instrument for {symbol}: {e}")
@@ -244,7 +261,9 @@ async def search_schwab_instruments(query: str) -> dict[str, Any]:
     Returns:
         Dict with search results
     """
-    broker, error = await get_authenticated_broker_or_error("schwab", f"search instruments {query}")
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", f"search instruments {query}"
+    )
     if error:
         return error
 
@@ -259,20 +278,26 @@ async def search_schwab_instruments(query: str) -> dict[str, Any]:
         results = []
         for symbol, data in quote_data.items():
             reference = data.get("reference", {})
-            results.append({
-                "symbol": symbol,
-                "description": reference.get("description"),
-                "exchange": reference.get("exchangeName"),
-                "asset_type": data.get("assetMainType"),
-            })
+            results.append(
+                {
+                    "symbol": symbol,
+                    "description": reference.get("description"),
+                    "exchange": reference.get("exchangeName"),
+                    "asset_type": data.get("assetMainType"),
+                }
+            )
 
-        return create_success_response({
-            "results": results,
-            "count": len(results),
-        })
+        return create_success_response(
+            {
+                "results": results,
+                "count": len(results),
+            }
+        )
 
     except Exception as e:
         logger.error(f"Error searching Schwab instruments for '{query}': {e}")
         return create_error_response(
-            ValueError(f"No results found for '{query}'. Try using exact ticker symbol.")
+            ValueError(
+                f"No results found for '{query}'. Try using exact ticker symbol."
+            )
         )

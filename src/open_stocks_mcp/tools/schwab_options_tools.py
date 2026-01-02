@@ -31,7 +31,9 @@ async def get_schwab_option_chain(
     Returns:
         Dict with option chain data
     """
-    broker, error = await get_authenticated_broker_or_error("schwab", f"get option chain for {symbol}")
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", f"get option chain for {symbol}"
+    )
     if error:
         return error
 
@@ -51,7 +53,9 @@ async def get_schwab_option_chain(
             ct = contract_type_map.get(contract_type.lower())
             if not ct:
                 return create_error_response(
-                    ValueError(f"Invalid contract_type. Valid options: {list(contract_type_map.keys())}")
+                    ValueError(
+                        f"Invalid contract_type. Valid options: {list(contract_type_map.keys())}"
+                    )
                 )
 
         def _get_option_chain() -> Any:
@@ -90,7 +94,9 @@ async def get_schwab_option_chain_by_expiration(
     Returns:
         Dict with filtered option chain data
     """
-    broker, error = await get_authenticated_broker_or_error("schwab", f"get option chain for {symbol}")
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", f"get option chain for {symbol}"
+    )
     if error:
         return error
 
@@ -146,11 +152,14 @@ async def get_schwab_option_expirations(symbol: str) -> dict[str, Any]:
     Returns:
         Dict with list of expiration dates
     """
-    broker, error = await get_authenticated_broker_or_error("schwab", f"get option expirations for {symbol}")
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", f"get option expirations for {symbol}"
+    )
     if error:
         return error
 
     try:
+
         def _get_option_chain() -> Any:
             response = broker.client.get_option_expiration_chain(symbol.upper())
             return response.json()
@@ -160,11 +169,13 @@ async def get_schwab_option_expirations(symbol: str) -> dict[str, Any]:
         # Extract expiration dates
         expirations = expiration_data.get("expirationList", [])
 
-        return create_success_response({
-            "symbol": symbol.upper(),
-            "expirations": expirations,
-            "count": len(expirations),
-        })
+        return create_success_response(
+            {
+                "symbol": symbol.upper(),
+                "expirations": expirations,
+                "count": len(expirations),
+            }
+        )
 
     except Exception as e:
         logger.error(f"Error getting Schwab option expirations for {symbol}: {e}")
@@ -181,7 +192,9 @@ async def get_schwab_options_positions(account_hash: str) -> dict[str, Any]:
     Returns:
         Dict with options positions
     """
-    broker, error = await get_authenticated_broker_or_error("schwab", f"get options positions for {account_hash}")
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", f"get options positions for {account_hash}"
+    )
     if error:
         return error
 
@@ -208,22 +221,27 @@ async def get_schwab_options_positions(account_hash: str) -> dict[str, Any]:
             asset_type = instrument.get("assetType")
 
             if asset_type == "OPTION":
-                options_positions.append({
-                    "symbol": instrument.get("symbol"),
-                    "underlying_symbol": instrument.get("underlyingSymbol"),
-                    "option_type": instrument.get("putCall"),
-                    "strike_price": instrument.get("strikePrice"),
-                    "expiration_date": instrument.get("expirationDate"),
-                    "quantity": position.get("longQuantity", 0) + position.get("shortQuantity", 0),
-                    "average_price": position.get("averagePrice"),
-                    "market_value": position.get("marketValue"),
-                    "current_day_pl": position.get("currentDayProfitLoss"),
-                })
+                options_positions.append(
+                    {
+                        "symbol": instrument.get("symbol"),
+                        "underlying_symbol": instrument.get("underlyingSymbol"),
+                        "option_type": instrument.get("putCall"),
+                        "strike_price": instrument.get("strikePrice"),
+                        "expiration_date": instrument.get("expirationDate"),
+                        "quantity": position.get("longQuantity", 0)
+                        + position.get("shortQuantity", 0),
+                        "average_price": position.get("averagePrice"),
+                        "market_value": position.get("marketValue"),
+                        "current_day_pl": position.get("currentDayProfitLoss"),
+                    }
+                )
 
-        return create_success_response({
-            "positions": options_positions,
-            "count": len(options_positions),
-        })
+        return create_success_response(
+            {
+                "positions": options_positions,
+                "count": len(options_positions),
+            }
+        )
 
     except Exception as e:
         logger.error(f"Error getting Schwab options positions: {e}")
@@ -254,7 +272,9 @@ async def schwab_option_buy_to_open(
     Returns:
         Dict with order placement result
     """
-    broker, error = await get_authenticated_broker_or_error("schwab", f"buy {option_type} option for {symbol}")
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", f"buy {option_type} option for {symbol}"
+    )
     if error:
         return error
 
@@ -263,7 +283,9 @@ async def schwab_option_buy_to_open(
         from schwab.orders.options import option_buy_to_open_market
 
         # Create option symbol (simplified - may need adjustment for Schwab format)
-        option_symbol = f"{symbol.upper()}_{expiration}_{option_type[0].upper()}{strike}"
+        option_symbol = (
+            f"{symbol.upper()}_{expiration}_{option_type[0].upper()}{strike}"
+        )
 
         # Create order spec
         order_spec = option_buy_to_open_market(option_symbol, quantity)
@@ -279,19 +301,23 @@ async def schwab_option_buy_to_open(
             location = response.headers.get("Location", "")
             order_id = location.split("/")[-1] if location else None
 
-            return create_success_response({
-                "status": "order_placed",
-                "action": "buy_to_open",
-                "symbol": symbol.upper(),
-                "option_type": option_type.upper(),
-                "strike": strike,
-                "expiration": expiration,
-                "quantity": quantity,
-                "order_id": order_id,
-            })
+            return create_success_response(
+                {
+                    "status": "order_placed",
+                    "action": "buy_to_open",
+                    "symbol": symbol.upper(),
+                    "option_type": option_type.upper(),
+                    "strike": strike,
+                    "expiration": expiration,
+                    "quantity": quantity,
+                    "order_id": order_id,
+                }
+            )
         else:
             return create_error_response(
-                ValueError(f"Option order failed with status {response.status_code}: {response.text}")
+                ValueError(
+                    f"Option order failed with status {response.status_code}: {response.text}"
+                )
             )
 
     except Exception as e:
@@ -321,7 +347,9 @@ async def schwab_option_sell_to_close(
     Returns:
         Dict with order placement result
     """
-    broker, error = await get_authenticated_broker_or_error("schwab", f"sell {option_type} option for {symbol}")
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", f"sell {option_type} option for {symbol}"
+    )
     if error:
         return error
 
@@ -330,7 +358,9 @@ async def schwab_option_sell_to_close(
         from schwab.orders.options import option_sell_to_close_market
 
         # Create option symbol (simplified - may need adjustment for Schwab format)
-        option_symbol = f"{symbol.upper()}_{expiration}_{option_type[0].upper()}{strike}"
+        option_symbol = (
+            f"{symbol.upper()}_{expiration}_{option_type[0].upper()}{strike}"
+        )
 
         # Create order spec
         order_spec = option_sell_to_close_market(option_symbol, quantity)
@@ -346,19 +376,23 @@ async def schwab_option_sell_to_close(
             location = response.headers.get("Location", "")
             order_id = location.split("/")[-1] if location else None
 
-            return create_success_response({
-                "status": "order_placed",
-                "action": "sell_to_close",
-                "symbol": symbol.upper(),
-                "option_type": option_type.upper(),
-                "strike": strike,
-                "expiration": expiration,
-                "quantity": quantity,
-                "order_id": order_id,
-            })
+            return create_success_response(
+                {
+                    "status": "order_placed",
+                    "action": "sell_to_close",
+                    "symbol": symbol.upper(),
+                    "option_type": option_type.upper(),
+                    "strike": strike,
+                    "expiration": expiration,
+                    "quantity": quantity,
+                    "order_id": order_id,
+                }
+            )
         else:
             return create_error_response(
-                ValueError(f"Option order failed with status {response.status_code}: {response.text}")
+                ValueError(
+                    f"Option order failed with status {response.status_code}: {response.text}"
+                )
             )
 
     except Exception as e:

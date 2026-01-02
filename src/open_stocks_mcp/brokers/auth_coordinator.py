@@ -31,7 +31,9 @@ async def attempt_broker_logins(
     # Check if any brokers are registered
     brokers = registry.list_brokers()
     if not brokers:
-        logger.warning("⚠️  No brokers registered - server running without broker access")
+        logger.warning(
+            "⚠️  No brokers registered - server running without broker access"
+        )
         return 0, 0, []
 
     logger.info(f"Registered brokers: {', '.join(brokers)}")

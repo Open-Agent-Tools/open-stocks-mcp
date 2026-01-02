@@ -17,7 +17,13 @@ from open_stocks_mcp.brokers.registry import BrokerRegistry
 class MockBroker(BaseBroker):
     """Mock broker for testing coordinator."""
 
-    def __init__(self, name: str, should_auth_succeed: bool = True, auth_delay: float = 0, configured: bool = True):
+    def __init__(
+        self,
+        name: str,
+        should_auth_succeed: bool = True,
+        auth_delay: float = 0,
+        configured: bool = True,
+    ):
         super().__init__(name)
         self._should_auth_succeed = should_auth_succeed
         self._auth_delay = auth_delay
@@ -84,7 +90,10 @@ async def fresh_registry():
     registry = BrokerRegistry()
 
     # Patch the singleton to return our fresh instance
-    with patch('open_stocks_mcp.brokers.auth_coordinator.get_broker_registry', return_value=registry):
+    with patch(
+        "open_stocks_mcp.brokers.auth_coordinator.get_broker_registry",
+        return_value=registry,
+    ):
         yield registry
 
 
@@ -94,7 +103,10 @@ class TestAttemptBrokerLogins:
     @pytest.mark.asyncio
     async def test_no_brokers_registered(self, fresh_registry):
         """Test with no brokers registered."""
-        with patch('open_stocks_mcp.brokers.auth_coordinator.get_broker_registry', return_value=fresh_registry):
+        with patch(
+            "open_stocks_mcp.brokers.auth_coordinator.get_broker_registry",
+            return_value=fresh_registry,
+        ):
             successful, total, failed = await attempt_broker_logins()
 
         assert successful == 0
@@ -107,7 +119,10 @@ class TestAttemptBrokerLogins:
         broker = MockBroker("test", should_auth_succeed=True)
         fresh_registry.register(broker)
 
-        with patch('open_stocks_mcp.brokers.auth_coordinator.get_broker_registry', return_value=fresh_registry):
+        with patch(
+            "open_stocks_mcp.brokers.auth_coordinator.get_broker_registry",
+            return_value=fresh_registry,
+        ):
             successful, total, failed = await attempt_broker_logins()
 
         assert successful == 1
@@ -121,7 +136,10 @@ class TestAttemptBrokerLogins:
         broker = MockBroker("test", should_auth_succeed=False)
         fresh_registry.register(broker)
 
-        with patch('open_stocks_mcp.brokers.auth_coordinator.get_broker_registry', return_value=fresh_registry):
+        with patch(
+            "open_stocks_mcp.brokers.auth_coordinator.get_broker_registry",
+            return_value=fresh_registry,
+        ):
             successful, total, failed = await attempt_broker_logins()
 
         assert successful == 0
@@ -139,7 +157,10 @@ class TestAttemptBrokerLogins:
         fresh_registry.register(broker2)
         fresh_registry.register(broker3)
 
-        with patch('open_stocks_mcp.brokers.auth_coordinator.get_broker_registry', return_value=fresh_registry):
+        with patch(
+            "open_stocks_mcp.brokers.auth_coordinator.get_broker_registry",
+            return_value=fresh_registry,
+        ):
             successful, total, failed = await attempt_broker_logins()
 
         assert successful == 3
@@ -157,7 +178,10 @@ class TestAttemptBrokerLogins:
         fresh_registry.register(broker2)
         fresh_registry.register(broker3)
 
-        with patch('open_stocks_mcp.brokers.auth_coordinator.get_broker_registry', return_value=fresh_registry):
+        with patch(
+            "open_stocks_mcp.brokers.auth_coordinator.get_broker_registry",
+            return_value=fresh_registry,
+        ):
             successful, total, failed = await attempt_broker_logins()
 
         assert successful == 2
@@ -173,7 +197,10 @@ class TestAttemptBrokerLogins:
         fresh_registry.register(broker1)
         fresh_registry.register(broker2)
 
-        with patch('open_stocks_mcp.brokers.auth_coordinator.get_broker_registry', return_value=fresh_registry):
+        with patch(
+            "open_stocks_mcp.brokers.auth_coordinator.get_broker_registry",
+            return_value=fresh_registry,
+        ):
             successful, total, failed = await attempt_broker_logins()
 
         assert successful == 0
@@ -186,9 +213,14 @@ class TestAttemptBrokerLogins:
         broker = MockBroker("test", should_auth_succeed=False)
         fresh_registry.register(broker)
 
-        with patch('open_stocks_mcp.brokers.auth_coordinator.get_broker_registry', return_value=fresh_registry):
+        with patch(
+            "open_stocks_mcp.brokers.auth_coordinator.get_broker_registry",
+            return_value=fresh_registry,
+        ):
             # Should not raise error even with require_at_least_one=True
-            successful, total, failed = await attempt_broker_logins(require_at_least_one=True)
+            successful, total, failed = await attempt_broker_logins(
+                require_at_least_one=True
+            )
 
         assert successful == 0
         assert total == 1
@@ -201,7 +233,10 @@ class TestAttemptBrokerLogins:
         broker._auth_info.status = BrokerAuthStatus.NOT_CONFIGURED
         fresh_registry.register(broker)
 
-        with patch('open_stocks_mcp.brokers.auth_coordinator.get_broker_registry', return_value=fresh_registry):
+        with patch(
+            "open_stocks_mcp.brokers.auth_coordinator.get_broker_registry",
+            return_value=fresh_registry,
+        ):
             successful, total, failed = await attempt_broker_logins()
 
         assert successful == 0
@@ -215,7 +250,10 @@ class TestAttemptBrokerLogins:
         broker._auth_info.status = BrokerAuthStatus.MFA_REQUIRED
         fresh_registry.register(broker)
 
-        with patch('open_stocks_mcp.brokers.auth_coordinator.get_broker_registry', return_value=fresh_registry):
+        with patch(
+            "open_stocks_mcp.brokers.auth_coordinator.get_broker_registry",
+            return_value=fresh_registry,
+        ):
             successful, total, failed = await attempt_broker_logins()
 
         assert successful == 0
@@ -266,7 +304,10 @@ class TestGetAuthenticatedBrokerOrError:
         fresh_registry.register(broker)
         await broker.authenticate()
 
-        with patch('open_stocks_mcp.brokers.auth_coordinator.get_broker_registry', return_value=fresh_registry):
+        with patch(
+            "open_stocks_mcp.brokers.auth_coordinator.get_broker_registry",
+            return_value=fresh_registry,
+        ):
             result_broker, error = await get_authenticated_broker_or_error("test")
 
         assert result_broker is broker
@@ -279,7 +320,10 @@ class TestGetAuthenticatedBrokerOrError:
         fresh_registry.register(broker)
         await broker.authenticate()
 
-        with patch('open_stocks_mcp.brokers.auth_coordinator.get_broker_registry', return_value=fresh_registry):
+        with patch(
+            "open_stocks_mcp.brokers.auth_coordinator.get_broker_registry",
+            return_value=fresh_registry,
+        ):
             result_broker, error = await get_authenticated_broker_or_error("test")
 
         assert result_broker is None
@@ -290,8 +334,13 @@ class TestGetAuthenticatedBrokerOrError:
     @pytest.mark.asyncio
     async def test_get_nonexistent_broker(self, fresh_registry):
         """Test getting non-existent broker returns error."""
-        with patch('open_stocks_mcp.brokers.auth_coordinator.get_broker_registry', return_value=fresh_registry):
-            result_broker, error = await get_authenticated_broker_or_error("nonexistent")
+        with patch(
+            "open_stocks_mcp.brokers.auth_coordinator.get_broker_registry",
+            return_value=fresh_registry,
+        ):
+            result_broker, error = await get_authenticated_broker_or_error(
+                "nonexistent"
+            )
 
         assert result_broker is None
         assert error is not None
@@ -303,8 +352,13 @@ class TestGetAuthenticatedBrokerOrError:
         fresh_registry.register(broker)
         await broker.authenticate()
 
-        with patch('open_stocks_mcp.brokers.auth_coordinator.get_broker_registry', return_value=fresh_registry):
-            _, error = await get_authenticated_broker_or_error("test", operation="get portfolio")
+        with patch(
+            "open_stocks_mcp.brokers.auth_coordinator.get_broker_registry",
+            return_value=fresh_registry,
+        ):
+            _, error = await get_authenticated_broker_or_error(
+                "test", operation="get portfolio"
+            )
 
         # Error response should reference the operation
         assert error is not None
@@ -318,7 +372,10 @@ class TestGetAuthenticatedBrokerOrError:
         fresh_registry.set_active_broker("active")
         await broker.authenticate()
 
-        with patch('open_stocks_mcp.brokers.auth_coordinator.get_broker_registry', return_value=fresh_registry):
+        with patch(
+            "open_stocks_mcp.brokers.auth_coordinator.get_broker_registry",
+            return_value=fresh_registry,
+        ):
             result_broker, error = await get_authenticated_broker_or_error(None)
 
         # Should get the active broker
@@ -339,7 +396,10 @@ class TestAuthenticationIntegrationScenarios:
         fresh_registry.register(schwab)
 
         # Attempt logins (simulates server startup)
-        with patch('open_stocks_mcp.brokers.auth_coordinator.get_broker_registry', return_value=fresh_registry):
+        with patch(
+            "open_stocks_mcp.brokers.auth_coordinator.get_broker_registry",
+            return_value=fresh_registry,
+        ):
             successful, total, failed = await attempt_broker_logins()
 
         # Verify startup succeeded
@@ -348,7 +408,10 @@ class TestAuthenticationIntegrationScenarios:
         assert failed == []
 
         # Verify tools can access brokers
-        with patch('open_stocks_mcp.brokers.auth_coordinator.get_broker_registry', return_value=fresh_registry):
+        with patch(
+            "open_stocks_mcp.brokers.auth_coordinator.get_broker_registry",
+            return_value=fresh_registry,
+        ):
             broker1, err1 = await get_authenticated_broker_or_error("robinhood")
             broker2, err2 = await get_authenticated_broker_or_error("schwab")
 
@@ -368,7 +431,10 @@ class TestAuthenticationIntegrationScenarios:
         fresh_registry.register(schwab)
 
         # Attempt logins - should not crash
-        with patch('open_stocks_mcp.brokers.auth_coordinator.get_broker_registry', return_value=fresh_registry):
+        with patch(
+            "open_stocks_mcp.brokers.auth_coordinator.get_broker_registry",
+            return_value=fresh_registry,
+        ):
             successful, total, failed = await attempt_broker_logins()
 
         # Verify partial success
@@ -377,7 +443,10 @@ class TestAuthenticationIntegrationScenarios:
         assert failed == ["schwab"]
 
         # Verify working broker still accessible
-        with patch('open_stocks_mcp.brokers.auth_coordinator.get_broker_registry', return_value=fresh_registry):
+        with patch(
+            "open_stocks_mcp.brokers.auth_coordinator.get_broker_registry",
+            return_value=fresh_registry,
+        ):
             broker1, err1 = await get_authenticated_broker_or_error("robinhood")
             broker2, err2 = await get_authenticated_broker_or_error("schwab")
 
@@ -397,7 +466,10 @@ class TestAuthenticationIntegrationScenarios:
         fresh_registry.register(schwab)
 
         # Attempt logins - should not crash server
-        with patch('open_stocks_mcp.brokers.auth_coordinator.get_broker_registry', return_value=fresh_registry):
+        with patch(
+            "open_stocks_mcp.brokers.auth_coordinator.get_broker_registry",
+            return_value=fresh_registry,
+        ):
             successful, total, failed = await attempt_broker_logins()
 
         # Verify server "started" even with no auth
@@ -406,7 +478,10 @@ class TestAuthenticationIntegrationScenarios:
         assert failed == ["robinhood", "schwab"]
 
         # Verify tools return appropriate errors
-        with patch('open_stocks_mcp.brokers.auth_coordinator.get_broker_registry', return_value=fresh_registry):
+        with patch(
+            "open_stocks_mcp.brokers.auth_coordinator.get_broker_registry",
+            return_value=fresh_registry,
+        ):
             broker1, err1 = await get_authenticated_broker_or_error("robinhood")
             broker2, err2 = await get_authenticated_broker_or_error("schwab")
 
@@ -421,7 +496,10 @@ class TestAuthenticationIntegrationScenarios:
         # No brokers registered
 
         # Attempt logins - should handle gracefully
-        with patch('open_stocks_mcp.brokers.auth_coordinator.get_broker_registry', return_value=fresh_registry):
+        with patch(
+            "open_stocks_mcp.brokers.auth_coordinator.get_broker_registry",
+            return_value=fresh_registry,
+        ):
             successful, total, failed = await attempt_broker_logins()
 
         # Verify graceful handling

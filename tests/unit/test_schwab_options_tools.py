@@ -20,7 +20,9 @@ class TestSchwabOptionsTools:
     @pytest.mark.journey_options
     @pytest.mark.unit
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.schwab_options_tools.get_authenticated_broker_or_error")
+    @patch(
+        "open_stocks_mcp.tools.schwab_options_tools.get_authenticated_broker_or_error"
+    )
     @patch("open_stocks_mcp.tools.schwab_options_tools.asyncio.to_thread")
     @patch("open_stocks_mcp.tools.schwab_options_tools.Client")
     async def test_get_option_chain_success(
@@ -69,7 +71,9 @@ class TestSchwabOptionsTools:
     @pytest.mark.journey_options
     @pytest.mark.unit
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.schwab_options_tools.get_authenticated_broker_or_error")
+    @patch(
+        "open_stocks_mcp.tools.schwab_options_tools.get_authenticated_broker_or_error"
+    )
     async def test_get_option_chain_auth_error(
         self, mock_get_broker: AsyncMock
     ) -> None:
@@ -85,7 +89,9 @@ class TestSchwabOptionsTools:
     @pytest.mark.journey_options
     @pytest.mark.unit
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.schwab_options_tools.get_authenticated_broker_or_error")
+    @patch(
+        "open_stocks_mcp.tools.schwab_options_tools.get_authenticated_broker_or_error"
+    )
     async def test_get_option_chain_invalid_contract_type(
         self, mock_get_broker: AsyncMock
     ) -> None:
@@ -103,7 +109,9 @@ class TestSchwabOptionsTools:
     @pytest.mark.journey_options
     @pytest.mark.unit
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.schwab_options_tools.get_authenticated_broker_or_error")
+    @patch(
+        "open_stocks_mcp.tools.schwab_options_tools.get_authenticated_broker_or_error"
+    )
     @patch("open_stocks_mcp.tools.schwab_options_tools.asyncio.to_thread")
     @patch("open_stocks_mcp.tools.schwab_options_tools.Client")
     async def test_get_option_chain_by_expiration_success(
@@ -137,7 +145,9 @@ class TestSchwabOptionsTools:
     @pytest.mark.journey_options
     @pytest.mark.unit
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.schwab_options_tools.get_authenticated_broker_or_error")
+    @patch(
+        "open_stocks_mcp.tools.schwab_options_tools.get_authenticated_broker_or_error"
+    )
     @patch("open_stocks_mcp.tools.schwab_options_tools.asyncio.to_thread")
     async def test_get_option_expirations_success(
         self, mock_to_thread: AsyncMock, mock_get_broker: AsyncMock
@@ -166,7 +176,9 @@ class TestSchwabOptionsTools:
     @pytest.mark.journey_options
     @pytest.mark.unit
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.schwab_options_tools.get_authenticated_broker_or_error")
+    @patch(
+        "open_stocks_mcp.tools.schwab_options_tools.get_authenticated_broker_or_error"
+    )
     @patch("open_stocks_mcp.tools.schwab_options_tools.asyncio.to_thread")
     @patch("open_stocks_mcp.tools.schwab_options_tools.Client")
     async def test_get_options_positions_success(
@@ -228,7 +240,9 @@ class TestSchwabOptionsTools:
     @pytest.mark.journey_options
     @pytest.mark.unit
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.schwab_options_tools.get_authenticated_broker_or_error")
+    @patch(
+        "open_stocks_mcp.tools.schwab_options_tools.get_authenticated_broker_or_error"
+    )
     @patch("open_stocks_mcp.tools.schwab_options_tools.asyncio.to_thread")
     @patch("open_stocks_mcp.tools.schwab_options_tools.option_buy_to_open_market")
     async def test_option_buy_to_open_success(
@@ -264,7 +278,9 @@ class TestSchwabOptionsTools:
     @pytest.mark.journey_options
     @pytest.mark.unit
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.schwab_options_tools.get_authenticated_broker_or_error")
+    @patch(
+        "open_stocks_mcp.tools.schwab_options_tools.get_authenticated_broker_or_error"
+    )
     @patch("open_stocks_mcp.tools.schwab_options_tools.asyncio.to_thread")
     @patch("open_stocks_mcp.tools.schwab_options_tools.option_sell_to_close_market")
     async def test_option_sell_to_close_success(
@@ -302,7 +318,9 @@ class TestSchwabOptionsTools:
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.schwab_options_tools.get_authenticated_broker_or_error")
+    @patch(
+        "open_stocks_mcp.tools.schwab_options_tools.get_authenticated_broker_or_error"
+    )
     @patch("open_stocks_mcp.tools.schwab_options_tools.asyncio.to_thread")
     @patch("open_stocks_mcp.tools.schwab_options_tools.Client")
     async def test_get_option_chain_error(

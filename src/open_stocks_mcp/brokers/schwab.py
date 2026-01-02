@@ -102,12 +102,8 @@ class SchwabBroker(BaseBroker):
                     # Fall through to create new token
 
             # Need interactive authentication
-            logger.info(
-                "No valid token found - interactive authentication required"
-            )
-            logger.info(
-                "This will open a browser window for Schwab OAuth login"
-            )
+            logger.info("No valid token found - interactive authentication required")
+            logger.info("This will open a browser window for Schwab OAuth login")
 
             # Check if we're in a non-interactive environment
             if not os.isatty(0):  # stdin is not a terminal
@@ -116,7 +112,9 @@ class SchwabBroker(BaseBroker):
                     "Interactive authentication required but not available. "
                     "Please run authentication in an interactive terminal first."
                 )
-                logger.error("✗ Schwab authentication failed: non-interactive environment")
+                logger.error(
+                    "✗ Schwab authentication failed: non-interactive environment"
+                )
                 return False
 
             # Use easy_client for interactive authentication
@@ -247,14 +245,10 @@ class SchwabBroker(BaseBroker):
             }
         }
 
-    async def order_buy_market(
-        self, symbol: str, quantity: float
-    ) -> dict[str, Any]:
+    async def order_buy_market(self, symbol: str, quantity: float) -> dict[str, Any]:
         """Place market buy order."""
         if not self.is_available():
-            return self.create_unavailable_response(
-                f"place buy order for {symbol}"
-            )
+            return self.create_unavailable_response(f"place buy order for {symbol}")
 
         # TODO: Implement via schwab_trading_tools
         return {
@@ -264,14 +258,10 @@ class SchwabBroker(BaseBroker):
             }
         }
 
-    async def order_sell_market(
-        self, symbol: str, quantity: float
-    ) -> dict[str, Any]:
+    async def order_sell_market(self, symbol: str, quantity: float) -> dict[str, Any]:
         """Place market sell order."""
         if not self.is_available():
-            return self.create_unavailable_response(
-                f"place sell order for {symbol}"
-            )
+            return self.create_unavailable_response(f"place sell order for {symbol}")
 
         # TODO: Implement via schwab_trading_tools
         return {

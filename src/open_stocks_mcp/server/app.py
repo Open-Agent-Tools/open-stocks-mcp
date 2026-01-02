@@ -294,12 +294,14 @@ async def list_brokers() -> dict[str, Any]:
         for broker_name in brokers:
             broker = registry.get_broker(broker_name)
             if broker:
-                broker_info.append({
-                    "name": broker_name,
-                    "available": broker_name in available,
-                    "status": broker.auth_info.status.value,
-                    "configured": broker.is_configured(),
-                })
+                broker_info.append(
+                    {
+                        "name": broker_name,
+                        "available": broker_name in available,
+                        "status": broker.auth_info.status.value,
+                        "configured": broker.is_configured(),
+                    }
+                )
 
         return {
             "result": {
@@ -1054,7 +1056,9 @@ async def schwab_account_numbers() -> dict[str, Any]:
 
 
 @mcp.tool()
-async def schwab_account(account_hash: str, include_positions: bool = True) -> dict[str, Any]:
+async def schwab_account(
+    account_hash: str, include_positions: bool = True
+) -> dict[str, Any]:
     """Get Schwab account details including balances and positions.
 
     Args:
@@ -1132,7 +1136,9 @@ async def schwab_price_history(
         frequency_type: Frequency type ('minute', 'daily', 'weekly', 'monthly')
         frequency: Frequency value
     """
-    return await get_schwab_price_history(symbol, period_type, period, frequency_type, frequency)  # type: ignore[no-any-return]
+    return await get_schwab_price_history(
+        symbol, period_type, period, frequency_type, frequency
+    )
 
 
 @mcp.tool()
@@ -1157,7 +1163,9 @@ async def schwab_search_instruments(query: str) -> dict[str, Any]:
 
 # Schwab Trading Tools
 @mcp.tool()
-async def schwab_buy_stock_market(account_hash: str, symbol: str, quantity: int) -> dict[str, Any]:
+async def schwab_buy_stock_market(
+    account_hash: str, symbol: str, quantity: int
+) -> dict[str, Any]:
     """Place a market buy order for stock.
 
     Args:
@@ -1169,7 +1177,9 @@ async def schwab_buy_stock_market(account_hash: str, symbol: str, quantity: int)
 
 
 @mcp.tool()
-async def schwab_sell_stock_market(account_hash: str, symbol: str, quantity: int) -> dict[str, Any]:
+async def schwab_sell_stock_market(
+    account_hash: str, symbol: str, quantity: int
+) -> dict[str, Any]:
     """Place a market sell order for stock.
 
     Args:
@@ -1181,7 +1191,9 @@ async def schwab_sell_stock_market(account_hash: str, symbol: str, quantity: int
 
 
 @mcp.tool()
-async def schwab_buy_stock_limit(account_hash: str, symbol: str, quantity: int, price: float) -> dict[str, Any]:
+async def schwab_buy_stock_limit(
+    account_hash: str, symbol: str, quantity: int, price: float
+) -> dict[str, Any]:
     """Place a limit buy order for stock.
 
     Args:
@@ -1194,7 +1206,9 @@ async def schwab_buy_stock_limit(account_hash: str, symbol: str, quantity: int, 
 
 
 @mcp.tool()
-async def schwab_sell_stock_limit(account_hash: str, symbol: str, quantity: int, price: float) -> dict[str, Any]:
+async def schwab_sell_stock_limit(
+    account_hash: str, symbol: str, quantity: int, price: float
+) -> dict[str, Any]:
     """Place a limit sell order for stock.
 
     Args:
@@ -1255,7 +1269,9 @@ async def schwab_option_chain(
         strike_count: Number of strikes above/below at-the-money price
         include_underlying_quote: Whether to include underlying quote
     """
-    return await get_schwab_option_chain(symbol, contract_type, strike_count, include_underlying_quote)  # type: ignore[no-any-return]
+    return await get_schwab_option_chain(
+        symbol, contract_type, strike_count, include_underlying_quote
+    )
 
 
 @mcp.tool()
@@ -1273,7 +1289,9 @@ async def schwab_option_chain_by_expiration(
         to_date: Only return expirations before this date (YYYY-MM-DD)
         contract_type: Type of contracts ('CALL', 'PUT', 'ALL')
     """
-    return await get_schwab_option_chain_by_expiration(symbol, from_date, to_date, contract_type)  # type: ignore[no-any-return]
+    return await get_schwab_option_chain_by_expiration(
+        symbol, from_date, to_date, contract_type
+    )
 
 
 @mcp.tool()
@@ -1387,7 +1405,9 @@ def attempt_login(username: str, password: str) -> None:
         else:
             # DON'T exit - let server start anyway
             logger.error("❌ Login failed: Could not authenticate with Robinhood.")
-            logger.warning("   Server will start but Robinhood tools will be unavailable")
+            logger.warning(
+                "   Server will start but Robinhood tools will be unavailable"
+            )
 
     except Exception as e:
         # DON'T exit - let server start anyway
@@ -1448,14 +1468,18 @@ def main(
     try:
         if transport == "stdio":
             logger.info("Starting MCP server with STDIO transport")
-            logger.info("Server ready - broker tools available based on authentication status")
+            logger.info(
+                "Server ready - broker tools available based on authentication status"
+            )
             asyncio.run(server.run_stdio_async())
         else:
             # Use our enhanced HTTP transport
             from open_stocks_mcp.server.http_transport import run_http_server
 
             logger.info(f"Starting MCP server with HTTP transport on {host}:{port}")
-            logger.info("Server ready - broker tools available based on authentication status")
+            logger.info(
+                "Server ready - broker tools available based on authentication status"
+            )
             asyncio.run(run_http_server(server, host, port))
         return 0
     except KeyboardInterrupt:

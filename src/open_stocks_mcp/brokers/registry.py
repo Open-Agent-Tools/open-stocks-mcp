@@ -118,11 +118,7 @@ class BrokerRegistry:
         Returns:
             List of available broker names
         """
-        return [
-            name
-            for name, broker in self._brokers.items()
-            if broker.is_available()
-        ]
+        return [name for name, broker in self._brokers.items() if broker.is_available()]
 
     def get_auth_status(self) -> dict[str, Any]:
         """Get authentication status for all brokers.
@@ -152,9 +148,7 @@ class BrokerRegistry:
             for name, broker in self._brokers.items()
         }
 
-    async def authenticate_all(
-        self, fail_fast: bool = False
-    ) -> dict[str, bool]:
+    async def authenticate_all(self, fail_fast: bool = False) -> dict[str, bool]:
         """Authenticate all registered brokers.
 
         This method is designed to be NON-BLOCKING - the server will start
@@ -246,27 +240,21 @@ class BrokerRegistry:
             return True
 
         if not broker.is_configured():
-            logger.warning(
-                f"Cannot authenticate {broker_name} - not configured"
-            )
+            logger.warning(f"Cannot authenticate {broker_name} - not configured")
             return False
 
         logger.info(f"Re-authenticating broker: {broker_name}")
         try:
             return await broker.authenticate()
         except Exception as e:
-            logger.error(
-                f"Failed to re-authenticate {broker_name}: {e}", exc_info=True
-            )
+            logger.error(f"Failed to re-authenticate {broker_name}: {e}", exc_info=True)
             return False
 
     async def logout_all(self) -> None:
         """Logout all brokers and clear sessions."""
         logger.info("Logging out all brokers")
 
-        logout_tasks = [
-            broker.logout() for broker in self._brokers.values()
-        ]
+        logout_tasks = [broker.logout() for broker in self._brokers.values()]
 
         results = await asyncio.gather(*logout_tasks, return_exceptions=True)
 
@@ -313,7 +301,6 @@ def get_broker_registry_sync() -> BrokerRegistry:
     """
     if _registry is None:
         raise RuntimeError(
-            "Broker registry not initialized. "
-            "Call get_broker_registry() first."
+            "Broker registry not initialized. Call get_broker_registry() first."
         )
     return _registry

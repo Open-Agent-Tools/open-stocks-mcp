@@ -75,9 +75,7 @@ class TestSchwabBroker:
             )
 
     @pytest.mark.asyncio
-    async def test_authenticate_failure(
-        self, schwab_broker: SchwabBroker
-    ) -> None:
+    async def test_authenticate_failure(self, schwab_broker: SchwabBroker) -> None:
         """Test authentication failure."""
         # Mock authentication failure
         with patch("schwab.auth.easy_client", side_effect=Exception("OAuth failed")):
@@ -123,7 +121,10 @@ class TestSchwabBroker:
         broker = SchwabBroker(api_key="test", app_secret="test")
 
         assert ".tokens/schwab_token.json" in broker.token_path
-        assert Path(broker.token_path).expanduser().exists() or not Path(broker.token_path).expanduser().exists()
+        assert (
+            Path(broker.token_path).expanduser().exists()
+            or not Path(broker.token_path).expanduser().exists()
+        )
 
     @pytest.mark.asyncio
     async def test_missing_credentials(self) -> None:

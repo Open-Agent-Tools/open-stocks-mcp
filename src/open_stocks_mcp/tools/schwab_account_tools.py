@@ -21,7 +21,9 @@ async def get_schwab_account_numbers() -> dict[str, Any]:
     Returns:
         Dict with result containing account number to hash mapping
     """
-    broker, error = await get_authenticated_broker_or_error("schwab", "get account numbers")
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", "get account numbers"
+    )
     if error:
         return error
 
@@ -36,15 +38,19 @@ async def get_schwab_account_numbers() -> dict[str, Any]:
         # Extract account hashes
         accounts = []
         for account in result:
-            accounts.append({
-                "account_id": account.get("accountNumber"),
-                "hash_value": account.get("hashValue"),
-            })
+            accounts.append(
+                {
+                    "account_id": account.get("accountNumber"),
+                    "hash_value": account.get("hashValue"),
+                }
+            )
 
-        return create_success_response({
-            "accounts": accounts,
-            "count": len(accounts),
-        })
+        return create_success_response(
+            {
+                "accounts": accounts,
+                "count": len(accounts),
+            }
+        )
 
     except Exception as e:
         logger.error(f"Error getting Schwab account numbers: {e}")
@@ -64,7 +70,9 @@ async def get_schwab_account(
     Returns:
         Dict with account details, balances, and positions
     """
-    broker, error = await get_authenticated_broker_or_error("schwab", f"get account {account_hash}")
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", f"get account {account_hash}"
+    )
     if error:
         return error
 
@@ -101,7 +109,9 @@ async def get_schwab_accounts(include_positions: bool = True) -> dict[str, Any]:
     Returns:
         Dict with all accounts, balances, and positions
     """
-    broker, error = await get_authenticated_broker_or_error("schwab", "get all accounts")
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", "get all accounts"
+    )
     if error:
         return error
 
@@ -121,10 +131,12 @@ async def get_schwab_accounts(include_positions: bool = True) -> dict[str, Any]:
 
         accounts_data = await asyncio.to_thread(_get_accounts)
 
-        return create_success_response({
-            "accounts": accounts_data,
-            "count": len(accounts_data) if isinstance(accounts_data, list) else 1,
-        })
+        return create_success_response(
+            {
+                "accounts": accounts_data,
+                "count": len(accounts_data) if isinstance(accounts_data, list) else 1,
+            }
+        )
 
     except Exception as e:
         logger.error(f"Error getting Schwab accounts: {e}")
@@ -143,7 +155,9 @@ async def get_schwab_portfolio(account_hash: str) -> dict[str, Any]:
     Returns:
         Dict with portfolio positions
     """
-    broker, error = await get_authenticated_broker_or_error("schwab", f"get portfolio {account_hash}")
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", f"get portfolio {account_hash}"
+    )
     if error:
         return error
 
@@ -167,19 +181,24 @@ async def get_schwab_portfolio(account_hash: str) -> dict[str, Any]:
         formatted_positions = []
         for position in positions:
             instrument = position.get("instrument", {})
-            formatted_positions.append({
-                "symbol": instrument.get("symbol"),
-                "asset_type": instrument.get("assetType"),
-                "quantity": position.get("longQuantity", 0) + position.get("shortQuantity", 0),
-                "average_price": position.get("averagePrice"),
-                "market_value": position.get("marketValue"),
-                "current_price": position.get("currentDayProfitLoss"),
-            })
+            formatted_positions.append(
+                {
+                    "symbol": instrument.get("symbol"),
+                    "asset_type": instrument.get("assetType"),
+                    "quantity": position.get("longQuantity", 0)
+                    + position.get("shortQuantity", 0),
+                    "average_price": position.get("averagePrice"),
+                    "market_value": position.get("marketValue"),
+                    "current_price": position.get("currentDayProfitLoss"),
+                }
+            )
 
-        return create_success_response({
-            "positions": formatted_positions,
-            "count": len(formatted_positions),
-        })
+        return create_success_response(
+            {
+                "positions": formatted_positions,
+                "count": len(formatted_positions),
+            }
+        )
 
     except Exception as e:
         logger.error(f"Error getting Schwab portfolio: {e}")
@@ -196,11 +215,14 @@ async def get_schwab_account_balances(account_hash: str) -> dict[str, Any]:
     Returns:
         Dict with account balances and buying power
     """
-    broker, error = await get_authenticated_broker_or_error("schwab", f"get balances {account_hash}")
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", f"get balances {account_hash}"
+    )
     if error:
         return error
 
     try:
+
         def _get_account() -> Any:
             # Get account without positions for faster response
             response = broker.client.get_account(account_hash)
@@ -213,20 +235,22 @@ async def get_schwab_account_balances(account_hash: str) -> dict[str, Any]:
         current_balances = securities_account.get("currentBalances", {})
         initial_balances = securities_account.get("initialBalances", {})
 
-        return create_success_response({
-            "account_id": securities_account.get("accountNumber"),
-            "account_type": securities_account.get("type"),
-            "current_balances": {
-                "cash_balance": current_balances.get("cashBalance"),
-                "market_value": current_balances.get("liquidationValue"),
-                "buying_power": current_balances.get("buyingPower"),
-                "available_funds": current_balances.get("availableFunds"),
-            },
-            "initial_balances": {
-                "cash_balance": initial_balances.get("cashBalance"),
-                "account_value": initial_balances.get("accountValue"),
-            },
-        })
+        return create_success_response(
+            {
+                "account_id": securities_account.get("accountNumber"),
+                "account_type": securities_account.get("type"),
+                "current_balances": {
+                    "cash_balance": current_balances.get("cashBalance"),
+                    "market_value": current_balances.get("liquidationValue"),
+                    "buying_power": current_balances.get("buyingPower"),
+                    "available_funds": current_balances.get("availableFunds"),
+                },
+                "initial_balances": {
+                    "cash_balance": initial_balances.get("cashBalance"),
+                    "account_value": initial_balances.get("accountValue"),
+                },
+            }
+        )
 
     except Exception as e:
         logger.error(f"Error getting Schwab account balances: {e}")

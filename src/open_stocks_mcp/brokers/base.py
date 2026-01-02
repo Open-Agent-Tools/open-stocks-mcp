@@ -230,9 +230,7 @@ class BaseBroker(ABC):
         pass
 
     @abstractmethod
-    async def order_buy_market(
-        self, symbol: str, quantity: float
-    ) -> dict[str, Any]:
+    async def order_buy_market(self, symbol: str, quantity: float) -> dict[str, Any]:
         """Place market buy order.
 
         Args:
@@ -245,9 +243,7 @@ class BaseBroker(ABC):
         pass
 
     @abstractmethod
-    async def order_sell_market(
-        self, symbol: str, quantity: float
-    ) -> dict[str, Any]:
+    async def order_sell_market(self, symbol: str, quantity: float) -> dict[str, Any]:
         """Place market sell order.
 
         Args:

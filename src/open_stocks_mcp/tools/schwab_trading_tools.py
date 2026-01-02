@@ -25,11 +25,14 @@ async def place_schwab_order(
     Returns:
         Dict with order placement result
     """
-    broker, error = await get_authenticated_broker_or_error("schwab", f"place order for {account_hash}")
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", f"place order for {account_hash}"
+    )
     if error:
         return error
 
     try:
+
         def _place_order() -> Any:
             response = broker.client.place_order(account_hash, order_spec)
             return response
@@ -42,14 +45,18 @@ async def place_schwab_order(
             location = response.headers.get("Location", "")
             order_id = location.split("/")[-1] if location else None
 
-            return create_success_response({
-                "status": "order_placed",
-                "order_id": order_id,
-                "status_code": response.status_code,
-            })
+            return create_success_response(
+                {
+                    "status": "order_placed",
+                    "order_id": order_id,
+                    "status_code": response.status_code,
+                }
+            )
         else:
             return create_error_response(
-                ValueError(f"Order placement failed with status {response.status_code}: {response.text}")
+                ValueError(
+                    f"Order placement failed with status {response.status_code}: {response.text}"
+                )
             )
 
     except Exception as e:
@@ -71,7 +78,9 @@ async def schwab_buy_market(
     Returns:
         Dict with order placement result
     """
-    broker, error = await get_authenticated_broker_or_error("schwab", f"buy {quantity} shares of {symbol}")
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", f"buy {quantity} shares of {symbol}"
+    )
     if error:
         return error
 
@@ -93,17 +102,21 @@ async def schwab_buy_market(
             location = response.headers.get("Location", "")
             order_id = location.split("/")[-1] if location else None
 
-            return create_success_response({
-                "status": "order_placed",
-                "action": "buy",
-                "symbol": symbol.upper(),
-                "quantity": quantity,
-                "order_type": "market",
-                "order_id": order_id,
-            })
+            return create_success_response(
+                {
+                    "status": "order_placed",
+                    "action": "buy",
+                    "symbol": symbol.upper(),
+                    "quantity": quantity,
+                    "order_type": "market",
+                    "order_id": order_id,
+                }
+            )
         else:
             return create_error_response(
-                ValueError(f"Buy order failed with status {response.status_code}: {response.text}")
+                ValueError(
+                    f"Buy order failed with status {response.status_code}: {response.text}"
+                )
             )
 
     except Exception as e:
@@ -125,7 +138,9 @@ async def schwab_sell_market(
     Returns:
         Dict with order placement result
     """
-    broker, error = await get_authenticated_broker_or_error("schwab", f"sell {quantity} shares of {symbol}")
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", f"sell {quantity} shares of {symbol}"
+    )
     if error:
         return error
 
@@ -147,17 +162,21 @@ async def schwab_sell_market(
             location = response.headers.get("Location", "")
             order_id = location.split("/")[-1] if location else None
 
-            return create_success_response({
-                "status": "order_placed",
-                "action": "sell",
-                "symbol": symbol.upper(),
-                "quantity": quantity,
-                "order_type": "market",
-                "order_id": order_id,
-            })
+            return create_success_response(
+                {
+                    "status": "order_placed",
+                    "action": "sell",
+                    "symbol": symbol.upper(),
+                    "quantity": quantity,
+                    "order_type": "market",
+                    "order_id": order_id,
+                }
+            )
         else:
             return create_error_response(
-                ValueError(f"Sell order failed with status {response.status_code}: {response.text}")
+                ValueError(
+                    f"Sell order failed with status {response.status_code}: {response.text}"
+                )
             )
 
     except Exception as e:
@@ -180,7 +199,9 @@ async def schwab_buy_limit(
     Returns:
         Dict with order placement result
     """
-    broker, error = await get_authenticated_broker_or_error("schwab", f"buy {quantity} shares of {symbol} at ${price}")
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", f"buy {quantity} shares of {symbol} at ${price}"
+    )
     if error:
         return error
 
@@ -202,18 +223,22 @@ async def schwab_buy_limit(
             location = response.headers.get("Location", "")
             order_id = location.split("/")[-1] if location else None
 
-            return create_success_response({
-                "status": "order_placed",
-                "action": "buy",
-                "symbol": symbol.upper(),
-                "quantity": quantity,
-                "order_type": "limit",
-                "limit_price": price,
-                "order_id": order_id,
-            })
+            return create_success_response(
+                {
+                    "status": "order_placed",
+                    "action": "buy",
+                    "symbol": symbol.upper(),
+                    "quantity": quantity,
+                    "order_type": "limit",
+                    "limit_price": price,
+                    "order_id": order_id,
+                }
+            )
         else:
             return create_error_response(
-                ValueError(f"Limit buy order failed with status {response.status_code}: {response.text}")
+                ValueError(
+                    f"Limit buy order failed with status {response.status_code}: {response.text}"
+                )
             )
 
     except Exception as e:
@@ -236,7 +261,9 @@ async def schwab_sell_limit(
     Returns:
         Dict with order placement result
     """
-    broker, error = await get_authenticated_broker_or_error("schwab", f"sell {quantity} shares of {symbol} at ${price}")
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", f"sell {quantity} shares of {symbol} at ${price}"
+    )
     if error:
         return error
 
@@ -258,18 +285,22 @@ async def schwab_sell_limit(
             location = response.headers.get("Location", "")
             order_id = location.split("/")[-1] if location else None
 
-            return create_success_response({
-                "status": "order_placed",
-                "action": "sell",
-                "symbol": symbol.upper(),
-                "quantity": quantity,
-                "order_type": "limit",
-                "limit_price": price,
-                "order_id": order_id,
-            })
+            return create_success_response(
+                {
+                    "status": "order_placed",
+                    "action": "sell",
+                    "symbol": symbol.upper(),
+                    "quantity": quantity,
+                    "order_type": "limit",
+                    "limit_price": price,
+                    "order_id": order_id,
+                }
+            )
         else:
             return create_error_response(
-                ValueError(f"Limit sell order failed with status {response.status_code}: {response.text}")
+                ValueError(
+                    f"Limit sell order failed with status {response.status_code}: {response.text}"
+                )
             )
 
     except Exception as e:
@@ -288,11 +319,14 @@ async def get_schwab_orders(account_hash: str, max_results: int = 50) -> dict[st
     Returns:
         Dict with list of orders
     """
-    broker, error = await get_authenticated_broker_or_error("schwab", f"get orders for {account_hash}")
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", f"get orders for {account_hash}"
+    )
     if error:
         return error
 
     try:
+
         def _get_orders() -> Any:
             response = broker.client.get_orders_for_account(
                 account_hash, max_results=max_results
@@ -301,10 +335,12 @@ async def get_schwab_orders(account_hash: str, max_results: int = 50) -> dict[st
 
         orders_data = await asyncio.to_thread(_get_orders)
 
-        return create_success_response({
-            "orders": orders_data,
-            "count": len(orders_data) if isinstance(orders_data, list) else 1,
-        })
+        return create_success_response(
+            {
+                "orders": orders_data,
+                "count": len(orders_data) if isinstance(orders_data, list) else 1,
+            }
+        )
 
     except Exception as e:
         logger.error(f"Error getting Schwab orders: {e}")
@@ -322,11 +358,14 @@ async def cancel_schwab_order(account_hash: str, order_id: str) -> dict[str, Any
     Returns:
         Dict with cancellation result
     """
-    broker, error = await get_authenticated_broker_or_error("schwab", f"cancel order {order_id}")
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", f"cancel order {order_id}"
+    )
     if error:
         return error
 
     try:
+
         def _cancel_order() -> Any:
             response = broker.client.cancel_order(order_id, account_hash)
             return response
@@ -335,13 +374,17 @@ async def cancel_schwab_order(account_hash: str, order_id: str) -> dict[str, Any
 
         # Check response status
         if response.status_code in (200, 204):
-            return create_success_response({
-                "status": "order_cancelled",
-                "order_id": order_id,
-            })
+            return create_success_response(
+                {
+                    "status": "order_cancelled",
+                    "order_id": order_id,
+                }
+            )
         else:
             return create_error_response(
-                ValueError(f"Order cancellation failed with status {response.status_code}: {response.text}")
+                ValueError(
+                    f"Order cancellation failed with status {response.status_code}: {response.text}"
+                )
             )
 
     except Exception as e:
@@ -360,11 +403,14 @@ async def get_schwab_order_by_id(account_hash: str, order_id: str) -> dict[str, 
     Returns:
         Dict with order details
     """
-    broker, error = await get_authenticated_broker_or_error("schwab", f"get order {order_id}")
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", f"get order {order_id}"
+    )
     if error:
         return error
 
     try:
+
         def _get_order() -> Any:
             response = broker.client.get_order(order_id, account_hash)
             return response.json()

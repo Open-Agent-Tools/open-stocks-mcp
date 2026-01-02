@@ -172,28 +172,20 @@ class RobinhoodBroker(BaseBroker):
 
         return cast(dict[str, Any], await get_stock_price(symbol))
 
-    async def order_buy_market(
-        self, symbol: str, quantity: float
-    ) -> dict[str, Any]:
+    async def order_buy_market(self, symbol: str, quantity: float) -> dict[str, Any]:
         """Place market buy order."""
         if not self.is_available():
-            return self.create_unavailable_response(
-                f"place buy order for {symbol}"
-            )
+            return self.create_unavailable_response(f"place buy order for {symbol}")
 
         # TODO: Phase 2 - delegate to existing order_buy_market() function
         from open_stocks_mcp.tools.robinhood_trading_tools import order_buy_market
 
         return cast(dict[str, Any], await order_buy_market(symbol, int(quantity)))
 
-    async def order_sell_market(
-        self, symbol: str, quantity: float
-    ) -> dict[str, Any]:
+    async def order_sell_market(self, symbol: str, quantity: float) -> dict[str, Any]:
         """Place market sell order."""
         if not self.is_available():
-            return self.create_unavailable_response(
-                f"place sell order for {symbol}"
-            )
+            return self.create_unavailable_response(f"place sell order for {symbol}")
 
         # TODO: Phase 2 - delegate to existing order_sell_market() function
         from open_stocks_mcp.tools.robinhood_trading_tools import order_sell_market

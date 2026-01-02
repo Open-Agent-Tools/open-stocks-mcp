@@ -19,7 +19,9 @@ class TestSchwabAccountTools:
     @pytest.mark.journey_account
     @pytest.mark.unit
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.schwab_account_tools.get_authenticated_broker_or_error")
+    @patch(
+        "open_stocks_mcp.tools.schwab_account_tools.get_authenticated_broker_or_error"
+    )
     @patch("open_stocks_mcp.tools.schwab_account_tools.asyncio.to_thread")
     async def test_get_account_numbers_success(
         self, mock_to_thread: AsyncMock, mock_get_broker: AsyncMock
@@ -57,7 +59,9 @@ class TestSchwabAccountTools:
     @pytest.mark.journey_account
     @pytest.mark.unit
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.schwab_account_tools.get_authenticated_broker_or_error")
+    @patch(
+        "open_stocks_mcp.tools.schwab_account_tools.get_authenticated_broker_or_error"
+    )
     async def test_get_account_numbers_auth_error(
         self, mock_get_broker: AsyncMock
     ) -> None:
@@ -73,7 +77,9 @@ class TestSchwabAccountTools:
     @pytest.mark.journey_account
     @pytest.mark.unit
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.schwab_account_tools.get_authenticated_broker_or_error")
+    @patch(
+        "open_stocks_mcp.tools.schwab_account_tools.get_authenticated_broker_or_error"
+    )
     @patch("open_stocks_mcp.tools.schwab_account_tools.asyncio.to_thread")
     @patch("open_stocks_mcp.tools.schwab_account_tools.Client")
     async def test_get_account_success(
@@ -111,7 +117,9 @@ class TestSchwabAccountTools:
     @pytest.mark.journey_account
     @pytest.mark.unit
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.schwab_account_tools.get_authenticated_broker_or_error")
+    @patch(
+        "open_stocks_mcp.tools.schwab_account_tools.get_authenticated_broker_or_error"
+    )
     @patch("open_stocks_mcp.tools.schwab_account_tools.asyncio.to_thread")
     async def test_get_accounts_success(
         self, mock_to_thread: AsyncMock, mock_get_broker: AsyncMock
@@ -147,7 +155,9 @@ class TestSchwabAccountTools:
     @pytest.mark.journey_portfolio
     @pytest.mark.unit
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.schwab_account_tools.get_authenticated_broker_or_error")
+    @patch(
+        "open_stocks_mcp.tools.schwab_account_tools.get_authenticated_broker_or_error"
+    )
     @patch("open_stocks_mcp.tools.schwab_account_tools.asyncio.to_thread")
     @patch("open_stocks_mcp.tools.schwab_account_tools.Client")
     async def test_get_portfolio_success(
@@ -198,7 +208,9 @@ class TestSchwabAccountTools:
     @pytest.mark.journey_account
     @pytest.mark.unit
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.schwab_account_tools.get_authenticated_broker_or_error")
+    @patch(
+        "open_stocks_mcp.tools.schwab_account_tools.get_authenticated_broker_or_error"
+    )
     @patch("open_stocks_mcp.tools.schwab_account_tools.asyncio.to_thread")
     @patch("open_stocks_mcp.tools.schwab_account_tools.Client")
     async def test_get_account_balances_success(
@@ -239,7 +251,9 @@ class TestSchwabAccountTools:
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.schwab_account_tools.get_authenticated_broker_or_error")
+    @patch(
+        "open_stocks_mcp.tools.schwab_account_tools.get_authenticated_broker_or_error"
+    )
     @patch("open_stocks_mcp.tools.schwab_account_tools.asyncio.to_thread")
     async def test_get_account_numbers_error(
         self, mock_to_thread: AsyncMock, mock_get_broker: AsyncMock

@@ -19,7 +19,9 @@ class TestSchwabMarketTools:
     @pytest.mark.journey_market_data
     @pytest.mark.unit
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.schwab_market_tools.get_authenticated_broker_or_error")
+    @patch(
+        "open_stocks_mcp.tools.schwab_market_tools.get_authenticated_broker_or_error"
+    )
     @patch("open_stocks_mcp.tools.schwab_market_tools.asyncio.to_thread")
     async def test_get_quote_success(
         self, mock_to_thread: AsyncMock, mock_get_broker: AsyncMock
@@ -62,7 +64,9 @@ class TestSchwabMarketTools:
     @pytest.mark.journey_market_data
     @pytest.mark.unit
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.schwab_market_tools.get_authenticated_broker_or_error")
+    @patch(
+        "open_stocks_mcp.tools.schwab_market_tools.get_authenticated_broker_or_error"
+    )
     async def test_get_quote_auth_error(self, mock_get_broker: AsyncMock) -> None:
         """Test quote retrieval when authentication fails."""
         # Mock authentication error
@@ -76,7 +80,9 @@ class TestSchwabMarketTools:
     @pytest.mark.journey_market_data
     @pytest.mark.unit
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.schwab_market_tools.get_authenticated_broker_or_error")
+    @patch(
+        "open_stocks_mcp.tools.schwab_market_tools.get_authenticated_broker_or_error"
+    )
     @patch("open_stocks_mcp.tools.schwab_market_tools.asyncio.to_thread")
     async def test_get_quotes_success(
         self, mock_to_thread: AsyncMock, mock_get_broker: AsyncMock
@@ -121,7 +127,9 @@ class TestSchwabMarketTools:
     @pytest.mark.journey_market_data
     @pytest.mark.unit
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.schwab_market_tools.get_authenticated_broker_or_error")
+    @patch(
+        "open_stocks_mcp.tools.schwab_market_tools.get_authenticated_broker_or_error"
+    )
     @patch("open_stocks_mcp.tools.schwab_market_tools.asyncio.to_thread")
     @patch("open_stocks_mcp.tools.schwab_market_tools.Client")
     async def test_get_price_history_success(
@@ -173,7 +181,9 @@ class TestSchwabMarketTools:
     @pytest.mark.journey_market_data
     @pytest.mark.unit
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.schwab_market_tools.get_authenticated_broker_or_error")
+    @patch(
+        "open_stocks_mcp.tools.schwab_market_tools.get_authenticated_broker_or_error"
+    )
     async def test_get_price_history_invalid_period_type(
         self, mock_get_broker: AsyncMock
     ) -> None:
@@ -193,7 +203,9 @@ class TestSchwabMarketTools:
     @pytest.mark.journey_market_data
     @pytest.mark.unit
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.schwab_market_tools.get_authenticated_broker_or_error")
+    @patch(
+        "open_stocks_mcp.tools.schwab_market_tools.get_authenticated_broker_or_error"
+    )
     @patch("open_stocks_mcp.tools.schwab_market_tools.asyncio.to_thread")
     async def test_get_instrument_success(
         self, mock_to_thread: AsyncMock, mock_get_broker: AsyncMock
@@ -226,7 +238,9 @@ class TestSchwabMarketTools:
     @pytest.mark.journey_market_data
     @pytest.mark.unit
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.schwab_market_tools.get_authenticated_broker_or_error")
+    @patch(
+        "open_stocks_mcp.tools.schwab_market_tools.get_authenticated_broker_or_error"
+    )
     @patch("open_stocks_mcp.tools.schwab_market_tools.asyncio.to_thread")
     async def test_search_instruments_success(
         self, mock_to_thread: AsyncMock, mock_get_broker: AsyncMock
@@ -259,7 +273,9 @@ class TestSchwabMarketTools:
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.schwab_market_tools.get_authenticated_broker_or_error")
+    @patch(
+        "open_stocks_mcp.tools.schwab_market_tools.get_authenticated_broker_or_error"
+    )
     @patch("open_stocks_mcp.tools.schwab_market_tools.asyncio.to_thread")
     async def test_get_quote_error(
         self, mock_to_thread: AsyncMock, mock_get_broker: AsyncMock
