@@ -22,6 +22,22 @@ from open_stocks_mcp.tools.session_manager import get_session_manager
 MAX_MCP_REQUEST_BODY_SIZE = 1024 * 1024  # 1 MiB
 
 
+def _require_session_manager() -> Any:
+    """Return session manager or raise 503 when unavailable."""
+    session_manager = get_session_manager()
+    if session_manager is None:
+        raise HTTPException(status_code=503, detail="Session manager unavailable")
+    return session_manager
+
+
+def _require_metrics_collector() -> Any:
+    """Return metrics collector or raise 503 when unavailable."""
+    metrics_collector = get_metrics_collector()
+    if metrics_collector is None:
+        raise HTTPException(status_code=503, detail="Metrics collector unavailable")
+    return metrics_collector
+
+
 class TimeoutMiddleware(BaseHTTPMiddleware):
     """Middleware to handle request timeouts"""
 
@@ -99,7 +115,8 @@ def create_http_server(mcp_server: FastMCP) -> FastAPI:
         logger.info("Shutting down HTTP MCP server")
         # Cleanup session manager
         session_manager = get_session_manager()
-        await session_manager.logout()
+        if session_manager is not None:
+            await session_manager.logout()
 
     app = FastAPI(
         title="Open Stocks MCP Server",
@@ -125,10 +142,10 @@ def create_http_server(mcp_server: FastMCP) -> FastAPI:
     async def health_check() -> dict[str, Any]:
         """Health check endpoint"""
         try:
-            metrics_collector = get_metrics_collector()
+            metrics_collector = _require_metrics_collector()
             health_status = await metrics_collector.get_health_status()
 
-            session_manager = get_session_manager()
+            session_manager = _require_session_manager()
             session_info = session_manager.get_session_info()
 
             return {
@@ -142,6 +159,8 @@ def create_http_server(mcp_server: FastMCP) -> FastAPI:
                 },
                 "health": health_status,
             }
+        except HTTPException:
+            raise
         except Exception as e:
             logger.error(f"Health check failed: {e}")
             raise HTTPException(status_code=503, detail="Service unhealthy") from e
@@ -150,13 +169,13 @@ def create_http_server(mcp_server: FastMCP) -> FastAPI:
     async def server_status() -> dict[str, Any]:
         """Detailed server status endpoint"""
         try:
-            metrics_collector = get_metrics_collector()
+            metrics_collector = _require_metrics_collector()
             metrics = await metrics_collector.get_metrics()
 
             rate_limiter = get_rate_limiter()
             rate_stats = rate_limiter.get_stats()
 
-            session_manager = get_session_manager()
+            session_manager = _require_session_manager()
             session_info = session_manager.get_session_info()
 
             return {
@@ -170,6 +189,8 @@ def create_http_server(mcp_server: FastMCP) -> FastAPI:
                 "rate_limiting": rate_stats,
                 "metrics": metrics,
             }
+        except HTTPException:
+            raise
         except Exception as e:
             logger.error(f"Status check failed: {e}")
             raise HTTPException(status_code=500, detail="Status check failed") from e
@@ -200,7 +221,7 @@ def create_http_server(mcp_server: FastMCP) -> FastAPI:
     async def refresh_session() -> dict[str, Any]:
         """Refresh authentication session"""
         try:
-            session_manager = get_session_manager()
+            session_manager = _require_session_manager()
             success = await session_manager.ensure_authenticated()
 
             if success:
@@ -208,6 +229,8 @@ def create_http_server(mcp_server: FastMCP) -> FastAPI:
                 return {"status": "success", "session": session_info}
             else:
                 raise HTTPException(status_code=401, detail="Authentication failed")
+        except HTTPException:
+            raise
         except Exception as e:
             logger.error(f"Session refresh failed: {e}")
             raise HTTPException(status_code=500, detail="Session refresh failed") from e
