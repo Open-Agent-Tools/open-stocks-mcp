@@ -54,6 +54,11 @@ dev = [
     "pre-commit>=4.5.0",
     "httpx>=0.28.0",
 ]
+tracing = [
+    "opentelemetry-api>=1.20.0",
+    "opentelemetry-sdk>=1.20.0",
+    "opentelemetry-exporter-otlp>=1.20.0",
+]
 
 [project.urls]
 "Homepage" = "https://github.com/Open-Agent-Tools/open-stocks-mcp"
@@ -123,6 +128,10 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = "schwab.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "opentelemetry.*"
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
