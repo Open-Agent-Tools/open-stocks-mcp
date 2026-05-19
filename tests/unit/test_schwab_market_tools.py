@@ -271,7 +271,6 @@ class TestSchwabMarketTools:
     @pytest.mark.journey_market_data
     @pytest.mark.unit
     @pytest.mark.exception_test
-    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @pytest.mark.asyncio
     @patch(
         "open_stocks_mcp.tools.schwab_market_tools.get_authenticated_broker_or_error"
@@ -292,3 +291,38 @@ class TestSchwabMarketTools:
 
         assert "result" in result
         assert "error" in result["result"]
+
+    @pytest.mark.journey_market_data
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    @patch(
+        "open_stocks_mcp.tools.schwab_market_tools.get_authenticated_broker_or_error"
+    )
+    @patch("open_stocks_mcp.tools.schwab_market_tools.asyncio.to_thread")
+    @pytest.mark.parametrize(
+        "function,args",
+        [
+            (get_schwab_quote, ("AAPL",)),
+            (get_schwab_quotes, (["AAPL", "GOOGL"],)),
+            (get_schwab_price_history, ("AAPL",)),
+            (get_schwab_instrument, ("AAPL",)),
+            (search_schwab_instruments, ("Apple",)),
+        ],
+    )
+    async def test_market_api_failures_bulk(
+        self,
+        mock_to_thread: AsyncMock,
+        mock_get_broker: AsyncMock,
+        function,
+        args,
+    ) -> None:
+        """Test various market tools for API failure responses."""
+        mock_broker = MagicMock()
+        mock_get_broker.return_value = (mock_broker, None)
+        mock_to_thread.side_effect = Exception("API Error")
+
+        result = await function(*args)
+        assert result["result"]["status"] == "error"
+        # Search has a custom error message, so we just check status
+        if function.__name__ != "search_schwab_instruments":
+            assert "API Error" in result["result"]["error"]

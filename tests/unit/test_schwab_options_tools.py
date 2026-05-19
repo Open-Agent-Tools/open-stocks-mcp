@@ -316,7 +316,6 @@ class TestSchwabOptionsTools:
     @pytest.mark.journey_options
     @pytest.mark.unit
     @pytest.mark.exception_test
-    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @pytest.mark.asyncio
     @patch(
         "open_stocks_mcp.tools.schwab_options_tools.get_authenticated_broker_or_error"
@@ -344,3 +343,43 @@ class TestSchwabOptionsTools:
 
         assert "result" in result
         assert "error" in result["result"]
+
+    @pytest.mark.journey_options
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    @patch(
+        "open_stocks_mcp.tools.schwab_options_tools.get_authenticated_broker_or_error"
+    )
+    @patch("open_stocks_mcp.tools.schwab_options_tools.asyncio.to_thread")
+    @pytest.mark.parametrize(
+        "function,args",
+        [
+            (get_schwab_option_chain, ("AAPL",)),
+            (get_schwab_option_chain_by_expiration, ("AAPL",)),
+            (get_schwab_option_expirations, ("AAPL",)),
+            (get_schwab_options_positions, ("abc123",)),
+            (
+                schwab_option_buy_to_open,
+                ("abc123", "AAPL", 1, "CALL", 175.0, "2024-01-19"),
+            ),
+            (
+                schwab_option_sell_to_close,
+                ("abc123", "AAPL", 1, "CALL", 175.0, "2024-01-19"),
+            ),
+        ],
+    )
+    async def test_options_api_failures_bulk(
+        self,
+        mock_to_thread: AsyncMock,
+        mock_get_broker: AsyncMock,
+        function,
+        args,
+    ) -> None:
+        """Test various options tools for API failure responses."""
+        mock_broker = MagicMock()
+        mock_get_broker.return_value = (mock_broker, None)
+        mock_to_thread.side_effect = Exception("API Error")
+
+        result = await function(*args)
+        assert result["result"]["status"] == "error"
+        assert "API Error" in result["result"]["error"]

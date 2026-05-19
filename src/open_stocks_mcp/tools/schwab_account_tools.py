@@ -3,6 +3,8 @@
 import asyncio
 from typing import Any
 
+from schwab.client import Client
+
 from open_stocks_mcp.logging_config import logger
 from open_stocks_mcp.tools.broker_utils import get_authenticated_broker_or_error
 from open_stocks_mcp.tools.error_handling import (
@@ -77,9 +79,6 @@ async def get_schwab_account(
         return error
 
     try:
-        # Import here to avoid dependency issues
-        from schwab.client import Client
-
         # Determine fields to request
         fields = None
         if include_positions:
@@ -116,9 +115,6 @@ async def get_schwab_accounts(include_positions: bool = True) -> dict[str, Any]:
         return error
 
     try:
-        # Import here to avoid dependency issues
-        from schwab.client import Client
-
         # Determine fields to request
         fields = None
         if include_positions:

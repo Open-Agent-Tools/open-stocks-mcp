@@ -54,7 +54,8 @@ class TestSchwabAccountTools:
         assert "result" in result
         assert "accounts" in result["result"]
         assert len(result["result"]["accounts"]) == 2
-        assert result["result"]["accounts"][0]["hash"] == "abc123def456"
+        assert result["result"]["accounts"][0]["account_id"] == "12345678"
+        assert result["result"]["accounts"][0]["hash_value"] == "abc123def456"
 
     @pytest.mark.journey_account
     @pytest.mark.unit
@@ -111,8 +112,8 @@ class TestSchwabAccountTools:
         result = await get_schwab_account("abc123")
 
         assert "result" in result
-        assert "account" in result["result"]
-        assert result["result"]["account"]["accountNumber"] == "12345678"
+        assert "securitiesAccount" in result["result"]
+        assert result["result"]["securitiesAccount"]["accountNumber"] == "12345678"
 
     @pytest.mark.journey_account
     @pytest.mark.unit
@@ -243,13 +244,12 @@ class TestSchwabAccountTools:
 
         assert "result" in result
         assert "current_balances" in result["result"]
-        assert result["result"]["current_balances"]["liquidation_value"] == 50000.0
+        assert result["result"]["current_balances"]["market_value"] == 50000.0
         assert result["result"]["current_balances"]["cash_balance"] == 10000.0
 
     @pytest.mark.journey_account
     @pytest.mark.unit
     @pytest.mark.exception_test
-    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @pytest.mark.asyncio
     @patch(
         "open_stocks_mcp.tools.schwab_account_tools.get_authenticated_broker_or_error"
@@ -270,3 +270,36 @@ class TestSchwabAccountTools:
 
         assert "result" in result
         assert "error" in result["result"]
+
+    @pytest.mark.journey_account
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    @patch(
+        "open_stocks_mcp.tools.schwab_account_tools.get_authenticated_broker_or_error"
+    )
+    @patch("open_stocks_mcp.tools.schwab_account_tools.asyncio.to_thread")
+    @pytest.mark.parametrize(
+        "function,args",
+        [
+            (get_schwab_account, ("abc123",)),
+            (get_schwab_accounts, ()),
+            (get_schwab_portfolio, ("abc123",)),
+            (get_schwab_account_balances, ("abc123",)),
+        ],
+    )
+    async def test_account_api_failures_bulk(
+        self,
+        mock_to_thread: AsyncMock,
+        mock_get_broker: AsyncMock,
+        function,
+        args,
+    ) -> None:
+        """Test various account tools for API failure responses."""
+        mock_broker = MagicMock()
+        mock_get_broker.return_value = (mock_broker, None)
+
+        mock_to_thread.side_effect = Exception("API Error")
+
+        result = await function(*args)
+        assert result["result"]["status"] == "error"
+        assert "API Error" in result["result"]["error"]
