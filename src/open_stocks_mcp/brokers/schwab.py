@@ -45,7 +45,15 @@ class SchwabBroker(BaseBroker):
         self.callback_url = callback_url
 
         token_dir = Path.home() / ".tokens"
-        token_dir.mkdir(parents=True, exist_ok=True)
+        token_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
+        # Ensure correct mode if dir already existed
+        if os.name != "nt":
+            try:
+                os.chmod(token_dir, 0o700)
+            except OSError as e:
+                logger.warning(
+                    f"Could not set secure permissions on {token_dir}: {e}"
+                )
 
         # Default token path
         if token_path is None:
@@ -54,8 +62,16 @@ class SchwabBroker(BaseBroker):
             self.token_path = str(
                 self._validate_token_path(token_path=token_path, allowed_root=token_dir)
             )
-            # Ensure token directory exists
-            Path(self.token_path).parent.mkdir(parents=True, exist_ok=True)
+            # Ensure token directory exists with secure permissions
+            token_parent = Path(self.token_path).parent
+            token_parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+            if os.name != "nt":
+                try:
+                    os.chmod(token_parent, 0o700)
+                except OSError as e:
+                    logger.warning(
+                        f"Could not set secure permissions on {token_parent}: {e}"
+                    )
 
         self.client = None
 
@@ -91,6 +107,10 @@ class SchwabBroker(BaseBroker):
         Returns:
             True if authentication successful, False otherwise
         """
+        if not self.api_key or not self.app_secret:
+            self._auth_info.status = BrokerAuthStatus.NOT_CONFIGURED
+            return False
+
         try:
             # Import here to avoid dependency issues if schwab-py not installed
             from schwab import auth
