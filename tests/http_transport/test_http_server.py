@@ -123,6 +123,24 @@ class TestMCPIntegration:
         # Should get a method not allowed or proper response, not 404
         assert response.status_code != 404
 
+    @pytest.mark.anyio
+    async def test_mcp_endpoint_rejects_oversized_body(
+        self, http_client: httpx.AsyncClient
+    ) -> None:
+        """Test MCP endpoint rejects request bodies over the configured limit"""
+        oversized_payload = b"x" * ((1024 * 1024) + 1)
+        response = await http_client.post(
+            "/mcp",
+            content=oversized_payload,
+            headers={"content-type": "application/json"},
+        )
+        assert response.status_code == 413
+        data = response.json()
+        assert data["jsonrpc"] == "2.0"
+        assert data["id"] is None
+        assert data["error"]["code"] == -32700
+        assert "too large" in data["error"]["message"].lower()
+
 
 @pytest.mark.integration
 @pytest.mark.journey_system

@@ -1,6 +1,7 @@
 """HTTP transport enhancements for the MCP server"""
 
 import asyncio
+import json
 import time
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
@@ -17,6 +18,8 @@ from open_stocks_mcp.logging_config import logger
 from open_stocks_mcp.monitoring import get_metrics_collector
 from open_stocks_mcp.tools.rate_limiter import get_rate_limiter
 from open_stocks_mcp.tools.session_manager import get_session_manager
+
+MAX_MCP_REQUEST_BODY_SIZE = 1024 * 1024  # 1 MiB
 
 
 class TimeoutMiddleware(BaseHTTPMiddleware):
@@ -234,9 +237,20 @@ def create_http_server(mcp_server: FastMCP) -> FastAPI:
             # Get the request body
             body = await request.body()
 
-            # Parse the JSON-RPC request
-            import json
+            if len(body) > MAX_MCP_REQUEST_BODY_SIZE:
+                return Response(
+                    content=json.dumps(
+                        {
+                            "jsonrpc": "2.0",
+                            "error": {"code": -32700, "message": "Request body too large"},
+                            "id": None,
+                        }
+                    ).encode(),
+                    status_code=413,
+                    headers={"content-type": "application/json"},
+                )
 
+            # Parse the JSON-RPC request
             try:
                 json_request = json.loads(body.decode())
             except json.JSONDecodeError:
@@ -373,8 +387,6 @@ def create_http_server(mcp_server: FastMCP) -> FastAPI:
 
         except Exception as e:
             logger.error(f"MCP endpoint error: {e}")
-            import json
-
             error_response = {
                 "jsonrpc": "2.0",
                 "error": {"code": -32603, "message": f"Internal error: {e!s}"},
