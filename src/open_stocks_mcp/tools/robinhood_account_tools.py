@@ -52,6 +52,7 @@ async def get_account_info() -> dict[str, Any]:
     name="account",
     ttl=_cache_cfg.account_ttl_seconds,
     max_size=_cache_cfg.max_size,
+    strategy=_cache_cfg.strategy,
 )
 async def get_portfolio() -> dict[str, Any]:
     """

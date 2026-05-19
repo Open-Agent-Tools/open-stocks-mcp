@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import importlib
 import time
 from collections.abc import Iterator
 from typing import Any
@@ -343,6 +344,70 @@ class TestToolIntegration:
         assert first["result"]["market_value"] == "1000.00"
         assert second["result"]["market_value"] == "1000.00"
         assert mock_portfolio.call_count == 1
+
+    @pytest.mark.unit
+    @pytest.mark.journey_system
+    @pytest.mark.asyncio
+    async def test_tool_decorators_use_configured_lru_strategy(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        from open_stocks_mcp.tools import (
+            cache,
+            robinhood_account_tools,
+            robinhood_stock_tools,
+        )
+
+        try:
+            with monkeypatch.context() as env:
+                env.setenv("CACHE_STRATEGY", "lru")
+                env.setenv("CACHE_QUOTES_TTL", "0")
+                env.setenv("CACHE_ACCOUNT_TTL", "0")
+                cache.clear_caches()
+
+                stock_tools = importlib.reload(robinhood_stock_tools)
+                account_tools = importlib.reload(robinhood_account_tools)
+
+                with (
+                    patch.object(
+                        stock_tools.rh,
+                        "get_quotes",
+                        return_value=[
+                            {
+                                "previous_close": "100.00",
+                                "volume": "1000",
+                                "ask_price": "101.00",
+                                "bid_price": "100.50",
+                                "last_trade_price": "100.75",
+                            }
+                        ],
+                    ) as mock_quote,
+                    patch.object(
+                        stock_tools.rh,
+                        "get_latest_price",
+                        return_value=["101.00"],
+                    ) as mock_price,
+                    patch.object(
+                        account_tools.rh,
+                        "load_portfolio_profile",
+                        return_value={
+                            "market_value": "1000.00",
+                            "equity": "1200.00",
+                            "buying_power": "500.00",
+                        },
+                    ) as mock_portfolio,
+                ):
+                    await stock_tools.get_stock_price("AAPL")
+                    await stock_tools.get_stock_price("AAPL")
+                    await account_tools.get_portfolio()
+                    await account_tools.get_portfolio()
+
+                assert mock_price.call_count == 1
+                assert mock_quote.call_count == 1
+                assert mock_portfolio.call_count == 1
+        finally:
+            cache.clear_caches()
+            importlib.reload(robinhood_stock_tools)
+            importlib.reload(robinhood_account_tools)
 
     @pytest.mark.unit
     @pytest.mark.journey_system

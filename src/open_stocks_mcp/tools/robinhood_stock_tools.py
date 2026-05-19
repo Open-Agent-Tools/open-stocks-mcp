@@ -26,6 +26,7 @@ _cache_cfg = load_config().cache
     name="quotes",
     ttl=_cache_cfg.quotes_ttl_seconds,
     max_size=_cache_cfg.max_size,
+    strategy=_cache_cfg.strategy,
 )
 async def get_stock_price(symbol: str) -> dict[str, Any]:
     """
