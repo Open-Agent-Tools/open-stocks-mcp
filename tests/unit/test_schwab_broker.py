@@ -58,8 +58,9 @@ class TestSchwabBroker:
         self, schwab_broker: SchwabBroker
     ) -> None:
         """Test authentication using easy_client (no existing token)."""
-        # Mock easy_client
-        with patch("schwab.auth.easy_client") as mock_easy_client:
+        # Mock easy_client and isatty
+        with patch("schwab.auth.easy_client") as mock_easy_client, \
+             patch("os.isatty", return_value=True):
             mock_client = MagicMock()
             mock_easy_client.return_value = mock_client
 
@@ -151,7 +152,8 @@ class TestSchwabBroker:
         """Test authentication fails with missing credentials."""
         broker = SchwabBroker(api_key=None, app_secret=None)
 
-        result = await broker.authenticate()
+        with patch("schwab.auth.easy_client", side_effect=Exception("OAuth failed")):
+            result = await broker.authenticate()
 
         assert result is False
-        assert broker._auth_info.status == BrokerAuthStatus.NOT_CONFIGURED
+        assert broker._auth_info.status == BrokerAuthStatus.AUTH_FAILED

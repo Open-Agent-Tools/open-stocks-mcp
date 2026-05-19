@@ -131,12 +131,12 @@ class TestSchwabMarketTools:
         "open_stocks_mcp.tools.schwab_market_tools.get_authenticated_broker_or_error"
     )
     @patch("open_stocks_mcp.tools.schwab_market_tools.asyncio.to_thread")
-    @patch("open_stocks_mcp.tools.schwab_market_tools.Client")
+    @patch("schwab.client.Client")
     async def test_get_price_history_success(
         self,
         mock_client: MagicMock,
-        mock_to_thread: AsyncMock,
-        mock_get_broker: AsyncMock,
+        mock_to_thread: MagicMock,
+        mock_get_broker: MagicMock,
     ) -> None:
         """Test successful price history retrieval."""
         # Mock broker
