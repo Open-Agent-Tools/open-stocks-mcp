@@ -14,10 +14,10 @@ from mcp.server.fastmcp import FastMCP
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from open_stocks_mcp import __version__
+from open_stocks_mcp.brokers.robinhood_session import get_session_manager
 from open_stocks_mcp.logging_config import logger
 from open_stocks_mcp.monitoring import get_metrics_collector
 from open_stocks_mcp.tools.rate_limiter import get_rate_limiter
-from open_stocks_mcp.tools.session_manager import get_session_manager
 
 MAX_MCP_REQUEST_BODY_SIZE = 1024 * 1024  # 1 MiB
 

@@ -74,7 +74,7 @@ async def mock_http_client(mcp_server_with_tools: FastMCP) -> Any:
 class TestHTTPIntegration:
     """Integration tests for HTTP transport functionality"""
 
-    @patch("open_stocks_mcp.tools.session_manager.get_session_manager")
+    @patch("open_stocks_mcp.brokers.robinhood_session.get_session_manager")
     @patch("open_stocks_mcp.tools.rate_limiter.get_rate_limiter")
     @patch("open_stocks_mcp.monitoring.get_metrics_collector")
     async def test_full_server_startup_sequence(
@@ -199,7 +199,7 @@ class TestHTTPIntegration:
             response = await client.get("/health", headers=headers)
             assert response.status_code == 403  # Forbidden
 
-    @patch("open_stocks_mcp.tools.session_manager.get_session_manager")
+    @patch("open_stocks_mcp.brokers.robinhood_session.get_session_manager")
     async def test_session_lifecycle_integration(
         self, mock_get_session_manager: Mock, mock_http_client: httpx.AsyncClient
     ) -> None:

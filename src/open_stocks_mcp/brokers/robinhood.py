@@ -1,11 +1,11 @@
 """Robinhood broker implementation using existing robin-stocks integration."""
 
 from datetime import datetime
-from typing import Any, cast
+from typing import Any
 
 from open_stocks_mcp.brokers.base import BaseBroker, BrokerAuthStatus
+from open_stocks_mcp.brokers.robinhood_session import SessionManager
 from open_stocks_mcp.logging_config import logger
-from open_stocks_mcp.tools.session_manager import SessionManager
 
 
 class RobinhoodBroker(BaseBroker):

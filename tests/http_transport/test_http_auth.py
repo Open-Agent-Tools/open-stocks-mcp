@@ -39,7 +39,7 @@ async def http_client(mcp_server: FastMCP) -> Any:
 class TestHTTPAuthentication:
     """Test authentication scenarios for HTTP transport"""
 
-    @patch("open_stocks_mcp.tools.session_manager.get_session_manager")
+    @patch("open_stocks_mcp.brokers.robinhood_session.get_session_manager")
     async def test_health_check_with_authenticated_session(
         self, mock_get_session_manager: Mock, http_client: httpx.AsyncClient
     ) -> None:
@@ -61,7 +61,7 @@ class TestHTTPAuthentication:
         assert data["session"]["authenticated"] is True
         assert data["session"]["session_duration"] == 3600
 
-    @patch("open_stocks_mcp.tools.session_manager.get_session_manager")
+    @patch("open_stocks_mcp.brokers.robinhood_session.get_session_manager")
     async def test_health_check_with_unauthenticated_session(
         self, mock_get_session_manager: Mock, http_client: httpx.AsyncClient
     ) -> None:
@@ -82,7 +82,7 @@ class TestHTTPAuthentication:
         assert data["status"] == "healthy"
         assert data["session"]["authenticated"] is False
 
-    @patch("open_stocks_mcp.tools.session_manager.get_session_manager")
+    @patch("open_stocks_mcp.brokers.robinhood_session.get_session_manager")
     async def test_session_refresh_success(
         self, mock_get_session_manager: Mock, http_client: httpx.AsyncClient
     ) -> None:
@@ -104,7 +104,7 @@ class TestHTTPAuthentication:
         assert data["status"] == "success"
         assert data["session"]["authenticated"] is True
 
-    @patch("open_stocks_mcp.tools.session_manager.get_session_manager")
+    @patch("open_stocks_mcp.brokers.robinhood_session.get_session_manager")
     async def test_session_refresh_failure(
         self, mock_get_session_manager: Mock, http_client: httpx.AsyncClient
     ) -> None:
@@ -120,7 +120,7 @@ class TestHTTPAuthentication:
         data = response.json()
         assert "Authentication failed" in data["detail"]
 
-    @patch("open_stocks_mcp.tools.session_manager.get_session_manager")
+    @patch("open_stocks_mcp.brokers.robinhood_session.get_session_manager")
     async def test_session_refresh_exception(
         self, mock_get_session_manager: Mock, http_client: httpx.AsyncClient
     ) -> None:
@@ -144,7 +144,7 @@ class TestHTTPAuthentication:
 class TestHTTPSessionStatus:
     """Test session status reporting"""
 
-    @patch("open_stocks_mcp.tools.session_manager.get_session_manager")
+    @patch("open_stocks_mcp.brokers.robinhood_session.get_session_manager")
     @patch("open_stocks_mcp.tools.rate_limiter.get_rate_limiter")
     @patch("open_stocks_mcp.monitoring.get_metrics_collector")
     async def test_server_status_comprehensive(

@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 import pytest
 
-from open_stocks_mcp.tools.session_manager import SessionManager
+from open_stocks_mcp.brokers.robinhood_session import SessionManager
 
 
 def test_logout_clears_session_state() -> None:
@@ -17,7 +17,7 @@ def test_logout_clears_session_state() -> None:
     manager.last_successful_call = datetime.now()
     manager._failed_login_attempts = 2
 
-    with patch("open_stocks_mcp.tools.session_manager.rh.logout"):
+    with patch("open_stocks_mcp.brokers.robinhood_session.rh.logout"):
         asyncio.run(manager.logout())
 
     assert manager._is_authenticated is False
@@ -35,7 +35,7 @@ def test_logout_reraises_exception_and_still_clears_state() -> None:
     manager._failed_login_attempts = 1
 
     with patch(
-        "open_stocks_mcp.tools.session_manager.rh.logout",
+        "open_stocks_mcp.brokers.robinhood_session.rh.logout",
         side_effect=RuntimeError("logout failure"),
     ), pytest.raises(RuntimeError, match="logout failure"):
         asyncio.run(manager.logout())

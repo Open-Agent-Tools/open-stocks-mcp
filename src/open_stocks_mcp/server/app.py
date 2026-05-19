@@ -9,6 +9,7 @@ import click
 from dotenv import load_dotenv
 from mcp.server.fastmcp import FastMCP
 
+from open_stocks_mcp.brokers.robinhood_session import get_session_manager
 from open_stocks_mcp.config import ServerConfig, load_config
 from open_stocks_mcp.logging_config import logger, setup_logging
 from open_stocks_mcp.monitoring import get_metrics_collector
@@ -150,7 +151,6 @@ from open_stocks_mcp.tools.schwab_trading_tools import (
     schwab_sell_limit,
     schwab_sell_market,
 )
-from open_stocks_mcp.tools.session_manager import get_session_manager
 
 # Load environment variables from .env file
 load_dotenv()

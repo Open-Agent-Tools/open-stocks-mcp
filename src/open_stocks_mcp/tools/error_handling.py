@@ -215,8 +215,8 @@ async def execute_with_retry(
         rate_limit: Whether to apply rate limiting
         endpoint: Optional endpoint identifier for rate limiting
     """
+    from open_stocks_mcp.brokers.robinhood_session import get_session_manager
     from open_stocks_mcp.tools.rate_limiter import get_rate_limiter
-    from open_stocks_mcp.tools.session_manager import get_session_manager
 
     last_exception = None
     session_manager = get_session_manager()

@@ -110,7 +110,7 @@ class TestHTTPErrorHandling:
         assert "detail" in data
         assert "Service unhealthy" in data["detail"]
 
-    @patch("open_stocks_mcp.tools.session_manager.get_session_manager")
+    @patch("open_stocks_mcp.brokers.robinhood_session.get_session_manager")
     async def test_500_internal_server_error(
         self, mock_get_session_manager: Mock, http_client: httpx.AsyncClient
     ) -> None:
@@ -345,7 +345,7 @@ class TestSecurityErrorHandling:
 class TestRecoveryMechanisms:
     """Test error recovery mechanisms"""
 
-    @patch("open_stocks_mcp.tools.session_manager.get_session_manager")
+    @patch("open_stocks_mcp.brokers.robinhood_session.get_session_manager")
     async def test_service_recovery_after_error(
         self, mock_get_session_manager: Mock, http_client: httpx.AsyncClient
     ) -> None:
