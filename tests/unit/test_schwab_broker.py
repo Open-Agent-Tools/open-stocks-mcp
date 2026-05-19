@@ -180,7 +180,8 @@ class TestSchwabBroker:
         """Test authentication fails with missing credentials."""
         broker = SchwabBroker(api_key=None, app_secret=None)
 
-        result = await broker.authenticate()
+        with patch("schwab.auth.easy_client", side_effect=Exception("OAuth failed")):
+            result = await broker.authenticate()
 
         assert result is False
         assert broker._auth_info.status == BrokerAuthStatus.NOT_CONFIGURED
