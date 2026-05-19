@@ -2,17 +2,15 @@
 
 from typing import Any
 
-from mcp.server.fastmcp import FastMCP
-
 from open_stocks_mcp.logging_config import logger
 
 
-async def list_available_tools(mcp: FastMCP) -> dict[str, Any]:
+async def list_available_tools(mcp: Any) -> dict[str, Any]:
     """
     Provides a list of available tools and their descriptions.
 
     Args:
-        mcp: The FastMCP server instance.
+        mcp: The MCP server instance (must expose a list_tools() coroutine).
 
     Returns:
         A JSON object containing the list of tools in the result field.
