@@ -3,7 +3,12 @@
 from datetime import datetime
 from typing import Any, cast
 
-from open_stocks_mcp.brokers.base import BaseBroker, BrokerAuthStatus
+from open_stocks_mcp.brokers.base import (
+    BaseBroker,
+    BrokerAuthStatus,
+    BrokerCapability,
+    CapabilityHealth,
+)
 from open_stocks_mcp.logging_config import logger
 from open_stocks_mcp.tools.session_manager import SessionManager
 
@@ -101,6 +106,51 @@ class RobinhoodBroker(BaseBroker):
 
         return is_valid
 
+    def get_capabilities(self) -> dict[BrokerCapability, CapabilityHealth]:
+        """Get Robinhood capabilities and health."""
+        is_ready = self.is_available()
+        now = datetime.now()
+
+        return {
+            BrokerCapability.ACCOUNT_INFO: CapabilityHealth(
+                capability=BrokerCapability.ACCOUNT_INFO,
+                is_supported=True,
+                is_ready=is_ready,
+                last_check=now,
+            ),
+            BrokerCapability.PORTFOLIO_MANAGEMENT: CapabilityHealth(
+                capability=BrokerCapability.PORTFOLIO_MANAGEMENT,
+                is_supported=True,
+                is_ready=is_ready,
+                last_check=now,
+            ),
+            BrokerCapability.STOCK_TRADING: CapabilityHealth(
+                capability=BrokerCapability.STOCK_TRADING,
+                is_supported=True,
+                is_ready=is_ready,
+                last_check=now,
+            ),
+            BrokerCapability.OPTION_TRADING: CapabilityHealth(
+                capability=BrokerCapability.OPTION_TRADING,
+                is_supported=True,
+                is_ready=is_ready,
+                last_check=now,
+            ),
+            BrokerCapability.MARKET_DATA: CapabilityHealth(
+                capability=BrokerCapability.MARKET_DATA,
+                is_supported=True,
+                is_ready=is_ready,
+                last_check=now,
+            ),
+            BrokerCapability.STREAMING_QUOTES: CapabilityHealth(
+                capability=BrokerCapability.STREAMING_QUOTES,
+                is_supported=False,
+                is_ready=False,
+                status_message="Streaming quotes not yet implemented for Robinhood",
+                last_check=now,
+            ),
+        }
+
     async def logout(self) -> None:
         """Logout from Robinhood and clear session."""
         try:
@@ -171,6 +221,12 @@ class RobinhoodBroker(BaseBroker):
         from open_stocks_mcp.tools.robinhood_stock_tools import get_stock_price
 
         return await get_stock_price(symbol)
+
+    async def get_streaming_quotes(self, symbols: list[str]) -> Any:
+        """Get streaming quotes (not supported for Robinhood yet)."""
+        return self.create_unavailable_response(
+            "get streaming quotes", capability=BrokerCapability.STREAMING_QUOTES
+        )
 
     async def order_buy_market(self, symbol: str, quantity: float) -> dict[str, Any]:
         """Place market buy order."""

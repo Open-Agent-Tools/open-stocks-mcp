@@ -82,6 +82,21 @@ class MockBroker(BaseBroker):
     async def order_sell_market(self, symbol: str, quantity: float):
         return {"result": {"order": "sell"}}
 
+    def get_capabilities(self):
+        from open_stocks_mcp.brokers.base import BrokerCapability, CapabilityHealth
+
+        is_ready = self.is_available()
+        return {
+            BrokerCapability.MARKET_DATA: CapabilityHealth(
+                capability=BrokerCapability.MARKET_DATA,
+                is_supported=True,
+                is_ready=is_ready,
+            )
+        }
+
+    async def get_streaming_quotes(self, symbols: list[str]):
+        return {"result": {"mock": "streaming"}}
+
 
 @pytest.fixture
 async def fresh_registry():

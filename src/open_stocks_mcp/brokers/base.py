@@ -19,6 +19,30 @@ class BrokerAuthStatus(Enum):
     MFA_REQUIRED = "mfa_required"  # Waiting for MFA input
 
 
+class BrokerCapability(Enum):
+    """Capabilities supported by a broker."""
+
+    ACCOUNT_INFO = "account_info"
+    PORTFOLIO_MANAGEMENT = "portfolio_management"
+    STOCK_TRADING = "stock_trading"
+    OPTION_TRADING = "option_trading"
+    MARKET_DATA = "market_data"
+    STREAMING_QUOTES = "streaming_quotes"
+    EXTENDED_HOURS = "extended_hours"
+
+
+@dataclass
+class CapabilityHealth:
+    """Health and readiness status for a specific capability."""
+
+    capability: BrokerCapability
+    is_supported: bool
+    is_ready: bool
+    status_message: str | None = None
+    last_check: datetime | None = None
+    error_type: str | None = None  # transient, permanent, auth, etc.
+
+
 @dataclass
 class BrokerAuthInfo:
     """Authentication information for a broker."""
@@ -85,6 +109,11 @@ class BaseBroker(ABC):
         return self._auth_info.status != BrokerAuthStatus.NOT_CONFIGURED
 
     @abstractmethod
+    def get_capabilities(self) -> dict[BrokerCapability, CapabilityHealth]:
+        """Get capabilities and their current health status."""
+        pass
+
+    @abstractmethod
     async def authenticate(self) -> bool:
         """Authenticate with broker API.
 
@@ -121,12 +150,13 @@ class BaseBroker(ABC):
         pass
 
     def create_unavailable_response(
-        self, operation: str = "operation"
+        self, operation: str = "operation", capability: BrokerCapability | None = None
     ) -> dict[str, Any]:
-        """Create standardized error response for unavailable broker.
+        """Create standardized error response for unavailable broker or capability.
 
         Args:
             operation: Description of the operation being attempted
+            capability: Specific capability being requested
 
         Returns:
             Error response dict in MCP format
@@ -134,44 +164,78 @@ class BaseBroker(ABC):
         status = self._auth_info.status
         broker = self.name
 
-        # Build appropriate error message
-        if status == BrokerAuthStatus.NOT_CONFIGURED:
-            message = (
-                f"{broker.title()} is not configured. "
-                f"Please set {broker.upper()}_USERNAME and {broker.upper()}_PASSWORD "
-                f"environment variables."
-            )
-            if self._auth_info.setup_instructions:
-                message += f"\n\nSetup: {self._auth_info.setup_instructions}"
+        # 1. If not authenticated/available, prioritize that error
+        if not self.is_available():
+            # Build appropriate error message based on auth status
+            if status == BrokerAuthStatus.NOT_CONFIGURED:
+                message = (
+                    f"{broker.title()} is not configured. "
+                    f"Please set {broker.upper()}_USERNAME and {broker.upper()}_PASSWORD "
+                    f"environment variables."
+                )
+                if self._auth_info.setup_instructions:
+                    message += f"\n\nSetup: {self._auth_info.setup_instructions}"
 
-        elif status == BrokerAuthStatus.AUTH_FAILED:
-            message = f"{broker.title()} authentication failed: {self._auth_info.error_message}"
+            elif status == BrokerAuthStatus.AUTH_FAILED:
+                message = f"{broker.title()} authentication failed: {self._auth_info.error_message}"
 
-        elif status == BrokerAuthStatus.TOKEN_EXPIRED:
-            message = (
-                f"{broker.title()} session expired. "
-                f"Please restart the server to re-authenticate."
-            )
+            elif status == BrokerAuthStatus.TOKEN_EXPIRED:
+                message = (
+                    f"{broker.title()} session expired. "
+                    f"Please restart the server to re-authenticate."
+                )
 
-        elif status == BrokerAuthStatus.MFA_REQUIRED:
-            message = (
-                f"{broker.title()} requires MFA verification. "
-                f"Please complete authentication and restart server."
-            )
+            elif status == BrokerAuthStatus.MFA_REQUIRED:
+                message = (
+                    f"{broker.title()} requires MFA verification. "
+                    f"Please complete authentication and restart server."
+                )
 
-        elif status == BrokerAuthStatus.AUTHENTICATING:
-            message = f"{broker.title()} authentication in progress. Please try again."
+            elif status == BrokerAuthStatus.AUTHENTICATING:
+                message = f"{broker.title()} authentication in progress. Please try again."
 
-        else:
-            message = f"{broker.title()} is not available for {operation}."
+            else:
+                message = f"{broker.title()} is not available for {operation}."
 
+            return {
+                "result": {
+                    "error": message,
+                    "status": "broker_unavailable",
+                    "broker": broker,
+                    "auth_status": status.value,
+                    "requires_setup": self._auth_info.requires_setup,
+                }
+            }
+
+        # 2. If available but specific capability requested, check capability health
+        if capability:
+            health = self.get_capabilities().get(capability)
+            if health and not health.is_supported:
+                return {
+                    "result": {
+                        "error": f"{broker.title()} does not support {capability.value}.",
+                        "status": "capability_not_supported",
+                        "broker": broker,
+                        "capability": capability.value,
+                    }
+                }
+            if health and not health.is_ready:
+                return {
+                    "result": {
+                        "error": f"{broker.title()} {capability.value} is not ready: {health.status_message}",
+                        "status": "capability_not_ready",
+                        "broker": broker,
+                        "capability": capability.value,
+                        "error_type": health.error_type,
+                    }
+                }
+
+        # Fallback
         return {
             "result": {
-                "error": message,
+                "error": f"{broker.title()} is not available for {operation}.",
                 "status": "broker_unavailable",
                 "broker": broker,
-                "auth_status": status.value,
-                "requires_setup": self._auth_info.requires_setup,
             }
         }
 
@@ -226,6 +290,18 @@ class BaseBroker(ABC):
 
         Returns:
             Price data in standardized format
+        """
+        pass
+
+    @abstractmethod
+    async def get_streaming_quotes(self, symbols: list[str]) -> Any:
+        """Get a streaming quote connection or subscription.
+
+        Args:
+            symbols: List of stock ticker symbols
+
+        Returns:
+            Streaming connection or data stream
         """
         pass
 

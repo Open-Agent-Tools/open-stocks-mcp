@@ -121,10 +121,10 @@ class BrokerRegistry:
         return [name for name, broker in self._brokers.items() if broker.is_available()]
 
     def get_auth_status(self) -> dict[str, Any]:
-        """Get authentication status for all brokers.
+        """Get authentication status and capabilities for all brokers.
 
         Returns:
-            Dict mapping broker names to their auth info
+            Dict mapping broker names to their auth info and capabilities
         """
         return {
             name: {
@@ -144,6 +144,15 @@ class BrokerRegistry:
                 "is_configured": broker.is_configured(),
                 "requires_setup": broker.auth_info.requires_setup,
                 "setup_instructions": broker.auth_info.setup_instructions,
+                "capabilities": {
+                    cap.value: {
+                        "is_supported": health.is_supported,
+                        "is_ready": health.is_ready,
+                        "status_message": health.status_message,
+                        "error_type": health.error_type,
+                    }
+                    for cap, health in broker.get_capabilities().items()
+                },
             }
             for name, broker in self._brokers.items()
         }

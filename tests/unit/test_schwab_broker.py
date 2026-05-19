@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from open_stocks_mcp.brokers.base import BrokerAuthStatus
+from open_stocks_mcp.brokers.base import BrokerAuthStatus, BrokerCapability
 from open_stocks_mcp.brokers.schwab import SchwabBroker
 
 
@@ -58,8 +58,9 @@ class TestSchwabBroker:
         self, schwab_broker: SchwabBroker
     ) -> None:
         """Test authentication using easy_client (no existing token)."""
-        # Mock easy_client
-        with patch("schwab.auth.easy_client") as mock_easy_client:
+        # Mock easy_client and os.isatty
+        with patch("schwab.auth.easy_client") as mock_easy_client, \
+             patch("os.isatty", return_value=True):
             mock_client = MagicMock()
             mock_easy_client.return_value = mock_client
 
@@ -122,10 +123,6 @@ class TestSchwabBroker:
         broker = SchwabBroker(api_key="test", app_secret="test")
 
         assert ".tokens/schwab_token.json" in broker.token_path
-        assert (
-            Path(broker.token_path).expanduser().exists()
-            or not Path(broker.token_path).expanduser().exists()
-        )
 
     def test_rejects_token_path_outside_tokens_dir(self, tmp_path: Path) -> None:
         """Token path must remain inside ~/.tokens."""
@@ -155,3 +152,56 @@ class TestSchwabBroker:
 
         assert result is False
         assert broker._auth_info.status == BrokerAuthStatus.NOT_CONFIGURED
+
+    def test_get_capabilities(self, schwab_broker: SchwabBroker) -> None:
+        """Test get_capabilities returns expected capabilities."""
+        caps = schwab_broker.get_capabilities()
+
+        assert BrokerCapability.STREAMING_QUOTES in caps
+        assert caps[BrokerCapability.STREAMING_QUOTES].is_supported is True
+        # Initial status should be not ready because not authenticated
+        assert caps[BrokerCapability.STREAMING_QUOTES].is_ready is False
+
+    @pytest.mark.asyncio
+    async def test_get_streaming_quotes_not_authenticated(
+        self, schwab_broker: SchwabBroker
+    ) -> None:
+        """Test get_streaming_quotes fails when not authenticated."""
+        result = await schwab_broker.get_streaming_quotes(["AAPL"])
+        assert result["result"]["status"] == "broker_unavailable"
+
+    @pytest.mark.asyncio
+    async def test_get_streaming_quotes_authenticated_no_account_id(
+        self, schwab_broker: SchwabBroker
+    ) -> None:
+        """Test get_streaming_quotes fails when authenticated but no account_id."""
+        schwab_broker._auth_info.status = BrokerAuthStatus.AUTHENTICATED
+        schwab_broker.client = MagicMock()
+        schwab_broker.account_id = None
+
+        result = await schwab_broker.get_streaming_quotes(["AAPL"])
+        assert result["result"]["status"] == "capability_not_ready"
+        assert "Account ID required" in result["result"]["error"]
+
+    @pytest.mark.asyncio
+    async def test_get_streaming_quotes_success(
+        self, schwab_broker: SchwabBroker
+    ) -> None:
+        """Test get_streaming_quotes success when authenticated with account_id."""
+        schwab_broker._auth_info.status = BrokerAuthStatus.AUTHENTICATED
+        schwab_broker.client = MagicMock()
+        schwab_broker.account_id = "12345678"
+
+        async def mock_async(*args, **kwargs):
+            return None
+
+        with patch("schwab.streaming.StreamClient") as mock_stream_client_class:
+            mock_stream_client = mock_stream_client_class.return_value
+            mock_stream_client.login.side_effect = mock_async
+            mock_stream_client.subscribe_quotes.side_effect = mock_async
+            mock_stream_client.level_one_equity_subs.side_effect = mock_async
+
+            with patch("asyncio.create_task"):
+                result = await schwab_broker.get_streaming_quotes(["AAPL"])
+                assert result["result"]["status"] == "streaming_active"
+                assert result["result"]["symbols"] == ["AAPL"]

@@ -206,6 +206,32 @@ async def get_schwab_price_history(
 
 
 @handle_schwab_errors
+async def get_schwab_streaming_quotes(symbols: list[str]) -> dict[str, Any]:
+    """Get streaming quotes for multiple stock symbols from Schwab.
+
+    Args:
+        symbols: List of stock ticker symbols
+
+    Returns:
+        Dict with streaming connection status or latest data
+    """
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", f"get streaming quotes for {len(symbols)} symbols"
+    )
+    if error:
+        return error
+
+    try:
+        # Delegate to broker's streaming implementation
+        result = await broker.get_streaming_quotes(symbols)
+        return result
+
+    except Exception as e:
+        logger.error(f"Error getting Schwab streaming quotes: {e}")
+        return create_error_response(e)
+
+
+@handle_schwab_errors
 async def get_schwab_instrument(symbol: str) -> dict[str, Any]:
     """Get instrument information for a symbol.
 

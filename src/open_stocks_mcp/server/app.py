@@ -139,6 +139,7 @@ from open_stocks_mcp.tools.schwab_market_tools import (
     get_schwab_price_history,
     get_schwab_quote,
     get_schwab_quotes,
+    get_schwab_streaming_quotes,
     search_schwab_instruments,
 )
 from open_stocks_mcp.tools.schwab_options_tools import (
@@ -1057,6 +1058,16 @@ async def schwab_quotes(symbols: list[str]) -> dict[str, Any]:
 
 
 @mcp.tool()
+async def schwab_streaming_quotes(symbols: list[str]) -> dict[str, Any]:
+    """Get streaming quotes for multiple stock symbols from Schwab.
+
+    Args:
+        symbols: List of stock ticker symbols
+    """
+    return await get_schwab_streaming_quotes(symbols)
+
+
+@mcp.tool()
 async def schwab_price_history(
     symbol: str,
     period_type: str = "day",
@@ -1274,6 +1285,7 @@ async def setup_brokers(username: str | None, password: str | None) -> None:
     from open_stocks_mcp.brokers.auth_coordinator import attempt_broker_logins
     from open_stocks_mcp.brokers.registry import get_broker_registry
     from open_stocks_mcp.brokers.robinhood import RobinhoodBroker
+    from open_stocks_mcp.brokers.schwab import SchwabBroker
 
     logger.info("Setting up broker integrations...")
 
@@ -1299,10 +1311,27 @@ async def setup_brokers(username: str | None, password: str | None) -> None:
             "   Set ROBINHOOD_USERNAME and ROBINHOOD_PASSWORD to enable Robinhood"
         )
 
-    # TODO: Add Schwab broker registration when implemented
-    # if schwab_api_key and schwab_app_secret:
-    #     schwab_broker = SchwabBroker(...)
-    #     registry.register(schwab_broker)
+    # Setup Schwab broker if credentials provided
+    schwab_api_key = os.getenv("SCHWAB_API_KEY")
+    schwab_app_secret = os.getenv("SCHWAB_APP_SECRET")
+    schwab_account_id = os.getenv("SCHWAB_ACCOUNT_ID")
+
+    if schwab_api_key and schwab_app_secret:
+        logger.info("Configuring Schwab broker...")
+        schwab_broker = SchwabBroker(
+            api_key=schwab_api_key,
+            app_secret=schwab_app_secret,
+            account_id=schwab_account_id,
+        )
+        registry.register(schwab_broker)
+        logger.info("✓ Schwab broker registered")
+    else:
+        logger.warning(
+            "⚠️  Schwab credentials not provided - skipping Schwab integration"
+        )
+        logger.info(
+            "   Set SCHWAB_API_KEY and SCHWAB_APP_SECRET to enable Schwab"
+        )
 
     # Attempt to authenticate all registered brokers
     await attempt_broker_logins(require_at_least_one=False)

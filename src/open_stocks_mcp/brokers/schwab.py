@@ -5,7 +5,12 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from open_stocks_mcp.brokers.base import BaseBroker, BrokerAuthStatus
+from open_stocks_mcp.brokers.base import (
+    BaseBroker,
+    BrokerAuthStatus,
+    BrokerCapability,
+    CapabilityHealth,
+)
 from open_stocks_mcp.logging_config import logger
 
 
@@ -29,6 +34,7 @@ class SchwabBroker(BaseBroker):
         app_secret: str | None = None,
         callback_url: str = "https://127.0.0.1:8182/",
         token_path: str | None = None,
+        account_id: str | None = None,
     ):
         """Initialize Schwab broker.
 
@@ -37,12 +43,14 @@ class SchwabBroker(BaseBroker):
             app_secret: Schwab app secret from developer portal
             callback_url: OAuth callback URL (must match app registration)
             token_path: Path to store OAuth token (default: ~/.tokens/schwab_token.json)
+            account_id: Schwab account ID (required for streaming)
         """
         super().__init__("schwab")
 
         self.api_key = api_key
         self.app_secret = app_secret
         self.callback_url = callback_url
+        self.account_id = account_id
 
         token_dir = Path.home() / ".tokens"
         token_dir.mkdir(parents=True, exist_ok=True)
@@ -58,6 +66,7 @@ class SchwabBroker(BaseBroker):
             Path(self.token_path).parent.mkdir(parents=True, exist_ok=True)
 
         self.client = None
+        self._streaming_client = None
 
         # Configure auth status based on credentials
         if not api_key or not app_secret:
@@ -85,12 +94,73 @@ class SchwabBroker(BaseBroker):
 
         return resolved_token_path
 
+    def get_capabilities(self) -> dict[BrokerCapability, CapabilityHealth]:
+        """Get Schwab capabilities and health."""
+        is_ready = self.is_available()
+        now = datetime.now()
+
+        # Streaming requires account_id
+        streaming_ready = is_ready and self.account_id is not None
+        streaming_msg = (
+            None
+            if streaming_ready
+            else (
+                "Account ID required for streaming"
+                if not self.account_id
+                else "Broker not authenticated"
+            )
+        )
+
+        return {
+            BrokerCapability.ACCOUNT_INFO: CapabilityHealth(
+                capability=BrokerCapability.ACCOUNT_INFO,
+                is_supported=True,
+                is_ready=is_ready,
+                last_check=now,
+            ),
+            BrokerCapability.PORTFOLIO_MANAGEMENT: CapabilityHealth(
+                capability=BrokerCapability.PORTFOLIO_MANAGEMENT,
+                is_supported=True,
+                is_ready=is_ready,
+                last_check=now,
+            ),
+            BrokerCapability.STOCK_TRADING: CapabilityHealth(
+                capability=BrokerCapability.STOCK_TRADING,
+                is_supported=True,
+                is_ready=is_ready,
+                last_check=now,
+            ),
+            BrokerCapability.OPTION_TRADING: CapabilityHealth(
+                capability=BrokerCapability.OPTION_TRADING,
+                is_supported=True,
+                is_ready=is_ready,
+                last_check=now,
+            ),
+            BrokerCapability.MARKET_DATA: CapabilityHealth(
+                capability=BrokerCapability.MARKET_DATA,
+                is_supported=True,
+                is_ready=is_ready,
+                last_check=now,
+            ),
+            BrokerCapability.STREAMING_QUOTES: CapabilityHealth(
+                capability=BrokerCapability.STREAMING_QUOTES,
+                is_supported=True,
+                is_ready=streaming_ready,
+                status_message=streaming_msg,
+                last_check=now,
+                error_type="config" if not self.account_id else None,
+            ),
+        }
+
     async def authenticate(self) -> bool:
         """Authenticate with Schwab using OAuth 2.0.
 
         Returns:
             True if authentication successful, False otherwise
         """
+        if not self.is_configured():
+            return False
+
         try:
             # Import here to avoid dependency issues if schwab-py not installed
             from schwab import auth
@@ -262,6 +332,63 @@ class SchwabBroker(BaseBroker):
                 "status": "not_implemented",
             }
         }
+
+    async def get_streaming_quotes(self, symbols: list[str]) -> Any:
+        """Get a streaming quote connection or subscription for Schwab.
+
+        Args:
+            symbols: List of stock ticker symbols
+
+        Returns:
+            Streaming connection or data stream
+        """
+        if not self.is_available():
+            return self.create_unavailable_response(
+                "get streaming quotes", capability=BrokerCapability.STREAMING_QUOTES
+            )
+
+        if not self.account_id:
+            return self.create_unavailable_response(
+                "get streaming quotes", capability=BrokerCapability.STREAMING_QUOTES
+            )
+
+        try:
+            from open_stocks_mcp.brokers.schwab_stream import SchwabStreamManager
+
+            if self._streaming_client is None:
+                self._streaming_client = SchwabStreamManager(self)
+                await self._streaming_client.start()
+
+            # Subscribe to requested symbols
+            await self._streaming_client.subscribe_quotes(symbols)
+
+            # Note: In a real implementation, we would manage the websocket
+            # and subscription state here. For now, we return a success response
+            # indicating that streaming is active.
+            return {
+                "result": {
+                    "status": "streaming_active",
+                    "broker": self.name,
+                    "symbols": symbols,
+                    "message": f"Schwab streaming quotes active for {len(symbols)} symbols",
+                }
+            }
+        except ImportError:
+            return {
+                "result": {
+                    "error": "schwab-py streaming components not found",
+                    "status": "not_implemented",
+                }
+            }
+        except Exception as e:
+            logger.error(f"Error initializing Schwab streaming: {e}")
+            return {
+                "result": {
+                    "error": str(e),
+                    "status": "error",
+                    "error_type": "transient",
+                }
+            }
 
     async def order_buy_market(self, symbol: str, quantity: float) -> dict[str, Any]:
         """Place market buy order."""
