@@ -5,7 +5,12 @@ from datetime import datetime
 import pytest
 
 from open_stocks_mcp.brokers.base import BaseBroker, BrokerAuthStatus
-from open_stocks_mcp.brokers.registry import BrokerRegistry, get_broker_registry
+from open_stocks_mcp.brokers.registry import (
+    BrokerRegistry,
+    RegistryNotInitializedError,
+    get_broker_registry,
+    get_broker_registry_sync,
+)
 
 
 class MockBroker(BaseBroker):
@@ -365,3 +370,18 @@ class TestBrokerRegistrySingleton:
         registry2 = await get_broker_registry()
         assert "persistent" in registry2.list_brokers()
         assert registry2.get_broker("persistent") is broker
+
+    def test_get_broker_registry_sync_uninitialized(self):
+        """Test get_broker_registry_sync raises RegistryNotInitializedError when uninitialized."""
+        import open_stocks_mcp.brokers.registry as registry_mod
+
+        # Ensure it's uninitialized for this test
+        original_registry = registry_mod._registry
+        registry_mod._registry = None
+
+        try:
+            with pytest.raises(RegistryNotInitializedError):
+                get_broker_registry_sync()
+        finally:
+            # Restore original state
+            registry_mod._registry = original_registry

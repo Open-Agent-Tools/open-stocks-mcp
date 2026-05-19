@@ -7,6 +7,11 @@ from open_stocks_mcp.brokers.base import BaseBroker, BrokerAuthStatus
 from open_stocks_mcp.logging_config import logger
 
 
+class RegistryNotInitializedError(LookupError):
+    """Raised when broker registry is accessed before initialization."""
+    pass
+
+
 class BrokerRegistry:
     """Manages multiple broker instances and their authentication status.
 
@@ -297,10 +302,10 @@ def get_broker_registry_sync() -> BrokerRegistry:
         Global BrokerRegistry instance
 
     Raises:
-        RuntimeError: If registry not initialized
+        RegistryNotInitializedError: If registry not initialized
     """
     if _registry is None:
-        raise RuntimeError(
+        raise RegistryNotInitializedError(
             "Broker registry not initialized. Call get_broker_registry() first."
         )
     return _registry
