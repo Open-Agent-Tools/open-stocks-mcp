@@ -40,6 +40,8 @@ pip-delete-this-directory.txt
 .tox/
 .nox/
 .cache
+.coverage
+coverage.json
 nosetests.xml
 *.cover
 *.py.cover
