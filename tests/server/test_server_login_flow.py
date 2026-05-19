@@ -9,6 +9,7 @@ import pytest
 
 @pytest.mark.integration
 @pytest.mark.journey_account
+@pytest.mark.rate_limited
 class TestServerLoginFlow:
     """Test the complete server login flow with environment credentials."""
 
