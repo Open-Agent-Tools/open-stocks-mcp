@@ -3,9 +3,11 @@
 import asyncio
 import functools
 from collections.abc import Callable
-from typing import Any
+from typing import Any, TypeVar, cast
 
 from open_stocks_mcp.logging_config import logger
+
+F = TypeVar("F", bound=Callable[..., Any])
 
 
 class RobinStocksError(Exception):
@@ -149,46 +151,46 @@ def create_error_response(error: Exception, context: str = "") -> dict[str, Any]
     return response
 
 
-def handle_robin_stocks_errors(func: Callable[..., Any]) -> Callable[..., Any]:
+def handle_robin_stocks_errors(func: F) -> F:
     """Decorator to handle Robin Stocks API errors consistently."""
 
     @functools.wraps(func)
-    async def wrapper(*args: Any, **kwargs: Any) -> dict[str, Any]:
+    async def wrapper(*args: Any, **kwargs: Any) -> Any:
         context = f"in {func.__name__}"
         try:
-            return await func(*args, **kwargs)  # type: ignore[no-any-return]
+            return await func(*args, **kwargs)
         except Exception as e:
             return create_error_response(e, context)
 
-    return wrapper
+    return cast(F, wrapper)
 
 
-def handle_robin_stocks_sync_errors(func: Callable[..., Any]) -> Callable[..., Any]:
+def handle_robin_stocks_sync_errors(func: F) -> F:
     """Decorator to handle Robin Stocks API errors for sync functions."""
 
     @functools.wraps(func)
-    def wrapper(*args: Any, **kwargs: Any) -> dict[str, Any]:
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
         context = f"in {func.__name__}"
         try:
-            return func(*args, **kwargs)  # type: ignore[no-any-return]
+            return func(*args, **kwargs)
         except Exception as e:
             return create_error_response(e, context)
 
-    return wrapper
+    return cast(F, wrapper)
 
 
-def handle_schwab_errors(func: Callable[..., Any]) -> Callable[..., Any]:
+def handle_schwab_errors(func: F) -> F:
     """Decorator to handle Schwab API errors consistently."""
 
     @functools.wraps(func)
-    async def wrapper(*args: Any, **kwargs: Any) -> dict[str, Any]:
+    async def wrapper(*args: Any, **kwargs: Any) -> Any:
         context = f"in {func.__name__}"
         try:
-            return await func(*args, **kwargs)  # type: ignore[no-any-return]
+            return await func(*args, **kwargs)
         except Exception as e:
             return create_error_response(e, context)
 
-    return wrapper
+    return cast(F, wrapper)
 
 
 async def execute_with_retry(

@@ -169,37 +169,37 @@ async def list_tools() -> dict[str, Any]:
 @mcp.tool()
 async def account_info() -> dict[str, Any]:
     """Gets basic Robinhood account information."""
-    return await get_account_info()  # type: ignore[no-any-return]
+    return await get_account_info()
 
 
 @mcp.tool()
 async def portfolio() -> dict[str, Any]:
     """Provides a high-level overview of the portfolio."""
-    return await get_portfolio()  # type: ignore[no-any-return]
+    return await get_portfolio()
 
 
 @mcp.tool()
 async def stock_orders() -> dict[str, Any]:
     """Retrieves a list of recent stock order history and their statuses."""
-    return await get_stock_orders()  # type: ignore[no-any-return]
+    return await get_stock_orders()
 
 
 @mcp.tool()
 async def options_orders() -> dict[str, Any]:
     """Retrieves a list of recent options order history and their statuses."""
-    return await get_options_orders()  # type: ignore[no-any-return]
+    return await get_options_orders()
 
 
 @mcp.tool()
 async def account_details() -> dict[str, Any]:
     """Gets comprehensive account details including buying power and cash balances."""
-    return await get_account_details()  # type: ignore[no-any-return]
+    return await get_account_details()
 
 
 @mcp.tool()
 async def positions() -> dict[str, Any]:
     """Gets current stock positions with quantities and values."""
-    return await get_positions()  # type: ignore[no-any-return]
+    return await get_positions()
 
 
 # Advanced Portfolio Analytics Tools
@@ -209,7 +209,7 @@ async def build_holdings() -> dict[str, Any]:
 
     Returns detailed holdings data including cost basis, equity, dividends, and performance.
     """
-    return await get_build_holdings()  # type: ignore[no-any-return]
+    return await get_build_holdings()
 
 
 @mcp.tool()
@@ -218,7 +218,7 @@ async def build_user_profile() -> dict[str, Any]:
 
     Returns complete financial profile including total equity, cash balances, and dividend totals.
     """
-    return await get_build_user_profile()  # type: ignore[no-any-return]
+    return await get_build_user_profile()
 
 
 @mcp.tool()
@@ -227,7 +227,7 @@ async def day_trades() -> dict[str, Any]:
 
     Returns day trade count, remaining day trades, PDT status, and buying power information.
     """
-    return await get_day_trades()  # type: ignore[no-any-return]
+    return await get_day_trades()
 
 
 # Session Management Tools
@@ -356,7 +356,7 @@ async def stock_price(symbol: str) -> dict[str, Any]:
     Args:
         symbol: Stock ticker symbol (e.g., "AAPL")
     """
-    return await get_stock_price(symbol)  # type: ignore[no-any-return]
+    return await get_stock_price(symbol)
 
 
 @mcp.tool()
@@ -366,7 +366,7 @@ async def stock_info(symbol: str) -> dict[str, Any]:
     Args:
         symbol: Stock ticker symbol (e.g., "AAPL")
     """
-    return await get_stock_info(symbol)  # type: ignore[no-any-return]
+    return await get_stock_info(symbol)
 
 
 @mcp.tool()
@@ -376,13 +376,13 @@ async def search_stocks_tool(query: str) -> dict[str, Any]:
     Args:
         query: Search query (symbol or company name)
     """
-    return await search_stocks(query)  # type: ignore[no-any-return]
+    return await search_stocks(query)
 
 
 @mcp.tool()
 async def market_hours() -> dict[str, Any]:
     """Gets current market hours and status."""
-    return await get_market_hours()  # type: ignore[no-any-return]
+    return await get_market_hours()
 
 
 @mcp.tool()
@@ -393,7 +393,7 @@ async def price_history(symbol: str, period: str = "week") -> dict[str, Any]:
         symbol: Stock ticker symbol (e.g., "AAPL")
         period: Time period ("day", "week", "month", "3month", "year", "5year")
     """
-    return await get_price_history(symbol, period)  # type: ignore[no-any-return]
+    return await get_price_history(symbol, period)
 
 
 # Phase 6: Advanced Instrument Data Tools
@@ -404,7 +404,7 @@ async def instruments_by_symbols(symbols: list[str]) -> dict[str, Any]:
     Args:
         symbols: List of stock ticker symbols (e.g., ["AAPL", "GOOGL", "MSFT"])
     """
-    return await get_instruments_by_symbols(symbols)  # type: ignore[no-any-return]
+    return await get_instruments_by_symbols(symbols)
 
 
 @mcp.tool()
@@ -414,7 +414,7 @@ async def find_instruments(query: str) -> dict[str, Any]:
     Args:
         query: Search query string (can be symbol, company name, or other criteria)
     """
-    return await find_instrument_data(query)  # type: ignore[no-any-return]
+    return await find_instrument_data(query)
 
 
 @mcp.tool()
@@ -424,7 +424,7 @@ async def stock_quote_by_id(instrument_id: str) -> dict[str, Any]:
     Args:
         instrument_id: Robinhood's internal instrument ID
     """
-    return await get_stock_quote_by_id(instrument_id)  # type: ignore[no-any-return]
+    return await get_stock_quote_by_id(instrument_id)
 
 
 @mcp.tool()
@@ -434,20 +434,20 @@ async def pricebook_by_symbol(symbol: str) -> dict[str, Any]:
     Args:
         symbol: Stock ticker symbol (e.g., "AAPL")
     """
-    return await get_pricebook_by_symbol(symbol)  # type: ignore[no-any-return]
+    return await get_pricebook_by_symbol(symbol)
 
 
 # Dividend & Income Tools
 @mcp.tool()
 async def dividends() -> dict[str, Any]:
     """Gets all dividend payment history for the account."""
-    return await get_dividends()  # type: ignore[no-any-return]
+    return await get_dividends()
 
 
 @mcp.tool()
 async def total_dividends() -> dict[str, Any]:
     """Gets total dividends received across all time."""
-    return await get_total_dividends()  # type: ignore[no-any-return]
+    return await get_total_dividends()
 
 
 @mcp.tool()
@@ -457,19 +457,19 @@ async def dividends_by_instrument(symbol: str) -> dict[str, Any]:
     Args:
         symbol: Stock ticker symbol (e.g., "AAPL")
     """
-    return await get_dividends_by_instrument(symbol)  # type: ignore[no-any-return]
+    return await get_dividends_by_instrument(symbol)
 
 
 @mcp.tool()
 async def interest_payments() -> dict[str, Any]:
     """Gets interest payment history from cash management."""
-    return await get_interest_payments()  # type: ignore[no-any-return]
+    return await get_interest_payments()
 
 
 @mcp.tool()
 async def stock_loan_payments() -> dict[str, Any]:
     """Gets stock loan payment history from the stock lending program."""
-    return await get_stock_loan_payments()  # type: ignore[no-any-return]
+    return await get_stock_loan_payments()
 
 
 # Advanced Market Data Tools
@@ -480,19 +480,19 @@ async def top_movers_sp500(direction: str = "up") -> dict[str, Any]:
     Args:
         direction: Direction of movement, either 'up' or 'down' (default: 'up')
     """
-    return await get_top_movers_sp500(direction)  # type: ignore[no-any-return]
+    return await get_top_movers_sp500(direction)
 
 
 @mcp.tool()
 async def top_100_stocks() -> dict[str, Any]:
     """Gets top 100 most popular stocks on Robinhood."""
-    return await get_top_100()  # type: ignore[no-any-return]
+    return await get_top_100()
 
 
 @mcp.tool()
 async def top_movers() -> dict[str, Any]:
     """Gets top 20 movers on Robinhood."""
-    return await get_top_movers()  # type: ignore[no-any-return]
+    return await get_top_movers()
 
 
 @mcp.tool()
@@ -502,7 +502,7 @@ async def stocks_by_tag(tag: str) -> dict[str, Any]:
     Args:
         tag: Market category tag (e.g., 'technology', 'biopharmaceutical', 'upcoming-earnings')
     """
-    return await get_stocks_by_tag(tag)  # type: ignore[no-any-return]
+    return await get_stocks_by_tag(tag)
 
 
 @mcp.tool()
@@ -512,7 +512,7 @@ async def stock_ratings(symbol: str) -> dict[str, Any]:
     Args:
         symbol: Stock ticker symbol (e.g., "AAPL")
     """
-    return await get_stock_ratings(symbol)  # type: ignore[no-any-return]
+    return await get_stock_ratings(symbol)
 
 
 @mcp.tool()
@@ -522,7 +522,7 @@ async def stock_earnings(symbol: str) -> dict[str, Any]:
     Args:
         symbol: Stock ticker symbol (e.g., "AAPL")
     """
-    return await get_stock_earnings(symbol)  # type: ignore[no-any-return]
+    return await get_stock_earnings(symbol)
 
 
 @mcp.tool()
@@ -532,7 +532,7 @@ async def stock_news(symbol: str) -> dict[str, Any]:
     Args:
         symbol: Stock ticker symbol (e.g., "AAPL")
     """
-    return await get_stock_news(symbol)  # type: ignore[no-any-return]
+    return await get_stock_news(symbol)
 
 
 @mcp.tool()
@@ -542,7 +542,7 @@ async def stock_splits(symbol: str) -> dict[str, Any]:
     Args:
         symbol: Stock ticker symbol (e.g., "AAPL")
     """
-    return await get_stock_splits(symbol)  # type: ignore[no-any-return]
+    return await get_stock_splits(symbol)
 
 
 @mcp.tool()
@@ -552,7 +552,7 @@ async def stock_events(symbol: str) -> dict[str, Any]:
     Args:
         symbol: Stock ticker symbol (e.g., "AAPL")
     """
-    return await get_stock_events(symbol)  # type: ignore[no-any-return]
+    return await get_stock_events(symbol)
 
 
 @mcp.tool()
@@ -562,7 +562,7 @@ async def stock_level2_data(symbol: str) -> dict[str, Any]:
     Args:
         symbol: Stock ticker symbol (e.g., "AAPL")
     """
-    return await get_stock_level2_data(symbol)  # type: ignore[no-any-return]
+    return await get_stock_level2_data(symbol)
 
 
 # Phase 3: Options Trading Tools
@@ -573,7 +573,7 @@ async def options_chains(symbol: str) -> dict[str, Any]:
     Args:
         symbol: Stock ticker symbol (e.g., "AAPL")
     """
-    return await get_options_chains(symbol)  # type: ignore[no-any-return]
+    return await get_options_chains(symbol)
 
 
 @mcp.tool()
@@ -587,7 +587,7 @@ async def find_options(
         expiration_date: Optional expiration date in YYYY-MM-DD format
         option_type: Optional option type ("call" or "put")
     """
-    return await find_tradable_options(symbol, expiration_date, option_type)  # type: ignore[no-any-return]
+    return await find_tradable_options(symbol, expiration_date, option_type)
 
 
 @mcp.tool()
@@ -597,7 +597,7 @@ async def option_market_data(option_id: str) -> dict[str, Any]:
     Args:
         option_id: Unique option contract ID
     """
-    return await get_option_market_data(option_id)  # type: ignore[no-any-return]
+    return await get_option_market_data(option_id)
 
 
 @mcp.tool()
@@ -622,25 +622,25 @@ async def option_historicals(
     result = await get_option_historicals(
         symbol, expiration_date, strike_price, option_type, interval, span
     )
-    return result  # type: ignore[no-any-return]
+    return result
 
 
 @mcp.tool()
 async def aggregate_option_positions() -> dict[str, Any]:
     """Gets aggregated option positions collapsed by underlying stock."""
-    return await get_aggregate_positions()  # type: ignore[no-any-return]
+    return await get_aggregate_positions()
 
 
 @mcp.tool()
 async def all_option_positions() -> dict[str, Any]:
     """Gets all option positions ever held."""
-    return await get_all_option_positions()  # type: ignore[no-any-return]
+    return await get_all_option_positions()
 
 
 @mcp.tool()
 async def open_option_positions() -> dict[str, Any]:
     """Gets currently open option positions."""
-    return await get_open_option_positions()  # type: ignore[no-any-return]
+    return await get_open_option_positions()
 
 
 @mcp.tool()
@@ -658,14 +658,14 @@ async def open_option_positions_with_details() -> dict[str, Any]:
 
     Use this instead of open_option_positions() when you need complete option details.
     """
-    return await get_open_option_positions_with_details()  # type: ignore[no-any-return]
+    return await get_open_option_positions_with_details()
 
 
 # Phase 3: Watchlist Management Tools
 @mcp.tool()
 async def all_watchlists() -> dict[str, Any]:
     """Gets all user-created watchlists."""
-    return await get_all_watchlists()  # type: ignore[no-any-return]
+    return await get_all_watchlists()
 
 
 @mcp.tool()
@@ -675,7 +675,7 @@ async def watchlist_by_name(watchlist_name: str) -> dict[str, Any]:
     Args:
         watchlist_name: Name of the watchlist to retrieve
     """
-    return await get_watchlist_by_name(watchlist_name)  # type: ignore[no-any-return]
+    return await get_watchlist_by_name(watchlist_name)
 
 
 @mcp.tool()
@@ -686,7 +686,7 @@ async def add_to_watchlist(watchlist_name: str, symbols: list[str]) -> dict[str,
         watchlist_name: Name of the watchlist
         symbols: List of stock symbols to add
     """
-    return await add_symbols_to_watchlist(watchlist_name, symbols)  # type: ignore[no-any-return]
+    return await add_symbols_to_watchlist(watchlist_name, symbols)
 
 
 @mcp.tool()
@@ -699,7 +699,7 @@ async def remove_from_watchlist(
         watchlist_name: Name of the watchlist
         symbols: List of stock symbols to remove
     """
-    return await remove_symbols_from_watchlist(watchlist_name, symbols)  # type: ignore[no-any-return]
+    return await remove_symbols_from_watchlist(watchlist_name, symbols)
 
 
 @mcp.tool()
@@ -709,7 +709,7 @@ async def watchlist_performance(watchlist_name: str) -> dict[str, Any]:
     Args:
         watchlist_name: Name of the watchlist to analyze
     """
-    return await get_watchlist_performance(watchlist_name)  # type: ignore[no-any-return]
+    return await get_watchlist_performance(watchlist_name)
 
 
 # Phase 3: Account Features & Notifications Tools
@@ -720,86 +720,86 @@ async def notifications(count: int = 20) -> dict[str, Any]:
     Args:
         count: Number of notifications to retrieve (default: 20)
     """
-    return await get_notifications(count)  # type: ignore[no-any-return]
+    return await get_notifications(count)
 
 
 @mcp.tool()
 async def latest_notification() -> dict[str, Any]:
     """Gets the most recent notification."""
-    return await get_latest_notification()  # type: ignore[no-any-return]
+    return await get_latest_notification()
 
 
 @mcp.tool()
 async def margin_calls() -> dict[str, Any]:
     """Gets margin call information."""
-    return await get_margin_calls()  # type: ignore[no-any-return]
+    return await get_margin_calls()
 
 
 @mcp.tool()
 async def margin_interest() -> dict[str, Any]:
     """Gets margin interest charges and rates."""
-    return await get_margin_interest()  # type: ignore[no-any-return]
+    return await get_margin_interest()
 
 
 @mcp.tool()
 async def subscription_fees() -> dict[str, Any]:
     """Gets Robinhood Gold subscription fees."""
-    return await get_subscription_fees()  # type: ignore[no-any-return]
+    return await get_subscription_fees()
 
 
 @mcp.tool()
 async def referrals() -> dict[str, Any]:
     """Gets referral program information."""
-    return await get_referrals()  # type: ignore[no-any-return]
+    return await get_referrals()
 
 
 @mcp.tool()
 async def account_features() -> dict[str, Any]:
     """Gets comprehensive account features and settings."""
-    return await get_account_features()  # type: ignore[no-any-return]
+    return await get_account_features()
 
 
 # Phase 3: User Profile Tools
 @mcp.tool()
 async def account_profile() -> dict[str, Any]:
     """Gets trading account profile and configuration."""
-    return await get_account_profile()  # type: ignore[no-any-return]
+    return await get_account_profile()
 
 
 @mcp.tool()
 async def basic_profile() -> dict[str, Any]:
     """Gets basic user profile information."""
-    return await get_basic_profile()  # type: ignore[no-any-return]
+    return await get_basic_profile()
 
 
 @mcp.tool()
 async def investment_profile() -> dict[str, Any]:
     """Gets investment profile and risk assessment."""
-    return await get_investment_profile()  # type: ignore[no-any-return]
+    return await get_investment_profile()
 
 
 @mcp.tool()
 async def security_profile() -> dict[str, Any]:
     """Gets security profile and settings."""
-    return await get_security_profile()  # type: ignore[no-any-return]
+    return await get_security_profile()
 
 
 @mcp.tool()
 async def user_profile() -> dict[str, Any]:
     """Gets comprehensive user profile information."""
-    return await get_user_profile()  # type: ignore[no-any-return]
+    return await get_user_profile()
 
 
 @mcp.tool()
 async def complete_profile() -> dict[str, Any]:
     """Gets complete user profile combining all profile types."""
-    return await get_complete_profile()  # type: ignore[no-any-return]
+    return await get_complete_profile()
 
 
 @mcp.tool()
 async def account_settings() -> dict[str, Any]:
     """Gets account settings and preferences."""
-    return await get_account_settings()  # type: ignore[no-any-return]
+    return await get_account_settings()
 
 
 # Phase 7: Trading Capabilities Tools
@@ -814,7 +814,7 @@ async def buy_stock_market(symbol: str, quantity: int) -> dict[str, Any]:
         symbol: The stock symbol to buy (e.g., "AAPL")
         quantity: The number of shares to buy
     """
-    return await order_buy_market(symbol, quantity)  # type: ignore[no-any-return]
+    return await order_buy_market(symbol, quantity)
 
 
 @mcp.tool()
@@ -825,7 +825,7 @@ async def sell_stock_market(symbol: str, quantity: int) -> dict[str, Any]:
         symbol: The stock symbol to sell (e.g., "AAPL")
         quantity: The number of shares to sell
     """
-    return await order_sell_market(symbol, quantity)  # type: ignore[no-any-return]
+    return await order_sell_market(symbol, quantity)
 
 
 @mcp.tool()
@@ -839,7 +839,7 @@ async def buy_stock_limit(
         quantity: The number of shares to buy
         limit_price: The maximum price per share
     """
-    return await order_buy_limit(symbol, quantity, limit_price)  # type: ignore[no-any-return]
+    return await order_buy_limit(symbol, quantity, limit_price)
 
 
 @mcp.tool()
@@ -853,7 +853,7 @@ async def sell_stock_limit(
         quantity: The number of shares to sell
         limit_price: The minimum price per share
     """
-    return await order_sell_limit(symbol, quantity, limit_price)  # type: ignore[no-any-return]
+    return await order_sell_limit(symbol, quantity, limit_price)
 
 
 # DEPRECATED: buy_stock_stop_loss removed - uncommon use case for most traders
@@ -884,7 +884,7 @@ async def sell_stock_stop_loss(
         quantity: The number of shares to sell
         stop_price: The stop price that triggers the order
     """
-    return await order_sell_stop_loss(symbol, quantity, stop_price)  # type: ignore[no-any-return]
+    return await order_sell_stop_loss(symbol, quantity, stop_price)
 
 
 # DEPRECATED: buy_stock_trailing_stop removed - uncommon use case for most traders
@@ -947,7 +947,7 @@ async def buy_option_limit(
         quantity: The number of option contracts to buy
         limit_price: The maximum price per contract
     """
-    return await order_buy_option_limit(instrument_id, quantity, limit_price)  # type: ignore[no-any-return]
+    return await order_buy_option_limit(instrument_id, quantity, limit_price)
 
 
 @mcp.tool()
@@ -961,7 +961,7 @@ async def sell_option_limit(
         quantity: The number of option contracts to sell
         limit_price: The minimum price per contract
     """
-    return await order_sell_option_limit(instrument_id, quantity, limit_price)  # type: ignore[no-any-return]
+    return await order_sell_option_limit(instrument_id, quantity, limit_price)
 
 
 @mcp.tool()
@@ -1011,7 +1011,7 @@ async def cancel_stock_order_by_id(order_id: str) -> dict[str, Any]:
     Args:
         order_id: The ID of the order to cancel
     """
-    return await cancel_stock_order(order_id)  # type: ignore[no-any-return]
+    return await cancel_stock_order(order_id)
 
 
 @mcp.tool()
@@ -1021,38 +1021,38 @@ async def cancel_option_order_by_id(order_id: str) -> dict[str, Any]:
     Args:
         order_id: The ID of the order to cancel
     """
-    return await cancel_option_order(order_id)  # type: ignore[no-any-return]
+    return await cancel_option_order(order_id)
 
 
 @mcp.tool()
 async def cancel_all_stock_orders_tool() -> dict[str, Any]:
     """Cancels all open stock orders."""
-    return await cancel_all_stock_orders()  # type: ignore[no-any-return]
+    return await cancel_all_stock_orders()
 
 
 @mcp.tool()
 async def cancel_all_option_orders_tool() -> dict[str, Any]:
     """Cancels all open option orders."""
-    return await cancel_all_option_orders()  # type: ignore[no-any-return]
+    return await cancel_all_option_orders()
 
 
 @mcp.tool()
 async def open_stock_orders() -> dict[str, Any]:
     """Retrieves all open stock orders."""
-    return await get_all_open_stock_orders()  # type: ignore[no-any-return]
+    return await get_all_open_stock_orders()
 
 
 @mcp.tool()
 async def open_option_orders() -> dict[str, Any]:
     """Retrieves all open option orders."""
-    return await get_all_open_option_orders()  # type: ignore[no-any-return]
+    return await get_all_open_option_orders()
 
 
 # Schwab Account Tools
 @mcp.tool()
 async def schwab_account_numbers() -> dict[str, Any]:
     """Get Schwab account numbers and their hashes."""
-    return await get_schwab_account_numbers()  # type: ignore[no-any-return]
+    return await get_schwab_account_numbers()
 
 
 @mcp.tool()
@@ -1065,7 +1065,7 @@ async def schwab_account(
         account_hash: Account hash from schwab_account_numbers
         include_positions: Whether to include positions (default: True)
     """
-    return await get_schwab_account(account_hash, include_positions)  # type: ignore[no-any-return]
+    return await get_schwab_account(account_hash, include_positions)
 
 
 @mcp.tool()
@@ -1075,7 +1075,7 @@ async def schwab_accounts(include_positions: bool = True) -> dict[str, Any]:
     Args:
         include_positions: Whether to include positions (default: True)
     """
-    return await get_schwab_accounts(include_positions)  # type: ignore[no-any-return]
+    return await get_schwab_accounts(include_positions)
 
 
 @mcp.tool()
@@ -1085,7 +1085,7 @@ async def schwab_portfolio(account_hash: str) -> dict[str, Any]:
     Args:
         account_hash: Account hash from schwab_account_numbers
     """
-    return await get_schwab_portfolio(account_hash)  # type: ignore[no-any-return]
+    return await get_schwab_portfolio(account_hash)
 
 
 @mcp.tool()
@@ -1095,7 +1095,7 @@ async def schwab_account_balances(account_hash: str) -> dict[str, Any]:
     Args:
         account_hash: Account hash from schwab_account_numbers
     """
-    return await get_schwab_account_balances(account_hash)  # type: ignore[no-any-return]
+    return await get_schwab_account_balances(account_hash)
 
 
 # Schwab Market Data Tools
@@ -1106,7 +1106,7 @@ async def schwab_quote(symbol: str) -> dict[str, Any]:
     Args:
         symbol: Stock ticker symbol (e.g., 'AAPL', 'TSLA')
     """
-    return await get_schwab_quote(symbol)  # type: ignore[no-any-return]
+    return await get_schwab_quote(symbol)
 
 
 @mcp.tool()
@@ -1116,7 +1116,7 @@ async def schwab_quotes(symbols: list[str]) -> dict[str, Any]:
     Args:
         symbols: List of stock ticker symbols
     """
-    return await get_schwab_quotes(symbols)  # type: ignore[no-any-return]
+    return await get_schwab_quotes(symbols)
 
 
 @mcp.tool()
@@ -1148,7 +1148,7 @@ async def schwab_instrument(symbol: str) -> dict[str, Any]:
     Args:
         symbol: Stock ticker symbol
     """
-    return await get_schwab_instrument(symbol)  # type: ignore[no-any-return]
+    return await get_schwab_instrument(symbol)
 
 
 @mcp.tool()
@@ -1158,7 +1158,7 @@ async def schwab_search_instruments(query: str) -> dict[str, Any]:
     Args:
         query: Symbol or company name to search
     """
-    return await search_schwab_instruments(query)  # type: ignore[no-any-return]
+    return await search_schwab_instruments(query)
 
 
 # Schwab Trading Tools
@@ -1173,7 +1173,7 @@ async def schwab_buy_stock_market(
         symbol: Stock ticker symbol
         quantity: Number of shares to buy
     """
-    return await schwab_buy_market(account_hash, symbol, quantity)  # type: ignore[no-any-return]
+    return await schwab_buy_market(account_hash, symbol, quantity)
 
 
 @mcp.tool()
@@ -1187,7 +1187,7 @@ async def schwab_sell_stock_market(
         symbol: Stock ticker symbol
         quantity: Number of shares to sell
     """
-    return await schwab_sell_market(account_hash, symbol, quantity)  # type: ignore[no-any-return]
+    return await schwab_sell_market(account_hash, symbol, quantity)
 
 
 @mcp.tool()
@@ -1202,7 +1202,7 @@ async def schwab_buy_stock_limit(
         quantity: Number of shares to buy
         price: Limit price
     """
-    return await schwab_buy_limit(account_hash, symbol, quantity, price)  # type: ignore[no-any-return]
+    return await schwab_buy_limit(account_hash, symbol, quantity, price)
 
 
 @mcp.tool()
@@ -1217,7 +1217,7 @@ async def schwab_sell_stock_limit(
         quantity: Number of shares to sell
         price: Limit price
     """
-    return await schwab_sell_limit(account_hash, symbol, quantity, price)  # type: ignore[no-any-return]
+    return await schwab_sell_limit(account_hash, symbol, quantity, price)
 
 
 @mcp.tool()
@@ -1228,7 +1228,7 @@ async def schwab_orders(account_hash: str, max_results: int = 50) -> dict[str, A
         account_hash: Account hash from schwab_account_numbers
         max_results: Maximum number of orders to return (default: 50)
     """
-    return await get_schwab_orders(account_hash, max_results)  # type: ignore[no-any-return]
+    return await get_schwab_orders(account_hash, max_results)
 
 
 @mcp.tool()
@@ -1239,7 +1239,7 @@ async def schwab_cancel_order(account_hash: str, order_id: str) -> dict[str, Any
         account_hash: Account hash from schwab_account_numbers
         order_id: Order ID to cancel
     """
-    return await cancel_schwab_order(account_hash, order_id)  # type: ignore[no-any-return]
+    return await cancel_schwab_order(account_hash, order_id)
 
 
 @mcp.tool()
@@ -1250,7 +1250,7 @@ async def schwab_get_order(account_hash: str, order_id: str) -> dict[str, Any]:
         account_hash: Account hash from schwab_account_numbers
         order_id: Order ID to retrieve
     """
-    return await get_schwab_order_by_id(account_hash, order_id)  # type: ignore[no-any-return]
+    return await get_schwab_order_by_id(account_hash, order_id)
 
 
 # Schwab Options Tools
@@ -1301,7 +1301,7 @@ async def schwab_option_expirations(symbol: str) -> dict[str, Any]:
     Args:
         symbol: Stock ticker symbol
     """
-    return await get_schwab_option_expirations(symbol)  # type: ignore[no-any-return]
+    return await get_schwab_option_expirations(symbol)
 
 
 @mcp.tool()
@@ -1311,7 +1311,7 @@ async def schwab_options_positions(account_hash: str) -> dict[str, Any]:
     Args:
         account_hash: Account hash from schwab_account_numbers
     """
-    return await get_schwab_options_positions(account_hash)  # type: ignore[no-any-return]
+    return await get_schwab_options_positions(account_hash)
 
 
 def create_mcp_server(config: ServerConfig | None = None) -> FastMCP:
