@@ -128,6 +128,39 @@ class TestHTTPErrorHandling:
         data = response.json()
         assert "detail" in data
 
+    @patch("open_stocks_mcp.server.http_transport.get_session_manager")
+    async def test_health_returns_503_when_session_manager_unavailable(
+        self, mock_get_session_manager: Mock, http_client: httpx.AsyncClient
+    ) -> None:
+        """Health check should return 503 when session manager singleton is unavailable."""
+        mock_get_session_manager.return_value = None
+
+        response = await http_client.get("/health")
+        assert response.status_code == 503
+        assert response.json()["detail"] == "Session manager unavailable"
+
+    @patch("open_stocks_mcp.server.http_transport.get_metrics_collector")
+    async def test_status_returns_503_when_metrics_collector_unavailable(
+        self, mock_get_metrics_collector: Mock, http_client: httpx.AsyncClient
+    ) -> None:
+        """Status should return 503 when metrics collector singleton is unavailable."""
+        mock_get_metrics_collector.return_value = None
+
+        response = await http_client.get("/status")
+        assert response.status_code == 503
+        assert response.json()["detail"] == "Metrics collector unavailable"
+
+    @patch("open_stocks_mcp.server.http_transport.get_session_manager")
+    async def test_refresh_returns_503_when_session_manager_unavailable(
+        self, mock_get_session_manager: Mock, http_client: httpx.AsyncClient
+    ) -> None:
+        """Session refresh should return 503 when session manager singleton is unavailable."""
+        mock_get_session_manager.return_value = None
+
+        response = await http_client.post("/session/refresh")
+        assert response.status_code == 503
+        assert response.json()["detail"] == "Session manager unavailable"
+
 
 @pytest.mark.integration
 @pytest.mark.journey_system
