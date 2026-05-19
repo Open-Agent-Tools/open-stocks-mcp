@@ -5,6 +5,7 @@ import functools
 from collections.abc import Callable
 from typing import Any
 
+from open_stocks_mcp.config import load_config
 from open_stocks_mcp.logging_config import logger
 from open_stocks_mcp.tools.exceptions import (
     AuthenticationError,
@@ -16,9 +17,9 @@ from open_stocks_mcp.tools.exceptions import (
 async def execute_with_retry(
     func: Callable[..., Any],
     *args: Any,
-    max_retries: int = 3,
-    delay: float = 1.0,
-    backoff_factor: float = 2.0,
+    max_retries: int | None = None,
+    delay: float | None = None,
+    backoff_factor: float | None = None,
     handle_auth_errors: bool = True,
     rate_limit: bool = True,
     endpoint: str | None = None,
@@ -29,12 +30,23 @@ async def execute_with_retry(
     from open_stocks_mcp.tools.session_manager import get_session_manager
 
     last_exception = None
+    retry_config = load_config().retry
+    if retry_config is None:
+        raise RuntimeError("Retry configuration unavailable")
+    configured_max_retries = (
+        retry_config.max_retries if max_retries is None else max_retries
+    )
+    retry_delay = retry_config.initial_delay if delay is None else delay
+    retry_backoff_factor = (
+        retry_config.backoff_factor if backoff_factor is None else backoff_factor
+    )
     session_manager = get_session_manager()
     rate_limiter = get_rate_limiter() if rate_limit else None
     auth_retry_count = 0
-    max_auth_retries = 1
+    max_auth_retries = retry_config.auth_max_retries
 
-    for attempt in range(max_retries + 1):
+    attempt = 0
+    while attempt <= configured_max_retries:
         try:
             if rate_limiter:
                 await rate_limiter.acquire(endpoint)
@@ -52,6 +64,10 @@ async def execute_with_retry(
         except Exception as e:
             last_exception = e
             classified_error = classify_error(e)
+            if max_retries is None:
+                configured_max_retries = retry_config.max_retries_for(
+                    classified_error.error_type
+                )
 
             if isinstance(classified_error, AuthenticationError) and handle_auth_errors:
                 if auth_retry_count < max_auth_retries:
@@ -63,8 +79,9 @@ async def execute_with_retry(
                     try:
                         success = await session_manager.refresh_session()
                         if success:
-                            logger.info("Re-authentication successful, retrying request")
-                            attempt -= 1
+                            logger.info(
+                                "Re-authentication successful, retrying request"
+                            )
                             continue
                         logger.error("Re-authentication failed")
                         raise classified_error
@@ -79,14 +96,15 @@ async def execute_with_retry(
                 logger.error(f"Data error, not retrying: {e}")
                 raise classified_error from e
 
-            if attempt < max_retries:
-                wait_time = delay * (backoff_factor**attempt)
+            if attempt < configured_max_retries:
+                wait_time = retry_delay * (retry_backoff_factor**attempt)
                 logger.warning(
                     f"Attempt {attempt + 1} failed, retrying in {wait_time}s: {e}"
                 )
                 await asyncio.sleep(wait_time)
+                attempt += 1
             else:
-                logger.error(f"All {max_retries + 1} attempts failed: {e}")
+                logger.error(f"All {configured_max_retries + 1} attempts failed: {e}")
                 raise classified_error from e
 
     if last_exception:

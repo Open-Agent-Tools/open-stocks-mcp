@@ -15,6 +15,7 @@ from mcp.server.fastmcp import FastMCP
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from open_stocks_mcp import __version__
+from open_stocks_mcp.config import load_config
 from open_stocks_mcp.logging_config import logger
 from open_stocks_mcp.monitoring import get_metrics_collector
 from open_stocks_mcp.tools.rate_limiter import get_rate_limiter
@@ -186,7 +187,11 @@ def create_http_server(mcp_server: FastMCP, api_key: str | None = None) -> FastA
         allow_headers=["*"],
     )
 
-    app.add_middleware(TimeoutMiddleware, timeout=120.0)
+    timeout_config = load_config().timeout
+    request_timeout = (
+        timeout_config.request_timeout_seconds if timeout_config is not None else 120.0
+    )
+    app.add_middleware(TimeoutMiddleware, timeout=request_timeout)
     app.add_middleware(SecurityMiddleware)
     app.add_middleware(BearerAuthMiddleware, api_key=api_key)
 
@@ -297,7 +302,9 @@ def create_http_server(mcp_server: FastMCP, api_key: str | None = None) -> FastA
 
             tools = await list_available_tools(mcp_server)
             if not isinstance(tools, dict) or "error" in tools or "result" not in tools:
-                logger.error("list_available_tools returned an unexpected or error response")
+                logger.error(
+                    "list_available_tools returned an unexpected or error response"
+                )
                 raise HTTPException(status_code=500, detail="Failed to list tools")
             return tools
         except HTTPException:
