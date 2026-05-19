@@ -1,7 +1,7 @@
 """Server configuration for Open Stocks MCP MCP server"""
 
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 def _env_int(name: str, default: int) -> int:
@@ -32,6 +32,16 @@ def _env_float(name: str, default: float) -> float:
         return float(raw_value)
     except ValueError as exc:
         raise ValueError(f"{name} must be a number") from exc
+
+
+@dataclass
+class CacheConfig:
+    """Configuration for the in-memory caching layer."""
+
+    quotes_ttl_seconds: int = 15
+    account_ttl_seconds: int = 300
+    max_size: int = 1024
+    strategy: str = "ttl"
 
 
 @dataclass
@@ -76,6 +86,7 @@ class ServerConfig:
 
     name: str = "Open Stocks MCP"
     log_level: str = os.getenv("LOG_LEVEL", "INFO")
+    cache: CacheConfig = field(default_factory=CacheConfig)
     retry: RetryConfig | None = None
     timeout: TimeoutConfig | None = None
 
@@ -88,9 +99,16 @@ class ServerConfig:
 
 def load_config() -> ServerConfig:
     """Load server configuration from environment or defaults"""
+    cache = CacheConfig(
+        quotes_ttl_seconds=_env_int("CACHE_QUOTES_TTL", 15),
+        account_ttl_seconds=_env_int("CACHE_ACCOUNT_TTL", 300),
+        max_size=_env_int("CACHE_MAX_SIZE", 1024),
+        strategy=os.getenv("CACHE_STRATEGY", "ttl"),
+    )
     return ServerConfig(
         name=os.getenv("MCP_SERVER_NAME", "Open Stocks MCP"),
         log_level=os.getenv("LOG_LEVEL", "INFO"),
+        cache=cache,
         retry=RetryConfig(
             max_retries=_env_int("OPEN_STOCKS_MCP_RETRY_MAX_RETRIES", 3),
             initial_delay=_env_float("OPEN_STOCKS_MCP_RETRY_INITIAL_DELAY", 1.0),
