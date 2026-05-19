@@ -1485,12 +1485,15 @@ def main(
     except KeyboardInterrupt:
         logger.info("\nServer stopped by user")
         # Logout all brokers
-        from open_stocks_mcp.brokers.registry import get_broker_registry_sync
+        from open_stocks_mcp.brokers.registry import (
+            RegistryNotInitializedError,
+            get_broker_registry_sync,
+        )
 
         try:
             registry = get_broker_registry_sync()
             asyncio.run(registry.logout_all())
-        except RuntimeError:
+        except RegistryNotInitializedError:
             # Registry not initialized - no brokers to logout
             pass
         return 0
