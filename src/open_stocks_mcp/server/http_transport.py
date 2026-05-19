@@ -242,7 +242,10 @@ def create_http_server(mcp_server: FastMCP) -> FastAPI:
                     content=json.dumps(
                         {
                             "jsonrpc": "2.0",
-                            "error": {"code": -32700, "message": "Request body too large"},
+                            "error": {
+                                "code": -32700,
+                                "message": "Request body too large",
+                            },
                             "id": None,
                         }
                     ).encode(),
