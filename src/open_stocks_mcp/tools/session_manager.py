@@ -405,7 +405,12 @@ class SessionManager:
         return info
 
     async def logout(self) -> None:
-        """Logout and clear session."""
+        """Logout and clear session.
+
+        Robin Stocks logout failures are logged and re-raised so callers can
+        choose whether logout is best-effort or fail-hard. Local session state is
+        always cleared before this method returns or raises.
+        """
         async with self._lock:
             try:
                 loop = asyncio.get_event_loop()
@@ -413,6 +418,7 @@ class SessionManager:
                 logger.info("Successfully logged out")
             except Exception as e:
                 logger.error(f"Error during logout: {e}")
+                raise
             finally:
                 self._is_authenticated = False
                 self.login_time = None

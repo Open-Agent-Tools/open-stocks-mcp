@@ -3,6 +3,7 @@
 import asyncio
 import contextlib
 from typing import Any
+from unittest.mock import AsyncMock, Mock, patch
 
 import httpx
 import pytest
@@ -213,3 +214,22 @@ class TestSessionManagement:
         response = await http_client.post("/session/refresh")
         # Should either succeed or fail with auth error, not crash
         assert response.status_code in [200, 401, 500]
+
+    @patch("open_stocks_mcp.server.http_transport.get_session_manager")
+    def test_lifespan_shutdown_suppresses_logout_failure(
+        self, mock_get_session_manager: Mock, mcp_server: FastMCP
+    ) -> None:
+        """Shutdown should remain best-effort when Robin Stocks logout fails."""
+        mock_session_manager = AsyncMock()
+        mock_session_manager.logout.side_effect = RuntimeError("logout failed")
+        mock_get_session_manager.return_value = mock_session_manager
+
+        app = create_http_server(mcp_server)
+
+        async def run_lifespan() -> None:
+            async with app.router.lifespan_context(app):
+                pass
+
+        asyncio.run(run_lifespan())
+
+        mock_session_manager.logout.assert_awaited_once()

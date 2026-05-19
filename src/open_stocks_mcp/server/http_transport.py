@@ -116,7 +116,12 @@ def create_http_server(mcp_server: FastMCP) -> FastAPI:
         # Cleanup session manager
         session_manager = get_session_manager()
         if session_manager is not None:
-            await session_manager.logout()
+            try:
+                await session_manager.logout()
+            except Exception:
+                logger.warning(
+                    "Logout failed during shutdown; session state already cleared"
+                )
 
     app = FastAPI(
         title="Open Stocks MCP Server",
