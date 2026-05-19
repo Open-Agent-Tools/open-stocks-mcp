@@ -413,6 +413,7 @@ class SessionManager:
                 logger.info("Successfully logged out")
             except Exception as e:
                 logger.error(f"Error during logout: {e}")
+                raise
             finally:
                 self._is_authenticated = False
                 self.login_time = None
