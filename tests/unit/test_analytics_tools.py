@@ -479,7 +479,7 @@ class TestStockLoanPayments:
 class TestServerMetrics:
     """Test server metrics and health check functionality."""
 
-    @patch("open_stocks_mcp.server.app.get_metrics_collector")
+    @patch("open_stocks_mcp.server.tool_helpers.get_metrics_collector")
     @pytest.mark.journey_research
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -511,7 +511,7 @@ class TestServerMetrics:
         assert result["result"]["session_refreshes"] == 1
         assert result["result"]["status"] == "success"
 
-    @patch("open_stocks_mcp.server.app.get_metrics_collector")
+    @patch("open_stocks_mcp.server.tool_helpers.get_metrics_collector")
     @pytest.mark.journey_research
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -540,7 +540,7 @@ class TestServerMetrics:
         assert result["result"]["metrics_summary"]["error_rate_percent"] == 1.5
         assert result["result"]["metrics_summary"]["avg_response_time_ms"] == 200.0
 
-    @patch("open_stocks_mcp.server.app.get_metrics_collector")
+    @patch("open_stocks_mcp.server.tool_helpers.get_metrics_collector")
     @pytest.mark.journey_research
     @pytest.mark.unit
     @pytest.mark.asyncio
