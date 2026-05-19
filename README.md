@@ -117,6 +117,9 @@ Add to your MCP settings (`~/Library/Application Support/Claude/claude_desktop_c
 
 ## Available Tools
 
+Reference docs and runnable examples:
+- [API docs and notebook guide](docs/api/README.md)
+
 ### 🏦 Multi-Broker Support
 
 **Robinhood Tools (80 tools)**:
