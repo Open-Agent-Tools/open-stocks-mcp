@@ -10,7 +10,11 @@ import pytest
 from mcp.server.fastmcp import FastMCP
 
 from open_stocks_mcp import __version__
-from open_stocks_mcp.server.http_transport import TimeoutMiddleware, create_http_server
+from open_stocks_mcp.server.http_transport import (
+    READ_ONLY_HTTP_TOOL_NAMES,
+    TimeoutMiddleware,
+    create_http_server,
+)
 
 
 @pytest.fixture
@@ -18,11 +22,16 @@ def mcp_server() -> FastMCP:
     """Create a test MCP server instance"""
     server = FastMCP("Test Open Stocks MCP")
 
-    # Add a simple test tool
+    # Use production tool names so tests exercise the HTTP authorization policy.
     @server.tool()
-    async def test_tool() -> dict[str, Any]:
-        """A simple test tool"""
+    async def account_info() -> dict[str, Any]:
+        """A simple read-only test tool"""
         return {"result": {"message": "test successful", "status": "success"}}
+
+    @server.tool()
+    async def buy_stock_market() -> dict[str, Any]:
+        """A simple mutating test tool"""
+        return {"result": {"message": "order placed", "status": "success"}}
 
     return server
 
@@ -41,6 +50,34 @@ def test_timeout_middleware_uses_configured_timeout(
         if middleware.cls is TimeoutMiddleware
     )
     assert timeout_middleware.kwargs["timeout"] == 7.5
+
+
+@pytest.mark.anyio
+async def test_http_allow_list_matches_production_registry_sample() -> None:
+    """Representative production read-only tools are allowed; mutating tools are not."""
+    from open_stocks_mcp.server.app import mcp as production_mcp
+
+    production_tool_names = {tool.name for tool in await production_mcp.list_tools()}
+    expected_read_only = {
+        "account_info",
+        "portfolio",
+        "stock_price",
+        "market_hours",
+        "schwab_quote",
+        "schwab_accounts",
+    }
+    expected_mutating = {
+        "add_to_watchlist",
+        "buy_stock_market",
+        "cancel_stock_order_by_id",
+        "schwab_cancel_order",
+        "schwab_buy_stock_market",
+    }
+
+    assert expected_read_only <= production_tool_names
+    assert expected_mutating <= production_tool_names
+    assert expected_read_only <= READ_ONLY_HTTP_TOOL_NAMES
+    assert expected_mutating.isdisjoint(READ_ONLY_HTTP_TOOL_NAMES)
 
 
 @pytest.fixture
@@ -158,6 +195,68 @@ class TestMCPIntegration:
         assert data["id"] is None
         assert data["error"]["code"] == -32700
         assert "too large" in data["error"]["message"].lower()
+
+    @pytest.mark.anyio
+    async def test_mcp_endpoint_blocks_mutating_tools_by_default(
+        self, http_client: httpx.AsyncClient
+    ) -> None:
+        """Test MCP endpoint blocks real mutating tool names by default"""
+        payload = {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "tools/call",
+            "params": {"name": "buy_stock_market", "arguments": {}},
+        }
+        response = await http_client.post("/mcp", json=payload)
+        assert response.status_code == 403
+        data = response.json()
+        assert data["jsonrpc"] == "2.0"
+        assert data["id"] == 1
+        assert data["error"]["code"] == -32600
+        assert "read-only mode" in data["error"]["message"].lower()
+
+    @pytest.mark.anyio
+    async def test_mcp_endpoint_allows_read_only_tools_by_default(
+        self, http_client: httpx.AsyncClient
+    ) -> None:
+        """Test MCP endpoint allows real read-only tool names by default"""
+        payload = {
+            "jsonrpc": "2.0",
+            "id": 2,
+            "method": "tools/call",
+            "params": {"name": "account_info", "arguments": {}},
+        }
+        response = await http_client.post("/mcp", json=payload)
+        assert response.status_code == 200
+        data = response.json()
+        assert data["jsonrpc"] == "2.0"
+        assert data["id"] == 2
+        assert "result" in data
+
+    @pytest.mark.anyio
+    async def test_mcp_endpoint_allows_mutating_tools_when_enabled(
+        self, mcp_server: FastMCP
+    ) -> None:
+        """Test MCP endpoint allows mutating tools when allow_trading is enabled"""
+        from httpx import ASGITransport
+
+        app = create_http_server(mcp_server, allow_trading=True)
+        transport = ASGITransport(app=app)
+        async with httpx.AsyncClient(
+            transport=transport, base_url="http://test"
+        ) as client:
+            payload = {
+                "jsonrpc": "2.0",
+                "id": 3,
+                "method": "tools/call",
+                "params": {"name": "buy_stock_market", "arguments": {}},
+            }
+            response = await client.post("/mcp", json=payload)
+            assert response.status_code == 200
+            data = response.json()
+            assert data["jsonrpc"] == "2.0"
+            assert data["id"] == 3
+            assert "result" in data
 
 
 @pytest.mark.integration

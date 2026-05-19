@@ -30,6 +30,95 @@ LOOPBACK_HOSTS = frozenset({"localhost", "127.0.0.1", "::1"})
 # Health/status/root remain open so container orchestrators can probe liveness.
 PROTECTED_PATHS = frozenset({"/mcp", "/sse", "/session/refresh", "/tools"})
 
+READ_ONLY_HTTP_TOOL_NAMES = frozenset(
+    {
+        "account_details",
+        "account_features",
+        "account_info",
+        "account_profile",
+        "account_settings",
+        "aggregate_option_positions",
+        "aggregated_portfolio",
+        "all_option_positions",
+        "all_watchlists",
+        "basic_profile",
+        "broker_status",
+        "build_holdings",
+        "build_user_profile",
+        "complete_profile",
+        "day_trades",
+        "dividends",
+        "dividends_by_instrument",
+        "find_instruments",
+        "find_options",
+        "health_check",
+        "instruments_by_symbols",
+        "interest_payments",
+        "investment_profile",
+        "latest_notification",
+        "list_brokers",
+        "list_tools",
+        "margin_calls",
+        "margin_interest",
+        "market_hours",
+        "metrics_summary",
+        "notifications",
+        "open_option_orders",
+        "open_option_positions",
+        "open_option_positions_with_details",
+        "open_stock_orders",
+        "option_historicals",
+        "option_market_data",
+        "options_chains",
+        "options_orders",
+        "portfolio",
+        "positions",
+        "price_history",
+        "pricebook_by_symbol",
+        "rate_limit_status",
+        "referrals",
+        "schwab_account",
+        "schwab_account_balances",
+        "schwab_account_numbers",
+        "schwab_accounts",
+        "schwab_get_order",
+        "schwab_instrument",
+        "schwab_option_chain",
+        "schwab_option_chain_by_expiration",
+        "schwab_option_expirations",
+        "schwab_options_positions",
+        "schwab_orders",
+        "schwab_portfolio",
+        "schwab_price_history",
+        "schwab_quote",
+        "schwab_quotes",
+        "schwab_search_instruments",
+        "search_stocks_tool",
+        "security_profile",
+        "session_status",
+        "stock_earnings",
+        "stock_events",
+        "stock_info",
+        "stock_level2_data",
+        "stock_loan_payments",
+        "stock_news",
+        "stock_orders",
+        "stock_price",
+        "stock_quote_by_id",
+        "stock_ratings",
+        "stock_splits",
+        "stocks_by_tag",
+        "subscription_fees",
+        "top_100_stocks",
+        "top_movers",
+        "top_movers_sp500",
+        "total_dividends",
+        "user_profile",
+        "watchlist_by_name",
+        "watchlist_performance",
+    }
+)
+
 
 def is_loopback_host(host: str) -> bool:
     """Return True if ``host`` only accepts connections from the local machine."""
@@ -140,7 +229,11 @@ class SecurityMiddleware(BaseHTTPMiddleware):
         return False
 
 
-def create_http_server(mcp_server: FastMCP, api_key: str | None = None) -> FastAPI:
+def create_http_server(
+    mcp_server: FastMCP,
+    api_key: str | None = None,
+    allow_trading: bool = False,
+) -> FastAPI:
     """Create FastAPI server with MCP integration and enhancements.
 
     Args:
@@ -148,7 +241,17 @@ def create_http_server(mcp_server: FastMCP, api_key: str | None = None) -> FastA
         api_key: When set, requests to :data:`PROTECTED_PATHS` must carry an
             ``Authorization: Bearer <api_key>`` header. Required when the
             server is reachable from non-loopback interfaces.
+        allow_trading: When False, HTTP ``tools/call`` requests may invoke only
+            the known read-only tool registrations.
     """
+
+    def _is_tool_allowed(tool_name: str | None) -> bool:
+        """Allow only read-only tools unless trading access is explicitly enabled."""
+        if not tool_name:
+            return False
+        if allow_trading:
+            return True
+        return tool_name in READ_ONLY_HTTP_TOOL_NAMES
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
@@ -403,6 +506,28 @@ def create_http_server(mcp_server: FastMCP, api_key: str | None = None) -> FastA
                     tool_name = params.get("name")
                     arguments = params.get("arguments", {})
 
+                    if not _is_tool_allowed(tool_name):
+                        logger.warning(
+                            "Blocked MCP tool call in read-only mode: %s", tool_name
+                        )
+                        return Response(
+                            content=json.dumps(
+                                {
+                                    "jsonrpc": "2.0",
+                                    "error": {
+                                        "code": -32600,
+                                        "message": (
+                                            "Tool is not allowed in read-only mode. "
+                                            "Enable --allow-trading to permit mutating tools."
+                                        ),
+                                    },
+                                    "id": request_id,
+                                }
+                            ).encode(),
+                            status_code=403,
+                            headers={"content-type": "application/json"},
+                        )
+
                     # Call the tool using FastMCP's method
                     tool_result = await mcp_server.call_tool(tool_name, arguments)
 
@@ -540,6 +665,7 @@ async def run_http_server(
     host: str = "127.0.0.1",
     port: int = 3000,
     api_key: str | None = None,
+    allow_trading: bool = False,
 ) -> None:
     """Run the HTTP server with the MCP server mounted.
 
@@ -565,7 +691,11 @@ async def run_http_server(
     mcp_server.settings.port = port
 
     # Create the FastAPI app with our enhancements
-    app = create_http_server(mcp_server, api_key=api_key)
+    app = create_http_server(
+        mcp_server,
+        api_key=api_key,
+        allow_trading=allow_trading,
+    )
 
     auth_status = "bearer-token auth enabled" if api_key else "no auth (loopback only)"
     logger.info(f"Starting HTTP MCP server on {host}:{port} ({auth_status})")
@@ -576,6 +706,10 @@ async def run_http_server(
     logger.info(f"  - Server Status: http://{host}:{port}/status")
     logger.info(f"  - Tools List: http://{host}:{port}/tools")
     logger.info(f"  - API Documentation: http://{host}:{port}/docs")
+    logger.info(
+        "  - Tool Authorization Mode: %s",
+        "full access" if allow_trading else "read-only allow-list",
+    )
 
     # Configure uvicorn
     config = uvicorn.Config(

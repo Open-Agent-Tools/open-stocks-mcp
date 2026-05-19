@@ -1402,6 +1402,12 @@ def attempt_login(username: str, password: str) -> None:
         "Also read from the MCP_API_KEY environment variable."
     ),
 )
+@click.option(
+    "--allow-trading",
+    is_flag=True,
+    default=False,
+    help="Allow mutating trading tools over HTTP /mcp (default is read-only only)",
+)
 def main(
     port: int,
     host: str,
@@ -1409,6 +1415,7 @@ def main(
     username: str | None,
     password: str | None,
     api_key: str | None,
+    allow_trading: bool,
 ) -> int:
     """Run the server with specified transport and handle authentication.
 
@@ -1457,7 +1464,15 @@ def main(
             logger.info(
                 "Server ready - broker tools available based on authentication status"
             )
-            asyncio.run(run_http_server(server, host, port, api_key=api_key))
+            asyncio.run(
+                run_http_server(
+                    server,
+                    host,
+                    port,
+                    api_key=api_key,
+                    allow_trading=allow_trading,
+                )
+            )
         return 0
     except KeyboardInterrupt:
         logger.info("\nServer stopped by user")
