@@ -1,5 +1,6 @@
 """Shared pytest fixtures for open-stocks-mcp tests."""
 
+import os
 import sys
 from typing import Any
 from unittest.mock import MagicMock
@@ -17,9 +18,18 @@ except ImportError:
 
 import pytest
 
+RATE_LIMITED_SKIP_REASON = (
+    "rate_limited test; set RUN_RATE_LIMITED=1 or pass '-m rate_limited' to enable"
+)
+
 
 def pytest_configure(config: Any) -> None:
     """Configure pytest with journey markers for organized testing."""
+    config.addinivalue_line(
+        "markers",
+        "rate_limited: marks tests that may hit live endpoints with rate limit risk "
+        "(skipped by default; opt in with '-m rate_limited' or RUN_RATE_LIMITED=1)",
+    )
     config.addinivalue_line(
         "markers",
         "journey_account: Account management tests (account_info, profiles, settings)",
@@ -64,6 +74,18 @@ def pytest_configure(config: Any) -> None:
         "markers",
         "journey_trading: Trading operations tests (buy/sell orders, cancellation)",
     )
+
+
+def pytest_collection_modifyitems(config: Any, items: list[Any]) -> None:
+    """Skip rate-limited tests unless the run explicitly opts into them."""
+    markexpr = config.option.markexpr or ""
+    if "rate_limited" in markexpr or os.environ.get("RUN_RATE_LIMITED"):
+        return
+
+    skip_rate_limited = pytest.mark.skip(reason=RATE_LIMITED_SKIP_REASON)
+    for item in items:
+        if list(item.iter_markers(name="rate_limited")):
+            item.add_marker(skip_rate_limited)
 
 
 @pytest.fixture

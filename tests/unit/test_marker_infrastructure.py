@@ -7,7 +7,7 @@ import pytest
 
 PYPROJECT = Path(__file__).parent.parent.parent / "pyproject.toml"
 REQUIRED_MARKERS = {"rate_limited", "live_market", "performance", "auth_required"}
-DEFAULT_EXCLUDED = {"rate_limited", "live_market", "performance"}
+DEFAULT_EXCLUDED = {"live_market", "performance"}
 
 
 def _load_pytest_config() -> dict:
@@ -56,12 +56,13 @@ def test_auth_required_marker_description():
 # ---------------------------------------------------------------------------
 
 
-def test_addopts_excludes_rate_limited():
+def test_addopts_leaves_rate_limited_to_conftest_hook():
     cfg = _load_pytest_config()
     addopts = cfg.get("addopts", [])
     addopts_str = " ".join(addopts) if isinstance(addopts, list) else str(addopts)
-    assert "not rate_limited" in addopts_str, (
-        "addopts must exclude rate_limited tests by default"
+    assert "not rate_limited" not in addopts_str, (
+        "rate_limited tests are skipped by tests/conftest.py so "
+        "RUN_RATE_LIMITED=1 can include them"
     )
 
 

@@ -61,6 +61,8 @@ Thank you for your interest in contributing! We welcome contributions from every
 ### Testing
 - Add unit tests for new functionality
 - Use `@pytest.mark.integration` for tests requiring credentials
+- Use `@pytest.mark.rate_limited` for tests that hit live rate-limited endpoints
+  (Robinhood, Schwab). These tests are skipped by default; opt in deliberately.
 - Use `@pytest.mark.slow` for long-running tests
 - Mock external API calls in unit tests
 
@@ -115,6 +117,8 @@ pytest                           # All tests
 pytest tests/unit/               # Unit tests only
 pytest -m integration           # Integration tests
 pytest -m "not slow and not exception_test"  # Fast tests (recommended)
+pytest -m rate_limited           # Run rate-limited live API tests
+RUN_RATE_LIMITED=1 pytest        # Include rate-limited tests in a full run
 ```
 
 ## Documentation

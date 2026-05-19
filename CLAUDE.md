@@ -47,6 +47,8 @@ pytest -m "not slow and not exception_test"               # Fast tests (recommen
 pytest -m "unit and journey_account"                      # Quick unit feedback
 pytest tests/unit/                                        # Unit tests (fast)
 pytest tests/integration/ -m integration                  # Integration (needs auth)
+pytest -m rate_limited                                    # Live rate-limited API tests
+RUN_RATE_LIMITED=1 pytest                                 # Include rate-limited tests in full run
 
 # READ ONLY journeys (perfect for ADK evaluations)
 pytest -m "journey_account or journey_portfolio or journey_market_data or journey_research or journey_notifications or journey_system"
@@ -62,6 +64,9 @@ pytest -m "journey_account or journey_portfolio or journey_market_data or journe
 - `journey_notifications` - Alerts, margin calls, subscription fees
 - `journey_system` - Health checks, metrics, session status
 - `journey_trading` - Buy/sell orders, cancellation, order management
+- `rate_limited` - Live endpoint tests that may hit Robinhood or Schwab rate
+  limits; skipped by default unless selected with `-m rate_limited` or
+  `RUN_RATE_LIMITED=1`
 
 ### Code Quality
 ```bash

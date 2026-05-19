@@ -133,7 +133,7 @@ addopts = [
     "--strict-config",
     "--verbose",
     "-m",
-    "not rate_limited and not live_market and not performance",
+    "not live_market and not performance",
 ]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
@@ -146,7 +146,7 @@ markers = [
     "unit: marks tests as fast unit tests",
     "performance: marks tests as performance/benchmark tests",
     "auth_required: marks tests that require authentication",
-    "rate_limited: marks tests that may hit rate limits",
+    "rate_limited: marks tests that may hit live endpoints with rate limit risk (skipped by default; opt in with '-m rate_limited' or RUN_RATE_LIMITED=1)",
     "journey_account: Account management tests (account_info, profiles, settings)",
     "journey_portfolio: Portfolio & holdings tests (portfolio, positions, build_holdings)",
     "journey_market_data: Stock quotes & market info tests (stock_price, market_hours, search)",
