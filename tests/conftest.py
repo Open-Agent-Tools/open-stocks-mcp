@@ -7,7 +7,7 @@ from unittest.mock import MagicMock
 try:
     import pytest_asyncio  # noqa: F401
 except ImportError:
-    print(  # noqa: T201
+    print(
         "\n\033[91mERROR: pytest-asyncio is not installed.\033[0m\n"
         "Run tests with:  uv run pytest\n"
         "Or install deps: uv sync\n",
