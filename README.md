@@ -23,7 +23,7 @@ For development:
 ```bash
 git clone https://github.com/Open-Agent-Tools/open-stocks-mcp.git
 cd open-stocks-mcp
-uv pip install -e .
+uv sync   # installs all deps including dev group
 ```
 
 ## Quick Start
@@ -213,10 +213,10 @@ The server handles Robinhood's authentication requirements:
 
 ### Testing
 ```bash
-pytest                           # All tests
-pytest -m "journey_account"      # Fast account tests (~1.8s)
-pytest -m "journey_market_data"  # Market data tests (~3.8s) 
-pytest -m "not slow and not exception_test"  # Recommended for development
+uv run pytest                           # All tests (works after uv sync)
+uv run pytest -m "journey_account"      # Fast account tests (~1.8s)
+uv run pytest -m "journey_market_data"  # Market data tests (~3.8s)
+uv run pytest -m "not slow and not exception_test"  # Recommended for development
 
 # See CLAUDE.md for complete journey testing guide
 ```

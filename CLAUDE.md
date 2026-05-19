@@ -15,8 +15,7 @@ Project guidance for Claude Code when working with the Open Stocks MCP server.
 
 ### Development Setup
 ```bash
-uv venv && source .venv/bin/activate
-uv pip install -e ".[dev]"
+uv sync   # installs project + all dev dependencies
 ```
 
 ### Testing

@@ -1,7 +1,19 @@
 """Shared pytest fixtures for open-stocks-mcp tests."""
 
+import sys
 from typing import Any
 from unittest.mock import MagicMock
+
+try:
+    import pytest_asyncio  # noqa: F401
+except ImportError:
+    print(  # noqa: T201
+        "\n\033[91mERROR: pytest-asyncio is not installed.\033[0m\n"
+        "Run tests with:  uv run pytest\n"
+        "Or install deps: uv sync\n",
+        file=sys.stderr,
+    )
+    sys.exit(1)
 
 import pytest
 
