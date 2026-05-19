@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "code_review",
+  "skill_name": "foreman-code-review",
+  "play_id": 637,
+  "assigned_github_identity": "jwesleye",
+  "params": {
+    "agent_id": "d049a305-fd73-449e-b747-6e9bf6088c83",
+    "issue_number": null,
+    "pr_number": 83,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "review_queue_id": 7,
+      "claim_group_id": "73539b40a1234400b812dede4137c410",
+      "resource_keys": [
+        "pr:83",
+        "issue:36"
+      ],
+      "play_id": 637,
+      "started_at": "2026-05-19T02:38:26.401235+00:00"
+    }
+  },
+  "open_issues": [],
+  "pull_requests": [
+    {
+      "pr_number": 83,
+      "title": "security: ensure ~/.tokens and log directories use 0700 permissions",
+      "state": "open",
+      "branch": "foreman/36-security-tokens-directory-umask",
+      "issue_number": 36,
+      "linked_issue_numbers": [
+        36
+      ],
+      "labels": [
+        "foreman/author:gemini"
+      ],
+      "review_decision": null,
+      "status_check_summary": "unknown",
+      "is_draft": false,
+      "blocked": false,
+      "blocked_reasons": [],
+      "url": "https://github.com/Open-Agent-Tools/open-stocks-mcp/pull/83",
+      "github_author": "unseriousai",
+      "head_sha": "e92028c7747cab7fcfb92280eec302343eaeb8b5",
+      "mergeable": "MERGEABLE",
+      "last_reviewed_sha": null,
+      "last_review_status": null
+    }
+  ],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 16.652455749999998,
+    "remaining": 183.34754425
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-637.json"
+}

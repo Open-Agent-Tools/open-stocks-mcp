@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "refine_task_breakdown",
+  "skill_name": "foreman-refine-tasks",
+  "play_id": 1457,
+  "assigned_github_identity": "jwesleye",
+  "params": {
+    "agent_id": "fe02223c-ec83-444e-bbca-8b30afa5d949",
+    "issue_number": 136,
+    "pr_number": null,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "claim_group_id": "08272011f2fe42bf857f462b79fc2d20",
+      "resource_keys": [
+        "issue:136"
+      ],
+      "play_id": 1457,
+      "started_at": "2026-05-19T03:21:29.297800+00:00"
+    }
+  },
+  "open_issues": [
+    {
+      "issue_number": 136,
+      "title": "Feature: implement Phase 8 caching and request optimization",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement",
+        "foreman/needs-refinement"
+      ]
+    }
+  ],
+  "pull_requests": [],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 56.53447955,
+    "remaining": 143.46552044999999
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-1457.json"
+}

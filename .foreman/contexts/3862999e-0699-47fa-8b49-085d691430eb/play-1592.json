@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "refine_task_breakdown",
+  "skill_name": "foreman-refine-tasks",
+  "play_id": 1592,
+  "assigned_github_identity": "unseriousai",
+  "params": {
+    "agent_id": "5e5d8d15-fd1d-43fe-aed7-35f9c58238a7",
+    "issue_number": 177,
+    "pr_number": null,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "claim_group_id": "7cb66c8744a84c2c99012557a1d0f493",
+      "resource_keys": [
+        "issue:177"
+      ],
+      "play_id": 1592,
+      "started_at": "2026-05-19T03:39:22.509567+00:00"
+    }
+  },
+  "open_issues": [
+    {
+      "issue_number": 177,
+      "title": "Tests: complete ADK evaluations for remaining read-only tools",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement",
+        "foreman/needs-refinement"
+      ]
+    }
+  ],
+  "pull_requests": [],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 71.97634375,
+    "remaining": 128.02365625
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-1592.json"
+}

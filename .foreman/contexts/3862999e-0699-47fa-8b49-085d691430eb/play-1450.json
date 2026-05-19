@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "code_review",
+  "skill_name": "foreman-code-review",
+  "play_id": 1450,
+  "assigned_github_identity": "jwesleye",
+  "params": {
+    "agent_id": "fe02223c-ec83-444e-bbca-8b30afa5d949",
+    "issue_number": null,
+    "pr_number": 126,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "claim_group_id": "d873a7212d84455fb0f1c9298dabcb0d",
+      "resource_keys": [
+        "pr:126",
+        "issue:103"
+      ],
+      "play_id": 1450,
+      "started_at": "2026-05-19T03:20:16.398172+00:00"
+    }
+  },
+  "open_issues": [],
+  "pull_requests": [
+    {
+      "pr_number": 126,
+      "title": "test: fix 16 Schwab unit tests and improve coverage (#103)",
+      "state": "open",
+      "branch": "foreman/103-fix-schwab-tests",
+      "issue_number": 103,
+      "linked_issue_numbers": [
+        103
+      ],
+      "labels": [
+        "foreman/author:gemini",
+        "blocked"
+      ],
+      "review_decision": "CHANGES_REQUESTED",
+      "status_check_summary": null,
+      "is_draft": false,
+      "blocked": true,
+      "blocked_reasons": [
+        "changes_requested",
+        "blocked_label",
+        "merge_conflicts"
+      ],
+      "url": "https://github.com/Open-Agent-Tools/open-stocks-mcp/pull/126",
+      "github_author": "unseriousai",
+      "head_sha": "8a6ff86e8a6353f0d6986d1318b371559e980a4d",
+      "mergeable": "CONFLICTING",
+      "last_reviewed_sha": null,
+      "last_review_status": null
+    }
+  ],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 56.2033761,
+    "remaining": 143.7966239
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-1450.json"
+}

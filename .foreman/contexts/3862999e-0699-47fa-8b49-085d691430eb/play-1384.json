@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "code_review",
+  "skill_name": "foreman-code-review",
+  "play_id": 1384,
+  "assigned_github_identity": "jwesleye",
+  "params": {
+    "agent_id": "fe02223c-ec83-444e-bbca-8b30afa5d949",
+    "issue_number": null,
+    "pr_number": 78,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "claim_group_id": "36c7b2485c714ec2b90667e31a9d0f77",
+      "resource_keys": [
+        "pr:78",
+        "issue:16"
+      ],
+      "play_id": 1384,
+      "started_at": "2026-05-19T03:13:49.352186+00:00"
+    }
+  },
+  "open_issues": [],
+  "pull_requests": [
+    {
+      "pr_number": 78,
+      "title": "fix: block auth retry on persistent cache-clear failures",
+      "state": "open",
+      "branch": "foreman/16-error-handling-pickle-clear-silent-failure-can-cau",
+      "issue_number": 16,
+      "linked_issue_numbers": [
+        16
+      ],
+      "labels": [
+        "foreman/author:codex"
+      ],
+      "review_decision": null,
+      "status_check_summary": "unknown",
+      "is_draft": false,
+      "blocked": true,
+      "blocked_reasons": [
+        "merge_conflicts"
+      ],
+      "url": "https://github.com/Open-Agent-Tools/open-stocks-mcp/pull/78",
+      "github_author": "unseriousai",
+      "head_sha": "7e99da4727deba95103e4695338ce714e6b52d48",
+      "mergeable": "CONFLICTING",
+      "last_reviewed_sha": null,
+      "last_review_status": null
+    }
+  ],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 52.76252535,
+    "remaining": 147.23747465
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-1384.json"
+}

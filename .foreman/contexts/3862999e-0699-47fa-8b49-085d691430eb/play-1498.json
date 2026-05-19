@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "issue_pickup",
+  "skill_name": "foreman-issue-pickup",
+  "play_id": 1498,
+  "assigned_github_identity": "unseriousai",
+  "params": {
+    "agent_id": "e950bb9c-cc7e-4649-96b7-51e6d1b94a5b",
+    "issue_number": 33,
+    "pr_number": null,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "claim_group_id": "8c41b84941b241c8a3050406f2d59987",
+      "resource_keys": [
+        "issue:33"
+      ],
+      "play_id": 1498,
+      "started_at": "2026-05-19T03:26:50.101406+00:00"
+    }
+  },
+  "open_issues": [
+    {
+      "issue_number": 33,
+      "title": "CI: no matrix testing across declared Python versions (3.11, 3.12, 3.13)",
+      "state": "open",
+      "priority": 1,
+      "labels": [
+        "enhancement",
+        "priority/high"
+      ]
+    }
+  ],
+  "pull_requests": [],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 57.00471615,
+    "remaining": 142.99528385
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-1498.json"
+}

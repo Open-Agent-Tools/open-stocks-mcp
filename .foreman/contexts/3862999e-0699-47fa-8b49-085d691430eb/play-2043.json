@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "refine_task_breakdown",
+  "skill_name": "foreman-refine-tasks",
+  "play_id": 2043,
+  "assigned_github_identity": "unseriousai",
+  "params": {
+    "agent_id": "a90a9f66-a6f6-4f42-b6a5-8f828661b286",
+    "issue_number": 160,
+    "pr_number": null,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "claim_group_id": "9eca141e6cc74b01a6d1204c6cd6be0b",
+      "resource_keys": [
+        "issue:160"
+      ],
+      "play_id": 2043,
+      "started_at": "2026-05-19T04:28:02.707509+00:00"
+    }
+  },
+  "open_issues": [
+    {
+      "issue_number": 160,
+      "title": "Tests: implement Phase 8 test infrastructure expansion: rate-limited test marker isolation",
+      "state": "open",
+      "priority": 1,
+      "labels": [
+        "foreman/intake",
+        "foreman/planned",
+        "foreman/needs-refinement",
+        "priority/high"
+      ]
+    }
+  ],
+  "pull_requests": [],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 103.54688675,
+    "remaining": 96.45311325
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-2043.json"
+}

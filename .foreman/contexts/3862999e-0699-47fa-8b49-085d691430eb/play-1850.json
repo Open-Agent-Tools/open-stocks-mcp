@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "write_implementation_plan",
+  "skill_name": "foreman-write-plan",
+  "play_id": 1850,
+  "assigned_github_identity": "jwesleye",
+  "params": {
+    "agent_id": "39517a85-0fcc-454b-8a1c-36f804c44687",
+    "issue_number": 150,
+    "pr_number": null,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "claim_group_id": "7cd2356b757f4593ba89d5d85431d5ce",
+      "resource_keys": [
+        "issue:150"
+      ],
+      "play_id": 1850,
+      "started_at": "2026-05-19T04:08:05.332365+00:00"
+    }
+  },
+  "open_issues": [
+    {
+      "issue_number": 150,
+      "title": "Feature: implement Phase 8 enhanced monitoring and alerting: Add OpenTelemetry tracing support",
+      "state": "open",
+      "priority": 1,
+      "labels": [
+        "foreman/intake",
+        "priority/high"
+      ]
+    }
+  ],
+  "pull_requests": [],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 90.98852554999999,
+    "remaining": 109.01147445000001
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-1850.json"
+}

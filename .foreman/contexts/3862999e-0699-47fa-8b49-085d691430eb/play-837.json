@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "code_review",
+  "skill_name": "foreman-code-review",
+  "play_id": 837,
+  "assigned_github_identity": "unseriousai",
+  "params": {
+    "agent_id": "0b65609e-970f-4e8e-9f22-47f7f31eaa98",
+    "issue_number": null,
+    "pr_number": 100,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "review_queue_id": 17,
+      "claim_group_id": "31af2d523c164cb5917b3fc6ec6a6227",
+      "resource_keys": [
+        "pr:100",
+        "issue:5"
+      ],
+      "play_id": 837,
+      "started_at": "2026-05-19T02:47:52.180924+00:00"
+    }
+  },
+  "open_issues": [],
+  "pull_requests": [
+    {
+      "pr_number": 100,
+      "title": "test: add unit tests for robinhood_trading_tools.py",
+      "state": "open",
+      "branch": "foreman/5-tests-trading-tools-no-unit-test-file",
+      "issue_number": 5,
+      "linked_issue_numbers": [
+        5
+      ],
+      "labels": [
+        "foreman/author:claude_code"
+      ],
+      "review_decision": null,
+      "status_check_summary": "pending",
+      "is_draft": false,
+      "blocked": false,
+      "blocked_reasons": [],
+      "url": "https://github.com/Open-Agent-Tools/open-stocks-mcp/pull/100",
+      "github_author": "jwesleye",
+      "head_sha": "8c36ffa0463cd8cddbf79ba12e2d393927b7fb6e",
+      "mergeable": "MERGEABLE",
+      "last_reviewed_sha": null,
+      "last_review_status": null
+    }
+  ],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 28.2711084,
+    "remaining": 171.7288916
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-837.json"
+}

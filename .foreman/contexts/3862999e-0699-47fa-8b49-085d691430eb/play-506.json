@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "code_review",
+  "skill_name": "foreman-code-review",
+  "play_id": 506,
+  "assigned_github_identity": "unseriousai",
+  "params": {
+    "agent_id": "0b65609e-970f-4e8e-9f22-47f7f31eaa98",
+    "issue_number": null,
+    "pr_number": 85,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "review_queue_id": 9,
+      "claim_group_id": "eef018283272433b9b39001d9bde1cb4",
+      "resource_keys": [
+        "pr:85",
+        "issue:8"
+      ],
+      "play_id": 506,
+      "started_at": "2026-05-19T02:32:49.432394+00:00"
+    }
+  },
+  "open_issues": [],
+  "pull_requests": [
+    {
+      "pr_number": 85,
+      "title": "chore: remove duplicate black formatter",
+      "state": "open",
+      "branch": "foreman/8-tooling-black-ruff-format-disagree",
+      "issue_number": 8,
+      "linked_issue_numbers": [
+        8
+      ],
+      "labels": [
+        "foreman/author:codex"
+      ],
+      "review_decision": null,
+      "status_check_summary": "unknown",
+      "is_draft": false,
+      "blocked": false,
+      "blocked_reasons": [],
+      "url": "https://github.com/Open-Agent-Tools/open-stocks-mcp/pull/85",
+      "github_author": "jwesleye",
+      "head_sha": "608e8568928ae4091b2d186ae9346a7e852e7f31",
+      "mergeable": "MERGEABLE",
+      "last_reviewed_sha": null,
+      "last_review_status": null
+    }
+  ],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 11.155640349999999,
+    "remaining": 188.84435965
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-506.json"
+}

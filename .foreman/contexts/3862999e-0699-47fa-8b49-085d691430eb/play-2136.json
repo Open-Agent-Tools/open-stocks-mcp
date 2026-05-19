@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "write_implementation_plan",
+  "skill_name": "foreman-write-plan",
+  "play_id": 2136,
+  "assigned_github_identity": "unseriousai",
+  "params": {
+    "agent_id": "22bf45b8-46a0-4cb9-b878-5f4005f24a7e",
+    "issue_number": 224,
+    "pr_number": null,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "claim_group_id": "d60f6d4da79d46d5a443d414cf7e541c",
+      "resource_keys": [
+        "issue:224"
+      ],
+      "play_id": 2136,
+      "started_at": "2026-05-19T04:38:36.361598+00:00"
+    }
+  },
+  "open_issues": [
+    {
+      "issue_number": 224,
+      "title": "Tests: implement Phase 8 test infrastructure expansion: rate-limited test marker isolation: Task 2: Tag existing live-API tests with the marker",
+      "state": "open",
+      "priority": 1,
+      "labels": [
+        "foreman/intake",
+        "priority/high"
+      ]
+    }
+  ],
+  "pull_requests": [],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 111.48924654999999,
+    "remaining": 88.51075345000001
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-2136.json"
+}

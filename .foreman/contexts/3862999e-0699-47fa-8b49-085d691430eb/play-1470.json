@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "merge_pr",
+  "skill_name": "foreman-merge-pr",
+  "play_id": 1470,
+  "assigned_github_identity": "unseriousai",
+  "params": {
+    "agent_id": "2eed04d2-cf65-4165-8640-bc60e033530e",
+    "issue_number": null,
+    "pr_number": 107,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "claim_group_id": "39ee2461717543d4bb79112cf7393f84",
+      "resource_keys": [
+        "pr:107",
+        "issue:12"
+      ],
+      "play_id": 1470,
+      "started_at": "2026-05-19T03:23:05.389090+00:00"
+    }
+  },
+  "open_issues": [],
+  "pull_requests": [
+    {
+      "pr_number": 107,
+      "title": "refactor: remove FastMCP type leak from tools layer",
+      "state": "open",
+      "branch": "foreman/12-architecture-fastmcp-type-leaked-into-tools",
+      "issue_number": 12,
+      "linked_issue_numbers": [
+        12
+      ],
+      "labels": [],
+      "review_decision": "APPROVED",
+      "status_check_summary": "unknown",
+      "is_draft": false,
+      "blocked": false,
+      "blocked_reasons": [],
+      "url": "https://github.com/Open-Agent-Tools/open-stocks-mcp/pull/107",
+      "github_author": "jwesleye",
+      "head_sha": "7194a1c44599f51489a0faeee3b1be457011a4e4",
+      "mergeable": "MERGEABLE",
+      "last_reviewed_sha": "7194a1c44599f51489a0faeee3b1be457011a4e4",
+      "last_review_status": "PASS"
+    }
+  ],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 56.68033105,
+    "remaining": 143.31966895
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-1470.json"
+}

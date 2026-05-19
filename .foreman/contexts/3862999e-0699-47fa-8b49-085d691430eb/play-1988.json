@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "write_implementation_plan",
+  "skill_name": "foreman-write-plan",
+  "play_id": 1988,
+  "assigned_github_identity": "unseriousai",
+  "params": {
+    "agent_id": "0d4a3b61-1090-44be-9d00-349bb03b6845",
+    "issue_number": 159,
+    "pr_number": null,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "claim_group_id": "40ddaf1383344dfcb8851bf2011f9819",
+      "resource_keys": [
+        "issue:159"
+      ],
+      "play_id": 1988,
+      "started_at": "2026-05-19T04:22:06.554670+00:00"
+    }
+  },
+  "open_issues": [
+    {
+      "issue_number": 159,
+      "title": "Feature: implement Phase 8 caching and request optimization: centralized retry and timeout configuration",
+      "state": "open",
+      "priority": 1,
+      "labels": [
+        "foreman/intake",
+        "priority/high"
+      ]
+    }
+  ],
+  "pull_requests": [],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 98.4141273,
+    "remaining": 101.5858727
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-1988.json"
+}

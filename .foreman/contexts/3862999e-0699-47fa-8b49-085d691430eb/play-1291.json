@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "refine_task_breakdown",
+  "skill_name": "foreman-refine-tasks",
+  "play_id": 1291,
+  "assigned_github_identity": "unseriousai",
+  "params": {
+    "agent_id": "e950bb9c-cc7e-4649-96b7-51e6d1b94a5b",
+    "issue_number": 127,
+    "pr_number": null,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "claim_group_id": "b6e23ac257f34958a0b7016bd0115d0e",
+      "resource_keys": [
+        "issue:127"
+      ],
+      "play_id": 1291,
+      "started_at": "2026-05-19T03:09:25.279602+00:00"
+    }
+  },
+  "open_issues": [
+    {
+      "issue_number": 127,
+      "title": "Feature: add Schwab transaction history tools",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement",
+        "foreman/needs-refinement"
+      ]
+    }
+  ],
+  "pull_requests": [],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 50.345292449999995,
+    "remaining": 149.65470755
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-1291.json"
+}

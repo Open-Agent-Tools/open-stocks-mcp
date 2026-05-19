@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "issue_pickup",
+  "skill_name": "foreman-issue-pickup",
+  "play_id": 715,
+  "assigned_github_identity": "unseriousai",
+  "params": {
+    "agent_id": "0b65609e-970f-4e8e-9f22-47f7f31eaa98",
+    "issue_number": 10,
+    "pr_number": null,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "claim_group_id": "bf39d2aaca57482fa8508a3e6453c2e1",
+      "resource_keys": [
+        "issue:10"
+      ],
+      "play_id": 715,
+      "started_at": "2026-05-19T02:42:00.919974+00:00"
+    }
+  },
+  "open_issues": [
+    {
+      "issue_number": 10,
+      "title": "Architecture: tools/schwab_*.py imports from brokers/auth_coordinator (layer violation)",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    }
+  ],
+  "pull_requests": [],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 23.7254225,
+    "remaining": 176.2745775
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-715.json"
+}

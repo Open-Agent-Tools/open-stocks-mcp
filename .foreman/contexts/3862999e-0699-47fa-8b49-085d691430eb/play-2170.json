@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "write_implementation_plan",
+  "skill_name": "foreman-write-plan",
+  "play_id": 2170,
+  "assigned_github_identity": "unseriousai",
+  "params": {
+    "agent_id": "0d4a3b61-1090-44be-9d00-349bb03b6845",
+    "issue_number": 226,
+    "pr_number": null,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "claim_group_id": "e58cf00bc0ae4b778a38c0fc7bf71adc",
+      "resource_keys": [
+        "issue:226"
+      ],
+      "play_id": 2170,
+      "started_at": "2026-05-19T04:42:33.941720+00:00"
+    }
+  },
+  "open_issues": [
+    {
+      "issue_number": 226,
+      "title": "Feature: implement Phase 8 enhanced monitoring and alerting: component-level health checks: Task 1: Add HealthService with component registration and broker-status mapping",
+      "state": "open",
+      "priority": 1,
+      "labels": [
+        "foreman/intake",
+        "priority/high"
+      ]
+    }
+  ],
+  "pull_requests": [],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 116.71860855,
+    "remaining": 83.28139145
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-2170.json"
+}

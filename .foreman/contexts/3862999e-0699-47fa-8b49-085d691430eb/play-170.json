@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "issue_pickup",
+  "skill_name": "foreman-issue-pickup",
+  "play_id": 170,
+  "assigned_github_identity": "jwesleye",
+  "params": {
+    "agent_id": "d049a305-fd73-449e-b747-6e9bf6088c83",
+    "issue_number": 9,
+    "pr_number": null,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "claim_group_id": "bd1be174a6a5406ebabba476fc96caa2",
+      "resource_keys": [
+        "issue:9"
+      ],
+      "play_id": 170,
+      "started_at": "2026-05-19T02:15:05.811493+00:00"
+    }
+  },
+  "open_issues": [
+    {
+      "issue_number": 9,
+      "title": "Tests: 'uv run pytest' fails silently without --extra dev",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "bug"
+      ]
+    }
+  ],
+  "pull_requests": [],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 0.80901815,
+    "remaining": 199.19098185000001
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-170.json"
+}

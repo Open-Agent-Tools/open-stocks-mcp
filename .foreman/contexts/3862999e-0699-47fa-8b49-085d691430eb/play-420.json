@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "merge_pr",
+  "skill_name": "foreman-merge-pr",
+  "play_id": 420,
+  "assigned_github_identity": "jwesleye",
+  "params": {
+    "agent_id": "7b836d39-8821-4ec9-b4e3-ca97e69affab",
+    "issue_number": null,
+    "pr_number": 80,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "claim_group_id": "8b018863a3bf4288a5fb9940b3691f94",
+      "resource_keys": [
+        "pr:80",
+        "issue:17"
+      ],
+      "play_id": 420,
+      "started_at": "2026-05-19T02:29:02.976992+00:00"
+    }
+  },
+  "open_issues": [],
+  "pull_requests": [
+    {
+      "pr_number": 80,
+      "title": "fix: guard missing http transport singletons",
+      "state": "open",
+      "branch": "foreman/17-error-handling-http-transport-py-singleton-getters",
+      "issue_number": 17,
+      "linked_issue_numbers": [
+        17
+      ],
+      "labels": [
+        "foreman/author:codex"
+      ],
+      "review_decision": "APPROVED",
+      "status_check_summary": "unknown",
+      "is_draft": false,
+      "blocked": false,
+      "blocked_reasons": [],
+      "url": "https://github.com/Open-Agent-Tools/open-stocks-mcp/pull/80",
+      "github_author": "jwesleye",
+      "head_sha": "0f936b6a5446d0a9b915203f2cd8cfed840b756c",
+      "mergeable": "MERGEABLE",
+      "last_reviewed_sha": "0f936b6a5446d0a9b915203f2cd8cfed840b756c",
+      "last_review_status": "PASS"
+    }
+  ],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 7.33647475,
+    "remaining": 192.66352525
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-420.json"
+}

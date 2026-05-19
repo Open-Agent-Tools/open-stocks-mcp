@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "refine_task_breakdown",
+  "skill_name": "foreman-refine-tasks",
+  "play_id": 1118,
+  "assigned_github_identity": "unseriousai",
+  "params": {
+    "agent_id": "e950bb9c-cc7e-4649-96b7-51e6d1b94a5b",
+    "issue_number": 104,
+    "pr_number": null,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "claim_group_id": "e715eeae518040de8e0f6b2218ac33dd",
+      "resource_keys": [
+        "issue:104"
+      ],
+      "play_id": 1118,
+      "started_at": "2026-05-19T03:01:12.213248+00:00"
+    }
+  },
+  "open_issues": [
+    {
+      "issue_number": 104,
+      "title": "Tests: ADK evaluations for Schwab tools not implemented",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement",
+        "foreman/needs-refinement"
+      ]
+    }
+  ],
+  "pull_requests": [],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 40.10503515,
+    "remaining": 159.89496485
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-1118.json"
+}

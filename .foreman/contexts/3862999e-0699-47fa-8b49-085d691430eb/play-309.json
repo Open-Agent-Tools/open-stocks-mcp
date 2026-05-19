@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "merge_pr",
+  "skill_name": "foreman-merge-pr",
+  "play_id": 309,
+  "assigned_github_identity": "jwesleye",
+  "params": {
+    "agent_id": "7b836d39-8821-4ec9-b4e3-ca97e69affab",
+    "issue_number": null,
+    "pr_number": 75,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "claim_group_id": "7b236a94aba24536baf70570d262e9c9",
+      "resource_keys": [
+        "pr:75",
+        "issue:3"
+      ],
+      "play_id": 309,
+      "started_at": "2026-05-19T02:23:29.448288+00:00"
+    }
+  },
+  "open_issues": [],
+  "pull_requests": [
+    {
+      "pr_number": 75,
+      "title": "fix: cap /mcp request body size",
+      "state": "open",
+      "branch": "foreman-3-security-dos-unbounded-request-body-read-on-mcp-en",
+      "issue_number": 3,
+      "linked_issue_numbers": [
+        3
+      ],
+      "labels": [
+        "foreman/author:codex"
+      ],
+      "review_decision": "APPROVED",
+      "status_check_summary": "unknown",
+      "is_draft": false,
+      "blocked": false,
+      "blocked_reasons": [],
+      "url": "https://github.com/Open-Agent-Tools/open-stocks-mcp/pull/75",
+      "github_author": "jwesleye",
+      "head_sha": "d79de487730e05a7c1ba5ae330f4f7522b0cf0e1",
+      "mergeable": "MERGEABLE",
+      "last_reviewed_sha": "d79de487730e05a7c1ba5ae330f4f7522b0cf0e1",
+      "last_review_status": "PASS"
+    }
+  ],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 5.0170299,
+    "remaining": 194.9829701
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-309.json"
+}

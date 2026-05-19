@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "merge_pr",
+  "skill_name": "foreman-merge-pr",
+  "play_id": 689,
+  "assigned_github_identity": "jwesleye",
+  "params": {
+    "agent_id": "7b836d39-8821-4ec9-b4e3-ca97e69affab",
+    "issue_number": null,
+    "pr_number": 87,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "claim_group_id": "825ae5009b6f4433862fc936e568d25b",
+      "resource_keys": [
+        "pr:87",
+        "issue:40"
+      ],
+      "play_id": 689,
+      "started_at": "2026-05-19T02:40:47.241119+00:00"
+    }
+  },
+  "open_issues": [],
+  "pull_requests": [
+    {
+      "pr_number": 87,
+      "title": "fix: remove unused cryptography dependency",
+      "state": "open",
+      "branch": "foreman/40-remove-unused-cryptography-dependency",
+      "issue_number": 40,
+      "linked_issue_numbers": [
+        40
+      ],
+      "labels": [
+        "foreman/approved",
+        "foreman/author:codex"
+      ],
+      "review_decision": null,
+      "status_check_summary": "unknown",
+      "is_draft": false,
+      "blocked": false,
+      "blocked_reasons": [],
+      "url": "https://github.com/Open-Agent-Tools/open-stocks-mcp/pull/87",
+      "github_author": "unseriousai",
+      "head_sha": "fdc9e341e4fa639ec170bd27cea10906ac4d9943",
+      "mergeable": "MERGEABLE",
+      "last_reviewed_sha": "fdc9e341e4fa639ec170bd27cea10906ac4d9943",
+      "last_review_status": "PASS"
+    }
+  ],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 22.814451899999998,
+    "remaining": 177.1855481
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-689.json"
+}

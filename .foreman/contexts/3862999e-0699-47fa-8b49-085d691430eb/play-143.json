@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "issue_pickup",
+  "skill_name": "foreman-issue-pickup",
+  "play_id": 143,
+  "assigned_github_identity": "unseriousai",
+  "params": {
+    "agent_id": "cae93b0e-a518-48cd-bb75-27182cc92301",
+    "issue_number": 3,
+    "pr_number": null,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "claim_group_id": "ce2b5f63a4e7439f8732cf090c34eb46",
+      "resource_keys": [
+        "issue:3"
+      ],
+      "play_id": 143,
+      "started_at": "2026-05-19T02:12:49.280054+00:00"
+    }
+  },
+  "open_issues": [
+    {
+      "issue_number": 3,
+      "title": "Security/DoS: unbounded request body read on /mcp endpoint",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "bug"
+      ]
+    }
+  ],
+  "pull_requests": [],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 0.54901815,
+    "remaining": 199.45098185
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-143.json"
+}

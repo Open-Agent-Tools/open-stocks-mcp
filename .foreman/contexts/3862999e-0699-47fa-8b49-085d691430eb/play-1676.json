@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "code_review",
+  "skill_name": "foreman-code-review",
+  "play_id": 1676,
+  "assigned_github_identity": "jwesleye",
+  "params": {
+    "agent_id": "cf2eff2f-78f2-4b67-b693-9972b44db294",
+    "issue_number": null,
+    "pr_number": 186,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "review_queue_id": 24,
+      "claim_group_id": "c006cf27390d452baee2fb2de500099a",
+      "resource_keys": [
+        "pr:186",
+        "issue:113"
+      ],
+      "play_id": 1676,
+      "started_at": "2026-05-19T03:47:32.422684+00:00"
+    }
+  },
+  "open_issues": [],
+  "pull_requests": [
+    {
+      "pr_number": 186,
+      "title": "feat: implement Schwab streaming quotes and broker capability baseline",
+      "state": "open",
+      "branch": "foreman/113-implement-phase-6-enhanced-multi-broker-capabilities",
+      "issue_number": 113,
+      "linked_issue_numbers": [
+        113
+      ],
+      "labels": [
+        "foreman/author:gemini"
+      ],
+      "review_decision": null,
+      "status_check_summary": "pending",
+      "is_draft": false,
+      "blocked": false,
+      "blocked_reasons": [],
+      "url": "https://github.com/Open-Agent-Tools/open-stocks-mcp/pull/186",
+      "github_author": "unseriousai",
+      "head_sha": "e5a4acd6698a6f13c5f906c300a76bddaf424440",
+      "mergeable": "MERGEABLE",
+      "last_reviewed_sha": null,
+      "last_review_status": null
+    }
+  ],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 78.70237424999999,
+    "remaining": 121.29762575000001
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-1676.json"
+}

@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "merge_pr",
+  "skill_name": "foreman-merge-pr",
+  "play_id": 852,
+  "assigned_github_identity": "unseriousai",
+  "params": {
+    "agent_id": "d9af546e-ef32-4bbc-92aa-2fd5b26c14e3",
+    "issue_number": null,
+    "pr_number": 76,
+    "branch": "",
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "claim_group_id": "2a0756142dba4b6e89d970a1b8960260",
+      "resource_keys": [
+        "pr:76",
+        "issue:15"
+      ],
+      "request_mutation_key": "06b55f1c5d2f6e5b",
+      "play_id": 852,
+      "started_at": "2026-05-19T02:48:34.687892+00:00"
+    }
+  },
+  "open_issues": [],
+  "pull_requests": [
+    {
+      "pr_number": 76,
+      "title": "fix: propagate logout exceptions",
+      "state": "open",
+      "branch": "foreman/15-error-handling-session-manager-logout-silently-swa",
+      "issue_number": 15,
+      "linked_issue_numbers": [
+        15
+      ],
+      "labels": [
+        "foreman/author:codex"
+      ],
+      "review_decision": null,
+      "status_check_summary": "pending",
+      "is_draft": false,
+      "blocked": false,
+      "blocked_reasons": [],
+      "url": "https://github.com/Open-Agent-Tools/open-stocks-mcp/pull/76",
+      "github_author": "unseriousai",
+      "head_sha": "085c89fadd35bf8e870d0623356ab2bf5dd93b0c",
+      "mergeable": "MERGEABLE",
+      "last_reviewed_sha": "085c89fadd35bf8e870d0623356ab2bf5dd93b0c",
+      "last_review_status": "PASS"
+    }
+  ],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 29.703452549999998,
+    "remaining": 170.29654745
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-852.json"
+}

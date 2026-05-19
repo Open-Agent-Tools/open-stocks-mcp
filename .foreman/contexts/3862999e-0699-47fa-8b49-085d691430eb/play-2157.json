@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "unblock_pr",
+  "skill_name": "foreman-unblock-pr",
+  "play_id": 2157,
+  "assigned_github_identity": "unseriousai",
+  "params": {
+    "agent_id": "22bf45b8-46a0-4cb9-b878-5f4005f24a7e",
+    "issue_number": null,
+    "pr_number": 111,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "claim_group_id": "d5df991fdf76412281302fbbb191a7a1",
+      "resource_keys": [
+        "pr:111",
+        "issue:19"
+      ],
+      "play_id": 2157,
+      "started_at": "2026-05-19T04:40:56.743936+00:00"
+    }
+  },
+  "open_issues": [],
+  "pull_requests": [
+    {
+      "pr_number": 111,
+      "title": "refactor: use RegistryNotInitializedError instead of RuntimeError in registry",
+      "state": "open",
+      "branch": "foreman/19-error-handling-registry-valerror",
+      "issue_number": 19,
+      "linked_issue_numbers": [
+        19
+      ],
+      "labels": [
+        "foreman/author:gemini",
+        "blocked"
+      ],
+      "review_decision": "CHANGES_REQUESTED",
+      "status_check_summary": "unknown",
+      "is_draft": false,
+      "blocked": true,
+      "blocked_reasons": [
+        "changes_requested",
+        "blocked_label"
+      ],
+      "url": "https://github.com/Open-Agent-Tools/open-stocks-mcp/pull/111",
+      "github_author": "unseriousAI",
+      "head_sha": "d841407dbf3c2ba14ef9cef5c2d95d9ea516a8c7",
+      "mergeable": "MERGEABLE",
+      "last_reviewed_sha": "d841407dbf3c2ba14ef9cef5c2d95d9ea516a8c7",
+      "last_review_status": "BLOCK"
+    }
+  ],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 112.2586922,
+    "remaining": 87.7413078
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-2157.json"
+}

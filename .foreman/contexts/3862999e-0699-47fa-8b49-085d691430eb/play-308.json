@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "issue_pickup",
+  "skill_name": "foreman-issue-pickup",
+  "play_id": 308,
+  "assigned_github_identity": "unseriousai",
+  "params": {
+    "agent_id": "0b65609e-970f-4e8e-9f22-47f7f31eaa98",
+    "issue_number": 38,
+    "pr_number": null,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "claim_group_id": "7309a73be84742b1be1ea16d9f47963a",
+      "resource_keys": [
+        "issue:38"
+      ],
+      "play_id": 308,
+      "started_at": "2026-05-19T02:23:24.030754+00:00"
+    }
+  },
+  "open_issues": [
+    {
+      "issue_number": 38,
+      "title": "Security: /mcp endpoint has no per-tool authorization",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "bug"
+      ]
+    }
+  ],
+  "pull_requests": [],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 5.0170299,
+    "remaining": 194.9829701
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-308.json"
+}

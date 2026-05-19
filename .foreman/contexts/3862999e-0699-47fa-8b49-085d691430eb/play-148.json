@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "issue_pickup",
+  "skill_name": "foreman-issue-pickup",
+  "play_id": 148,
+  "assigned_github_identity": "unseriousai",
+  "params": {
+    "agent_id": "e950bb9c-cc7e-4649-96b7-51e6d1b94a5b",
+    "issue_number": 7,
+    "pr_number": null,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "claim_group_id": "e580ea2278ab40d29b5602d57f422b91",
+      "resource_keys": [
+        "issue:7"
+      ],
+      "play_id": 148,
+      "started_at": "2026-05-19T02:13:11.551232+00:00"
+    }
+  },
+  "open_issues": [
+    {
+      "issue_number": 7,
+      "title": "Type safety: 3 mypy 'no-any-return' errors in server/app.py",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "bug"
+      ]
+    }
+  ],
+  "pull_requests": [],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 0.54901815,
+    "remaining": 199.45098185
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-148.json"
+}

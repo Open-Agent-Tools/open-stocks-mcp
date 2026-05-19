@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "code_review",
+  "skill_name": "foreman-code-review",
+  "play_id": 651,
+  "assigned_github_identity": "jwesleye",
+  "params": {
+    "agent_id": "b90a79b5-0902-4146-ab10-b63f443c216a",
+    "issue_number": null,
+    "pr_number": 84,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "review_queue_id": 8,
+      "claim_group_id": "141ec36a910943dd8e04a2d12663f675",
+      "resource_keys": [
+        "pr:84",
+        "issue:38"
+      ],
+      "play_id": 651,
+      "started_at": "2026-05-19T02:39:01.680045+00:00"
+    }
+  },
+  "open_issues": [],
+  "pull_requests": [
+    {
+      "pr_number": 84,
+      "title": "fix: enforce read-only MCP tool authorization",
+      "state": "open",
+      "branch": "foreman/38-security-mcp-endpoint-has-no-per-tool-authorizatio",
+      "issue_number": 38,
+      "linked_issue_numbers": [
+        38
+      ],
+      "labels": [
+        "foreman/author:codex"
+      ],
+      "review_decision": null,
+      "status_check_summary": "unknown",
+      "is_draft": false,
+      "blocked": false,
+      "blocked_reasons": [],
+      "url": "https://github.com/Open-Agent-Tools/open-stocks-mcp/pull/84",
+      "github_author": "unseriousAI",
+      "head_sha": "86e3058cd6726504172890dc30cbf317cd01d9ad",
+      "mergeable": "MERGEABLE",
+      "last_reviewed_sha": null,
+      "last_review_status": null
+    }
+  ],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 21.752962,
+    "remaining": 178.247038
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-651.json"
+}

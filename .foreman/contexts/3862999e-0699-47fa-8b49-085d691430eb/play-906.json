@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "merge_pr",
+  "skill_name": "foreman-merge-pr",
+  "play_id": 906,
+  "assigned_github_identity": "jwesleye",
+  "params": {
+    "agent_id": "7b836d39-8821-4ec9-b4e3-ca97e69affab",
+    "issue_number": null,
+    "pr_number": 92,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "claim_group_id": "b34a28e6a871430a953bfb6e9340f36e",
+      "resource_keys": [
+        "pr:92",
+        "issue:81"
+      ],
+      "play_id": 906,
+      "started_at": "2026-05-19T02:51:13.168153+00:00"
+    }
+  },
+  "open_issues": [],
+  "pull_requests": [
+    {
+      "pr_number": 92,
+      "title": "chore: refresh uv lock metadata",
+      "state": "open",
+      "branch": "foreman/81-tooling-uv-lock-metadata-is-stale-against-pyproject",
+      "issue_number": 81,
+      "linked_issue_numbers": [
+        81
+      ],
+      "labels": [
+        "foreman/author:codex"
+      ],
+      "review_decision": null,
+      "status_check_summary": "unknown",
+      "is_draft": false,
+      "blocked": false,
+      "blocked_reasons": [],
+      "url": "https://github.com/Open-Agent-Tools/open-stocks-mcp/pull/92",
+      "github_author": "unseriousai",
+      "head_sha": "6289578f9f1c5be419dc784824bf1e6a43c41452",
+      "mergeable": "MERGEABLE",
+      "last_reviewed_sha": "6289578f9f1c5be419dc784824bf1e6a43c41452",
+      "last_review_status": "PASS"
+    }
+  ],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 35.9031984,
+    "remaining": 164.0968016
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-906.json"
+}

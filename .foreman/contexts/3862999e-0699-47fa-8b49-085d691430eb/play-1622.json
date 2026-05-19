@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "code_review",
+  "skill_name": "foreman-code-review",
+  "play_id": 1622,
+  "assigned_github_identity": "unseriousai",
+  "params": {
+    "agent_id": "5e5d8d15-fd1d-43fe-aed7-35f9c58238a7",
+    "issue_number": null,
+    "pr_number": 112,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "review_queue_id": 22,
+      "claim_group_id": "c8af491cc26a45418808005b9b427213",
+      "resource_keys": [
+        "pr:112",
+        "issue:11"
+      ],
+      "play_id": 1622,
+      "started_at": "2026-05-19T03:42:30.085244+00:00"
+    }
+  },
+  "open_issues": [],
+  "pull_requests": [
+    {
+      "pr_number": 112,
+      "title": "refactor: move session_manager to brokers/robinhood_session",
+      "state": "open",
+      "branch": "foreman/11-architecture-brokers-robinhood-py-imports-tools",
+      "issue_number": 11,
+      "linked_issue_numbers": [
+        11
+      ],
+      "labels": [
+        "foreman/author:gemini"
+      ],
+      "review_decision": "APPROVED",
+      "status_check_summary": "unknown",
+      "is_draft": false,
+      "blocked": true,
+      "blocked_reasons": [
+        "merge_conflicts"
+      ],
+      "url": "https://github.com/Open-Agent-Tools/open-stocks-mcp/pull/112",
+      "github_author": "jwesleye",
+      "head_sha": "fded50013221e52a625278e4194d9494b84632bb",
+      "mergeable": "CONFLICTING",
+      "last_reviewed_sha": "e5ec39f04809a804a7c263c2f88ccfb98129bfd4",
+      "last_review_status": "PASS"
+    }
+  ],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 73.0251593,
+    "remaining": 126.9748407
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-1622.json"
+}

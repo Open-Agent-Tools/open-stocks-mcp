@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "merge_pr",
+  "skill_name": "foreman-merge-pr",
+  "play_id": 546,
+  "assigned_github_identity": "jwesleye",
+  "params": {
+    "agent_id": "7b836d39-8821-4ec9-b4e3-ca97e69affab",
+    "issue_number": null,
+    "pr_number": 85,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "claim_group_id": "9be691d94a354217b9855cd7d4d88ada",
+      "resource_keys": [
+        "pr:85",
+        "issue:8"
+      ],
+      "play_id": 546,
+      "started_at": "2026-05-19T02:34:37.995847+00:00"
+    }
+  },
+  "open_issues": [],
+  "pull_requests": [
+    {
+      "pr_number": 85,
+      "title": "chore: remove duplicate black formatter",
+      "state": "open",
+      "branch": "foreman/8-tooling-black-ruff-format-disagree",
+      "issue_number": 8,
+      "linked_issue_numbers": [
+        8
+      ],
+      "labels": [
+        "foreman/author:codex"
+      ],
+      "review_decision": "APPROVED",
+      "status_check_summary": "unknown",
+      "is_draft": false,
+      "blocked": false,
+      "blocked_reasons": [],
+      "url": "https://github.com/Open-Agent-Tools/open-stocks-mcp/pull/85",
+      "github_author": "jwesleye",
+      "head_sha": "608e8568928ae4091b2d186ae9346a7e852e7f31",
+      "mergeable": "MERGEABLE",
+      "last_reviewed_sha": "608e8568928ae4091b2d186ae9346a7e852e7f31",
+      "last_review_status": "PASS"
+    }
+  ],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 12.95208195,
+    "remaining": 187.04791805
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-546.json"
+}

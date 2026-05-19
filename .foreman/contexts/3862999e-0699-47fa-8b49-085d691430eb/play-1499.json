@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "issue_pickup",
+  "skill_name": "foreman-issue-pickup",
+  "play_id": 1499,
+  "assigned_github_identity": "unseriousai",
+  "params": {
+    "agent_id": "5e5d8d15-fd1d-43fe-aed7-35f9c58238a7",
+    "issue_number": 34,
+    "pr_number": null,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "claim_group_id": "009a13e365a04f87a27882c170a2f33a",
+      "resource_keys": [
+        "issue:34"
+      ],
+      "play_id": 1499,
+      "started_at": "2026-05-19T03:27:06.540488+00:00"
+    }
+  },
+  "open_issues": [
+    {
+      "issue_number": 34,
+      "title": "CI: publish-to-pypi job has no test/lint gate",
+      "state": "open",
+      "priority": 1,
+      "labels": [
+        "enhancement",
+        "priority/high"
+      ]
+    }
+  ],
+  "pull_requests": [],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 59.83159,
+    "remaining": 140.16841
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-1499.json"
+}

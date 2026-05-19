@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "issue_pickup",
+  "skill_name": "foreman-issue-pickup",
+  "play_id": 399,
+  "assigned_github_identity": "unseriousai",
+  "params": {
+    "agent_id": "cae93b0e-a518-48cd-bb75-27182cc92301",
+    "issue_number": 37,
+    "pr_number": null,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "claim_group_id": "f778a7184a46452e83fcf5ad10c24c4d",
+      "resource_keys": [
+        "issue:37"
+      ],
+      "play_id": 399,
+      "started_at": "2026-05-19T02:27:51.037600+00:00"
+    }
+  },
+  "open_issues": [
+    {
+      "issue_number": 37,
+      "title": "Security: SchwabBroker token_path not validated for directory traversal",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "bug"
+      ]
+    }
+  ],
+  "pull_requests": [],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 7.1599029,
+    "remaining": 192.8400971
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-399.json"
+}

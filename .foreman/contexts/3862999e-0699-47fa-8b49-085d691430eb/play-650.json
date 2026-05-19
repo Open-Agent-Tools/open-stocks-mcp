@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "merge_pr",
+  "skill_name": "foreman-merge-pr",
+  "play_id": 650,
+  "assigned_github_identity": "jwesleye",
+  "params": {
+    "agent_id": "7b836d39-8821-4ec9-b4e3-ca97e69affab",
+    "issue_number": null,
+    "pr_number": 79,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "claim_group_id": "f62363c541e44e4d9adf0816a0f349e7",
+      "resource_keys": [
+        "pr:79",
+        "issue:7"
+      ],
+      "play_id": 650,
+      "started_at": "2026-05-19T02:38:55.915069+00:00"
+    }
+  },
+  "open_issues": [],
+  "pull_requests": [
+    {
+      "pr_number": 79,
+      "title": "fix: resolve mypy type safety errors in server/app.py (#7)",
+      "state": "open",
+      "branch": "foreman/7-type-safety-mypy-errors-server-app",
+      "issue_number": 7,
+      "linked_issue_numbers": [
+        7
+      ],
+      "labels": [
+        "foreman/author:gemini"
+      ],
+      "review_decision": null,
+      "status_check_summary": "unknown",
+      "is_draft": false,
+      "blocked": false,
+      "blocked_reasons": [],
+      "url": "https://github.com/Open-Agent-Tools/open-stocks-mcp/pull/79",
+      "github_author": "unseriousai",
+      "head_sha": "ffdfa7180efcd709338b8a3a54043f888c8ed488",
+      "mergeable": "MERGEABLE",
+      "last_reviewed_sha": "ffdfa7180efcd709338b8a3a54043f888c8ed488",
+      "last_review_status": "PASS"
+    }
+  ],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 16.652455749999998,
+    "remaining": 183.34754425
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-650.json"
+}

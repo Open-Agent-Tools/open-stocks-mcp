@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "code_review",
+  "skill_name": "foreman-code-review",
+  "play_id": 372,
+  "assigned_github_identity": "unseriousai",
+  "params": {
+    "agent_id": "cae93b0e-a518-48cd-bb75-27182cc92301",
+    "issue_number": null,
+    "pr_number": 77,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "review_queue_id": 3,
+      "claim_group_id": "fdcb08959abc4b579d39a4655cb3f801",
+      "resource_keys": [
+        "pr:77",
+        "issue:9"
+      ],
+      "play_id": 372,
+      "started_at": "2026-05-19T02:26:29.045416+00:00"
+    }
+  },
+  "open_issues": [],
+  "pull_requests": [
+    {
+      "pr_number": 77,
+      "title": "fix: move test deps to dependency-groups so uv run pytest works",
+      "state": "open",
+      "branch": "foreman/9-tests-uv-run-pytest-fails-silently-without-extra-dev",
+      "issue_number": 9,
+      "linked_issue_numbers": [
+        9
+      ],
+      "labels": [
+        "foreman/author:claude_code"
+      ],
+      "review_decision": null,
+      "status_check_summary": "unknown",
+      "is_draft": false,
+      "blocked": false,
+      "blocked_reasons": [],
+      "url": "https://github.com/Open-Agent-Tools/open-stocks-mcp/pull/77",
+      "github_author": "jwesleye",
+      "head_sha": "d9265d25b5fb75183591a437466bd1649364efcc",
+      "mergeable": "UNKNOWN",
+      "last_reviewed_sha": null,
+      "last_review_status": null
+    }
+  ],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 5.65920925,
+    "remaining": 194.34079075
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-372.json"
+}

@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "issue_pickup",
+  "skill_name": "foreman-issue-pickup",
+  "play_id": 714,
+  "assigned_github_identity": "jwesleye",
+  "params": {
+    "agent_id": "d049a305-fd73-449e-b747-6e9bf6088c83",
+    "issue_number": 5,
+    "pr_number": null,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "claim_group_id": "3c706c11a6094e58b0ab271cfe94da7e",
+      "resource_keys": [
+        "issue:5"
+      ],
+      "play_id": 714,
+      "started_at": "2026-05-19T02:41:57.431403+00:00"
+    }
+  },
+  "open_issues": [
+    {
+      "issue_number": 5,
+      "title": "Tests: tools/robinhood_trading_tools.py has no unit test file (1834 lines, 0% coverage)",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    }
+  ],
+  "pull_requests": [],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 23.7254225,
+    "remaining": 176.2745775
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-714.json"
+}

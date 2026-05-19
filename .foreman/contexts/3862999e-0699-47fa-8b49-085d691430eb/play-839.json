@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "merge_pr",
+  "skill_name": "foreman-merge-pr",
+  "play_id": 839,
+  "assigned_github_identity": "jwesleye",
+  "params": {
+    "agent_id": "7b836d39-8821-4ec9-b4e3-ca97e69affab",
+    "issue_number": null,
+    "pr_number": 98,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "claim_group_id": "0df7d067b7c14b3ab2a21c66111b9998",
+      "resource_keys": [
+        "pr:98",
+        "issue:10"
+      ],
+      "play_id": 839,
+      "started_at": "2026-05-19T02:47:55.065291+00:00"
+    }
+  },
+  "open_issues": [],
+  "pull_requests": [
+    {
+      "pr_number": 98,
+      "title": "refactor: decouple schwab tools from auth coordinator",
+      "state": "open",
+      "branch": "foreman/10-architecture-tools-schwab-py-imports-from-brokers",
+      "issue_number": 10,
+      "linked_issue_numbers": [
+        10
+      ],
+      "labels": [],
+      "review_decision": "APPROVED",
+      "status_check_summary": "unknown",
+      "is_draft": false,
+      "blocked": false,
+      "blocked_reasons": [],
+      "url": "https://github.com/Open-Agent-Tools/open-stocks-mcp/pull/98",
+      "github_author": "jwesleye",
+      "head_sha": "2555680d104e5edc95b9cb07f618c2776a07c6cd",
+      "mergeable": "MERGEABLE",
+      "last_reviewed_sha": "2555680d104e5edc95b9cb07f618c2776a07c6cd",
+      "last_review_status": "PASS"
+    }
+  ],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 28.2711084,
+    "remaining": 171.7288916
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-839.json"
+}

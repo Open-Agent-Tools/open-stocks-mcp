@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "code_review",
+  "skill_name": "foreman-code-review",
+  "play_id": 902,
+  "assigned_github_identity": "jwesleye",
+  "params": {
+    "agent_id": "d049a305-fd73-449e-b747-6e9bf6088c83",
+    "issue_number": null,
+    "pr_number": 97,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "review_queue_id": 14,
+      "claim_group_id": "ae27e4a1527a4f5db1ac5e892ae0266a",
+      "resource_keys": [
+        "pr:97",
+        "issue:49"
+      ],
+      "play_id": 902,
+      "started_at": "2026-05-19T02:51:04.961987+00:00"
+    }
+  },
+  "open_issues": [],
+  "pull_requests": [
+    {
+      "pr_number": 97,
+      "title": "chore: untrack coverage artifacts",
+      "state": "open",
+      "branch": "foreman/49-standards-coverage-and-coverage-json-are-tracked-i",
+      "issue_number": 49,
+      "linked_issue_numbers": [
+        49
+      ],
+      "labels": [
+        "foreman/author:codex"
+      ],
+      "review_decision": null,
+      "status_check_summary": "unknown",
+      "is_draft": false,
+      "blocked": false,
+      "blocked_reasons": [],
+      "url": "https://github.com/Open-Agent-Tools/open-stocks-mcp/pull/97",
+      "github_author": "unseriousai",
+      "head_sha": "314466406b3e3db04d757031978a8ccf0b26bae1",
+      "mergeable": "MERGEABLE",
+      "last_reviewed_sha": null,
+      "last_review_status": null
+    }
+  ],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 35.9031984,
+    "remaining": 164.0968016
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-902.json"
+}

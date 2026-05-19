@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "code_review",
+  "skill_name": "foreman-code-review",
+  "play_id": 1510,
+  "assigned_github_identity": "unseriousai",
+  "params": {
+    "agent_id": "e950bb9c-cc7e-4649-96b7-51e6d1b94a5b",
+    "issue_number": null,
+    "pr_number": 176,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "review_queue_id": 21,
+      "claim_group_id": "e7b062f21981490ea9f9f32979c2b541",
+      "resource_keys": [
+        "pr:176",
+        "issue:14"
+      ],
+      "play_id": 1510,
+      "started_at": "2026-05-19T03:28:38.300027+00:00"
+    }
+  },
+  "open_issues": [],
+  "pull_requests": [
+    {
+      "pr_number": 176,
+      "title": "refactor: extract system-tool bodies from server/app.py into tool_helpers.py",
+      "state": "open",
+      "branch": "foreman/14-refactor-server-app",
+      "issue_number": 14,
+      "linked_issue_numbers": [
+        14
+      ],
+      "labels": [],
+      "review_decision": null,
+      "status_check_summary": "pending",
+      "is_draft": false,
+      "blocked": false,
+      "blocked_reasons": [],
+      "url": "https://github.com/Open-Agent-Tools/open-stocks-mcp/pull/176",
+      "github_author": "jwesleye",
+      "head_sha": "55787508e89beab2b153ba7db7e595cfa11e25e5",
+      "mergeable": "MERGEABLE",
+      "last_reviewed_sha": null,
+      "last_review_status": null
+    }
+  ],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 65.60080719999999,
+    "remaining": 134.3991928
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-1510.json"
+}

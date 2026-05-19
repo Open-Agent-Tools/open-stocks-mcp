@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "code_review",
+  "skill_name": "foreman-code-review",
+  "play_id": 688,
+  "assigned_github_identity": "jwesleye",
+  "params": {
+    "agent_id": "fe02223c-ec83-444e-bbca-8b30afa5d949",
+    "issue_number": null,
+    "pr_number": 88,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "review_queue_id": 11,
+      "claim_group_id": "8311001451224d2695691cce91c0aa6e",
+      "resource_keys": [
+        "pr:88",
+        "issue:37"
+      ],
+      "play_id": 688,
+      "started_at": "2026-05-19T02:40:41.736471+00:00"
+    }
+  },
+  "open_issues": [],
+  "pull_requests": [
+    {
+      "pr_number": 88,
+      "title": "fix: validate Schwab token_path boundary",
+      "state": "open",
+      "branch": "foreman/37-security-schwabbroker-token-path-not-validated-for",
+      "issue_number": 37,
+      "linked_issue_numbers": [
+        37
+      ],
+      "labels": [
+        "foreman/author:codex"
+      ],
+      "review_decision": null,
+      "status_check_summary": "unknown",
+      "is_draft": false,
+      "blocked": false,
+      "blocked_reasons": [],
+      "url": "https://github.com/Open-Agent-Tools/open-stocks-mcp/pull/88",
+      "github_author": "unseriousai",
+      "head_sha": "24bfc4e4d02dcb2685b5c8386ab2a298b55a21ad",
+      "mergeable": "MERGEABLE",
+      "last_reviewed_sha": null,
+      "last_review_status": null
+    }
+  ],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 22.48837245,
+    "remaining": 177.51162755000001
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-688.json"
+}

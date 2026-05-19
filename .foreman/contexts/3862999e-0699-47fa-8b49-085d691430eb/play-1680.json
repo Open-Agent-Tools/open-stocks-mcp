@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "code_review",
+  "skill_name": "foreman-code-review",
+  "play_id": 1680,
+  "assigned_github_identity": "unseriousai",
+  "params": {
+    "agent_id": "a90a9f66-a6f6-4f42-b6a5-8f828661b286",
+    "issue_number": null,
+    "pr_number": 178,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "claim_group_id": "5ca7796f61404ffc8c9143ac10e7ab6c",
+      "resource_keys": [
+        "pr:178",
+        "issue:114"
+      ],
+      "play_id": 1680,
+      "started_at": "2026-05-19T03:47:51.878722+00:00"
+    }
+  },
+  "open_issues": [],
+  "pull_requests": [
+    {
+      "pr_number": 178,
+      "title": "feat: add cross-broker portfolio aggregation tool",
+      "state": "open",
+      "branch": "foreman/114-cross-broker-portfolio-aggregation",
+      "issue_number": 114,
+      "linked_issue_numbers": [
+        114
+      ],
+      "labels": [],
+      "review_decision": null,
+      "status_check_summary": "unknown",
+      "is_draft": false,
+      "blocked": false,
+      "blocked_reasons": [],
+      "url": "https://github.com/Open-Agent-Tools/open-stocks-mcp/pull/178",
+      "github_author": "jwesleye",
+      "head_sha": "a9f8ff4fc9a3b59c6076fbea9647335add6fe1aa",
+      "mergeable": "UNKNOWN",
+      "last_reviewed_sha": null,
+      "last_review_status": null
+    }
+  ],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 78.70237424999999,
+    "remaining": 121.29762575000001
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-1680.json"
+}

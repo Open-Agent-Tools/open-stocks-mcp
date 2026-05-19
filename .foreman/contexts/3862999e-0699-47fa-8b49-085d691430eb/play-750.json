@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "issue_pickup",
+  "skill_name": "foreman-issue-pickup",
+  "play_id": 750,
+  "assigned_github_identity": "unseriousai",
+  "params": {
+    "agent_id": "cae93b0e-a518-48cd-bb75-27182cc92301",
+    "issue_number": 13,
+    "pr_number": null,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "claim_group_id": "617149231dd443b1bc3d36ede61a315f",
+      "resource_keys": [
+        "issue:13"
+      ],
+      "play_id": 750,
+      "started_at": "2026-05-19T02:43:35.367850+00:00"
+    }
+  },
+  "open_issues": [
+    {
+      "issue_number": 13,
+      "title": "Refactor: tools/error_handling.py mixes 6 unrelated responsibilities",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    }
+  ],
+  "pull_requests": [],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 24.772534399999998,
+    "remaining": 175.22746560000002
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-750.json"
+}

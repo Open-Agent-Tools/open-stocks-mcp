@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "write_implementation_plan",
+  "skill_name": "foreman-write-plan",
+  "play_id": 2010,
+  "assigned_github_identity": "jwesleye",
+  "params": {
+    "agent_id": "b90a79b5-0902-4146-ab10-b63f443c216a",
+    "issue_number": 161,
+    "pr_number": null,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "claim_group_id": "ed0685c0251b4b42a32ad8b72d9e257d",
+      "resource_keys": [
+        "issue:161"
+      ],
+      "play_id": 2010,
+      "started_at": "2026-05-19T04:24:22.648744+00:00"
+    }
+  },
+  "open_issues": [
+    {
+      "issue_number": 161,
+      "title": "Feature: implement Phase 8 enhanced monitoring and alerting: component-level health checks",
+      "state": "open",
+      "priority": 1,
+      "labels": [
+        "foreman/intake",
+        "priority/high"
+      ]
+    }
+  ],
+  "pull_requests": [],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 99.3504367,
+    "remaining": 100.6495633
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-2010.json"
+}

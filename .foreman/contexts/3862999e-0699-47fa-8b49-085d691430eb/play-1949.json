@@ -1,0 +1,2042 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "calibrate_alignment",
+  "skill_name": "foreman-calibrate-alignment",
+  "play_id": 1949,
+  "assigned_github_identity": "unseriousai",
+  "params": {
+    "agent_id": "0d4a3b61-1090-44be-9d00-349bb03b6845",
+    "issue_number": null,
+    "pr_number": null,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "play_id": 1949,
+      "started_at": "2026-05-19T04:17:57.355341+00:00"
+    }
+  },
+  "open_issues": [
+    {
+      "issue_number": 38,
+      "title": "Security: /mcp endpoint has no per-tool authorization",
+      "state": "open",
+      "priority": 1,
+      "labels": [
+        "bug",
+        "priority/high"
+      ]
+    },
+    {
+      "issue_number": 36,
+      "title": "Security: ~/.tokens directory created with default umask",
+      "state": "open",
+      "priority": 1,
+      "labels": [
+        "bug",
+        "priority/high"
+      ]
+    },
+    {
+      "issue_number": 34,
+      "title": "CI: publish-to-pypi job has no test/lint gate",
+      "state": "open",
+      "priority": 1,
+      "labels": [
+        "enhancement",
+        "foreman/disallowed",
+        "priority/high"
+      ]
+    },
+    {
+      "issue_number": 33,
+      "title": "CI: no matrix testing across declared Python versions (3.11, 3.12, 3.13)",
+      "state": "open",
+      "priority": 1,
+      "labels": [
+        "enhancement",
+        "foreman/disallowed",
+        "priority/high"
+      ]
+    },
+    {
+      "issue_number": 6,
+      "title": "Security: Robinhood session pickle stored unencrypted at ~/.tokens/robinhood.pickle",
+      "state": "open",
+      "priority": 1,
+      "labels": [
+        "bug",
+        "priority/high"
+      ]
+    },
+    {
+      "issue_number": 4,
+      "title": "CI: no pull-request / push workflow exists",
+      "state": "open",
+      "priority": 1,
+      "labels": [
+        "enhancement",
+        "foreman/disallowed",
+        "priority/high"
+      ]
+    },
+    {
+      "issue_number": 113,
+      "title": "Feature: implement Phase 6 enhanced multi-broker capabilities: Schwab streaming quotes and broker capability baseline",
+      "state": "open",
+      "priority": 1,
+      "labels": [
+        "foreman/intake",
+        "foreman/task",
+        "priority/high"
+      ]
+    },
+    {
+      "issue_number": 154,
+      "title": "Feature: implement Phase 8 operations, docs, and configuration roadmap: Deliver API docs and notebook examples",
+      "state": "open",
+      "priority": 1,
+      "labels": [
+        "foreman/intake",
+        "priority/high"
+      ]
+    },
+    {
+      "issue_number": 150,
+      "title": "Feature: implement Phase 8 enhanced monitoring and alerting: Add OpenTelemetry tracing support",
+      "state": "open",
+      "priority": 1,
+      "labels": [
+        "foreman/intake",
+        "foreman/planned",
+        "priority/high"
+      ]
+    },
+    {
+      "issue_number": 142,
+      "title": "Feature: implement Phase 8 caching and request optimization: Add market/account caching foundation",
+      "state": "open",
+      "priority": 1,
+      "labels": [
+        "foreman/intake",
+        "foreman/planned",
+        "priority/high"
+      ]
+    },
+    {
+      "issue_number": 162,
+      "title": "Feature: implement Phase 8 enhanced monitoring and alerting: latency and throughput metrics for MCP tool calls",
+      "state": "open",
+      "priority": 1,
+      "labels": [
+        "foreman/intake",
+        "priority/high"
+      ]
+    },
+    {
+      "issue_number": 161,
+      "title": "Feature: implement Phase 8 enhanced monitoring and alerting: component-level health checks",
+      "state": "open",
+      "priority": 1,
+      "labels": [
+        "foreman/intake",
+        "priority/high"
+      ]
+    },
+    {
+      "issue_number": 160,
+      "title": "Tests: implement Phase 8 test infrastructure expansion: rate-limited test marker isolation",
+      "state": "open",
+      "priority": 1,
+      "labels": [
+        "foreman/intake",
+        "priority/high"
+      ]
+    },
+    {
+      "issue_number": 159,
+      "title": "Feature: implement Phase 8 caching and request optimization: centralized retry and timeout configuration",
+      "state": "open",
+      "priority": 1,
+      "labels": [
+        "foreman/intake",
+        "priority/high"
+      ]
+    },
+    {
+      "issue_number": 158,
+      "title": "Feature: implement Phase 8 caching and request optimization: in-memory caching layer",
+      "state": "open",
+      "priority": 1,
+      "labels": [
+        "foreman/intake",
+        "priority/high"
+      ]
+    },
+    {
+      "issue_number": 180,
+      "title": "Tests: complete ADK evaluations for remaining read-only tools: system and monitoring read-only ADK eval tranche",
+      "state": "open",
+      "priority": 1,
+      "labels": [
+        "foreman/intake",
+        "priority/high"
+      ]
+    },
+    {
+      "issue_number": 23,
+      "title": "Tests: missing unit tests for server/http_transport.py",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "enhancement",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 22,
+      "title": "Tests: missing test file for tools/session_manager.py",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "enhancement",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 21,
+      "title": "Tests: missing test file for tools/error_handling.py",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "enhancement",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 5,
+      "title": "Tests: tools/robinhood_trading_tools.py has no unit test file (1834 lines, 0% coverage)",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "enhancement",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 104,
+      "title": "Tests: ADK evaluations for Schwab tools not implemented",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "enhancement",
+        "foreman/epic",
+        "foreman/decomposed",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 109,
+      "title": "Feature: implement Phase 6 enhanced multi-broker capabilities",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "enhancement",
+        "foreman/decomposed",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 123,
+      "title": "Tests: ADK evaluations for Schwab tools: Market Analysis and Search",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "foreman/intake",
+        "foreman/task",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 122,
+      "title": "Tests: ADK evaluations for Schwab tools: Account and Market Discovery",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "foreman/intake",
+        "foreman/task",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 117,
+      "title": "Feature: implement Phase 6 enhanced multi-broker capabilities: Concurrent operations and broker health extensions",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "foreman/intake",
+        "foreman/task",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 116,
+      "title": "Feature: implement Phase 6 enhanced multi-broker capabilities: Unified watchlists across brokers",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "foreman/intake",
+        "foreman/task",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 115,
+      "title": "Feature: implement Phase 6 enhanced multi-broker capabilities: Broker comparison tools",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "foreman/intake",
+        "foreman/task",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 125,
+      "title": "Tests: ADK evaluations for Schwab tools: Trading and Documentation",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "foreman/intake",
+        "foreman/task",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 124,
+      "title": "Tests: ADK evaluations for Schwab tools: Options",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "foreman/intake",
+        "foreman/task",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 130,
+      "title": "Feature: add Schwab transaction history tools: List and Date Filtering",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "foreman/intake",
+        "foreman/task",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 129,
+      "title": "Feature: add Schwab transaction history tools: Single Transaction Lookup",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "foreman/intake",
+        "foreman/task",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 157,
+      "title": "Feature: implement Phase 8 operations, docs, and configuration roadmap: Implement YAML config management and feature flags",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "foreman/intake",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 156,
+      "title": "Feature: implement Phase 8 operations, docs, and configuration roadmap: Add Kubernetes and multi-service deployment artifacts",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "foreman/intake",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 155,
+      "title": "Feature: implement Phase 8 operations, docs, and configuration roadmap: Add developer tooling and debugging support",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "foreman/intake",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 153,
+      "title": "Feature: implement Phase 8 enhanced monitoring and alerting: Implement alerting hooks and runbook documentation",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "foreman/intake",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 152,
+      "title": "Feature: implement Phase 8 enhanced monitoring and alerting: Add latency and throughput metrics",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "foreman/intake",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 151,
+      "title": "Feature: implement Phase 8 enhanced monitoring and alerting: Implement component-level health checks",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "foreman/intake",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 149,
+      "title": "Tests: implement Phase 8 test infrastructure expansion: Add failure-mode and performance/load test entrypoints",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "foreman/intake",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 148,
+      "title": "Tests: implement Phase 8 test infrastructure expansion: Expand shared broker API mocks and fixtures",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "foreman/intake",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 147,
+      "title": "Tests: implement Phase 8 test infrastructure expansion: Build live integration harness and safety controls",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "foreman/intake",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 145,
+      "title": "Feature: implement Phase 8 caching and request optimization: Add broker-call circuit breaker protections",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "foreman/intake",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 144,
+      "title": "Feature: implement Phase 8 caching and request optimization: Implement intelligent batching and rate-limit optimization",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "foreman/intake",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 143,
+      "title": "Feature: implement Phase 8 caching and request optimization: Centralize broker request timeout/retry configuration",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "foreman/intake",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 169,
+      "title": "Tests: implement Phase 8 test infrastructure expansion: shared API response mocks and fixture library",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "foreman/intake",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 168,
+      "title": "Feature: implement Phase 8 caching and request optimization: intelligent rate-limit batching and request optimization",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "foreman/intake",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 167,
+      "title": "Feature: implement Phase 8 caching and request optimization: circuit breaker protection for broker calls",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "foreman/intake",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 166,
+      "title": "Feature: implement Phase 8 operations, docs, and configuration roadmap: Kubernetes and multi-service deployment artifacts",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "foreman/intake",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 165,
+      "title": "Feature: implement Phase 8 operations, docs, and configuration roadmap: YAML configuration management and feature flags",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "foreman/intake",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 164,
+      "title": "Feature: implement Phase 8 operations, docs, and configuration roadmap: developer tooling and VS Code support",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "foreman/intake",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 163,
+      "title": "Feature: implement Phase 8 operations, docs, and configuration roadmap: interactive API documentation and example notebooks",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "foreman/intake",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 173,
+      "title": "Tests: implement Phase 8 test infrastructure expansion: network and authentication failure scenario tests",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "foreman/intake",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 172,
+      "title": "Feature: implement Phase 8 enhanced monitoring and alerting: proactive alerting hooks and integration",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "foreman/intake",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 171,
+      "title": "Feature: implement Phase 8 enhanced monitoring and alerting: OpenTelemetry distributed tracing",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "foreman/intake",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 170,
+      "title": "Tests: implement Phase 8 test infrastructure expansion: performance and load test entry points",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "foreman/intake",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 184,
+      "title": "Tests: complete ADK evaluations for remaining read-only tools: finalize read-only ADK suite docs and full-run validation",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "foreman/intake",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 183,
+      "title": "Tests: complete ADK evaluations for remaining read-only tools: profiles advanced and options-data read-only ADK eval tranche",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "foreman/intake",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 182,
+      "title": "Tests: complete ADK evaluations for remaining read-only tools: watchlists and notifications read-only ADK eval tranche",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "foreman/intake",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 181,
+      "title": "Tests: complete ADK evaluations for remaining read-only tools: market and research read-only ADK eval tranche",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "foreman/intake",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 195,
+      "title": "Feature: reconcile remaining Schwab tool comparison roadmap: options tools expansion",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "foreman/intake",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 194,
+      "title": "Feature: reconcile remaining Schwab tool comparison roadmap: market data expansion",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "foreman/intake",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 193,
+      "title": "Feature: reconcile remaining Schwab tool comparison roadmap: portfolio computed tools",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "foreman/intake",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 192,
+      "title": "Feature: reconcile remaining Schwab tool comparison roadmap: account/profile consolidation tools",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "foreman/intake",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 196,
+      "title": "Feature: reconcile remaining Schwab tool comparison roadmap: trading tools expansion",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "foreman/intake",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 206,
+      "title": "Feature: register 3 missing Schwab MCP tools: register option tools",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "foreman/intake",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 205,
+      "title": "Feature: register 3 missing Schwab MCP tools: register schwab_place_order",
+      "state": "open",
+      "priority": 2,
+      "labels": [
+        "foreman/intake",
+        "priority/medium"
+      ]
+    },
+    {
+      "issue_number": 131,
+      "title": "Feature: add Schwab transaction history tools: Documentation Updates",
+      "state": "open",
+      "priority": 3,
+      "labels": [
+        "foreman/intake",
+        "foreman/task",
+        "priority/low"
+      ]
+    },
+    {
+      "issue_number": 139,
+      "title": "Feature: implement Phase 8 operations, docs, and configuration roadmap",
+      "state": "open",
+      "priority": 3,
+      "labels": [
+        "enhancement",
+        "foreman/decomposed",
+        "priority/low"
+      ]
+    },
+    {
+      "issue_number": 138,
+      "title": "Feature: implement Phase 8 enhanced monitoring and alerting",
+      "state": "open",
+      "priority": 3,
+      "labels": [
+        "enhancement",
+        "foreman/decomposed",
+        "priority/low"
+      ]
+    },
+    {
+      "issue_number": 137,
+      "title": "Tests: implement Phase 8 test infrastructure expansion",
+      "state": "open",
+      "priority": 3,
+      "labels": [
+        "enhancement",
+        "foreman/decomposed",
+        "priority/low"
+      ]
+    },
+    {
+      "issue_number": 136,
+      "title": "Feature: implement Phase 8 caching and request optimization",
+      "state": "open",
+      "priority": 3,
+      "labels": [
+        "enhancement",
+        "foreman/decomposed",
+        "priority/low"
+      ]
+    },
+    {
+      "issue_number": 177,
+      "title": "Tests: complete ADK evaluations for remaining read-only tools",
+      "state": "open",
+      "priority": 3,
+      "labels": [
+        "enhancement",
+        "foreman/decomposed",
+        "priority/low"
+      ]
+    },
+    {
+      "issue_number": 197,
+      "title": "Feature: reconcile remaining Schwab tool comparison roadmap: dividends and payment extraction tools",
+      "state": "open",
+      "priority": 3,
+      "labels": [
+        "foreman/intake",
+        "priority/low"
+      ]
+    },
+    {
+      "issue_number": 201,
+      "title": "Feature: reconcile remaining Schwab tool comparison roadmap: roadmap deferral and documentation update",
+      "state": "open",
+      "priority": 3,
+      "labels": [
+        "foreman/intake",
+        "priority/low"
+      ]
+    },
+    {
+      "issue_number": 199,
+      "title": "Feature: reconcile remaining Schwab tool comparison roadmap: streaming tools expansion",
+      "state": "open",
+      "priority": 3,
+      "labels": [
+        "foreman/intake",
+        "priority/low"
+      ]
+    },
+    {
+      "issue_number": 198,
+      "title": "Feature: reconcile remaining Schwab tool comparison roadmap: margin and notifications tools",
+      "state": "open",
+      "priority": 3,
+      "labels": [
+        "foreman/intake",
+        "priority/low"
+      ]
+    },
+    {
+      "issue_number": 207,
+      "title": "Feature: register 3 missing Schwab MCP tools: update tool counts",
+      "state": "open",
+      "priority": 3,
+      "labels": [
+        "foreman/intake",
+        "priority/low"
+      ]
+    },
+    {
+      "issue_number": 74,
+      "title": "Deps: bump dev/test dependencies (minor/patch sweep)",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 73,
+      "title": "Deps: bump runtime dependencies (minor/patch sweep)",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 72,
+      "title": "Deps: bump black 25.0.0 \u2192 26.x (major bump)",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 71,
+      "title": "Deps: bump mypy 1.19.0 \u2192 2.x (major bump)",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 70,
+      "title": "Deps: bump cachetools 6.2.0 \u2192 7.x (major bump)",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 69,
+      "title": "Refactor: split tools/session_manager.py (517 lines)",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 68,
+      "title": "Refactor: split tools/robinhood_watchlist_tools.py (563 lines)",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 67,
+      "title": "Refactor: split tools/robinhood_stock_tools.py (595 lines)",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 66,
+      "title": "Refactor: split tools/robinhood_account_features_tools.py (655 lines)",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 65,
+      "title": "Refactor: split tools/robinhood_market_data_tools.py (711 lines)",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 64,
+      "title": "Refactor: split tools/robinhood_options_tools.py (977 lines)",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 63,
+      "title": "Refactor: split tools/robinhood_trading_tools.py (1834 lines)",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 62,
+      "title": "Code quality: duplicated try/except error-handling boilerplate in robinhood_trading_tools.py",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 61,
+      "title": "Code quality: hardcoded max_retries=3 repeated across options tools",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 60,
+      "title": "Code quality: magic numbers in rate_limiter.py",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 59,
+      "title": "Code quality: 'import functools' inside function body in error_handling.py",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 58,
+      "title": "Code quality: replace deprecated asyncio.get_event_loop() across multiple files",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 57,
+      "title": "Code quality: brokers/robinhood.py uses 6 local (function-level) imports",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 56,
+      "title": "Code quality: dead code \u2014 handle_robin_stocks_sync_errors decorator never used",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 55,
+      "title": "Code quality: dead code \u2014 validate_span() defined but never called",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 54,
+      "title": "Code quality: Schwab broker registration TODO in server/app.py:1365",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 53,
+      "title": "Code quality: crypto tools are empty TODOs",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 52,
+      "title": "Code quality: 7 'Phase 2' Robinhood broker delegation TODOs",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 51,
+      "title": "Code quality: 7 unimplemented Schwab broker stubs marked TODO",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 50,
+      "title": "Standards: missing CONTRIBUTING.md at repo root",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "documentation"
+      ]
+    },
+    {
+      "issue_number": 48,
+      "title": "Docs: CHANGELOG.md missing v0.6.5 entry",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "documentation"
+      ]
+    },
+    {
+      "issue_number": 47,
+      "title": "Docs: SCHWAB_STATUS.md labels version as 'v0.7.0-dev'",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "documentation"
+      ]
+    },
+    {
+      "issue_number": 46,
+      "title": "Docs: README.md labels project as 'v0.7.0-dev' but pyproject is 0.6.5",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "documentation"
+      ]
+    },
+    {
+      "issue_number": 45,
+      "title": "Docs: CLAUDE.md claim 'Zero MyPy errors maintained' is false",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "documentation"
+      ]
+    },
+    {
+      "issue_number": 44,
+      "title": "Docs: CLAUDE.md says HTTP transport on port 3001, actual default is 3000",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "documentation"
+      ]
+    },
+    {
+      "issue_number": 43,
+      "title": "Docs: CLAUDE.md tool count is wrong (says 79, actual ~107)",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "documentation"
+      ]
+    },
+    {
+      "issue_number": 42,
+      "title": "Docs: CLAUDE.md states 'Current Version: v0.6.4' but project is v0.6.5",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "documentation"
+      ]
+    },
+    {
+      "issue_number": 41,
+      "title": "Security: all runtime deps use unbounded '>=' version pins",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 39,
+      "title": "Security: Docker compose volume permissions for tokens",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 35,
+      "title": "Docker: Dockerfile installs 'open-stocks-mcp' unversioned",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 32,
+      "title": "CI: publish.yml does not cache pip/uv dependencies",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 31,
+      "title": "CI: anthropics/claude-code-action pinned to floating @beta tag",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 30,
+      "title": "CI: pypa/gh-action-pypi-publish pinned to floating @release/v1 branch",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 29,
+      "title": "Tests: tools/robinhood_crypto_tools.py at 0% coverage",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 28,
+      "title": "Tests: client/app.py at 0% coverage",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 27,
+      "title": "Tests: duplicated MockBroker class \u2014 move to conftest.py",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 26,
+      "title": "Tests: weak assertions in existing test files",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 25,
+      "title": "Tests: rate_limiter coverage gaps (per-hour, burst, reset)",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 24,
+      "title": "Tests: missing test files for brokers/ modules",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 20,
+      "title": "Error handling: monitoring.py uses bare 'raise' losing exception chain",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 19,
+      "title": "Error handling: brokers/registry.py uses RuntimeError where ValueError fits better",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 16,
+      "title": "Error handling: pickle clear silent failure can cause infinite auth retry",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "bug"
+      ]
+    },
+    {
+      "issue_number": 90,
+      "title": "Follow-up: update logout() docstring to document fail-hard contract",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "foreman/review"
+      ]
+    },
+    {
+      "issue_number": 91,
+      "title": "Follow-up: use ParamSpec in error-handling decorators for full arg-type preservation",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "foreman/review"
+      ]
+    },
+    {
+      "issue_number": 93,
+      "title": "Follow-up: silence logging in os.chmod security hardening should log a warning",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "foreman/review"
+      ]
+    },
+    {
+      "issue_number": 96,
+      "title": "Follow-up: add symlink-escape test for SchwabBroker._validate_token_path",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "foreman/review"
+      ]
+    },
+    {
+      "issue_number": 95,
+      "title": "Follow-up: harden test_accepts_token_path_inside_tokens_dir assertion against symlinked home dirs",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "foreman/review"
+      ]
+    },
+    {
+      "issue_number": 94,
+      "title": "Follow-up: use proper JSON-RPC error code for tool authorization denial",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "foreman/review"
+      ]
+    },
+    {
+      "issue_number": 101,
+      "title": "Follow-up: add uv lock --check to CI to prevent lock staleness",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "foreman/review"
+      ]
+    },
+    {
+      "issue_number": 103,
+      "title": "Tests: 16 Schwab unit tests failing (mock refinement)",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "bug"
+      ]
+    },
+    {
+      "issue_number": 102,
+      "title": "Docs: missing docs/SCHWAB_SETUP.md setup guide",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "documentation"
+      ]
+    },
+    {
+      "issue_number": 108,
+      "title": "Docker: add both-broker Docker example",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 106,
+      "title": "Tests: add multi-broker integration scenarios",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 105,
+      "title": "Tests: add Schwab journey tests for live tool workflows",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 127,
+      "title": "Feature: add Schwab transaction history tools",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement",
+        "foreman/decomposed"
+      ]
+    },
+    {
+      "issue_number": 128,
+      "title": "Follow-up: handle_schwab_errors belongs in a Schwab-specific module, not responses.py",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "foreman/review"
+      ]
+    },
+    {
+      "issue_number": 132,
+      "title": "Follow-up: export RegistryNotInitializedError from brokers/__init__.py",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "foreman/review"
+      ]
+    },
+    {
+      "issue_number": 133,
+      "title": "Follow-up: Remove unused import in test_session_security.py",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "foreman/review"
+      ]
+    },
+    {
+      "issue_number": 135,
+      "title": "Follow-up: Schwab broker tests should not write to real ~/.tokens directory",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "foreman/review"
+      ]
+    },
+    {
+      "issue_number": 134,
+      "title": "Follow-up: restore full assert_called_once_with in test_authenticate_with_easy_client",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "foreman/review"
+      ]
+    },
+    {
+      "issue_number": 141,
+      "title": "Follow-up: expose pickle-clear failure state in get_session_info()",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "foreman/review"
+      ]
+    },
+    {
+      "issue_number": 140,
+      "title": "Follow-up: make pickle-clear failure threshold a constructor parameter",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "foreman/review"
+      ]
+    },
+    {
+      "issue_number": 175,
+      "title": "Follow-up: Update SCHWAB_INTEGRATION_PLAN.md with actual session_manager path",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "foreman/review"
+      ]
+    },
+    {
+      "issue_number": 174,
+      "title": "Follow-up: Update unit test patches for session_manager",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "foreman/review"
+      ]
+    },
+    {
+      "issue_number": 179,
+      "title": "Refactor server/app.py system-tool helpers out of app.py",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 187,
+      "title": "Feature: reconcile remaining Schwab tool comparison roadmap",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement",
+        "foreman/decomposed"
+      ]
+    },
+    {
+      "issue_number": 190,
+      "title": "Follow-up: Implement pluggable broker architecture for portfolio aggregation",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "foreman/review"
+      ]
+    },
+    {
+      "issue_number": 189,
+      "title": "Follow-up: Parallelize cross-broker portfolio data collection",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "foreman/review"
+      ]
+    },
+    {
+      "issue_number": 188,
+      "title": "Feature: register 3 missing Schwab MCP tools documented in SCHWAB_STATUS.md",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement",
+        "foreman/decomposed"
+      ]
+    },
+    {
+      "issue_number": 191,
+      "title": "Follow-up: Normalize position market_value across brokers",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "foreman/review"
+      ]
+    },
+    {
+      "issue_number": 203,
+      "title": "Follow-up: standardize type hints in schwab_stream.py to use builtin generics",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "foreman/review"
+      ]
+    },
+    {
+      "issue_number": 202,
+      "title": "Follow-up: replace assert statements with explicit guards in schwab_stream.py",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "foreman/review"
+      ]
+    },
+    {
+      "issue_number": 200,
+      "title": "Follow-up: add EXTENDED_HOURS to broker capability dicts or remove from enum",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "foreman/review"
+      ]
+    },
+    {
+      "issue_number": 204,
+      "title": "Follow-up: add pytest markers to test_capabilities_and_streaming.py",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "foreman/review"
+      ]
+    },
+    {
+      "issue_number": 208,
+      "title": "Feature: implement cross-broker portfolio aggregation tool",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 209,
+      "title": "Runtime: make broker authentication non-blocking during server startup",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 114,
+      "title": "Feature: implement Phase 6 enhanced multi-broker capabilities: Cross-broker portfolio aggregation",
+      "state": "closed",
+      "priority": 1,
+      "labels": [
+        "foreman/intake",
+        "foreman/task",
+        "priority/high"
+      ]
+    },
+    {
+      "issue_number": 11,
+      "title": "Architecture: brokers/robinhood.py imports tools/session_manager.py (reverse dependency)",
+      "state": "closed",
+      "priority": null,
+      "labels": [
+        "enhancement",
+        "foreman/planned"
+      ]
+    },
+    {
+      "issue_number": 146,
+      "title": "Tests: implement Phase 8 test infrastructure expansion: Add test markers and default test selection",
+      "state": "closed",
+      "priority": 1,
+      "labels": [
+        "foreman/intake",
+        "priority/high"
+      ]
+    },
+    {
+      "issue_number": 14,
+      "title": "Refactor: server/app.py is 1503 lines, contains business logic that belongs in tools/",
+      "state": "closed",
+      "priority": null,
+      "labels": [
+        "enhancement",
+        "foreman/planned"
+      ]
+    },
+    {
+      "issue_number": 12,
+      "title": "Architecture: FastMCP type leaked into tools/robinhood_tools.py",
+      "state": "closed",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 2,
+      "title": "Security: HTTP MCP endpoint binds to 0.0.0.0 with no authentication",
+      "state": "closed",
+      "priority": 1,
+      "labels": [
+        "bug",
+        "priority/high"
+      ]
+    },
+    {
+      "issue_number": 7,
+      "title": "Type safety: 3 mypy 'no-any-return' errors in server/app.py",
+      "state": "closed",
+      "priority": null,
+      "labels": [
+        "bug",
+        "foreman/planned"
+      ]
+    },
+    {
+      "issue_number": 18,
+      "title": "Error handling: list_available_tools error responses returned to clients unvalidated",
+      "state": "closed",
+      "priority": null,
+      "labels": [
+        "bug"
+      ]
+    },
+    {
+      "issue_number": 13,
+      "title": "Refactor: tools/error_handling.py mixes 6 unrelated responsibilities",
+      "state": "closed",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 118,
+      "title": "Tests: ADK evaluations for Schwab tools not implemented: Define Schwab eval matrix and conventions",
+      "state": "closed",
+      "priority": null,
+      "labels": [
+        "foreman/intake"
+      ]
+    },
+    {
+      "issue_number": 119,
+      "title": "Tests: ADK evaluations for Schwab tools not implemented: Add account and market Schwab eval JSONs",
+      "state": "closed",
+      "priority": null,
+      "labels": [
+        "foreman/intake"
+      ]
+    },
+    {
+      "issue_number": 120,
+      "title": "Tests: ADK evaluations for Schwab tools not implemented: Add options and trading Schwab eval JSONs",
+      "state": "closed",
+      "priority": null,
+      "labels": [
+        "foreman/intake"
+      ]
+    },
+    {
+      "issue_number": 121,
+      "title": "Tests: ADK evaluations for Schwab tools not implemented: Document Schwab ADK eval execution",
+      "state": "closed",
+      "priority": null,
+      "labels": [
+        "foreman/intake"
+      ]
+    },
+    {
+      "issue_number": 49,
+      "title": "Standards: .coverage and coverage.json are tracked in git",
+      "state": "closed",
+      "priority": null,
+      "labels": [
+        "bug",
+        "foreman/planned"
+      ]
+    },
+    {
+      "issue_number": 81,
+      "title": "Tooling: uv.lock metadata is stale against pyproject",
+      "state": "closed",
+      "priority": null,
+      "labels": [
+        "bug"
+      ]
+    },
+    {
+      "issue_number": 15,
+      "title": "Error handling: session_manager.logout() silently swallows exceptions",
+      "state": "closed",
+      "priority": null,
+      "labels": [
+        "bug"
+      ]
+    },
+    {
+      "issue_number": 10,
+      "title": "Architecture: tools/schwab_*.py imports from brokers/auth_coordinator (layer violation)",
+      "state": "closed",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    },
+    {
+      "issue_number": 37,
+      "title": "Security: SchwabBroker token_path not validated for directory traversal",
+      "state": "closed",
+      "priority": null,
+      "labels": [
+        "bug"
+      ]
+    },
+    {
+      "issue_number": 40,
+      "title": "Security: cryptography>=46.0.0 declared as dependency but never imported",
+      "state": "closed",
+      "priority": null,
+      "labels": [
+        "bug"
+      ]
+    },
+    {
+      "issue_number": 9,
+      "title": "Tests: 'uv run pytest' fails silently without --extra dev",
+      "state": "closed",
+      "priority": null,
+      "labels": [
+        "bug"
+      ]
+    },
+    {
+      "issue_number": 8,
+      "title": "Tooling: black and ruff format disagree on 6 files",
+      "state": "closed",
+      "priority": null,
+      "labels": [
+        "bug"
+      ]
+    },
+    {
+      "issue_number": 17,
+      "title": "Error handling: http_transport.py singleton getters dereferenced without null checks",
+      "state": "closed",
+      "priority": null,
+      "labels": [
+        "bug"
+      ]
+    },
+    {
+      "issue_number": 3,
+      "title": "Security/DoS: unbounded request body read on /mcp endpoint",
+      "state": "closed",
+      "priority": null,
+      "labels": [
+        "bug"
+      ]
+    }
+  ],
+  "pull_requests": [
+    {
+      "pr_number": 78,
+      "title": "fix: block auth retry on persistent cache-clear failures",
+      "state": "open",
+      "branch": "foreman/16-error-handling-pickle-clear-silent-failure-can-cau",
+      "issue_number": 16,
+      "linked_issue_numbers": [
+        16
+      ],
+      "labels": [
+        "foreman/author:codex",
+        "blocked"
+      ],
+      "review_decision": "CHANGES_REQUESTED",
+      "status_check_summary": "unknown",
+      "is_draft": false,
+      "blocked": true,
+      "blocked_reasons": [
+        "changes_requested",
+        "blocked_label",
+        "merge_conflicts"
+      ],
+      "url": "https://github.com/Open-Agent-Tools/open-stocks-mcp/pull/78",
+      "github_author": "unseriousai",
+      "head_sha": "7e99da4727deba95103e4695338ce714e6b52d48",
+      "mergeable": "CONFLICTING",
+      "last_reviewed_sha": "7e99da4727deba95103e4695338ce714e6b52d48",
+      "last_review_status": "BLOCK"
+    },
+    {
+      "pr_number": 82,
+      "title": "security: encrypt Robinhood session pickle at rest",
+      "state": "open",
+      "branch": "foreman/6-security-encrypt-robinhood-session-pickle",
+      "issue_number": 6,
+      "linked_issue_numbers": [
+        6
+      ],
+      "labels": [],
+      "review_decision": "CHANGES_REQUESTED",
+      "status_check_summary": "unknown",
+      "is_draft": false,
+      "blocked": true,
+      "blocked_reasons": [
+        "changes_requested"
+      ],
+      "url": "https://github.com/Open-Agent-Tools/open-stocks-mcp/pull/82",
+      "github_author": "jwesleye",
+      "head_sha": "0fcc638c710a8ff6854acca50051a73c9f478a0e",
+      "mergeable": "MERGEABLE",
+      "last_reviewed_sha": "0fcc638c710a8ff6854acca50051a73c9f478a0e",
+      "last_review_status": "BLOCK"
+    },
+    {
+      "pr_number": 83,
+      "title": "security: ensure ~/.tokens and log directories use 0700 permissions",
+      "state": "open",
+      "branch": "foreman/36-security-tokens-directory-umask",
+      "issue_number": 36,
+      "linked_issue_numbers": [
+        36
+      ],
+      "labels": [
+        "foreman/author:gemini",
+        "blocked"
+      ],
+      "review_decision": "CHANGES_REQUESTED",
+      "status_check_summary": "unknown",
+      "is_draft": false,
+      "blocked": true,
+      "blocked_reasons": [
+        "changes_requested",
+        "blocked_label",
+        "merge_conflicts"
+      ],
+      "url": "https://github.com/Open-Agent-Tools/open-stocks-mcp/pull/83",
+      "github_author": "unseriousai",
+      "head_sha": "e92028c7747cab7fcfb92280eec302343eaeb8b5",
+      "mergeable": "CONFLICTING",
+      "last_reviewed_sha": "e92028c7747cab7fcfb92280eec302343eaeb8b5",
+      "last_review_status": "BLOCK"
+    },
+    {
+      "pr_number": 84,
+      "title": "fix: enforce read-only MCP tool authorization",
+      "state": "open",
+      "branch": "foreman/38-security-mcp-endpoint-has-no-per-tool-authorizatio",
+      "issue_number": 38,
+      "linked_issue_numbers": [
+        38
+      ],
+      "labels": [
+        "foreman/author:codex",
+        "blocked"
+      ],
+      "review_decision": "CHANGES_REQUESTED",
+      "status_check_summary": "unknown",
+      "is_draft": false,
+      "blocked": true,
+      "blocked_reasons": [
+        "changes_requested",
+        "blocked_label",
+        "merge_conflicts"
+      ],
+      "url": "https://github.com/Open-Agent-Tools/open-stocks-mcp/pull/84",
+      "github_author": "unseriousAI",
+      "head_sha": "86e3058cd6726504172890dc30cbf317cd01d9ad",
+      "mergeable": "CONFLICTING",
+      "last_reviewed_sha": "86e3058cd6726504172890dc30cbf317cd01d9ad",
+      "last_review_status": "BLOCK"
+    },
+    {
+      "pr_number": 100,
+      "title": "test: add unit tests for robinhood_trading_tools.py",
+      "state": "open",
+      "branch": "foreman/5-tests-trading-tools-no-unit-test-file",
+      "issue_number": 5,
+      "linked_issue_numbers": [
+        5
+      ],
+      "labels": [
+        "foreman/author:claude_code"
+      ],
+      "review_decision": "CHANGES_REQUESTED",
+      "status_check_summary": "unknown",
+      "is_draft": false,
+      "blocked": true,
+      "blocked_reasons": [
+        "changes_requested"
+      ],
+      "url": "https://github.com/Open-Agent-Tools/open-stocks-mcp/pull/100",
+      "github_author": "jwesleye",
+      "head_sha": "8c36ffa0463cd8cddbf79ba12e2d393927b7fb6e",
+      "mergeable": "MERGEABLE",
+      "last_reviewed_sha": "8c36ffa0463cd8cddbf79ba12e2d393927b7fb6e",
+      "last_review_status": "BLOCK"
+    },
+    {
+      "pr_number": 110,
+      "title": "chore: verify issue already resolved",
+      "state": "open",
+      "branch": "foreman/7-type-safety-3-mypy-no-any-return-errors-in-server-",
+      "issue_number": 7,
+      "linked_issue_numbers": [
+        7
+      ],
+      "labels": [
+        "foreman/author:codex"
+      ],
+      "review_decision": null,
+      "status_check_summary": "unknown",
+      "is_draft": false,
+      "blocked": false,
+      "blocked_reasons": [],
+      "url": "https://github.com/Open-Agent-Tools/open-stocks-mcp/pull/110",
+      "github_author": "jwesleye",
+      "head_sha": "c9599bdae28c251ccfeb9a5a4999f724af911c49",
+      "mergeable": "MERGEABLE",
+      "last_reviewed_sha": "c9599bdae28c251ccfeb9a5a4999f724af911c49",
+      "last_review_status": null
+    },
+    {
+      "pr_number": 111,
+      "title": "refactor: use RegistryNotInitializedError instead of RuntimeError in registry",
+      "state": "open",
+      "branch": "foreman/19-error-handling-registry-valerror",
+      "issue_number": 19,
+      "linked_issue_numbers": [
+        19
+      ],
+      "labels": [
+        "foreman/author:gemini",
+        "blocked"
+      ],
+      "review_decision": "CHANGES_REQUESTED",
+      "status_check_summary": "unknown",
+      "is_draft": false,
+      "blocked": true,
+      "blocked_reasons": [
+        "changes_requested",
+        "blocked_label"
+      ],
+      "url": "https://github.com/Open-Agent-Tools/open-stocks-mcp/pull/111",
+      "github_author": "unseriousAI",
+      "head_sha": "d841407dbf3c2ba14ef9cef5c2d95d9ea516a8c7",
+      "mergeable": "MERGEABLE",
+      "last_reviewed_sha": "d841407dbf3c2ba14ef9cef5c2d95d9ea516a8c7",
+      "last_review_status": "BLOCK"
+    },
+    {
+      "pr_number": 112,
+      "title": "refactor: move session_manager to brokers/robinhood_session",
+      "state": "open",
+      "branch": "foreman/11-architecture-brokers-robinhood-py-imports-tools",
+      "issue_number": 11,
+      "linked_issue_numbers": [
+        11
+      ],
+      "labels": [
+        "foreman/author:gemini"
+      ],
+      "review_decision": "CHANGES_REQUESTED",
+      "status_check_summary": "unknown",
+      "is_draft": false,
+      "blocked": true,
+      "blocked_reasons": [
+        "changes_requested",
+        "merge_conflicts"
+      ],
+      "url": "https://github.com/Open-Agent-Tools/open-stocks-mcp/pull/112",
+      "github_author": "jwesleye",
+      "head_sha": "fded50013221e52a625278e4194d9494b84632bb",
+      "mergeable": "CONFLICTING",
+      "last_reviewed_sha": "fded50013221e52a625278e4194d9494b84632bb",
+      "last_review_status": "BLOCK"
+    },
+    {
+      "pr_number": 126,
+      "title": "test: fix 16 Schwab unit tests and improve coverage (#103)",
+      "state": "open",
+      "branch": "foreman/103-fix-schwab-tests",
+      "issue_number": 103,
+      "linked_issue_numbers": [
+        103
+      ],
+      "labels": [
+        "foreman/author:gemini",
+        "blocked"
+      ],
+      "review_decision": "CHANGES_REQUESTED",
+      "status_check_summary": null,
+      "is_draft": false,
+      "blocked": true,
+      "blocked_reasons": [
+        "changes_requested",
+        "blocked_label",
+        "merge_conflicts"
+      ],
+      "url": "https://github.com/Open-Agent-Tools/open-stocks-mcp/pull/126",
+      "github_author": "unseriousai",
+      "head_sha": "8a6ff86e8a6353f0d6986d1318b371559e980a4d",
+      "mergeable": "CONFLICTING",
+      "last_reviewed_sha": "8a6ff86e8a6353f0d6986d1318b371559e980a4d",
+      "last_review_status": "BLOCK"
+    },
+    {
+      "pr_number": 186,
+      "title": "feat: implement Schwab streaming quotes and broker capability baseline",
+      "state": "open",
+      "branch": "foreman/113-implement-phase-6-enhanced-multi-broker-capabilities",
+      "issue_number": 113,
+      "linked_issue_numbers": [
+        113
+      ],
+      "labels": [
+        "foreman/author:gemini",
+        "blocked"
+      ],
+      "review_decision": "CHANGES_REQUESTED",
+      "status_check_summary": "unknown",
+      "is_draft": false,
+      "blocked": true,
+      "blocked_reasons": [
+        "changes_requested",
+        "blocked_label"
+      ],
+      "url": "https://github.com/Open-Agent-Tools/open-stocks-mcp/pull/186",
+      "github_author": "unseriousai",
+      "head_sha": "e5a4acd6698a6f13c5f906c300a76bddaf424440",
+      "mergeable": "MERGEABLE",
+      "last_reviewed_sha": "e5a4acd6698a6f13c5f906c300a76bddaf424440",
+      "last_review_status": "BLOCK"
+    }
+  ],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 96.20252835,
+    "remaining": 103.79747165
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-1949.json"
+}

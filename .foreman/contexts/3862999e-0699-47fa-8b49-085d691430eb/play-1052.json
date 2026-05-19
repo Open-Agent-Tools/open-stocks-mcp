@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "issue_pickup",
+  "skill_name": "foreman-issue-pickup",
+  "play_id": 1052,
+  "assigned_github_identity": "unseriousai",
+  "params": {
+    "agent_id": "e950bb9c-cc7e-4649-96b7-51e6d1b94a5b",
+    "issue_number": 19,
+    "pr_number": null,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "claim_group_id": "57adbe5a7a9b42da8a96677b7d9aa5a9",
+      "resource_keys": [
+        "issue:19"
+      ],
+      "play_id": 1052,
+      "started_at": "2026-05-19T02:58:15.263667+00:00"
+    }
+  },
+  "open_issues": [
+    {
+      "issue_number": 19,
+      "title": "Error handling: brokers/registry.py uses RuntimeError where ValueError fits better",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement"
+      ]
+    }
+  ],
+  "pull_requests": [],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 39.66322875,
+    "remaining": 160.33677125
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-1052.json"
+}

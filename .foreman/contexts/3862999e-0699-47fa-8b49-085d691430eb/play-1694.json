@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "refine_task_breakdown",
+  "skill_name": "foreman-refine-tasks",
+  "play_id": 1694,
+  "assigned_github_identity": "jwesleye",
+  "params": {
+    "agent_id": "fe02223c-ec83-444e-bbca-8b30afa5d949",
+    "issue_number": 187,
+    "pr_number": null,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "claim_group_id": "8ebb90244ac8499caa0535b670cb2f12",
+      "resource_keys": [
+        "issue:187"
+      ],
+      "play_id": 1694,
+      "started_at": "2026-05-19T03:49:04.987131+00:00"
+    }
+  },
+  "open_issues": [
+    {
+      "issue_number": 187,
+      "title": "Feature: reconcile remaining Schwab tool comparison roadmap",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "enhancement",
+        "foreman/needs-refinement"
+      ]
+    }
+  ],
+  "pull_requests": [],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 78.75237425,
+    "remaining": 121.24762575
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-1694.json"
+}

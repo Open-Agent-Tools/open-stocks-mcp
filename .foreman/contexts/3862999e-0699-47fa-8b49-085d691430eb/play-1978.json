@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "refine_task_breakdown",
+  "skill_name": "foreman-refine-tasks",
+  "play_id": 1978,
+  "assigned_github_identity": "unseriousai",
+  "params": {
+    "agent_id": "a90a9f66-a6f6-4f42-b6a5-8f828661b286",
+    "issue_number": 154,
+    "pr_number": null,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "claim_group_id": "e237e7b220334f04a20ad7b0d074bcf5",
+      "resource_keys": [
+        "issue:154"
+      ],
+      "play_id": 1978,
+      "started_at": "2026-05-19T04:21:04.868236+00:00"
+    }
+  },
+  "open_issues": [
+    {
+      "issue_number": 154,
+      "title": "Feature: implement Phase 8 operations, docs, and configuration roadmap: Deliver API docs and notebook examples",
+      "state": "open",
+      "priority": 1,
+      "labels": [
+        "foreman/intake",
+        "foreman/planned",
+        "foreman/needs-refinement",
+        "priority/high"
+      ]
+    }
+  ],
+  "pull_requests": [],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 97.26109395,
+    "remaining": 102.73890605
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-1978.json"
+}

@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "session_id": "3862999e-0699-47fa-8b49-085d691430eb",
+  "mode": "solo",
+  "current_play": "write_implementation_plan",
+  "skill_name": "foreman-write-plan",
+  "play_id": 781,
+  "assigned_github_identity": "jwesleye",
+  "params": {
+    "agent_id": "b90a79b5-0902-4146-ab10-b63f443c216a",
+    "issue_number": 7,
+    "pr_number": null,
+    "branch": null,
+    "num_commits": null,
+    "url": null,
+    "seed_path": null,
+    "scope": null,
+    "reason": null,
+    "extras": {
+      "claim_group_id": "35b5ba1c646d4c30a9fde5cc039e4b71",
+      "resource_keys": [
+        "issue:7"
+      ],
+      "play_id": 781,
+      "started_at": "2026-05-19T02:44:59.432914+00:00"
+    }
+  },
+  "open_issues": [
+    {
+      "issue_number": 7,
+      "title": "Type safety: 3 mypy 'no-any-return' errors in server/app.py",
+      "state": "open",
+      "priority": null,
+      "labels": [
+        "bug"
+      ]
+    }
+  ],
+  "pull_requests": [],
+  "budget": {
+    "enabled": true,
+    "total": 200.0,
+    "spent": 25.30788075,
+    "remaining": 174.69211925
+  },
+  "learnings_count": 0,
+  "learnings": [],
+  "review_patterns": [],
+  "context_file": ".foreman/contexts/3862999e-0699-47fa-8b49-085d691430eb/play-781.json"
+}
