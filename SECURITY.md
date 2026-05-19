@@ -62,6 +62,29 @@ When reporting a vulnerability, please include:
 
 When using Open Stocks MCP:
 
+### HTTP Transport Security Model
+
+The HTTP MCP transport exposes tool invocation over a network socket. Because
+those tools can place trades against an authenticated broker session, the
+endpoint is treated as **trust-equivalent to broker credentials**.
+
+- **Loopback by default**: `--host` defaults to `127.0.0.1`. Only processes
+  running on the same machine can reach `/mcp`.
+- **Explicit opt-in for network exposure**: Binding to a non-loopback address
+  (e.g. `--host 0.0.0.0` for Docker) is allowed only when an API key is set.
+  The server will refuse to start otherwise.
+- **Bearer-token auth on tool endpoints**: When an API key is configured, every
+  request to `/mcp`, `/sse`, `/session/refresh`, and `/tools` must include
+  `Authorization: Bearer <api-key>`. Health and status endpoints stay
+  unauthenticated so container orchestrators can probe liveness.
+- **Set the key via env var or flag**: Pass `--api-key <value>` or set the
+  `MCP_API_KEY` environment variable. Treat the key as a secret with the same
+  care as broker credentials — anyone holding it can invoke trading tools.
+- **TLS termination**: The server does not terminate TLS itself. When exposing
+  the endpoint over an untrusted network, run it behind a reverse proxy
+  (nginx, Caddy, Traefik) that terminates TLS and forwards to the loopback
+  bind, or rely on platform-level encryption (e.g. WireGuard, mTLS sidecar).
+
 ### API Keys and Authentication
 
 - **Environment Variables**: Store all API keys and secrets in environment variables

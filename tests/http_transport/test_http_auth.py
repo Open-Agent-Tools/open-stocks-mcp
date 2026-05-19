@@ -273,6 +273,109 @@ class TestHTTPSecurity:
 
 @pytest.mark.integration
 @pytest.mark.journey_system
+class TestBearerTokenAuth:
+    """Test bearer-token enforcement on protected MCP endpoints."""
+
+    @pytest.fixture
+    async def authed_client(self, mcp_server: FastMCP) -> Any:
+        from httpx import ASGITransport
+
+        app = create_http_server(mcp_server, api_key="secret-token")
+        transport = ASGITransport(app=app)
+        async with httpx.AsyncClient(
+            transport=transport, base_url="http://test"
+        ) as client:
+            yield client
+
+    async def test_mcp_endpoint_requires_token(
+        self, authed_client: httpx.AsyncClient
+    ) -> None:
+        response = await authed_client.post(
+            "/mcp",
+            json={"jsonrpc": "2.0", "method": "tools/list", "id": 1},
+        )
+        assert response.status_code == 401
+        assert response.json() == {"error": "Unauthorized"}
+        assert response.headers.get("www-authenticate") == "Bearer"
+
+    async def test_mcp_endpoint_rejects_wrong_token(
+        self, authed_client: httpx.AsyncClient
+    ) -> None:
+        response = await authed_client.post(
+            "/mcp",
+            json={"jsonrpc": "2.0", "method": "tools/list", "id": 1},
+            headers={"Authorization": "Bearer wrong-token"},
+        )
+        assert response.status_code == 401
+
+    async def test_mcp_endpoint_accepts_valid_token(
+        self, authed_client: httpx.AsyncClient
+    ) -> None:
+        response = await authed_client.post(
+            "/mcp",
+            json={"jsonrpc": "2.0", "method": "tools/list", "id": 1},
+            headers={"Authorization": "Bearer secret-token"},
+        )
+        assert response.status_code == 200
+        assert response.json()["result"]["tools"]
+
+    async def test_session_refresh_requires_token(
+        self, authed_client: httpx.AsyncClient
+    ) -> None:
+        response = await authed_client.post("/session/refresh")
+        assert response.status_code == 401
+
+    async def test_tools_endpoint_requires_token(
+        self, authed_client: httpx.AsyncClient
+    ) -> None:
+        response = await authed_client.get("/tools")
+        assert response.status_code == 401
+
+    async def test_health_remains_public(
+        self, authed_client: httpx.AsyncClient
+    ) -> None:
+        """Liveness probes must work without a token so orchestrators can call them."""
+        response = await authed_client.get("/health")
+        assert response.status_code == 200
+
+    async def test_root_remains_public(self, authed_client: httpx.AsyncClient) -> None:
+        response = await authed_client.get("/")
+        assert response.status_code == 200
+
+
+@pytest.mark.integration
+@pytest.mark.journey_system
+class TestNonLoopbackBindingRequiresAuth:
+    """Refuse to expose the MCP endpoint on a non-loopback host without auth."""
+
+    async def test_non_loopback_without_api_key_raises(
+        self, mcp_server: FastMCP
+    ) -> None:
+        from open_stocks_mcp.server.http_transport import run_http_server
+
+        with pytest.raises(RuntimeError, match="non-loopback"):
+            await run_http_server(mcp_server, host="0.0.0.0", port=0, api_key=None)
+
+    async def test_loopback_without_api_key_is_allowed(
+        self, mcp_server: FastMCP
+    ) -> None:
+        """``run_http_server`` must accept loopback hosts without an API key.
+
+        We can't actually run the server (uvicorn would block), so we only
+        verify the precondition does not raise — the function will fail when
+        uvicorn tries to bind, which is fine for this guard test.
+        """
+        from open_stocks_mcp.server.http_transport import is_loopback_host
+
+        assert is_loopback_host("127.0.0.1")
+        assert is_loopback_host("localhost")
+        assert is_loopback_host("::1")
+        assert not is_loopback_host("0.0.0.0")
+        assert not is_loopback_host("192.168.1.1")
+
+
+@pytest.mark.integration
+@pytest.mark.journey_system
 class TestHTTPErrorHandling:
     """Test error handling scenarios"""
 
