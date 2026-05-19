@@ -44,15 +44,18 @@ class SchwabBroker(BaseBroker):
         self.app_secret = app_secret
         self.callback_url = callback_url
 
+        token_dir = Path.home() / ".tokens"
+        token_dir.mkdir(parents=True, exist_ok=True)
+
         # Default token path
         if token_path is None:
-            token_dir = Path.home() / ".tokens"
-            token_dir.mkdir(exist_ok=True)
             self.token_path = str(token_dir / "schwab_token.json")
         else:
-            self.token_path = token_path
+            self.token_path = str(
+                self._validate_token_path(token_path=token_path, allowed_root=token_dir)
+            )
             # Ensure token directory exists
-            Path(token_path).parent.mkdir(parents=True, exist_ok=True)
+            Path(self.token_path).parent.mkdir(parents=True, exist_ok=True)
 
         self.client = None
 
@@ -66,6 +69,21 @@ class SchwabBroker(BaseBroker):
             self._auth_info.requires_setup = True
         else:
             self._auth_info.status = BrokerAuthStatus.NOT_AUTHENTICATED
+
+    @staticmethod
+    def _validate_token_path(token_path: str, allowed_root: Path) -> Path:
+        """Validate token path is constrained to the allowed token root."""
+        resolved_token_path = Path(token_path).expanduser().resolve()
+        resolved_allowed_root = allowed_root.expanduser().resolve()
+
+        try:
+            resolved_token_path.relative_to(resolved_allowed_root)
+        except ValueError as exc:
+            raise ValueError(
+                f"token_path must be under {resolved_allowed_root}"
+            ) from exc
+
+        return resolved_token_path
 
     async def authenticate(self) -> bool:
         """Authenticate with Schwab using OAuth 2.0.
