@@ -126,7 +126,7 @@ class RobinhoodBroker(BaseBroker):
         # TODO: Phase 2 - delegate to existing get_account_info() function
         from open_stocks_mcp.tools.robinhood_account_tools import get_account_info
 
-        return cast(dict[str, Any], await get_account_info())
+        return await get_account_info()
 
     async def get_portfolio(self) -> dict[str, Any]:
         """Get portfolio holdings."""
@@ -136,7 +136,7 @@ class RobinhoodBroker(BaseBroker):
         # TODO: Phase 2 - delegate to existing get_portfolio() function
         from open_stocks_mcp.tools.robinhood_account_tools import get_portfolio
 
-        return cast(dict[str, Any], await get_portfolio())
+        return await get_portfolio()
 
     async def get_positions(self) -> dict[str, Any]:
         """Get current positions."""
@@ -146,7 +146,7 @@ class RobinhoodBroker(BaseBroker):
         # TODO: Phase 2 - delegate to existing get_positions() function
         from open_stocks_mcp.tools.robinhood_account_tools import get_positions
 
-        return cast(dict[str, Any], await get_positions())
+        return await get_positions()
 
     async def get_stock_quote(self, symbol: str) -> dict[str, Any]:
         """Get stock quote by symbol."""
@@ -170,7 +170,7 @@ class RobinhoodBroker(BaseBroker):
         # TODO: Phase 2 - delegate to existing get_stock_price() function
         from open_stocks_mcp.tools.robinhood_stock_tools import get_stock_price
 
-        return cast(dict[str, Any], await get_stock_price(symbol))
+        return await get_stock_price(symbol)
 
     async def order_buy_market(self, symbol: str, quantity: float) -> dict[str, Any]:
         """Place market buy order."""
@@ -180,7 +180,7 @@ class RobinhoodBroker(BaseBroker):
         # TODO: Phase 2 - delegate to existing order_buy_market() function
         from open_stocks_mcp.tools.robinhood_trading_tools import order_buy_market
 
-        return cast(dict[str, Any], await order_buy_market(symbol, int(quantity)))
+        return await order_buy_market(symbol, int(quantity))
 
     async def order_sell_market(self, symbol: str, quantity: float) -> dict[str, Any]:
         """Place market sell order."""
@@ -190,4 +190,4 @@ class RobinhoodBroker(BaseBroker):
         # TODO: Phase 2 - delegate to existing order_sell_market() function
         from open_stocks_mcp.tools.robinhood_trading_tools import order_sell_market
 
-        return cast(dict[str, Any], await order_sell_market(symbol, int(quantity)))
+        return await order_sell_market(symbol, int(quantity))
