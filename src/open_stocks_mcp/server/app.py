@@ -20,6 +20,9 @@ from open_stocks_mcp.server.tool_helpers import (
     get_rate_limit_status_data,
     get_session_status_data,
 )
+
+# Cross-Broker Tools
+from open_stocks_mcp.tools.cross_broker_tools import get_aggregated_portfolio
 from open_stocks_mcp.tools.robinhood_account_features_tools import (
     get_account_features,
     get_latest_notification,
@@ -1033,6 +1036,22 @@ async def schwab_account_balances(account_hash: str) -> dict[str, Any]:
         account_hash: Account hash from schwab_account_numbers
     """
     return await get_schwab_account_balances(account_hash)
+
+
+# Cross-Broker Tools
+@mcp.tool()
+async def aggregated_portfolio() -> dict[str, Any]:
+    """Get a unified portfolio view aggregated across all registered brokers.
+
+    Combines positions and summary values from Robinhood and Schwab into a single
+    normalized response. Brokers that are not authenticated contribute a degraded
+    (status=unavailable) entry so partial information is always returned.
+
+    Returns:
+        Dict with aggregated totals, per-broker rollups, positions list,
+        partial_failure flag, and unavailable_brokers list.
+    """
+    return await get_aggregated_portfolio()
 
 
 # Schwab Market Data Tools
