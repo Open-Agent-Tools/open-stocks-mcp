@@ -309,6 +309,54 @@ class TestSecurityErrorHandling:
 
 @pytest.mark.integration
 @pytest.mark.journey_system
+class TestListToolsErrorHandling:
+    """Test /tools endpoint validates list_available_tools responses before returning to clients."""
+
+    @patch("open_stocks_mcp.tools.robinhood_tools.list_available_tools")
+    async def test_error_dict_not_passed_through(
+        self, mock_list_tools: AsyncMock, http_client: httpx.AsyncClient
+    ) -> None:
+        """Error dicts from list_available_tools must not be returned to HTTP clients."""
+        mock_list_tools.return_value = {
+            "error": "internal DB connection string: postgres://user:pass@host/db",
+            "status": "error",
+        }
+        response = await http_client.get("/tools")
+        assert response.status_code == 500
+        data = response.json()
+        assert "detail" in data
+        # Must not expose any internal error details to the client
+        assert "DB connection" not in data["detail"]
+        assert "postgres" not in data["detail"]
+
+    @patch("open_stocks_mcp.tools.robinhood_tools.list_available_tools")
+    async def test_missing_result_key_rejected(
+        self, mock_list_tools: AsyncMock, http_client: httpx.AsyncClient
+    ) -> None:
+        """Responses without expected 'result' key must be rejected."""
+        mock_list_tools.return_value = {"unexpected_key": []}
+        response = await http_client.get("/tools")
+        assert response.status_code == 500
+        data = response.json()
+        assert "detail" in data
+
+    @patch("open_stocks_mcp.tools.robinhood_tools.list_available_tools")
+    async def test_valid_response_returned(
+        self, mock_list_tools: AsyncMock, http_client: httpx.AsyncClient
+    ) -> None:
+        """Valid list_available_tools responses are returned as-is."""
+        mock_list_tools.return_value = {
+            "result": {"tools": [{"name": "get_stock_quote", "description": "Get quote"}], "count": 1}
+        }
+        response = await http_client.get("/tools")
+        assert response.status_code == 200
+        data = response.json()
+        assert "result" in data
+        assert data["result"]["count"] == 1
+
+
+@pytest.mark.integration
+@pytest.mark.journey_system
 class TestRecoveryMechanisms:
     """Test error recovery mechanisms"""
 
