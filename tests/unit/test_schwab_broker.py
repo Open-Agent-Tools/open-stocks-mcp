@@ -15,11 +15,12 @@ class TestSchwabBroker:
     @pytest.fixture
     def schwab_broker(self) -> SchwabBroker:
         """Create a Schwab broker instance for testing."""
+        token_path = str(Path.home() / ".tokens" / "test_schwab_token.json")
         return SchwabBroker(
             api_key="test_api_key",
             app_secret="test_app_secret",
             callback_url="https://127.0.0.1:8182/",
-            token_path="/tmp/test_schwab_token.json",
+            token_path=token_path,
         )
 
     def test_broker_name(self, schwab_broker: SchwabBroker) -> None:
@@ -125,6 +126,25 @@ class TestSchwabBroker:
             Path(broker.token_path).expanduser().exists()
             or not Path(broker.token_path).expanduser().exists()
         )
+
+    def test_rejects_token_path_outside_tokens_dir(self, tmp_path: Path) -> None:
+        """Token path must remain inside ~/.tokens."""
+        with pytest.raises(ValueError, match="token_path must be under"):
+            SchwabBroker(
+                api_key="test",
+                app_secret="test",
+                token_path=str(tmp_path / "outside.json"),
+            )
+
+    def test_accepts_token_path_inside_tokens_dir(self) -> None:
+        """Token path under ~/.tokens is accepted."""
+        token_path = str(Path.home() / ".tokens" / "nested" / "token.json")
+        broker = SchwabBroker(
+            api_key="test",
+            app_secret="test",
+            token_path=token_path,
+        )
+        assert broker.token_path == token_path
 
     @pytest.mark.asyncio
     async def test_missing_credentials(self) -> None:
