@@ -3,8 +3,8 @@
 import asyncio
 from typing import Any
 
-from open_stocks_mcp.brokers.auth_coordinator import get_authenticated_broker_or_error
 from open_stocks_mcp.logging_config import logger
+from open_stocks_mcp.tools.broker_utils import get_authenticated_broker_or_error
 from open_stocks_mcp.tools.error_handling import (
     create_error_response,
     create_success_response,
