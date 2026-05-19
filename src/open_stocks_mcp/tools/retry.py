@@ -70,6 +70,13 @@ async def execute_with_retry(
                 )
 
             if isinstance(classified_error, AuthenticationError) and handle_auth_errors:
+                if session_manager.should_block_auth_retries():
+                    logger.critical(
+                        "Blocking authentication retry due to persistent session cache clear failures"
+                    )
+                    raise AuthenticationError(
+                        "Session cache clear failures prevent safe authentication retry"
+                    ) from e
                 if auth_retry_count < max_auth_retries:
                     logger.warning(
                         f"Authentication error detected, attempting re-authentication: {e}"
