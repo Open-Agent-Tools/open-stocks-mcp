@@ -16,6 +16,7 @@ from typing import Any, TypeVar
 
 from cachetools import LRUCache, TTLCache
 
+from open_stocks_mcp.config import get_cache_config
 from open_stocks_mcp.monitoring import get_metrics_collector
 
 T = TypeVar("T")
@@ -27,6 +28,14 @@ _CACHE_REGISTRY: list[tuple[str, Any, asyncio.Lock]] = []
 
 def _make_key(args: tuple[Any, ...], kwargs: dict[str, Any]) -> tuple[Any, ...]:
     return args + tuple(sorted(kwargs.items()))
+
+
+def _should_store(value: Any) -> bool:
+    if value is None:
+        return False
+    if isinstance(value, dict) and isinstance(value.get("result"), dict):
+        return value["result"].get("status") not in {"error", "no_data"}
+    return True
 
 
 def cached_async(
@@ -64,6 +73,9 @@ def cached_async(
     def decorator(func: Callable[..., Awaitable[T]]) -> Callable[..., Awaitable[T]]:
         @wraps(func)
         async def wrapper(*args: Any, **kwargs: Any) -> T:
+            if not get_cache_config().enabled:
+                return await func(*args, **kwargs)
+
             key = _make_key(args, kwargs)
             metrics = get_metrics_collector()
             async with lock:
@@ -73,7 +85,8 @@ def cached_async(
                     return value
                 await metrics.record_cache_miss(name)
                 value = await func(*args, **kwargs)
-                cache[key] = value
+                if _should_store(value):
+                    cache[key] = value
                 return value
 
         return wrapper
@@ -81,7 +94,21 @@ def cached_async(
     return decorator
 
 
+def cached_tool(
+    namespace: str,
+    ttl_seconds: float,
+    max_size: int = 1024,
+) -> Callable[[Callable[..., Awaitable[T]]], Callable[..., Awaitable[T]]]:
+    """Compatibility wrapper for the issue-plan cache decorator API."""
+    return cached_async(name=namespace, ttl=ttl_seconds, max_size=max_size)
+
+
 def clear_caches() -> None:
     """Clear every registered cache. Intended for tests."""
     for _name, cache, _lock in _CACHE_REGISTRY:
         cache.clear()
+
+
+def clear_all_caches() -> None:
+    """Compatibility alias for clearing registered caches."""
+    clear_caches()

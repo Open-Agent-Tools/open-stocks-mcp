@@ -16,11 +16,14 @@ import pytest
 def _reset_cache_state() -> Iterator[None]:
     """Reset shared cache + metrics state between tests."""
     from open_stocks_mcp import monitoring
+    from open_stocks_mcp.config import reset_cache_config
     from open_stocks_mcp.tools import cache
 
+    reset_cache_config()
     cache.clear_caches()
     monitoring._metrics_collector = None
     yield
+    reset_cache_config()
     cache.clear_caches()
     monitoring._metrics_collector = None
 
@@ -192,6 +195,51 @@ class TestCachedAsyncDecorator:
         assert cache_misses["metrics-target"] == 2
         assert metrics["cache_hit_rate_percent"]["metrics-target"] == 50.0
 
+    @pytest.mark.unit
+    @pytest.mark.journey_system
+    @pytest.mark.asyncio
+    async def test_cache_disabled_bypasses_cache_and_metrics(self) -> None:
+        from open_stocks_mcp.config import get_cache_config
+        from open_stocks_mcp.monitoring import get_metrics_collector
+        from open_stocks_mcp.tools.cache import cached_async
+
+        get_cache_config().enabled = False
+        call_count = 0
+
+        @cached_async(name="disabled", ttl=60)
+        async def fetch() -> int:
+            nonlocal call_count
+            call_count += 1
+            return call_count
+
+        assert await fetch() == 1
+        assert await fetch() == 2
+
+        metrics = await get_metrics_collector().get_metrics()
+        assert metrics["cache_hits"] == {}
+        assert metrics["cache_misses"] == {}
+
+    @pytest.mark.unit
+    @pytest.mark.journey_system
+    @pytest.mark.asyncio
+    async def test_error_and_no_data_results_are_not_cached(self) -> None:
+        from open_stocks_mcp.tools.cache import cached_async
+
+        responses = [
+            {"result": {"status": "error", "message": "try again"}},
+            {"result": {"status": "no_data", "message": "empty"}},
+            {"result": {"status": "success", "value": 1}},
+        ]
+
+        @cached_async(name="skip-failures", ttl=60)
+        async def fetch() -> dict[str, Any]:
+            return responses.pop(0)
+
+        assert (await fetch())["result"]["status"] == "error"
+        assert (await fetch())["result"]["status"] == "no_data"
+        assert (await fetch())["result"]["status"] == "success"
+        assert (await fetch())["result"]["status"] == "success"
+
 
 class TestCacheConfig:
     """Tests for CacheConfig loading from environment."""
@@ -202,6 +250,9 @@ class TestCacheConfig:
         from open_stocks_mcp.config import load_config
 
         for var in (
+            "CACHE_ENABLED",
+            "CACHE_TTL_MARKET_SECONDS",
+            "CACHE_TTL_ACCOUNT_SECONDS",
             "CACHE_QUOTES_TTL",
             "CACHE_ACCOUNT_TTL",
             "CACHE_MAX_SIZE",
@@ -211,8 +262,11 @@ class TestCacheConfig:
 
         cfg = load_config()
 
+        assert cfg.cache.enabled is True
         assert cfg.cache.quotes_ttl_seconds == 15
-        assert cfg.cache.account_ttl_seconds == 300
+        assert cfg.cache.account_ttl_seconds == 60
+        assert cfg.cache.ttl_market_seconds == 15
+        assert cfg.cache.ttl_account_seconds == 60
         assert cfg.cache.max_size == 1024
         assert cfg.cache.strategy == "ttl"
 
@@ -221,17 +275,36 @@ class TestCacheConfig:
     def test_env_overrides_apply(self, monkeypatch: pytest.MonkeyPatch) -> None:
         from open_stocks_mcp.config import load_config
 
-        monkeypatch.setenv("CACHE_QUOTES_TTL", "7")
-        monkeypatch.setenv("CACHE_ACCOUNT_TTL", "120")
+        monkeypatch.setenv("CACHE_ENABLED", "false")
+        monkeypatch.setenv("CACHE_TTL_MARKET_SECONDS", "7")
+        monkeypatch.setenv("CACHE_TTL_ACCOUNT_SECONDS", "120")
         monkeypatch.setenv("CACHE_MAX_SIZE", "16")
         monkeypatch.setenv("CACHE_STRATEGY", "lru")
 
         cfg = load_config()
 
+        assert cfg.cache.enabled is False
         assert cfg.cache.quotes_ttl_seconds == 7
         assert cfg.cache.account_ttl_seconds == 120
         assert cfg.cache.max_size == 16
         assert cfg.cache.strategy == "lru"
+
+    @pytest.mark.unit
+    @pytest.mark.journey_system
+    def test_legacy_ttl_env_names_still_apply(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        from open_stocks_mcp.config import load_config
+
+        monkeypatch.delenv("CACHE_TTL_MARKET_SECONDS", raising=False)
+        monkeypatch.delenv("CACHE_TTL_ACCOUNT_SECONDS", raising=False)
+        monkeypatch.setenv("CACHE_QUOTES_TTL", "8")
+        monkeypatch.setenv("CACHE_ACCOUNT_TTL", "130")
+
+        cfg = load_config()
+
+        assert cfg.cache.quotes_ttl_seconds == 8
+        assert cfg.cache.account_ttl_seconds == 130
 
 
 class TestToolIntegration:

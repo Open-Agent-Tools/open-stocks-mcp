@@ -1,10 +1,13 @@
 """Unit tests for account tools."""
 
+from collections.abc import Iterator
 from typing import Any
 from unittest.mock import patch
 
 import pytest
 
+from open_stocks_mcp.config import reset_cache_config
+from open_stocks_mcp.tools.cache import clear_all_caches
 from open_stocks_mcp.tools.robinhood_account_tools import (
     get_account_details,
     get_account_info,
@@ -20,6 +23,15 @@ from open_stocks_mcp.tools.robinhood_order_tools import (
     get_options_orders,
     get_stock_orders,
 )
+
+
+@pytest.fixture(autouse=True)
+def _reset_cache_state() -> Iterator[None]:
+    reset_cache_config()
+    clear_all_caches()
+    yield
+    reset_cache_config()
+    clear_all_caches()
 
 
 class TestAccountTools:
@@ -63,6 +75,7 @@ class TestAccountTools:
     @pytest.mark.asyncio
     async def test_get_portfolio_success(self, mock_portfolio: Any) -> None:
         """Test successful portfolio retrieval."""
+        clear_all_caches()
         mock_portfolio.return_value = {
             "total_return_today": "50.00",
             "total_return_today_percent": "2.50",
@@ -74,6 +87,55 @@ class TestAccountTools:
         assert "result" in result
         # The actual response structure depends on how the tool processes the data
         assert isinstance(result["result"], dict)
+
+    @pytest.mark.journey_portfolio
+    @pytest.mark.unit
+    @patch("open_stocks_mcp.tools.robinhood_account_tools.rh.load_portfolio_profile")
+    @pytest.mark.asyncio
+    async def test_get_portfolio_cached(self, mock_portfolio: Any) -> None:
+        """Test that get_portfolio returns cached value on second call."""
+        reset_cache_config()
+        clear_all_caches()
+        mock_portfolio.return_value = {
+            "market_value": "2000.00",
+            "equity": "2100.00",
+            "buying_power": "100.00",
+        }
+
+        # First call
+        res1 = await get_portfolio()
+        assert mock_portfolio.call_count == 1
+
+        # Second call - should hit cache
+        res2 = await get_portfolio()
+        assert res2 == res1
+        assert mock_portfolio.call_count == 1
+
+    @pytest.mark.journey_portfolio
+    @pytest.mark.unit
+    @patch("open_stocks_mcp.tools.robinhood_account_tools.rh.load_portfolio_profile")
+    @pytest.mark.asyncio
+    async def test_get_portfolio_cache_disabled(self, mock_portfolio: Any) -> None:
+        """Test that get_portfolio bypasses cache when disabled."""
+        reset_cache_config()
+        clear_all_caches()
+        from open_stocks_mcp.config import get_cache_config
+
+        get_cache_config().enabled = False
+
+        mock_portfolio.return_value = {
+            "market_value": "2000.00",
+            "equity": "2100.00",
+            "buying_power": "100.00",
+        }
+
+        # First call
+        await get_portfolio()
+        assert mock_portfolio.call_count == 1
+
+        # Second call - should NOT hit cache
+        await get_portfolio()
+        assert mock_portfolio.call_count == 2
 
     @pytest.mark.journey_portfolio
     @pytest.mark.unit
