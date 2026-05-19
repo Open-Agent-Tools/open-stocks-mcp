@@ -69,9 +69,16 @@ volumes:
       device: ./data/logs
 
 # Note:
-# Create a .env file in this directory with your Robinhood credentials:
+# Create a .env file in this directory with your credentials:
 # ROBINHOOD_USERNAME=your_username
 # ROBINHOOD_PASSWORD=your_password
+# MCP_API_KEY=<a-long-random-secret>
+#
+# MCP_API_KEY is REQUIRED when binding to 0.0.0.0 (as this compose file does).
+# The MCP HTTP transport will refuse to start without it, since otherwise any
+# host reachable on port 3001 could invoke trading tools. Generate one with:
+#   python -c "import secrets; print(secrets.token_urlsafe(32))"
+# Clients must send `Authorization: Bearer $MCP_API_KEY` on /mcp requests.
 #
 # Persistent data will be stored in:
 # - ./data/tokens/ (Robinhood session tokens)

@@ -1417,7 +1417,14 @@ def attempt_login(username: str, password: str) -> None:
 
 @click.command()
 @click.option("--port", default=3000, help="Port to listen on for HTTP transport")
-@click.option("--host", default="localhost", help="Host to bind to")
+@click.option(
+    "--host",
+    default="127.0.0.1",
+    help=(
+        "Host to bind to. Defaults to 127.0.0.1 (loopback only). "
+        "Non-loopback hosts (e.g. 0.0.0.0) require --api-key."
+    ),
+)
 @click.option(
     "--transport",
     type=click.Choice(["stdio", "http"]),
@@ -1430,8 +1437,22 @@ def attempt_login(username: str, password: str) -> None:
 @click.option(
     "--password", help="Robinhood password.", default=os.getenv("ROBINHOOD_PASSWORD")
 )
+@click.option(
+    "--api-key",
+    default=os.getenv("MCP_API_KEY"),
+    help=(
+        "Bearer token required for /mcp and other tool-invoking endpoints. "
+        "Required when --host is not a loopback address. "
+        "Also read from the MCP_API_KEY environment variable."
+    ),
+)
 def main(
-    port: int, host: str, transport: str, username: str | None, password: str | None
+    port: int,
+    host: str,
+    transport: str,
+    username: str | None,
+    password: str | None,
+    api_key: str | None,
 ) -> int:
     """Run the server with specified transport and handle authentication.
 
@@ -1480,7 +1501,7 @@ def main(
             logger.info(
                 "Server ready - broker tools available based on authentication status"
             )
-            asyncio.run(run_http_server(server, host, port))
+            asyncio.run(run_http_server(server, host, port, api_key=api_key))
         return 0
     except KeyboardInterrupt:
         logger.info("\nServer stopped by user")

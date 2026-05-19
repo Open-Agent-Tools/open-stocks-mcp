@@ -74,6 +74,10 @@ volumes:
 # This is the development version that builds from source
 # For production, use docker-compose.yml with the published package
 #
+# Set MCP_API_KEY in your .env file — the MCP HTTP transport refuses to bind
+# to 0.0.0.0 without it. Clients must send `Authorization: Bearer $MCP_API_KEY`
+# on /mcp requests.
+#
 # Persistent data will be stored in:
 # - ./data/tokens/ (Robinhood session tokens)
 # - ./data/logs/ (Application logs)

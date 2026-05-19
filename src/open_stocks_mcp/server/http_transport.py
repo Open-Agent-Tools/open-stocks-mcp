@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import secrets
 import time
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
@@ -21,6 +22,17 @@ from open_stocks_mcp.tools.session_manager import get_session_manager
 
 MAX_MCP_REQUEST_BODY_SIZE = 1024 * 1024  # 1 MiB
 
+LOOPBACK_HOSTS = frozenset({"localhost", "127.0.0.1", "::1"})
+
+# Endpoints that may invoke tools, mutate session state, or stream tool output.
+# Health/status/root remain open so container orchestrators can probe liveness.
+PROTECTED_PATHS = frozenset({"/mcp", "/sse", "/session/refresh", "/tools"})
+
+
+def is_loopback_host(host: str) -> bool:
+    """Return True if ``host`` only accepts connections from the local machine."""
+    return host in LOOPBACK_HOSTS
+
 
 def _require_session_manager() -> Any:
     """Return session manager or raise 503 when unavailable."""
@@ -36,6 +48,34 @@ def _require_metrics_collector() -> Any:
     if metrics_collector is None:
         raise HTTPException(status_code=503, detail="Metrics collector unavailable")
     return metrics_collector
+
+
+class BearerAuthMiddleware(BaseHTTPMiddleware):
+    """Require ``Authorization: Bearer <api_key>`` on protected endpoints.
+
+    No-op when ``api_key`` is None — used for loopback-only deployments where
+    network-level isolation is the trust boundary.
+    """
+
+    def __init__(self, app: Any, api_key: str | None) -> None:
+        super().__init__(app)
+        self.api_key = api_key
+
+    async def dispatch(self, request: Request, call_next: Any) -> Response:
+        if self.api_key and request.url.path in PROTECTED_PATHS:
+            auth_header = request.headers.get("authorization", "")
+            expected = f"Bearer {self.api_key}"
+            if not secrets.compare_digest(auth_header, expected):
+                logger.warning(
+                    f"Unauthorized request to {request.url.path} from "
+                    f"{request.client.host if request.client else 'unknown'}"
+                )
+                return JSONResponse(
+                    status_code=401,
+                    content={"error": "Unauthorized"},
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
+        return await call_next(request)  # type: ignore[no-any-return]
 
 
 class TimeoutMiddleware(BaseHTTPMiddleware):
@@ -98,8 +138,15 @@ class SecurityMiddleware(BaseHTTPMiddleware):
         return False
 
 
-def create_http_server(mcp_server: FastMCP) -> FastAPI:
-    """Create FastAPI server with MCP integration and enhancements"""
+def create_http_server(mcp_server: FastMCP, api_key: str | None = None) -> FastAPI:
+    """Create FastAPI server with MCP integration and enhancements.
+
+    Args:
+        mcp_server: The FastMCP server whose tools should be exposed over HTTP.
+        api_key: When set, requests to :data:`PROTECTED_PATHS` must carry an
+            ``Authorization: Bearer <api_key>`` header. Required when the
+            server is reachable from non-loopback interfaces.
+    """
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
@@ -141,6 +188,7 @@ def create_http_server(mcp_server: FastMCP) -> FastAPI:
 
     app.add_middleware(TimeoutMiddleware, timeout=120.0)
     app.add_middleware(SecurityMiddleware)
+    app.add_middleware(BearerAuthMiddleware, api_key=api_key)
 
     # Health check endpoints
     @app.get("/health")
@@ -257,9 +305,6 @@ def create_http_server(mcp_server: FastMCP) -> FastAPI:
         except Exception as e:
             logger.error(f"Failed to list tools: {e}")
             raise HTTPException(status_code=500, detail="Failed to list tools") from e
-
-    # Mount the MCP server apps
-    mcp_server.settings.host = "0.0.0.0"  # Allow external connections in HTTP mode
 
     # Mount the MCP HTTP endpoints
     # Create a simple MCP endpoint that handles JSON-RPC directly
@@ -482,20 +527,38 @@ def create_http_server(mcp_server: FastMCP) -> FastAPI:
 
 async def run_http_server(
     mcp_server: FastMCP,
-    host: str = "localhost",
+    host: str = "127.0.0.1",
     port: int = 3000,
+    api_key: str | None = None,
 ) -> None:
-    """Run the HTTP server with the MCP server mounted"""
+    """Run the HTTP server with the MCP server mounted.
+
+    When ``host`` is not a loopback address, ``api_key`` must be provided so
+    bearer-token authentication is enforced on :data:`PROTECTED_PATHS`. The
+    server refuses to start otherwise — exposing the MCP endpoint to the
+    network without auth would let any reachable host invoke trading tools
+    against an authenticated broker session.
+    """
     import uvicorn
+
+    if not is_loopback_host(host) and not api_key:
+        raise RuntimeError(
+            f"Refusing to bind HTTP MCP transport to non-loopback host '{host}' "
+            "without an API key. Either bind to 127.0.0.1/localhost for "
+            "loopback-only access, or set --api-key (or the MCP_API_KEY "
+            "environment variable) to require bearer-token auth on the "
+            "/mcp endpoint."
+        )
 
     # Configure MCP server for HTTP
     mcp_server.settings.host = host
     mcp_server.settings.port = port
 
     # Create the FastAPI app with our enhancements
-    app = create_http_server(mcp_server)
+    app = create_http_server(mcp_server, api_key=api_key)
 
-    logger.info(f"Starting HTTP MCP server on {host}:{port}")
+    auth_status = "bearer-token auth enabled" if api_key else "no auth (loopback only)"
+    logger.info(f"Starting HTTP MCP server on {host}:{port} ({auth_status})")
     logger.info("Available endpoints:")
     logger.info(f"  - MCP JSON-RPC: http://{host}:{port}/mcp")
     logger.info(f"  - SSE Events: http://{host}:{port}/sse")
