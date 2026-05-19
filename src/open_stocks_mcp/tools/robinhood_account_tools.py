@@ -4,7 +4,9 @@ from typing import Any
 
 import robin_stocks.robinhood as rh
 
+from open_stocks_mcp.config import load_config
 from open_stocks_mcp.logging_config import logger
+from open_stocks_mcp.tools.cache import cached_async
 from open_stocks_mcp.tools.error_handling import (
     create_no_data_response,
     create_success_response,
@@ -13,6 +15,8 @@ from open_stocks_mcp.tools.error_handling import (
     log_api_call,
     sanitize_api_response,
 )
+
+_cache_cfg = load_config().cache
 
 
 @handle_robin_stocks_errors
@@ -44,6 +48,11 @@ async def get_account_info() -> dict[str, Any]:
 
 
 @handle_robin_stocks_errors
+@cached_async(
+    name="account",
+    ttl=_cache_cfg.account_ttl_seconds,
+    max_size=_cache_cfg.max_size,
+)
 async def get_portfolio() -> dict[str, Any]:
     """
     Provides a high-level overview of the portfolio.

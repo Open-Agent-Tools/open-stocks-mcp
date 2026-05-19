@@ -4,7 +4,9 @@ from typing import Any
 
 import robin_stocks.robinhood as rh
 
+from open_stocks_mcp.config import load_config
 from open_stocks_mcp.logging_config import logger
+from open_stocks_mcp.tools.cache import cached_async
 from open_stocks_mcp.tools.error_handling import (
     create_error_response,
     create_no_data_response,
@@ -16,8 +18,15 @@ from open_stocks_mcp.tools.error_handling import (
     validate_symbol,
 )
 
+_cache_cfg = load_config().cache
+
 
 @handle_robin_stocks_errors
+@cached_async(
+    name="quotes",
+    ttl=_cache_cfg.quotes_ttl_seconds,
+    max_size=_cache_cfg.max_size,
+)
 async def get_stock_price(symbol: str) -> dict[str, Any]:
     """
     Get current stock price and basic metrics.

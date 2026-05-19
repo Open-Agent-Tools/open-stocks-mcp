@@ -32,6 +32,10 @@ class MetricsCollector:
         self.total_errors = 0
         self.session_refreshes = 0
 
+        # Cache hit/miss counters, keyed by cache name
+        self.cache_hits: dict[str, int] = defaultdict(int)
+        self.cache_misses: dict[str, int] = defaultdict(int)
+
         self._lock = asyncio.Lock()
 
     async def record_api_call(
@@ -77,6 +81,16 @@ class MetricsCollector:
         async with self._lock:
             self.session_refreshes += 1
             logger.info(f"Session refresh recorded. Total: {self.session_refreshes}")
+
+    async def record_cache_hit(self, name: str) -> None:
+        """Record a cache hit for the named cache."""
+        async with self._lock:
+            self.cache_hits[name] += 1
+
+    async def record_cache_miss(self, name: str) -> None:
+        """Record a cache miss for the named cache."""
+        async with self._lock:
+            self.cache_misses[name] += 1
 
     def _clean_old_entries(self, now: datetime) -> None:
         """Remove entries older than the window size."""
@@ -155,6 +169,15 @@ class MetricsCollector:
                     "success_rate": (successful / total * 100.0) if total > 0 else 0.0,
                 }
 
+            cache_hit_rate: dict[str, float] = {}
+            for name in set(self.cache_hits) | set(self.cache_misses):
+                hits = self.cache_hits.get(name, 0)
+                misses = self.cache_misses.get(name, 0)
+                total = hits + misses
+                cache_hit_rate[name] = (
+                    round(hits / total * 100.0, 2) if total > 0 else 0.0
+                )
+
             return {
                 "window_minutes": self.window_size.total_seconds() / 60,
                 "total_calls": self.total_calls,
@@ -169,6 +192,9 @@ class MetricsCollector:
                 "session_refreshes": self.session_refreshes,
                 "error_types": dict(self.error_types),
                 "tool_usage": tool_stats,
+                "cache_hits": dict(self.cache_hits),
+                "cache_misses": dict(self.cache_misses),
+                "cache_hit_rate_percent": cache_hit_rate,
                 "timestamp": now.isoformat(),
             }
 
