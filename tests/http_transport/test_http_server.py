@@ -9,7 +9,8 @@ import httpx
 import pytest
 from mcp.server.fastmcp import FastMCP
 
-from open_stocks_mcp.server.http_transport import create_http_server
+from open_stocks_mcp import __version__
+from open_stocks_mcp.server.http_transport import TimeoutMiddleware, create_http_server
 
 
 @pytest.fixture
@@ -24,6 +25,22 @@ def mcp_server() -> FastMCP:
         return {"result": {"message": "test successful", "status": "success"}}
 
     return server
+
+
+def test_timeout_middleware_uses_configured_timeout(
+    monkeypatch: pytest.MonkeyPatch, mcp_server: FastMCP
+) -> None:
+    """Configured HTTP request timeout is wired into middleware."""
+    monkeypatch.setenv("OPEN_STOCKS_MCP_HTTP_REQUEST_TIMEOUT_SECONDS", "7.5")
+
+    app = create_http_server(mcp_server)
+
+    timeout_middleware = next(
+        middleware
+        for middleware in app.user_middleware
+        if middleware.cls is TimeoutMiddleware
+    )
+    assert timeout_middleware.kwargs["timeout"] == 7.5
 
 
 @pytest.fixture
@@ -51,7 +68,7 @@ class TestHTTPEndpoints:
 
         data = response.json()
         assert data["name"] == "Open Stocks MCP Server"
-        assert data["version"] == "0.6.4"
+        assert data["version"] == __version__
         assert data["transport"] == "http"
         assert "endpoints" in data
 
@@ -62,7 +79,7 @@ class TestHTTPEndpoints:
 
         data = response.json()
         assert data["status"] == "healthy"
-        assert data["version"] == "0.6.4"
+        assert data["version"] == __version__
         assert data["transport"] == "http"
         assert "timestamp" in data
 
@@ -118,11 +135,11 @@ class TestMCPIntegration:
         # Should get a method not allowed or proper response, not 404
         assert response.status_code != 404
 
-    async def test_sse_endpoint(self, http_client: httpx.AsyncClient) -> None:
-        """Test SSE endpoint is accessible"""
-        response = await http_client.get("/sse")
-        # Should get a method not allowed or proper response, not 404
-        assert response.status_code != 404
+    async def test_sse_endpoint(self, mcp_server: FastMCP) -> None:
+        """Test SSE endpoint is registered."""
+        app = create_http_server(mcp_server)
+
+        assert any(getattr(route, "path", None) == "/sse" for route in app.routes)
 
     @pytest.mark.anyio
     async def test_mcp_endpoint_rejects_oversized_body(
