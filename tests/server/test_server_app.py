@@ -4,7 +4,12 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from open_stocks_mcp.server.app import attempt_login, create_mcp_server, mcp
+from open_stocks_mcp.server.app import (
+    attempt_login,
+    create_mcp_server,
+    health_check,
+    mcp,
+)
 
 
 @pytest.mark.journey_system
@@ -156,4 +161,24 @@ class TestToolRegistration:
         assert account_info_tool is not None
         assert (
             account_info_tool.description == "Gets basic Robinhood account information."
+        )
+
+    @pytest.mark.asyncio
+    async def test_health_check_tool_returns_structured_components(self) -> None:
+        """Health tool should return structured component payload from helper."""
+        expected = {
+            "result": {
+                "status": "success",
+                "health_status": "healthy",
+                "components": {"broker:robinhood": {"status": "healthy"}},
+            }
+        }
+        with patch(
+            "open_stocks_mcp.server.app.get_health_check_data", return_value=expected
+        ):
+            result = await health_check()
+
+        assert result["result"]["status"] == "success"
+        assert (
+            result["result"]["components"]["broker:robinhood"]["status"] == "healthy"
         )

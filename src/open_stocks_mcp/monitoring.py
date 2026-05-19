@@ -213,17 +213,19 @@ class MetricsCollector:
         health = "healthy"
         issues = []
 
-        if error_rate > 10:
+        if error_rate > 25:
+            health = "unhealthy"
+            issues.append(f"Critical error rate: {error_rate}%")
+        elif error_rate > 10:
             health = "degraded"
             issues.append(f"High error rate: {error_rate}%")
-        elif error_rate > 25:
-            health = "unhealthy"
 
-        if avg_response_time > 5000:  # 5 seconds
+        if avg_response_time > 10000:  # 10 seconds
+            health = "unhealthy"
+            issues.append(f"Critical response time: {avg_response_time}ms")
+        elif avg_response_time > 5000:  # 5 seconds
             health = "degraded" if health == "healthy" else health
             issues.append(f"High response time: {avg_response_time}ms")
-        elif avg_response_time > 10000:  # 10 seconds
-            health = "unhealthy"
 
         return {
             "status": health,

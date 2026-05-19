@@ -16,6 +16,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 from open_stocks_mcp import __version__
 from open_stocks_mcp.config import load_config
+from open_stocks_mcp.health import get_health_service
 from open_stocks_mcp.logging_config import logger
 from open_stocks_mcp.monitoring import get_metrics_collector
 from open_stocks_mcp.tools.rate_limiter import get_rate_limiter
@@ -200,22 +201,24 @@ def create_http_server(mcp_server: FastMCP, api_key: str | None = None) -> FastA
     async def health_check() -> dict[str, Any]:
         """Health check endpoint"""
         try:
-            metrics_collector = _require_metrics_collector()
-            health_status = await metrics_collector.get_health_status()
-
             session_manager = _require_session_manager()
             session_info = session_manager.get_session_info()
+            health_status = await get_health_service().get_status()
 
             return {
-                "status": "healthy",
-                "timestamp": time.time(),
+                "status": health_status["status"],
+                "components": health_status["components"],
+                "timestamp": health_status["timestamp"],
                 "version": __version__,
                 "transport": "http",
                 "session": {
                     "authenticated": session_info.get("authenticated", False),
                     "session_duration": session_info.get("session_duration"),
                 },
-                "health": health_status,
+                "health": {
+                    "status": health_status["status"],
+                    "components": health_status["components"],
+                },
             }
         except HTTPException:
             raise

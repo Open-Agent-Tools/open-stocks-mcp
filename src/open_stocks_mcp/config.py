@@ -86,6 +86,7 @@ class ServerConfig:
 
     name: str = "Open Stocks MCP"
     log_level: str = os.getenv("LOG_LEVEL", "INFO")
+    monitoring_enabled: bool = True
     cache: CacheConfig = field(default_factory=CacheConfig)
     retry: RetryConfig | None = None
     timeout: TimeoutConfig | None = None
@@ -108,6 +109,7 @@ def load_config() -> ServerConfig:
     return ServerConfig(
         name=os.getenv("MCP_SERVER_NAME", "Open Stocks MCP"),
         log_level=os.getenv("LOG_LEVEL", "INFO"),
+        monitoring_enabled=os.getenv("MONITORING_ENABLED", "true").lower() == "true",
         cache=cache,
         retry=RetryConfig(
             max_retries=_env_int("OPEN_STOCKS_MCP_RETRY_MAX_RETRIES", 3),
