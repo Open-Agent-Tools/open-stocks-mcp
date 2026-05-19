@@ -248,7 +248,12 @@ def create_http_server(mcp_server: FastMCP) -> FastAPI:
             from open_stocks_mcp.tools.robinhood_tools import list_available_tools
 
             tools = await list_available_tools(mcp_server)
+            if not isinstance(tools, dict) or "error" in tools or "result" not in tools:
+                logger.error("list_available_tools returned an unexpected or error response")
+                raise HTTPException(status_code=500, detail="Failed to list tools")
             return tools
+        except HTTPException:
+            raise
         except Exception as e:
             logger.error(f"Failed to list tools: {e}")
             raise HTTPException(status_code=500, detail="Failed to list tools") from e
