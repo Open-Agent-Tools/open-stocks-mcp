@@ -132,6 +132,8 @@ addopts = [
     "--strict-markers",
     "--strict-config",
     "--verbose",
+    "-m",
+    "not rate_limited and not live_market and not performance",
 ]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
