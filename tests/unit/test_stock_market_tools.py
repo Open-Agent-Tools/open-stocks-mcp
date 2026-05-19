@@ -359,7 +359,7 @@ class TestServerTools:
 
     @pytest.mark.journey_system
     @pytest.mark.unit
-    @patch("open_stocks_mcp.server.app.get_session_manager")
+    @patch("open_stocks_mcp.server.tool_helpers.get_session_manager")
     @pytest.mark.asyncio
     async def test_session_status_success(self, mock_get_session_manager: Any) -> None:
         """Test successful session status retrieval."""
@@ -386,7 +386,7 @@ class TestServerTools:
 
     @pytest.mark.journey_system
     @pytest.mark.unit
-    @patch("open_stocks_mcp.server.app.get_rate_limiter")
+    @patch("open_stocks_mcp.server.tool_helpers.get_rate_limiter")
     @pytest.mark.asyncio
     async def test_rate_limit_status_success(self, mock_get_rate_limiter: Any) -> None:
         """Test successful rate limit status retrieval."""
@@ -414,7 +414,7 @@ class TestServerTools:
 
     @pytest.mark.journey_system
     @pytest.mark.unit
-    @patch("open_stocks_mcp.server.app.get_metrics_collector")
+    @patch("open_stocks_mcp.server.tool_helpers.get_metrics_collector")
     @pytest.mark.asyncio
     async def test_metrics_summary_success(
         self, mock_get_metrics_collector: Any
@@ -444,7 +444,7 @@ class TestServerTools:
 
     @pytest.mark.journey_system
     @pytest.mark.unit
-    @patch("open_stocks_mcp.server.app.get_metrics_collector")
+    @patch("open_stocks_mcp.server.tool_helpers.get_metrics_collector")
     @pytest.mark.asyncio
     async def test_health_check_success(self, mock_get_metrics_collector: Any) -> None:
         """Test successful health check."""
@@ -473,7 +473,7 @@ class TestServerTools:
 
     @pytest.mark.journey_system
     @pytest.mark.unit
-    @patch("open_stocks_mcp.server.app.get_metrics_collector")
+    @patch("open_stocks_mcp.server.tool_helpers.get_metrics_collector")
     @pytest.mark.asyncio
     async def test_health_check_degraded(self, mock_get_metrics_collector: Any) -> None:
         """Test health check with degraded status."""

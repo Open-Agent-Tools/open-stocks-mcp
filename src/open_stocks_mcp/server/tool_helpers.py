@@ -1,0 +1,117 @@
+"""Helper functions implementing the bodies of server-app system tools.
+
+These helpers exist so `server/app.py` can stay focused on `@mcp.tool()`
+registration. Each helper returns the same `{"result": {...}}` shape its
+corresponding `@mcp.tool()` wrapper used to return inline.
+"""
+
+from typing import Any
+
+from mcp.server.fastmcp import FastMCP
+
+from open_stocks_mcp.brokers.registry import get_broker_registry
+from open_stocks_mcp.logging_config import logger
+from open_stocks_mcp.monitoring import get_metrics_collector
+from open_stocks_mcp.tools.rate_limiter import get_rate_limiter
+from open_stocks_mcp.tools.robinhood_tools import list_available_tools
+from open_stocks_mcp.tools.session_manager import get_session_manager
+
+
+async def get_list_tools_data(mcp: FastMCP) -> dict[str, Any]:
+    """Return the list of tools registered on the given FastMCP server."""
+    return await list_available_tools(mcp)
+
+
+async def get_session_status_data() -> dict[str, Any]:
+    """Return current session status and authentication information."""
+    session_manager = get_session_manager()
+    session_info = session_manager.get_session_info()
+
+    return {"result": {**session_info, "status": "success"}}
+
+
+async def get_broker_status_data() -> dict[str, Any]:
+    """Return authentication status for all configured brokers."""
+    try:
+        registry = await get_broker_registry()
+        auth_status = registry.get_auth_status()
+        available_brokers = registry.get_available_brokers()
+
+        return {
+            "result": {
+                "brokers": auth_status,
+                "available_brokers": available_brokers,
+                "total_configured": len(registry.list_brokers()),
+                "total_authenticated": len(available_brokers),
+                "status": "success",
+            }
+        }
+    except Exception as e:
+        logger.error(f"Error getting broker status: {e}")
+        return {
+            "result": {
+                "error": str(e),
+                "status": "error",
+            }
+        }
+
+
+async def get_list_brokers_data() -> dict[str, Any]:
+    """Return all registered brokers and their availability."""
+    try:
+        registry = await get_broker_registry()
+        brokers = registry.list_brokers()
+        available = registry.get_available_brokers()
+
+        broker_info = []
+        for broker_name in brokers:
+            broker = registry.get_broker(broker_name)
+            if broker:
+                broker_info.append(
+                    {
+                        "name": broker_name,
+                        "available": broker_name in available,
+                        "status": broker.auth_info.status.value,
+                        "configured": broker.is_configured(),
+                    }
+                )
+
+        return {
+            "result": {
+                "brokers": broker_info,
+                "count": len(brokers),
+                "status": "success",
+            }
+        }
+    except Exception as e:
+        logger.error(f"Error listing brokers: {e}")
+        return {
+            "result": {
+                "error": str(e),
+                "status": "error",
+            }
+        }
+
+
+async def get_rate_limit_status_data() -> dict[str, Any]:
+    """Return current rate limit usage and statistics."""
+    rate_limiter = get_rate_limiter()
+    stats = rate_limiter.get_stats()
+
+    return {"result": {**stats, "status": "success"}}
+
+
+async def get_metrics_summary_data() -> dict[str, Any]:
+    """Return a comprehensive metrics summary for monitoring."""
+    metrics_collector = get_metrics_collector()
+    metrics = await metrics_collector.get_metrics()
+
+    return {"result": {**metrics, "status": "success"}}
+
+
+async def get_health_check_data() -> dict[str, Any]:
+    """Return health status of the MCP server."""
+    metrics_collector = get_metrics_collector()
+    health_status = await metrics_collector.get_health_status()
+
+    return {"result": {**health_status, "status": "success"}}

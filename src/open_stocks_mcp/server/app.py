@@ -11,8 +11,15 @@ from mcp.server.fastmcp import FastMCP
 
 from open_stocks_mcp.config import ServerConfig, load_config
 from open_stocks_mcp.logging_config import logger, setup_logging
-from open_stocks_mcp.monitoring import get_metrics_collector
-from open_stocks_mcp.tools.rate_limiter import get_rate_limiter
+from open_stocks_mcp.server.tool_helpers import (
+    get_broker_status_data,
+    get_health_check_data,
+    get_list_brokers_data,
+    get_list_tools_data,
+    get_metrics_summary_data,
+    get_rate_limit_status_data,
+    get_session_status_data,
+)
 from open_stocks_mcp.tools.robinhood_account_features_tools import (
     get_account_features,
     get_latest_notification,
@@ -79,7 +86,6 @@ from open_stocks_mcp.tools.robinhood_stock_tools import (
     get_stock_quote_by_id,
     search_stocks,
 )
-from open_stocks_mcp.tools.robinhood_tools import list_available_tools
 
 # Phase 7: Trading Capabilities Tools
 from open_stocks_mcp.tools.robinhood_trading_tools import (
@@ -163,7 +169,7 @@ mcp = FastMCP("Open Stocks MCP")
 @mcp.tool()
 async def list_tools() -> dict[str, Any]:
     """Provides a list of available tools and their descriptions."""
-    return await list_available_tools(mcp)
+    return await get_list_tools_data(mcp)
 
 
 @mcp.tool()
@@ -234,10 +240,7 @@ async def day_trades() -> dict[str, Any]:
 @mcp.tool()
 async def session_status() -> dict[str, Any]:
     """Gets current session status and authentication information."""
-    session_manager = get_session_manager()
-    session_info = session_manager.get_session_info()
-
-    return {"result": {**session_info, "status": "success"}}
+    return await get_session_status_data()
 
 
 @mcp.tool()
@@ -250,30 +253,7 @@ async def broker_status() -> dict[str, Any]:
     Returns:
         Dictionary with broker authentication status for each broker
     """
-    from open_stocks_mcp.brokers.registry import get_broker_registry
-
-    try:
-        registry = await get_broker_registry()
-        auth_status = registry.get_auth_status()
-        available_brokers = registry.get_available_brokers()
-
-        return {
-            "result": {
-                "brokers": auth_status,
-                "available_brokers": available_brokers,
-                "total_configured": len(registry.list_brokers()),
-                "total_authenticated": len(available_brokers),
-                "status": "success",
-            }
-        }
-    except Exception as e:
-        logger.error(f"Error getting broker status: {e}")
-        return {
-            "result": {
-                "error": str(e),
-                "status": "error",
-            }
-        }
+    return await get_broker_status_data()
 
 
 @mcp.tool()
@@ -283,69 +263,26 @@ async def list_brokers() -> dict[str, Any]:
     Returns:
         List of broker names and their authentication status
     """
-    from open_stocks_mcp.brokers.registry import get_broker_registry
-
-    try:
-        registry = await get_broker_registry()
-        brokers = registry.list_brokers()
-        available = registry.get_available_brokers()
-
-        broker_info = []
-        for broker_name in brokers:
-            broker = registry.get_broker(broker_name)
-            if broker:
-                broker_info.append(
-                    {
-                        "name": broker_name,
-                        "available": broker_name in available,
-                        "status": broker.auth_info.status.value,
-                        "configured": broker.is_configured(),
-                    }
-                )
-
-        return {
-            "result": {
-                "brokers": broker_info,
-                "count": len(brokers),
-                "status": "success",
-            }
-        }
-    except Exception as e:
-        logger.error(f"Error listing brokers: {e}")
-        return {
-            "result": {
-                "error": str(e),
-                "status": "error",
-            }
-        }
+    return await get_list_brokers_data()
 
 
 @mcp.tool()
 async def rate_limit_status() -> dict[str, Any]:
     """Gets current rate limit usage and statistics."""
-    rate_limiter = get_rate_limiter()
-    stats = rate_limiter.get_stats()
-
-    return {"result": {**stats, "status": "success"}}
+    return await get_rate_limit_status_data()
 
 
 # Monitoring Tools
 @mcp.tool()
 async def metrics_summary() -> dict[str, Any]:
     """Gets comprehensive metrics summary for monitoring."""
-    metrics_collector = get_metrics_collector()
-    metrics = await metrics_collector.get_metrics()
-
-    return {"result": {**metrics, "status": "success"}}
+    return await get_metrics_summary_data()
 
 
 @mcp.tool()
 async def health_check() -> dict[str, Any]:
     """Gets health status of the MCP server."""
-    metrics_collector = get_metrics_collector()
-    health_status = await metrics_collector.get_health_status()
-
-    return {"result": {**health_status, "status": "success"}}
+    return await get_health_check_data()
 
 
 # Market Data Tools
