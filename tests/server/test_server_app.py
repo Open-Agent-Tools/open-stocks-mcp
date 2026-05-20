@@ -27,7 +27,9 @@ class TestServerApp:
             patch("open_stocks_mcp.server.app.load_config") as mock_config,
             patch("open_stocks_mcp.server.app.setup_logging") as mock_logging,
         ):
-            mock_config.return_value = MagicMock()
+            mock_cfg = MagicMock()
+            mock_cfg.otel.enabled = False
+            mock_config.return_value = mock_cfg
             result = create_mcp_server()
 
             assert result is mcp
@@ -37,6 +39,7 @@ class TestServerApp:
     def test_create_mcp_server_with_config(self) -> None:
         """Test create_mcp_server with provided config."""
         mock_config = MagicMock()
+        mock_config.otel.enabled = False
 
         with patch("open_stocks_mcp.server.app.setup_logging") as mock_logging:
             result = create_mcp_server(mock_config)
@@ -143,6 +146,10 @@ class TestToolRegistration:
             "account_info",
             "account_details",
             "positions",
+            "unified_watchlists",
+            "unified_watchlist_by_name",
+            "unified_add_to_watchlist",
+            "unified_remove_from_watchlist",
         ]
 
         for tool_name in expected_tools:
