@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "sys_session_status_test_set",
+  "name": "System Session Status Test",
+  "description": "System/monitoring read-only eval that exercises the MCP server session_status tool to inspect Robinhood session and authentication state",
+  "eval_cases": [
+    {
+      "eval_id": "sys_session_status_test",
+      "conversation": [
+        {
+          "invocation_id": "sys-session-status-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "What is the current Robinhood session and authentication status?"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "The session_status tool reports the current Robinhood session state, including whether the session is authenticated and any associated session metadata."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "session_status"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

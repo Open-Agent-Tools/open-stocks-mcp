@@ -118,7 +118,27 @@ list_available_tools_test_set:
 adk eval examples/google-adk-agent tests/evals/list_available_tools_test.json --config_file_path tests/evals/test_config.json
 ```
 
-### 2. Creating Custom Evaluation Tests
+### 2. System & Monitoring Read-Only Evals (`0_sys_*`)
+
+Read-only evals that exercise server-local MCP monitoring tools. These do not invoke any trading or order-placement paths.
+
+- `tests/evals/0_sys_health_check_test.json` — exercises the `health_check` tool to report MCP server health.
+- `tests/evals/0_sys_session_status_test.json` — exercises the `session_status` tool to inspect Robinhood session and authentication state.
+- `tests/evals/0_sys_metrics_summary_test.json` — exercises the `metrics_summary` tool to retrieve observability counters and latency metrics.
+- `tests/evals/0_sys_rate_limit_status_test.json` — exercises the `rate_limit_status` tool to inspect Robin Stocks API rate-limit usage.
+
+These evals are strictly read-only: prompts and expected responses describe server state only, with no order placement, cancellation, or trading-path tools referenced. Because the four tools target server-local monitoring state, ADK execution requires `GOOGLE_API_KEY` and a reachable MCP server, but does **not** require live Robinhood credentials for these specific calls (the underlying Robin Stocks rate-limit counters track quota without performing a broker call).
+
+Run with:
+
+```bash
+adk eval examples/google_adk_agent tests/evals/0_sys_health_check_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/0_sys_session_status_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/0_sys_metrics_summary_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/0_sys_rate_limit_status_test.json --config_file_path tests/evals/test_config.json
+```
+
+### 3. Creating Custom Evaluation Tests
 
 #### Test File Structure
 ```json
