@@ -3,10 +3,13 @@
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from open_stocks_mcp.brokers.base import BaseBroker, BrokerAuthStatus
 from open_stocks_mcp.logging_config import logger
+
+if TYPE_CHECKING:
+    from open_stocks_mcp.brokers.schwab_stream import SchwabStreamManager
 
 
 class SchwabBroker(BaseBroker):
@@ -72,6 +75,7 @@ class SchwabBroker(BaseBroker):
                     )
 
         self.client = None
+        self.stream_manager: SchwabStreamManager | None = None
 
         # Configure auth status based on credentials
         if not api_key or not app_secret:
@@ -83,6 +87,13 @@ class SchwabBroker(BaseBroker):
             self._auth_info.requires_setup = True
         else:
             self._auth_info.status = BrokerAuthStatus.NOT_AUTHENTICATED
+
+    def _wire_stream_manager(self) -> None:
+        """Instantiate SchwabStreamManager after successful authentication."""
+        from open_stocks_mcp.brokers.schwab_stream import SchwabStreamManager
+
+        self.stream_manager = SchwabStreamManager(self)
+        self._capabilities.streaming_quotes = True
 
     @staticmethod
     def _validate_token_path(token_path: str, allowed_root: Path) -> Path:
@@ -132,6 +143,7 @@ class SchwabBroker(BaseBroker):
                     self._auth_info.status = BrokerAuthStatus.AUTHENTICATED
                     self._auth_info.last_successful_auth = datetime.now()
                     self._auth_info.error_message = None
+                    self._wire_stream_manager()
                     return True
                 except Exception as e:
                     logger.warning(f"Existing token invalid, creating new: {e}")
@@ -164,6 +176,7 @@ class SchwabBroker(BaseBroker):
             self._auth_info.status = BrokerAuthStatus.AUTHENTICATED
             self._auth_info.last_successful_auth = datetime.now()
             self._auth_info.error_message = None
+            self._wire_stream_manager()
             logger.info("✓ Schwab authentication successful (new token)")
             return True
 

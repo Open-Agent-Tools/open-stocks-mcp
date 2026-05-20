@@ -1,7 +1,7 @@
 """Base broker interface for multi-broker support."""
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from datetime import datetime
 from enum import Enum
 from typing import Any
@@ -32,6 +32,15 @@ class BrokerAuthInfo:
     setup_instructions: str | None = None
 
 
+@dataclass
+class BrokerCapabilities:
+    """Feature capabilities supported by a broker."""
+
+    streaming_quotes: bool = False
+    options: bool = False
+    crypto: bool = False
+
+
 class BaseBroker(ABC):
     """Abstract base class for broker integrations.
 
@@ -57,6 +66,7 @@ class BaseBroker(ABC):
             status=BrokerAuthStatus.NOT_CONFIGURED,
             broker_name=name,
         )
+        self._capabilities = BrokerCapabilities()
 
     @property
     def name(self) -> str:
@@ -83,6 +93,21 @@ class BaseBroker(ABC):
             True if credentials provided, False otherwise
         """
         return self._auth_info.status != BrokerAuthStatus.NOT_CONFIGURED
+
+    def get_health_status(self) -> dict[str, Any]:
+        """Return broker health and capability summary.
+
+        Returns:
+            Dict with broker, is_available, auth_status, capabilities, streaming_ready
+        """
+        available = self.is_available()
+        return {
+            "broker": self._name,
+            "is_available": available,
+            "auth_status": self._auth_info.status.value,
+            "capabilities": asdict(self._capabilities),
+            "streaming_ready": available and self._capabilities.streaming_quotes,
+        }
 
     @abstractmethod
     async def authenticate(self) -> bool:

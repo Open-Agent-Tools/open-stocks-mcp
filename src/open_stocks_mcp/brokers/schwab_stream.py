@@ -1,7 +1,9 @@
 """Stream manager for Schwab real-time data ingestion."""
 
 import asyncio
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional
+import contextlib
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
 
 from open_stocks_mcp.logging_config import logger
 
@@ -26,18 +28,18 @@ class SchwabStreamManager:
             broker: SchwabBroker instance
         """
         self.broker = broker
-        self.stream_client: Optional["StreamClient"] = None
+        self.stream_client: StreamClient | None = None
         self._is_running = False
-        self._task: Optional[asyncio.Task[None]] = None
-        self._handlers: List[Callable[[Dict[str, Any]], None]] = []
-        self._latest_quotes: Dict[str, Dict[str, Any]] = {}
+        self._task: asyncio.Task[None] | None = None
+        self._handlers: list[Callable[[dict[str, Any]], None]] = []
+        self._latest_quotes: dict[str, dict[str, Any]] = {}
 
     @property
     def is_running(self) -> bool:
         """Check if streamer is running."""
         return self._is_running
 
-    def add_handler(self, handler: Callable[[Dict[str, Any]], None]) -> None:
+    def add_handler(self, handler: Callable[[dict[str, Any]], None]) -> None:
         """Add a custom message handler."""
         self._handlers.append(handler)
 
@@ -60,7 +62,7 @@ class SchwabStreamManager:
             self.stream_client = StreamClient(self.broker.client)
 
             # Define core handler
-            def _core_handler(message: Dict[str, Any]) -> None:
+            def _core_handler(message: dict[str, Any]) -> None:
                 self._handle_message(message)
                 for handler in self._handlers:
                     try:
@@ -95,10 +97,8 @@ class SchwabStreamManager:
         self._is_running = False
         if self._task:
             self._task.cancel()
-            try:
+            with contextlib.suppress(asyncio.CancelledError):
                 await self._task
-            except asyncio.CancelledError:
-                pass
             self._task = None
 
         if self.stream_client:
@@ -127,9 +127,11 @@ class SchwabStreamManager:
                         assert self.stream_client is not None
                         await self.stream_client.login()
                     except Exception as re_login_err:
-                        logger.error(f"Failed to re-login Schwab stream: {re_login_err}")
+                        logger.error(
+                            f"Failed to re-login Schwab stream: {re_login_err}"
+                        )
 
-    def _handle_message(self, message: Dict[str, Any]) -> None:
+    def _handle_message(self, message: dict[str, Any]) -> None:
         """Process incoming stream messages."""
         service = message.get("service")
         content = message.get("content", [])
@@ -143,7 +145,7 @@ class SchwabStreamManager:
                         self._latest_quotes[symbol] = {}
                     self._latest_quotes[symbol].update(item)
 
-    async def subscribe_quotes(self, symbols: List[str]) -> bool:
+    async def subscribe_quotes(self, symbols: list[str]) -> bool:
         """Subscribe to Level One quotes for symbols."""
         if not self._is_running or not self.stream_client:
             return False
@@ -154,7 +156,9 @@ class SchwabStreamManager:
             equities = []
             options = []
             for s in symbols:
-                if " " in s or len(s) > 10:  # Simple heuristic for Schwab option symbols
+                if (
+                    " " in s or len(s) > 10
+                ):  # Simple heuristic for Schwab option symbols
                     options.append(s.upper())
                 else:
                     equities.append(s.upper())
@@ -170,6 +174,6 @@ class SchwabStreamManager:
             logger.error(f"Failed to subscribe to Schwab quotes: {e}")
             return False
 
-    def get_latest_quote(self, symbol: str) -> Optional[Dict[str, Any]]:
+    def get_latest_quote(self, symbol: str) -> dict[str, Any] | None:
         """Get latest cached quote for symbol."""
         return self._latest_quotes.get(symbol.upper())
