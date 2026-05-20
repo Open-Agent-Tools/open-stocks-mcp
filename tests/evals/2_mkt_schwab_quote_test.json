@@ -11,7 +11,7 @@
           "user_content": {
             "parts": [
               {
-                "text": "What's the current price of AAPL on Schwab?"
+                "text": "Get me a Schwab quote for AAPL."
               }
             ],
             "role": "user"
@@ -19,7 +19,7 @@
           "final_response": {
             "parts": [
               {
-                "text": "The current price of AAPL on Schwab is $150.00."
+                "text": "Here is the Schwab quote for AAPL:\n\n* **Symbol**: AAPL\n* **Last Price**: $223.09\n* **Status**: success"
               }
             ],
             "role": "model"

@@ -1,7 +1,7 @@
 {
   "eval_set_id": "schwab_account_numbers_test_set",
   "name": "Schwab Account Numbers Test",
-  "description": "Test case for retrieving Schwab account numbers through agent interaction",
+  "description": "Test case for retrieving Schwab account numbers and hashes through agent interaction",
   "eval_cases": [
     {
       "eval_id": "schwab_account_numbers_test",
@@ -11,7 +11,7 @@
           "user_content": {
             "parts": [
               {
-                "text": "List my Schwab account numbers."
+                "text": "List my Schwab account numbers and account hash values in a bulleted list."
               }
             ],
             "role": "user"
@@ -19,7 +19,7 @@
           "final_response": {
             "parts": [
               {
-                "text": "Here are your Schwab account numbers:\n\n*   **Account Hash**: abc123def456\n*   **Account Number**: 123456789"
+                "text": "Here are your Schwab accounts in a bulleted list:\n\n* **Account Number**: 12345678\n* **Account Hash**: abc123hash\n* **Status**: success"
               }
             ],
             "role": "model"
