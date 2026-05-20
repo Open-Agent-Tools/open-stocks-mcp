@@ -6,6 +6,7 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+from textwrap import dedent
 from types import SimpleNamespace
 from typing import Any
 
@@ -13,7 +14,44 @@ import pytest
 
 import tests.conftest as shared_conftest
 
+pytest_plugins = ("pytester",)
+
 ROOT = Path(__file__).parent.parent.parent
+
+_PYTESTER_CONFTEST = dedent("""
+    import os
+    import pytest
+    from typing import Any
+
+    RATE_LIMITED_SKIP_REASON = "rate_limited test; pass -m rate_limited to run it"
+
+    def pytest_configure(config: Any) -> None:
+        config.addinivalue_line(
+            "markers",
+            "rate_limited: marks tests that may hit rate-limited endpoints "
+            "(skipped by default; opt in with -m rate_limited)",
+        )
+
+    def pytest_collection_modifyitems(config: Any, items: list[Any]) -> None:
+        markexpr = config.option.markexpr or ""
+        if "rate_limited" in markexpr or os.environ.get("RUN_RATE_LIMITED"):
+            return
+        skip_rate_limited = pytest.mark.skip(reason=RATE_LIMITED_SKIP_REASON)
+        for item in items:
+            if list(item.iter_markers(name="rate_limited")):
+                item.add_marker(skip_rate_limited)
+""")
+
+_PYTESTER_MODULE = dedent("""
+    import pytest
+
+    @pytest.mark.rate_limited
+    def test_marked():
+        pass
+
+    def test_unmarked():
+        pass
+""")
 
 
 class DummyItem:
@@ -151,3 +189,40 @@ def test_run_rate_limited_env_can_include_marked_tests() -> None:
     assert result.returncode == 0, result.stderr
     assert "<Class TestBasicIntegration>" in result.stdout
     assert "<Class TestServerLoginFlow>" in result.stdout
+
+
+@pytest.mark.unit
+@pytest.mark.journey_system
+def test_pytester_bare_run_skips_rate_limited(pytester: pytest.Pytester) -> None:
+    pytester.makeconftest(_PYTESTER_CONFTEST)
+    pytester.makepyfile(_PYTESTER_MODULE)
+
+    result = pytester.runpytest()
+
+    result.assert_outcomes(passed=1, skipped=1)
+
+
+@pytest.mark.unit
+@pytest.mark.journey_system
+def test_pytester_explicit_m_rate_limited_selects_marked(
+    pytester: pytest.Pytester,
+) -> None:
+    pytester.makeconftest(_PYTESTER_CONFTEST)
+    pytester.makepyfile(_PYTESTER_MODULE)
+
+    result = pytester.runpytest("-m", "rate_limited")
+
+    result.assert_outcomes(passed=1, deselected=1)
+
+
+@pytest.mark.unit
+@pytest.mark.journey_system
+def test_pytester_explicit_m_not_rate_limited_selects_unmarked(
+    pytester: pytest.Pytester,
+) -> None:
+    pytester.makeconftest(_PYTESTER_CONFTEST)
+    pytester.makepyfile(_PYTESTER_MODULE)
+
+    result = pytester.runpytest("-m", "not rate_limited")
+
+    result.assert_outcomes(passed=1, deselected=1)
