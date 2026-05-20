@@ -160,6 +160,7 @@ from open_stocks_mcp.tools.schwab_trading_tools import (
     schwab_sell_market,
 )
 from open_stocks_mcp.tools.session_manager import get_session_manager
+from open_stocks_mcp.tracing import setup_tracing, trace_tool_call
 
 # Load environment variables from .env file
 load_dotenv()
@@ -279,7 +280,8 @@ async def rate_limit_status() -> dict[str, Any]:
 @mcp.tool()
 async def metrics_summary() -> dict[str, Any]:
     """Gets comprehensive metrics summary for monitoring."""
-    return await get_metrics_summary_data()
+    async with trace_tool_call("metrics_summary"):
+        return await get_metrics_summary_data()
 
 
 @mcp.tool()
@@ -1276,6 +1278,7 @@ def create_mcp_server(config: ServerConfig | None = None) -> FastMCP:
         config = load_config()
 
     setup_logging(config)
+    setup_tracing(config)
     return mcp
 
 

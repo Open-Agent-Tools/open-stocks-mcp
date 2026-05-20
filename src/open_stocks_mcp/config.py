@@ -123,6 +123,15 @@ class TimeoutConfig:
 
 
 @dataclass
+class OtelConfig:
+    """OpenTelemetry tracing configuration"""
+
+    enabled: bool = False
+    service_name: str = "open-stocks-mcp"
+    exporter_endpoint: str | None = None
+
+
+@dataclass
 class ServerConfig:
     """Configuration for the MCP server"""
 
@@ -132,6 +141,7 @@ class ServerConfig:
     cache: CacheConfig = field(default_factory=CacheConfig)
     retry: RetryConfig | None = None
     timeout: TimeoutConfig | None = None
+    otel: OtelConfig = field(default_factory=OtelConfig)
 
     def __post_init__(self) -> None:
         if self.retry is None:
@@ -153,6 +163,8 @@ def load_config() -> ServerConfig:
         max_size=_env_int_from(("CACHE_MAX_SIZE",), 1024),
         strategy=os.getenv("CACHE_STRATEGY", "ttl"),
     )
+    enabled_str = os.getenv("OTEL_ENABLED", "false").strip().lower()
+    otel_enabled = enabled_str in ("1", "true", "yes")
     return ServerConfig(
         name=os.getenv("MCP_SERVER_NAME", "Open Stocks MCP"),
         log_level=os.getenv("LOG_LEVEL", "INFO"),
@@ -181,6 +193,11 @@ def load_config() -> ServerConfig:
             request_timeout_seconds=_env_float(
                 "OPEN_STOCKS_MCP_HTTP_REQUEST_TIMEOUT_SECONDS", 120.0
             )
+        ),
+        otel=OtelConfig(
+            enabled=otel_enabled,
+            service_name=os.getenv("OTEL_SERVICE_NAME", "open-stocks-mcp"),
+            exporter_endpoint=os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT") or None,
         ),
     )
 

@@ -1,6 +1,5 @@
 """Unit tests for cross-broker portfolio aggregation."""
 
-from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
