@@ -106,6 +106,8 @@ def test_rate_limited_collection_finds_live_api_tests() -> None:
             "-q",
             "-m",
             "rate_limited",
+            "tests/integration/test_basic_api.py",
+            "tests/server/test_server_login_flow.py",
         ],
         cwd=ROOT,
         check=False,
@@ -114,8 +116,53 @@ def test_rate_limited_collection_finds_live_api_tests() -> None:
     )
 
     assert result.returncode == 0, result.stderr
-    assert "<Module test_basic_api.py>" in result.stdout
-    assert "<Module test_server_login_flow.py>" in result.stdout
+    assert "test_basic_api.py" in result.stdout
+    assert "test_server_login_flow.py" in result.stdout
+
+
+@pytest.mark.unit
+@pytest.mark.journey_system
+def test_rate_limited_collection_nodeids() -> None:
+    """Assert the exact set of live-API tests selected by -m rate_limited."""
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "pytest",
+            "--collect-only",
+            "-m",
+            "rate_limited",
+            "-q",
+            "tests/integration/test_basic_api.py",
+            "tests/server/test_server_login_flow.py",
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+
+    # Check for presence of expected tests
+    assert "test_get_account_info" in result.stdout
+    assert "test_get_portfolio" in result.stdout
+    assert "test_get_positions" in result.stdout
+    assert "test_placeholder" in result.stdout
+
+    # Check for absence of excluded tests
+    assert "test_api_error_handling" not in result.stdout
+
+    # Also check count to be sure no extra tests are selected
+    # Tree format usually has <Function ...> or <Coroutine ...>
+    count = result.stdout.count("<Function") + result.stdout.count("<Coroutine")
+    # If it's nodeid format, it might not have those, so we fallback
+    if count == 0:
+        # Fallback for nodeid format (one per line)
+        lines = [line for line in result.stdout.splitlines() if "::" in line]
+        count = len(lines)
+
+    assert count == 4, f"Expected 4 tests, found {count}. Output:\n{result.stdout}"
 
 
 @pytest.mark.unit
