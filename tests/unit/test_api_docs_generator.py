@@ -16,7 +16,7 @@ def test_generate_writes_tools_md(tmp_path):
     assert output_path.exists()
 
     content = output_path.read_text(encoding="utf-8")
-    assert "# Open Stocks MCP - Tool Reference" in content
+    assert "# Open Stocks MCP — Tool Reference" in content
     assert re.search(r"\n\d+ tools registered\n", content)
     assert "### list_tools" in content
     assert "### account_info" in content

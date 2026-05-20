@@ -6,7 +6,7 @@ import asyncio
 from pathlib import Path
 from typing import Any
 
-HEADER = "# Open Stocks MCP - Tool Reference\n"
+HEADER = "# Open Stocks MCP — Tool Reference\n"
 
 
 async def build_doc(mcp: Any) -> str:
