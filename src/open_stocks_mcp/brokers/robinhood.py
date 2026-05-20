@@ -153,14 +153,9 @@ class RobinhoodBroker(BaseBroker):
         if not self.is_available():
             return self.create_unavailable_response(f"get stock quote for {symbol}")
 
-        # TODO: Phase 2 - delegate to existing get_stock_quote_by_id() function
-        # For now, return placeholder
-        return {
-            "result": {
-                "error": "Not yet implemented in broker adapter",
-                "status": "not_implemented",
-            }
-        }
+        from open_stocks_mcp.tools.robinhood_stock_tools import get_stock_price
+
+        return await get_stock_price(symbol)
 
     async def get_stock_price(self, symbol: str) -> dict[str, Any]:
         """Get current stock price."""
