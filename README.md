@@ -126,7 +126,8 @@ Add to your MCP settings (`~/Library/Application Support/Claude/claude_desktop_c
 ## Available Tools
 
 Reference docs and runnable examples:
-- [API docs and notebook guide](docs/api/README.md)
+- [API docs and notebook guide](docs/api/README.md), including the generated
+  [tool reference](docs/api/tools.md)
 
 ### 🏦 Multi-Broker Support
 
