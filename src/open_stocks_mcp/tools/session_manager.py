@@ -1,6 +1,7 @@
 """Session management for Robin Stocks authentication."""
 
 import asyncio
+import os
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
@@ -73,6 +74,13 @@ class SessionManager:
             Path to the pickle file
         """
         tokens_dir = Path.home() / ".tokens"
+        tokens_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
+        # Ensure correct mode if dir already existed
+        if os.name != "nt":
+            try:
+                os.chmod(tokens_dir, 0o700)
+            except OSError as e:
+                logger.warning(f"Could not set secure permissions on {tokens_dir}: {e}")
         return tokens_dir / f"{pickle_name}.pickle"
 
     def _clear_pickle_file(self, pickle_name: str = "robinhood") -> bool:

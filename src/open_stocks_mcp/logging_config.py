@@ -81,9 +81,17 @@ def setup_logging(server_config: ServerConfig | None = None) -> None:
     stderr_handler.setFormatter(formatter)
     root_logger.addHandler(stderr_handler)
 
-    # Set up file logging
+    # Set up file logging with secure permissions (0o700)
     log_path = get_default_log_dir()
-    log_path.mkdir(parents=True, exist_ok=True)
+    log_path.mkdir(mode=0o700, parents=True, exist_ok=True)
+    # Ensure correct mode if dir already existed
+    if os.name != "nt":
+        try:
+            os.chmod(log_path, 0o700)
+        except OSError as e:
+            project_logger.warning(
+                f"Could not set secure permissions on {log_path}: {e}"
+            )
     log_file = log_path / "open_stocks_mcp.log"
 
     # Add rotating file handler (10MB files, keep 5 backups)

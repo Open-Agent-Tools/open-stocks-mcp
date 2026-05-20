@@ -58,8 +58,9 @@ class TestSchwabBroker:
         self, schwab_broker: SchwabBroker
     ) -> None:
         """Test authentication using easy_client (no existing token)."""
-        # Mock easy_client
-        with patch("schwab.auth.easy_client") as mock_easy_client:
+        # Mock easy_client and isatty
+        with patch("schwab.auth.easy_client") as mock_easy_client, \
+             patch("os.isatty", return_value=True):
             mock_client = MagicMock()
             mock_easy_client.return_value = mock_client
 
