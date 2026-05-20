@@ -1,0 +1,51 @@
+{
+  "eval_set_id": "schwab_option_chain_test_set",
+  "name": "Schwab Option Chain Test",
+  "description": "Test case for retrieving Schwab option chains through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_option_chain_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-option-chain-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Get the option chain for TSLA on Schwab with 5 strikes."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "I have retrieved the option chain for TSLA from Schwab with 5 strikes."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "symbol": "TSLA",
+                  "contract_type": "ALL",
+                  "strike_count": 5,
+                  "include_underlying_quote": true
+                },
+                "name": "schwab_option_chain"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

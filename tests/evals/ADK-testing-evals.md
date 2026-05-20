@@ -2,7 +2,7 @@
 
 This guide covers testing and evaluation procedures for the Stock Trading Agent using Google ADK framework.
 
-**Note**: This documentation and evaluation tests have been moved from `examples/google-adk-agent/evals/` to `tests/evals/` for better organization alongside the main test suite.
+**Note**: This documentation and evaluation tests have been moved from `examples/google_adk_agent/evals/` to `tests/evals/` for better organization alongside the main test suite.
 
 ## Prerequisites
 
@@ -15,6 +15,13 @@ export GOOGLE_MODEL="gemini-2.0-flash"  # Optional, defaults to gemini-2.0-flash
 # For Robinhood authentication (optional - enables environment-based login)
 export ROBINHOOD_USERNAME="your_email@example.com"
 export ROBINHOOD_PASSWORD="your_robinhood_password"
+
+# For Schwab authentication (optional - enables Schwab tools)
+export SCHWAB_API_KEY="your-schwab-api-key"
+export SCHWAB_APP_SECRET="your-schwab-app-secret"
+export SCHWAB_CALLBACK_URL="https://127.0.0.1"
+export SCHWAB_TOKEN_PATH="schwab_token.json"
+export ENABLED_BROKERS="robinhood,schwab"
 ```
 
 Or create a `.env` file in the project root:
@@ -22,11 +29,16 @@ Or create a `.env` file in the project root:
 GOOGLE_API_KEY=your-google-api-key
 ROBINHOOD_USERNAME=your_email@example.com
 ROBINHOOD_PASSWORD=your_robinhood_password
+SCHWAB_API_KEY=your-schwab-api-key
+SCHWAB_APP_SECRET=your-schwab-app-secret
+SCHWAB_CALLBACK_URL=https://127.0.0.1
+SCHWAB_TOKEN_PATH=schwab_token.json
+ENABLED_BROKERS=robinhood,schwab
 ```
 
 ### 2. Install Dependencies
 ```bash
-# From the google-adk-agent directory
+# From the google_adk_agent directory
 pip install -r requirements.txt
 
 # Verify ADK installation
@@ -43,25 +55,25 @@ adk --help
 cd /Users/wes/Development/open-stocks-mcp
 
 # Basic evaluation command (with recommended config)
-adk eval examples/google-adk-agent tests/evals/list_available_tools_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/list_available_tools_test.json --config_file_path tests/evals/test_config.json
 
 # With custom configuration
-adk eval examples/google-adk-agent tests/evals/list_available_tools_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/list_available_tools_test.json --config_file_path tests/evals/test_config.json
 
 # With detailed results output
-adk eval examples/google-adk-agent tests/evals/list_available_tools_test.json --config_file_path tests/evals/test_config.json --print_detailed_results
+adk eval examples/google_adk_agent tests/evals/list_available_tools_test.json --config_file_path tests/evals/test_config.json --print_detailed_results
 
 # With specific run ID for tracking
-adk eval examples/google-adk-agent tests/evals/list_available_tools_test.json --config_file_path tests/evals/test_config.json --run_id stock_trader_test_$(date +%s)
+adk eval examples/google_adk_agent tests/evals/list_available_tools_test.json --config_file_path tests/evals/test_config.json --run_id stock_trader_test_$(date +%s)
 
 # With custom model
-GOOGLE_MODEL="gemini-2.0-flash-exp" adk eval examples/google-adk-agent tests/evals/list_available_tools_test.json --config_file_path tests/evals/test_config.json
+GOOGLE_MODEL="gemini-2.0-flash-exp" adk eval examples/google_adk_agent tests/evals/list_available_tools_test.json --config_file_path tests/evals/test_config.json
 ```
 
 ### ❌ Wrong Way (From Agent Directory)
 ```bash
 # Don't do this - will cause path errors
-cd examples/google-adk-agent
+cd examples/google_adk_agent
 adk eval agent.py ../../tests/evals/list_available_tools_test.json  # ❌ Incorrect syntax
 ```
 
@@ -88,7 +100,7 @@ Before running evaluations, ensure:
 
 4. **✅ Agent Module Available**
    ```bash
-   ls examples/google-adk-agent/  # Should show: agent.py, __init__.py, etc.
+   ls examples/google_adk_agent/  # Should show: agent.py, __init__.py, etc.
    ```
 
 ### 🎯 Expected Results
@@ -115,7 +127,7 @@ list_available_tools_test_set:
 **Expected Output**: Alphabetically sorted bullet list of 60 MCP tools
 
 ```bash
-adk eval examples/google-adk-agent tests/evals/list_available_tools_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/list_available_tools_test.json --config_file_path tests/evals/test_config.json
 ```
 
 ### 2. System & Monitoring Read-Only Evals (`0_sys_*`)
@@ -138,7 +150,33 @@ adk eval examples/google_adk_agent tests/evals/0_sys_metrics_summary_test.json -
 adk eval examples/google_adk_agent tests/evals/0_sys_rate_limit_status_test.json --config_file_path tests/evals/test_config.json
 ```
 
-### 3. Creating Custom Evaluation Tests
+### 3. Schwab Market & Account Evals (`schwab_*`)
+
+Evaluations for Schwab-specific tools. These typically require live Schwab OAuth credentials and a running MCP server.
+
+- `tests/evals/1_acc_schwab_account_numbers_test.json` — exercises `schwab_account_numbers`.
+- `tests/evals/2_mkt_schwab_quote_test.json` — exercises `schwab_quote`.
+- `tests/evals/2_mkt_schwab_price_history_test.json` — exercises `schwab_price_history`.
+- `tests/evals/2_mkt_schwab_search_instruments_test.json` — exercises `schwab_search_instruments`.
+- `tests/evals/8_opt_schwab_option_chain_test.json` — exercises `schwab_option_chain`.
+- `tests/evals/8_opt_schwab_option_expirations_test.json` — exercises `schwab_option_expirations`.
+- `tests/evals/5_ord_schwab_orders_test.json` — exercises `schwab_orders` (requires `account_hash`).
+
+> **Note on Schwab Evaluations**: Most Schwab evaluations require live OAuth credentials. The `schwab_orders` evaluation specifically requires a valid `account_hash`, which can be retrieved using the `schwab_account_numbers` tool. For testing, replace the `REPLACE_WITH_SCHWAB_ACCOUNT_HASH` placeholder in the JSON with a real hash from your account.
+
+Run with:
+
+```bash
+adk eval examples/google_adk_agent tests/evals/1_acc_schwab_account_numbers_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/2_mkt_schwab_quote_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/2_mkt_schwab_price_history_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/2_mkt_schwab_search_instruments_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/8_opt_schwab_option_chain_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/8_opt_schwab_option_expirations_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/5_ord_schwab_orders_test.json --config_file_path tests/evals/test_config.json
+```
+
+### 4. Creating Custom Evaluation Tests
 
 #### Test File Structure
 ```json
@@ -294,11 +332,11 @@ echo "Running all ADK evaluations..."
 
 # List available tools test
 echo "Testing tool listing..."
-adk eval examples/google-adk-agent tests/evals/list_available_tools_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/list_available_tools_test.json --config_file_path tests/evals/test_config.json
 
 # Add more tests as they are created
 # echo "Testing portfolio analysis..."
-# adk eval examples/google-adk-agent tests/evals/portfolio_analysis_test.json --config_file_path tests/evals/test_config.json
+# adk eval examples/google_adk_agent tests/evals/portfolio_analysis_test.json --config_file_path tests/evals/test_config.json
 
 echo "All evaluations completed successfully!"
 ```
@@ -326,7 +364,7 @@ def run_evaluation(test_file):
     start_time = time.time()
     try:
         result = subprocess.run(
-            ["adk", "eval", "examples/google-adk-agent", test_file, "--config_file_path", "tests/evals/test_config.json"],
+            ["adk", "eval", "examples/google_adk_agent", test_file, "--config_file_path", "tests/evals/test_config.json"],
             capture_output=True,
             text=True,
             check=True
