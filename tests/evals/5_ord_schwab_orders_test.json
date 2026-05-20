@@ -1,0 +1,49 @@
+{
+  "eval_set_id": "schwab_orders_test_set",
+  "name": "Schwab Orders Test",
+  "description": "Test case for retrieving Schwab orders through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_orders_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-orders-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me my recent orders on Schwab for account REPLACE_WITH_SCHWAB_ACCOUNT_HASH."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "I have retrieved your recent orders for Schwab account REPLACE_WITH_SCHWAB_ACCOUNT_HASH. You have 0 open orders."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "account_hash": "REPLACE_WITH_SCHWAB_ACCOUNT_HASH",
+                  "max_results": 10
+                },
+                "name": "schwab_orders"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

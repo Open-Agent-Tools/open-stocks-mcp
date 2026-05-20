@@ -1,0 +1,52 @@
+{
+  "eval_set_id": "schwab_price_history_test_set",
+  "name": "Schwab Price History Test",
+  "description": "Test case for retrieving Schwab price history through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_price_history_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-price-history-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me the 1-minute price history for AAPL for the last day on Schwab."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "I have retrieved the 1-minute price history for AAPL for the last day from Schwab. There were 390 data points."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "symbol": "AAPL",
+                  "period_type": "day",
+                  "period": 1,
+                  "frequency_type": "minute",
+                  "frequency": 1
+                },
+                "name": "schwab_price_history"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "eval_set_id": "schwab_search_instruments_test_set",
+  "name": "Schwab Search Instruments Test",
+  "description": "Test case for searching Schwab instruments through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_search_instruments_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-search-instruments-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Search for Apple instruments on Schwab."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "I found several instruments matching 'Apple' on Schwab, including AAPL (Apple Inc.)."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "query": "Apple"
+                },
+                "name": "schwab_search_instruments"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

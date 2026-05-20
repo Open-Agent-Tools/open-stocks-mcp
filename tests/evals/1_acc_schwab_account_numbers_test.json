@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "schwab_account_numbers_test_set",
+  "name": "Schwab Account Numbers Test",
+  "description": "Test case for retrieving Schwab account numbers through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_account_numbers_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-account-numbers-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "List my Schwab account numbers."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here are your Schwab account numbers:\n\n*   **Account Hash**: abc123def456\n*   **Account Number**: 123456789"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "schwab_account_numbers"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

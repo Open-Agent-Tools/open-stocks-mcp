@@ -1,0 +1,48 @@
+{
+  "eval_set_id": "schwab_quote_test_set",
+  "name": "Schwab Quote Test",
+  "description": "Test case for retrieving a Schwab stock quote through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_quote_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-quote-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "What's the current price of AAPL on Schwab?"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "The current price of AAPL on Schwab is $150.00."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "symbol": "AAPL"
+                },
+                "name": "schwab_quote"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 # Stock Trading Agent (Google ADK + MCP)
 
-A comprehensive stock trading agent that uses Google ADK to connect with our open-stocks-mcp server for Robin Stocks operations. This agent provides access to 32+ MCP tools for complete stock market analysis and portfolio management.
+A comprehensive stock trading agent that uses Google ADK to connect with our open-stocks-mcp server for Robin Stocks and Schwab API operations. This agent provides access to 60+ MCP tools for complete stock market analysis and portfolio management across multiple brokers.
 
 > **📁 Note**: Evaluation tests and documentation have been moved to `tests/evals/` for better organization alongside the main test suite. See `tests/evals/ADK-testing-evals.md` for comprehensive testing documentation.
 
@@ -17,6 +17,13 @@ A comprehensive stock trading agent that uses Google ADK to connect with our ope
    export ROBINHOOD_USERNAME="your_email@example.com"
    export ROBINHOOD_PASSWORD="your_robinhood_password"
    
+   # For Schwab authentication (optional - enables Schwab tools)
+   export SCHWAB_API_KEY="your-schwab-api-key"
+   export SCHWAB_APP_SECRET="your-schwab-app-secret"
+   export SCHWAB_CALLBACK_URL="https://127.0.0.1"
+   export SCHWAB_TOKEN_PATH="schwab_token.json"
+   export ENABLED_BROKERS="robinhood,schwab"
+
    # MCP HTTP transport configuration
    export MCP_HTTP_URL="http://localhost:3001/mcp"  # Optional, defaults to localhost:3001
    ```
@@ -26,6 +33,11 @@ A comprehensive stock trading agent that uses Google ADK to connect with our ope
    GOOGLE_API_KEY=your-google-api-key
    ROBINHOOD_USERNAME=your_email@example.com
    ROBINHOOD_PASSWORD=your_robinhood_password
+   SCHWAB_API_KEY=your-schwab-api-key
+   SCHWAB_APP_SECRET=your-schwab-app-secret
+   SCHWAB_CALLBACK_URL=https://127.0.0.1
+   SCHWAB_TOKEN_PATH=schwab_token.json
+   ENABLED_BROKERS=robinhood,schwab
    MCP_HTTP_URL=http://localhost:3001/mcp
    ```
 
@@ -59,25 +71,49 @@ The agent uses HTTP transport to connect to the MCP server, which must be runnin
 
 ## Available Tools
 
-The agent has access to 32+ MCP tools organized into these categories:
+The agent has access to 60+ MCP tools organized into these categories:
 
-### **Account Management (5 tools)**
+### **Robinhood Account Management (5 tools)**
 - **`account_info`**: Basic account information
 - **`portfolio`**: Portfolio holdings and values
 - **`account_details`**: Detailed account data (cash, buying power)
 - **`positions`**: Current stock positions
 - **`portfolio_history`**: Historical portfolio performance
 
-### **Order Management (2 tools)**
+### **Schwab Account Management (5 tools)**
+- **`schwab_account_numbers`**: Account identifiers and hashes
+- **`schwab_accounts`**: List of all Schwab accounts
+- **`schwab_account`**: Specific account details
+- **`schwab_portfolio`**: Account positions and holdings
+- **`schwab_account_balances`**: Real-time account balances
+
+### **Robinhood Order Management (2 tools)**
 - **`stock_orders`**: Stock order history and status
 - **`options_orders`**: Options order history
 
-### **Stock Market Data (5 tools)**
+### **Schwab Order Management (3 tools)**
+- **`schwab_orders`**: Account order history and status
+- **`schwab_get_order`**: Specific order details
+- **`schwab_cancel_order`**: Cancel an existing order
+
+### **Robinhood Market Data (5 tools)**
 - **`stock_price`**: Real-time stock prices
 - **`stock_info`**: Company fundamentals
 - **`search_stocks`**: Search for stocks by symbol/name
 - **`market_hours`**: Market status and hours
 - **`price_history`**: Historical price data
+
+### **Schwab Market Data (5 tools)**
+- **`schwab_quote`**: Real-time Schwab stock quote
+- **`schwab_quotes`**: Batch Schwab quotes
+- **`schwab_price_history`**: Historical price data from Schwab
+- **`schwab_instrument`**: Instrument fundamental data
+- **`schwab_search_instruments`**: Search for Schwab instruments
+
+### **Options Trading (3 tools)**
+- **`options_chains`**: Robinhood option chains
+- **`schwab_option_chain`**: Schwab option chains
+- **`schwab_option_expirations`**: Schwab option expiration dates
 
 ### **Advanced Market Data (10 tools)**
 - **`top_movers_sp500`**: S&P 500 top movers

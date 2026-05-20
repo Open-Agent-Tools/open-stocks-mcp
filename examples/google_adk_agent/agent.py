@@ -51,7 +51,7 @@ def create_agent() -> Agent:
         model=os.environ.get("GOOGLE_MODEL") or "gemini-2.0-flash",
         name="Stock_Trader",
         instruction=agent_instruction,
-        description="Specialized stock trading agent that can perform Robin Stocks operations through MCP tools.",
+        description="Specialized stock trading agent that can perform Robin Stocks and Schwab operations through MCP tools.",
         tools=agent_tools,
     )
 
