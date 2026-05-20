@@ -1,18 +1,237 @@
 """Unit tests for session manager behavior."""
 
 import asyncio
+import builtins
 import io
 from contextlib import redirect_stderr
-from datetime import datetime
-from unittest.mock import patch
+from datetime import datetime, timedelta
+from pathlib import Path
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
 from open_stocks_mcp.tools.session_manager import SessionManager
 
+pytestmark = pytest.mark.unit
 
-def test_logout_clears_session_state() -> None:
-    """Logout should clear authentication state and timestamps."""
+
+def test_is_session_valid_false_when_not_authenticated() -> None:
+    manager = SessionManager(session_timeout_hours=1)
+
+    assert manager.is_session_valid() is False
+
+
+def test_is_session_valid_false_when_missing_login_time() -> None:
+    manager = SessionManager(session_timeout_hours=1)
+    manager._is_authenticated = True
+    manager.login_time = None
+
+    assert manager.is_session_valid() is False
+
+
+def test_is_session_valid_false_when_expired() -> None:
+    manager = SessionManager(session_timeout_hours=1)
+    manager._is_authenticated = True
+    manager.login_time = datetime.now() - timedelta(hours=2)
+
+    assert manager.is_session_valid() is False
+
+
+def test_is_session_valid_true_when_fresh() -> None:
+    manager = SessionManager(session_timeout_hours=1)
+    manager._is_authenticated = True
+    manager.login_time = datetime.now() - timedelta(minutes=10)
+
+    assert manager.is_session_valid() is True
+
+
+def test_clear_pickle_file_removes_existing_file(tmp_path: Path) -> None:
+    manager = SessionManager()
+    pickle_path = tmp_path / "robinhood.pickle"
+    pickle_path.write_text("session")
+
+    with patch.object(manager, "_get_pickle_file_path", return_value=pickle_path):
+        result = manager._clear_pickle_file()
+
+    assert result is True
+    assert not pickle_path.exists()
+
+
+def test_clear_pickle_file_returns_true_when_missing(tmp_path: Path) -> None:
+    manager = SessionManager()
+    pickle_path = tmp_path / "robinhood.pickle"
+
+    with patch.object(manager, "_get_pickle_file_path", return_value=pickle_path):
+        result = manager._clear_pickle_file()
+
+    assert result is True
+
+
+def test_clear_pickle_file_returns_false_on_unlink_error(tmp_path: Path) -> None:
+    manager = SessionManager()
+    pickle_path = tmp_path / "robinhood.pickle"
+    pickle_path.write_text("session")
+
+    with (
+        patch.object(manager, "_get_pickle_file_path", return_value=pickle_path),
+        patch.object(Path, "unlink", side_effect=PermissionError("denied")),
+    ):
+        result = manager._clear_pickle_file()
+
+    assert result is False
+
+
+@pytest.mark.asyncio
+async def test_authenticate_returns_false_without_credentials() -> None:
+    manager = SessionManager()
+
+    result = await manager._authenticate()
+
+    assert result is False
+
+
+@pytest.mark.asyncio
+async def test_authenticate_success_sets_session_state() -> None:
+    manager = SessionManager()
+    manager.set_credentials("user", "pass")
+
+    with (
+        patch.object(manager, "_login_with_device_verification", return_value=True),
+        patch(
+            "open_stocks_mcp.tools.session_manager.rh.load_user_profile",
+            return_value={"id": "123"},
+        ),
+    ):
+        result = await manager._authenticate()
+
+    assert result is True
+    assert manager._is_authenticated is True
+    assert manager.login_time is not None
+
+
+@pytest.mark.asyncio
+async def test_authenticate_returns_false_when_login_rejected() -> None:
+    manager = SessionManager(max_failed_attempts=5)
+    manager.set_credentials("user", "pass")
+
+    with patch.object(manager, "_login_with_device_verification", return_value=False):
+        result = await manager._authenticate()
+
+    assert result is False
+    assert manager._failed_login_attempts == 1
+
+
+@pytest.mark.asyncio
+async def test_authenticate_returns_false_when_profile_missing() -> None:
+    manager = SessionManager(max_failed_attempts=5)
+    manager.set_credentials("user", "pass")
+
+    with (
+        patch.object(manager, "_login_with_device_verification", return_value=True),
+        patch(
+            "open_stocks_mcp.tools.session_manager.rh.load_user_profile",
+            return_value=None,
+        ),
+    ):
+        result = await manager._authenticate()
+
+    assert result is False
+    assert manager._failed_login_attempts == 1
+
+
+@pytest.mark.asyncio
+async def test_authenticate_returns_false_on_exception() -> None:
+    manager = SessionManager(max_failed_attempts=5)
+    manager.set_credentials("user", "pass")
+
+    with patch.object(
+        manager,
+        "_login_with_device_verification",
+        side_effect=RuntimeError("invalid credentials"),
+    ):
+        result = await manager._authenticate()
+
+    assert result is False
+    assert manager._failed_login_attempts == 1
+
+
+def test_login_with_device_verification_success_and_restores_input() -> None:
+    manager = SessionManager()
+    original_input = builtins.input
+
+    with patch(
+        "open_stocks_mcp.tools.session_manager.rh.login", return_value={"ok": True}
+    ):
+        result = manager._login_with_device_verification("user", "pass")
+
+    assert result is True
+    assert builtins.input is original_input
+
+
+def test_login_with_device_verification_mfa_prompt_path_and_restores_input() -> None:
+    manager = SessionManager()
+    original_input = builtins.input
+
+    def fake_login(_username: str, _password: str, store_session: bool = True):
+        _ = builtins.input("Enter verification code: ")
+        return None
+
+    with patch("open_stocks_mcp.tools.session_manager.rh.login", side_effect=fake_login):
+        result = manager._login_with_device_verification("user", "pass")
+
+    assert result is False
+    assert builtins.input is original_input
+
+
+def test_login_with_device_verification_invalid_credentials_path() -> None:
+    manager = SessionManager()
+
+    with patch(
+        "open_stocks_mcp.tools.session_manager.rh.login",
+        side_effect=RuntimeError("invalid credentials"),
+    ):
+        result = manager._login_with_device_verification("user", "pass")
+
+    assert result is False
+
+
+@pytest.mark.asyncio
+async def test_refresh_session_reauthenticates_after_invalidating_state() -> None:
+    manager = SessionManager()
+    manager._is_authenticated = True
+    manager.login_time = datetime.now()
+
+    with patch.object(manager, "_authenticate", new=AsyncMock(return_value=True)) as auth:
+        result = await manager.refresh_session()
+
+    assert result is True
+    auth.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_ensure_authenticated_concurrent_calls_only_authenticate_once() -> None:
+    manager = SessionManager()
+    calls = 0
+
+    async def fake_authenticate() -> bool:
+        nonlocal calls
+        calls += 1
+        manager._is_authenticated = True
+        manager.login_time = datetime.now()
+        return True
+
+    with patch.object(manager, "_authenticate", side_effect=fake_authenticate):
+        results = await asyncio.gather(
+            manager.ensure_authenticated(),
+            manager.ensure_authenticated(),
+        )
+
+    assert results == [True, True]
+    assert calls == 1
+
+
+@pytest.mark.asyncio
+async def test_logout_clears_session_state() -> None:
     manager = SessionManager()
     manager._is_authenticated = True
     manager.login_time = datetime.now()
@@ -20,7 +239,7 @@ def test_logout_clears_session_state() -> None:
     manager._failed_login_attempts = 2
 
     with patch("open_stocks_mcp.tools.session_manager.rh.logout"):
-        asyncio.run(manager.logout())
+        await manager.logout()
 
     assert manager._is_authenticated is False
     assert manager.login_time is None
@@ -28,61 +247,8 @@ def test_logout_clears_session_state() -> None:
     assert manager._failed_login_attempts == 0
 
 
-def test_login_uses_configured_mfa_code_for_sms_prompt() -> None:
-    """SessionManager should use ROBINHOOD_MFA_CODE for SMS/email prompts."""
-    manager = SessionManager()
-    manager.set_credentials("test_user", "test_pass")
-
-    # We need to simulate rh.login calling input()
-    def fake_login(username, password, store_session=True):
-        import builtins
-
-        # This will call the mock_input defined inside _login_with_device_verification
-        return builtins.input("Enter SMS code: ")
-
-    with (
-        patch("open_stocks_mcp.tools.session_manager.rh.login", side_effect=fake_login),
-        patch.dict("os.environ", {"ROBINHOOD_MFA_CODE": "123456"}),
-        patch(
-            "open_stocks_mcp.tools.session_manager.rh.load_user_profile",
-            return_value={"id": "123"},
-        ),
-    ):
-        # We expect this to fail initially because it returns "" currently,
-        # and rh.login (fake_login) returns "" which is falsy.
-        result = asyncio.run(manager.ensure_authenticated())
-        assert result is True
-        assert manager._is_authenticated is True
-
-
-def test_login_keeps_device_approval_prompt_empty() -> None:
-    """SessionManager should return "" for device approval prompts to let them wait."""
-    manager = SessionManager()
-    manager.set_credentials("test_user", "test_pass")
-
-    captured_inputs = []
-
-    def fake_login(username, password, store_session=True):
-        import builtins
-
-        val = builtins.input("Please approve the login on your device: ")
-        captured_inputs.append(val)
-        return True  # Simulate success after "waiting"
-
-    with (
-        patch("open_stocks_mcp.tools.session_manager.rh.login", side_effect=fake_login),
-        patch(
-            "open_stocks_mcp.tools.session_manager.rh.load_user_profile",
-            return_value={"id": "123"},
-        ),
-    ):
-        result = asyncio.run(manager.ensure_authenticated())
-        assert result is True
-        assert captured_inputs == [""]
-
-
-def test_logout_reraises_exception_and_still_clears_state() -> None:
-    """Logout failures should propagate to callers while still clearing local state."""
+@pytest.mark.asyncio
+async def test_logout_reraises_exception_and_still_clears_state() -> None:
     manager = SessionManager()
     manager._is_authenticated = True
     manager.login_time = datetime.now()
@@ -96,7 +262,7 @@ def test_logout_reraises_exception_and_still_clears_state() -> None:
         ),
         pytest.raises(RuntimeError, match="logout failure"),
     ):
-        asyncio.run(manager.logout())
+        await manager.logout()
 
     assert manager._is_authenticated is False
     assert manager.login_time is None
