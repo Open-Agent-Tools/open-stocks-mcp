@@ -1,4 +1,4 @@
-# Open Stocks MCP - Tool Reference
+# Open Stocks MCP — Tool Reference
 
 104 tools registered
 
