@@ -80,9 +80,7 @@ class SessionManager:
             try:
                 os.chmod(tokens_dir, 0o700)
             except OSError as e:
-                logger.warning(
-                    f"Could not set secure permissions on {tokens_dir}: {e}"
-                )
+                logger.warning(f"Could not set secure permissions on {tokens_dir}: {e}")
         return tokens_dir / f"{pickle_name}.pickle"
 
     def _clear_pickle_file(self, pickle_name: str = "robinhood") -> bool:

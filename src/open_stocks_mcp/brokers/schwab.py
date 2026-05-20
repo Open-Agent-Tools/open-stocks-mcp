@@ -51,9 +51,7 @@ class SchwabBroker(BaseBroker):
             try:
                 os.chmod(token_dir, 0o700)
             except OSError as e:
-                logger.warning(
-                    f"Could not set secure permissions on {token_dir}: {e}"
-                )
+                logger.warning(f"Could not set secure permissions on {token_dir}: {e}")
 
         # Default token path
         if token_path is None:

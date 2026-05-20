@@ -1,24 +1,27 @@
 import os
-from pathlib import Path
 from unittest.mock import patch
+
 import pytest
+
 from open_stocks_mcp.brokers.schwab import SchwabBroker
 from open_stocks_mcp.logging_config import setup_logging
 from open_stocks_mcp.tools.session_manager import SessionManager
+
 
 def test_schwab_tokens_directory_permissions(tmp_path):
     """Verify that .tokens directory is created with secure permissions by SchwabBroker."""
     # Mock Path.home() to return our tmp_path
     with patch("pathlib.Path.home", return_value=tmp_path):
         # Initialize SchwabBroker which triggers mkdir
-        broker = SchwabBroker(api_key="test", app_secret="test")
-        
+        SchwabBroker(api_key="test", app_secret="test")
+
         token_dir = tmp_path / ".tokens"
         assert token_dir.exists()
-        
+
         # Check permissions
         mode = os.stat(token_dir).st_mode & 0o777
         assert mode == 0o700, f"Expected mode 0o700, got {oct(mode)}"
+
 
 def test_session_manager_tokens_directory_permissions(tmp_path):
     """Verify that .tokens directory is created with secure permissions by SessionManager."""
@@ -28,13 +31,14 @@ def test_session_manager_tokens_directory_permissions(tmp_path):
         manager = SessionManager()
         # Trigger _get_pickle_file_path
         manager._get_pickle_file_path()
-        
+
         token_dir = tmp_path / ".tokens"
         assert token_dir.exists()
-        
+
         # Check permissions
         mode = os.stat(token_dir).st_mode & 0o777
         assert mode == 0o700, f"Expected mode 0o700, got {oct(mode)}"
+
 
 def test_session_manager_fixes_existing_permissions(tmp_path):
     """Verify that SessionManager fixes existing insecure permissions."""
