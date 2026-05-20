@@ -85,12 +85,58 @@ async def http_client(mcp_server: FastMCP) -> Any:
     """Create an HTTP client for testing"""
     from httpx import ASGITransport
 
-    app = create_http_server(mcp_server)
+    # Ensure a clean collector state for each HTTP test.
+    with patch("open_stocks_mcp.monitoring._metrics_collector", None):
+        app = create_http_server(mcp_server)
 
-    # Configure test client with ASGI transport
-    transport = ASGITransport(app=app)
-    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
-        yield client
+        # Configure test client with ASGI transport
+        transport = ASGITransport(app=app)
+        async with httpx.AsyncClient(
+            transport=transport, base_url="http://test"
+        ) as client:
+            yield client
+
+
+@pytest.mark.integration
+@pytest.mark.journey_system
+class TestMetricsEndpoint:
+    """Test metrics endpoint behavior."""
+
+    async def test_metrics_endpoint_no_auth_and_plain_text(
+        self, http_client: httpx.AsyncClient
+    ) -> None:
+        response = await http_client.get("/metrics")
+        assert response.status_code == 200
+        assert response.headers["content-type"].startswith("text/plain")
+        assert "open_stocks_mcp_total_calls" in response.text
+
+    @pytest.mark.anyio
+    async def test_metrics_reflects_tools_call_activity(
+        self, http_client: httpx.AsyncClient
+    ) -> None:
+        payload = {
+            "jsonrpc": "2.0",
+            "id": 20,
+            "method": "tools/call",
+            "params": {"name": "account_info", "arguments": {}},
+        }
+        call_response = await http_client.post("/mcp", json=payload)
+        assert call_response.status_code == 200
+
+        metrics_response = await http_client.get("/metrics")
+        assert metrics_response.status_code == 200
+        assert (
+            'open_stocks_mcp_tool_calls_total{tool="account_info"} 1'
+            in metrics_response.text
+        )
+        assert (
+            'open_stocks_mcp_tool_calls_per_minute{tool="account_info"} '
+            in metrics_response.text
+        )
+        assert (
+            'open_stocks_mcp_tool_latency_ms{tool="account_info",quantile="0.50"} '
+            in metrics_response.text
+        )
 
 
 @pytest.mark.integration

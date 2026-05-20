@@ -371,6 +371,7 @@ def create_http_server(
                 "sse": "/sse",
                 "health": "/health",
                 "status": "/status",
+                "metrics": "/metrics",
             },
             "documentation": "/docs",
         }
@@ -418,6 +419,24 @@ def create_http_server(
         except Exception as e:
             logger.error(f"Failed to list tools: {e}")
             raise HTTPException(status_code=500, detail="Failed to list tools") from e
+
+    @app.get("/metrics")
+    async def metrics() -> Response:
+        """Prometheus metrics endpoint (no auth required)."""
+        try:
+            metrics_collector = _require_metrics_collector()
+            content = await metrics_collector.format_prometheus_metrics()
+            return Response(
+                content=content,
+                media_type="text/plain; version=0.0.4; charset=utf-8",
+            )
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Failed to render metrics: {e}")
+            raise HTTPException(
+                status_code=500, detail="Failed to render metrics"
+            ) from e
 
     # Mount the MCP HTTP endpoints
     # Create a simple MCP endpoint that handles JSON-RPC directly
@@ -528,8 +547,20 @@ def create_http_server(
                             headers={"content-type": "application/json"},
                         )
 
-                    # Call the tool using FastMCP's method
-                    tool_result = await mcp_server.call_tool(tool_name, arguments)
+                    # Record duration and success/failure for tool calls only.
+                    start = time.perf_counter()
+                    metrics_collector = _require_metrics_collector()
+                    try:
+                        tool_result = await mcp_server.call_tool(tool_name, arguments)
+                    except Exception as exc:
+                        duration = time.perf_counter() - start
+                        await metrics_collector.record_api_call(
+                            tool_name=tool_name,
+                            duration=duration,
+                            success=False,
+                            error_type=type(exc).__name__,
+                        )
+                        raise
 
                     # Convert CallToolResult to MCP protocol format
                     if hasattr(tool_result, "content"):
@@ -570,6 +601,15 @@ def create_http_server(
                                 }
                             ]
                         }
+
+                    duration = time.perf_counter() - start
+                    is_error = bool(result.get("isError", False))
+                    await metrics_collector.record_api_call(
+                        tool_name=tool_name,
+                        duration=duration,
+                        success=not is_error,
+                        error_type="ToolExecutionError" if is_error else None,
+                    )
 
                 elif method == "notifications/initialized":
                     # Handle initialization notification (no response needed for notifications)
@@ -704,6 +744,7 @@ async def run_http_server(
     logger.info(f"  - SSE Events: http://{host}:{port}/sse")
     logger.info(f"  - Health Check: http://{host}:{port}/health")
     logger.info(f"  - Server Status: http://{host}:{port}/status")
+    logger.info(f"  - Metrics: http://{host}:{port}/metrics")
     logger.info(f"  - Tools List: http://{host}:{port}/tools")
     logger.info(f"  - API Documentation: http://{host}:{port}/docs")
     logger.info(
