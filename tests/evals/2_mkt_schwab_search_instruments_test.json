@@ -29,7 +29,7 @@
               {
                 "id": "adk-tool-use-id",
                 "args": {
-                  "query": "Apple"
+                  "query": "AAPL"
                 },
                 "name": "schwab_search_instruments"
               }
