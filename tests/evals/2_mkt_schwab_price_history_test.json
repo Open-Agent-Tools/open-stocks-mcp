@@ -1,0 +1,52 @@
+{
+  "eval_set_id": "schwab_price_history_test_set",
+  "name": "Schwab Price History Test",
+  "description": "Test case for retrieving historical price data from Schwab through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_price_history_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-price-history-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Get the AAPL intraday Schwab price history for 1 day with 1 minute frequency."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here is the intraday price history for Apple (AAPL) from Schwab for the last 1 day at 1-minute intervals:\n\n**Symbol:** AAPL\n**Period:** 1 day\n**Frequency:** 1 minute\n\n(Note: The actual historical data would be presented here in a table or list format, showing open, high, low, close, and volume for each 1-minute candle.)"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "symbol": "AAPL",
+                  "period_type": "day",
+                  "period": 1,
+                  "frequency_type": "minute",
+                  "frequency": 1
+                },
+                "name": "schwab_price_history"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}
