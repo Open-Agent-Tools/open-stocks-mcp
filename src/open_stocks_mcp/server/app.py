@@ -160,6 +160,12 @@ from open_stocks_mcp.tools.schwab_trading_tools import (
     schwab_sell_market,
 )
 from open_stocks_mcp.tools.session_manager import get_session_manager
+from open_stocks_mcp.tools.unified_watchlist_tools import (
+    add_symbols_to_unified_watchlist,
+    get_unified_watchlist_by_name,
+    get_unified_watchlists,
+    remove_symbols_from_unified_watchlist,
+)
 from open_stocks_mcp.tracing import setup_tracing, trace_tool_call
 
 # Load environment variables from .env file
@@ -652,6 +658,58 @@ async def watchlist_performance(watchlist_name: str) -> dict[str, Any]:
         watchlist_name: Name of the watchlist to analyze
     """
     return await get_watchlist_performance(watchlist_name)
+
+
+# Unified Watchlist Tools
+@mcp.tool()
+async def unified_watchlists(brokers: list[str] | None = None) -> dict[str, Any]:
+    """Gets all watchlists aggregated across supported brokers.
+
+    Args:
+        brokers: Optional list of broker names to include (e.g., ["robinhood", "schwab"])
+    """
+    return await get_unified_watchlists(brokers)
+
+
+@mcp.tool()
+async def unified_watchlist_by_name(
+    watchlist_name: str, brokers: list[str] | None = None
+) -> dict[str, Any]:
+    """Gets a specific watchlist by name across supported brokers.
+
+    Args:
+        watchlist_name: Name of the watchlist
+        brokers: Optional list of broker names to include
+    """
+    return await get_unified_watchlist_by_name(watchlist_name, brokers)
+
+
+@mcp.tool()
+async def unified_add_to_watchlist(
+    watchlist_name: str, symbols: list[str], brokers: list[str] | None = None
+) -> dict[str, Any]:
+    """Adds symbols to a watchlist across supported brokers.
+
+    Args:
+        watchlist_name: Name of the watchlist
+        symbols: List of stock symbols to add
+        brokers: Optional list of broker names to target
+    """
+    return await add_symbols_to_unified_watchlist(watchlist_name, symbols, brokers)
+
+
+@mcp.tool()
+async def unified_remove_from_watchlist(
+    watchlist_name: str, symbols: list[str], brokers: list[str] | None = None
+) -> dict[str, Any]:
+    """Removes symbols from a watchlist across supported brokers.
+
+    Args:
+        watchlist_name: Name of the watchlist
+        symbols: List of stock symbols to remove
+        brokers: Optional list of broker names to target
+    """
+    return await remove_symbols_from_unified_watchlist(watchlist_name, symbols, brokers)
 
 
 # Phase 3: Account Features & Notifications Tools
