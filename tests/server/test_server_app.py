@@ -101,10 +101,10 @@ class TestAttemptLogin:
             )
             mock_run.assert_called_once()
             mock_logger.error.assert_called()
-            mock_exit.assert_called_once_with(1)
+            mock_logger.warning.assert_called()
+            mock_exit.assert_not_called()
 
     @pytest.mark.exception_test
-    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     def test_attempt_login_exception(self) -> None:
         """Test login attempt when an exception occurs."""
         mock_session_manager = MagicMock()
@@ -124,7 +124,8 @@ class TestAttemptLogin:
                 "testuser", "testpass"
             )
             mock_logger.error.assert_called()
-            mock_exit.assert_called_once_with(1)
+            mock_logger.warning.assert_called()
+            mock_exit.assert_not_called()
 
 
 @pytest.mark.journey_system
@@ -179,6 +180,4 @@ class TestToolRegistration:
             result = await health_check()
 
         assert result["result"]["status"] == "success"
-        assert (
-            result["result"]["components"]["broker:robinhood"]["status"] == "healthy"
-        )
+        assert result["result"]["components"]["broker:robinhood"]["status"] == "healthy"
