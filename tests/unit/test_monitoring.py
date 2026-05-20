@@ -127,3 +127,48 @@ async def test_get_metrics_cleans_stale_tool_samples() -> None:
     assert metrics["calls_in_window"] == 1
     assert metrics["tool_usage"]["new_tool"]["calls"] == 1
     assert metrics["tool_usage"]["old_tool"]["calls"] == 0
+
+
+@pytest.mark.asyncio
+async def test_broker_account_health_tracks_failure_classes() -> None:
+    collector = MetricsCollector()
+
+    await collector.record_broker_operation(
+        broker="robinhood",
+        account_id="acct-1",
+        operation="quote",
+        duration=0.02,
+        success=True,
+    )
+    await collector.record_broker_operation(
+        broker="schwab",
+        account_id="acct-2",
+        operation="orders",
+        duration=0.05,
+        success=False,
+        error_type="PoolTimeout",
+        failure_class="client_pool",
+    )
+    await collector.record_broker_operation(
+        broker="robinhood",
+        account_id="acct-1",
+        operation="positions",
+        duration=0.01,
+        success=False,
+        error_type="AuthenticationError",
+    )
+
+    metrics = await collector.get_metrics()
+
+    assert metrics["broker_health"]["robinhood"]["success_count"] == 1
+    assert metrics["broker_health"]["robinhood"]["error_count"] == 1
+    assert metrics["broker_health"]["robinhood"]["last_error_type"] == (
+        "AuthenticationError"
+    )
+    assert metrics["broker_health"]["robinhood"]["failure_classes"] == {
+        "authentication": 1
+    }
+    assert metrics["account_health"]["schwab"]["acct-2"]["status"] == "unhealthy"
+    assert metrics["account_health"]["schwab"]["acct-2"]["failure_classes"] == {
+        "client_pool": 1
+    }

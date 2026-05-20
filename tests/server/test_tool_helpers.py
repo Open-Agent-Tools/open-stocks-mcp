@@ -48,6 +48,10 @@ class TestBrokerStatusHelper:
         fake_registry.get_auth_status.return_value = {"robinhood": "authenticated"}
         fake_registry.get_available_brokers.return_value = ["robinhood"]
         fake_registry.list_brokers.return_value = ["robinhood"]
+        fake_registry.get_broker_health.return_value = {
+            "broker_health": {"robinhood": {"status": "healthy"}},
+            "account_health": {"robinhood": {"default": {"status": "healthy"}}},
+        }
 
         async def fake_get_registry() -> MagicMock:
             return fake_registry
@@ -62,6 +66,7 @@ class TestBrokerStatusHelper:
         assert response["result"]["brokers"] == {"robinhood": "authenticated"}
         assert response["result"]["total_configured"] == 1
         assert response["result"]["total_authenticated"] == 1
+        assert response["result"]["broker_health"]["robinhood"]["status"] == "healthy"
 
     @pytest.mark.asyncio
     async def test_returns_error_when_registry_raises(self) -> None:
@@ -196,6 +201,8 @@ class TestHealthCheckHelper:
         assert response["result"]["status"] == "success"
         assert response["result"]["health_status"] == "degraded"
         assert "components" in response["result"]
+        assert "broker_health" in response["result"]
+        assert "account_health" in response["result"]
 
 
 @pytest.mark.journey_system

@@ -2,9 +2,14 @@
 
 import asyncio
 import functools
+import inspect
 from collections.abc import Callable
 from typing import Any
 
+from open_stocks_mcp.brokers.registry import (
+    RegistryNotInitializedError,
+    get_broker_registry_sync,
+)
 from open_stocks_mcp.config import load_config
 from open_stocks_mcp.logging_config import logger
 from open_stocks_mcp.tools.exceptions import (
@@ -13,6 +18,30 @@ from open_stocks_mcp.tools.exceptions import (
     DataError,
     classify_error,
 )
+
+
+async def _refresh_session_with_registry_guard(
+    session_manager: Any,
+    broker_name: str | None,
+    account_id: str | None,
+) -> bool:
+    """Refresh auth through the broker registry single-flight guard when present."""
+    async def refresh_call() -> Any:
+        result = session_manager.refresh_session()
+        if inspect.isawaitable(result):
+            return await result
+        return result
+
+    try:
+        registry = get_broker_registry_sync()
+    except RegistryNotInitializedError:
+        return bool(await refresh_call())
+
+    return bool(
+        await registry.coordinate_auth_refresh(
+            broker_name or "robinhood", account_id or "default", refresh_call
+        )
+    )
 
 
 async def execute_with_retry(
@@ -24,6 +53,8 @@ async def execute_with_retry(
     handle_auth_errors: bool = True,
     rate_limit: bool = True,
     endpoint: str | None = None,
+    broker_name: str | None = "robinhood",
+    account_id: str | None = None,
     **kwargs: Any,
 ) -> Any:
     """Execute a function with retry logic for transient errors."""
@@ -91,7 +122,11 @@ async def execute_with_retry(
                     auth_retry_count += 1
 
                     try:
-                        success = await session_manager.refresh_session()
+                        success = await _refresh_session_with_registry_guard(
+                            session_manager,
+                            broker_name,
+                            account_id,
+                        )
                         if success:
                             logger.info(
                                 "Re-authentication successful, retrying request"

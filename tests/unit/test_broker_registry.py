@@ -1,5 +1,6 @@
 """Unit tests for broker registry management."""
 
+import asyncio
 from datetime import datetime
 
 import pytest
@@ -11,6 +12,7 @@ from open_stocks_mcp.brokers.registry import (
     get_broker_registry,
     get_broker_registry_sync,
 )
+from open_stocks_mcp.monitoring import MetricsCollector
 
 
 class MockBroker(BaseBroker):
@@ -342,6 +344,85 @@ class TestBrokerRegistry:
         """Test setting active broker to non-existent name returns False."""
         result = registry.set_active_broker("nonexistent")
         assert result is False
+
+    @pytest.mark.asyncio
+    async def test_concurrent_operations_bound_fanout_and_isolate_timeout(
+        self, registry, monkeypatch: pytest.MonkeyPatch
+    ):
+        """Concurrent broker execution should bound fan-out and isolate failures."""
+        monkeypatch.setattr(
+            "open_stocks_mcp.monitoring._metrics_collector", MetricsCollector()
+        )
+        active = 0
+        max_active = 0
+
+        async def tracked_result(value: str, delay: float = 0.01) -> dict[str, str]:
+            nonlocal active, max_active
+            active += 1
+            max_active = max(max_active, active)
+            try:
+                await asyncio.sleep(delay)
+                return {"value": value}
+            finally:
+                active -= 1
+
+        operations = [
+            {
+                "broker": "robinhood",
+                "account_id": "acct-1",
+                "operation": "quote",
+                "call": lambda: tracked_result("rh"),
+            },
+            {
+                "broker": "schwab",
+                "account_id": "acct-2",
+                "operation": "quote",
+                "call": lambda: tracked_result("schwab", delay=0.2),
+            },
+            {
+                "broker": "robinhood",
+                "account_id": "acct-3",
+                "operation": "quote",
+                "call": lambda: tracked_result("rh-2"),
+            },
+        ]
+
+        results = await registry.run_concurrent_operations(
+            operations, concurrency_limit=2, timeout_seconds=0.05
+        )
+
+        assert max_active <= 2
+        assert len(results) == 3
+        assert results[0]["broker"] == "robinhood"
+        assert results[0]["account_id"] == "acct-1"
+        assert results[0]["operation"] == "quote"
+        assert results[0]["status"] == "success"
+        assert results[0]["result"] == {"value": "rh"}
+        assert results[1]["status"] == "timeout"
+        assert results[1]["error"]["failure_class"] == "timeout"
+        assert results[2]["status"] == "success"
+
+    @pytest.mark.asyncio
+    async def test_auth_refresh_single_flight_is_per_broker_account(self, registry):
+        """Concurrent refreshes should coalesce per broker/account key."""
+        refresh_count = 0
+
+        async def refresh() -> bool:
+            nonlocal refresh_count
+            refresh_count += 1
+            await asyncio.sleep(0.01)
+            return True
+
+        tasks = [
+            registry.coordinate_auth_refresh("robinhood", "acct-1", refresh)
+            for _ in range(20)
+        ]
+        tasks.append(registry.coordinate_auth_refresh("robinhood", "acct-2", refresh))
+
+        results = await asyncio.gather(*tasks)
+
+        assert all(results)
+        assert refresh_count == 2
 
 
 class TestBrokerRegistrySingleton:

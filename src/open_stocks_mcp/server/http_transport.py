@@ -312,9 +312,12 @@ def create_http_server(
         """Health check endpoint"""
         try:
             _require_session_manager()
-            _require_metrics_collector()
+            metrics_collector = _require_metrics_collector()
             health_service = get_health_service()
             health_status = await health_service.get_status()
+            metrics = await metrics_collector.get_metrics()
+            broker_health = metrics.get("broker_health", {})
+            account_health = metrics.get("account_health", {})
 
             # The health service snapshot provides status, components, and timestamp.
             # We preserve HTTP metadata: version and transport.
@@ -325,6 +328,8 @@ def create_http_server(
                 "timestamp": health_status.get("timestamp", time.time()),
                 "version": __version__,
                 "transport": "http",
+                "broker_health": broker_health,
+                "account_health": account_health,
             }
         except HTTPException:
             raise

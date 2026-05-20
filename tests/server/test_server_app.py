@@ -26,6 +26,7 @@ class TestServerApp:
         with (
             patch("open_stocks_mcp.server.app.load_config") as mock_config,
             patch("open_stocks_mcp.server.app.setup_logging") as mock_logging,
+            patch("open_stocks_mcp.server.app.setup_tracing"),
         ):
             mock_cfg = MagicMock()
             mock_cfg.otel.enabled = False
@@ -41,7 +42,10 @@ class TestServerApp:
         mock_config = MagicMock()
         mock_config.otel.enabled = False
 
-        with patch("open_stocks_mcp.server.app.setup_logging") as mock_logging:
+        with (
+            patch("open_stocks_mcp.server.app.setup_logging") as mock_logging,
+            patch("open_stocks_mcp.server.app.setup_tracing"),
+        ):
             result = create_mcp_server(mock_config)
 
             assert result is mcp
