@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "sys_metrics_summary_test_set",
+  "name": "System Metrics Summary Test",
+  "description": "System/monitoring read-only eval that exercises the MCP server metrics_summary tool to retrieve observability counters and latency metrics",
+  "eval_cases": [
+    {
+      "eval_id": "sys_metrics_summary_test",
+      "conversation": [
+        {
+          "invocation_id": "sys-metrics-summary-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Summarize the MCP server metrics for monitoring purposes."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "The metrics_summary tool returns the MCP server observability snapshot, including request counters, latency percentiles, and error rates for the running process."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "metrics_summary"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

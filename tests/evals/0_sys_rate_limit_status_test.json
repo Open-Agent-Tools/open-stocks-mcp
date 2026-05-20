@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "sys_rate_limit_status_test_set",
+  "name": "System Rate Limit Status Test",
+  "description": "System/monitoring read-only eval that exercises the MCP server rate_limit_status tool to inspect Robin Stocks API rate-limit usage and remaining quota",
+  "eval_cases": [
+    {
+      "eval_id": "sys_rate_limit_status_test",
+      "conversation": [
+        {
+          "invocation_id": "sys-rate-limit-status-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "What is the current rate-limit utilization on the Robin Stocks API?"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "The rate_limit_status tool returns the current Robin Stocks API rate-limit counters, including used capacity and remaining quota in the active window."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "rate_limit_status"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "sys_health_check_test_set",
+  "name": "System Health Check Test",
+  "description": "System/monitoring read-only eval that exercises the MCP server health_check tool via agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "sys_health_check_test",
+      "conversation": [
+        {
+          "invocation_id": "sys-health-check-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Report the current health status of the MCP server."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "The MCP server is healthy. The reported status is \"success\" with no issues detected and a 0% error rate."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "health_check"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}
