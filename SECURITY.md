@@ -6,8 +6,8 @@ We release patches for security vulnerabilities. Currently supported versions:
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 0.1.x   | :white_check_mark: |
-| < 0.1   | :x:                |
+| 0.6.x   | :white_check_mark: |
+| < 0.6   | :x:                |
 
 ## Reporting a Vulnerability
 
@@ -57,6 +57,48 @@ When reporting a vulnerability, please include:
   - High: Within 14 days
   - Medium: Within 30 days
   - Low: Next regular release
+
+## Session Token Storage (At-Rest Security Model)
+
+The robin-stocks library authenticates with Robinhood and stores OAuth tokens locally so
+subsequent launches can skip the interactive login flow. Open Stocks MCP wraps this
+storage with the following protections (v0.6.5+):
+
+### Encryption
+
+Session tokens are encrypted at rest using **AES-128 in GCM mode via
+`cryptography.fernet.Fernet`** before they are written to disk. The plaintext pickle
+written by robin-stocks is immediately encrypted and removed, leaving only an encrypted
+`~/.tokens/robinhood.pickle.enc` on disk. The plaintext form is only present for the
+brief moment during login/resume, after which it is re-encrypted.
+
+### Key Management
+
+A per-machine Fernet key is generated on first use and stored in
+`~/.tokens/.session.key`. This key is:
+
+- Generated with `Fernet.generate_key()` (URL-safe base64-encoded 32-byte AES key).
+- Stored with `chmod 600` (owner read/write only).
+
+If the key is lost (e.g., the file is deleted), the encrypted session pickle can no
+longer be decrypted and a fresh login will be required automatically.
+
+### Directory and File Permissions
+
+The `~/.tokens` directory is created or hardened to `chmod 700` on every interaction,
+so other users on the same machine cannot list or read its contents. Every file written
+inside it is given `chmod 600`.
+
+### Limitations
+
+- The Fernet key itself is stored unencrypted on disk. An attacker with read access to
+  `~/.tokens/.session.key` can decrypt the session pickle. For higher assurance, store
+  the key file on an encrypted filesystem, in a hardware security module, or in the OS
+  keyring (a future enhancement).
+- The plaintext session exists briefly in process memory during login.
+- These protections apply only to the session pickle. Robinhood credentials (username
+  and password) are supplied via environment variables and are never persisted to disk
+  by this server.
 
 ## Security Best Practices
 

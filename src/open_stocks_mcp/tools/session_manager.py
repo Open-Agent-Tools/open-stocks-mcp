@@ -1,12 +1,14 @@
 """Session management for Robin Stocks authentication."""
 
 import asyncio
+import contextlib
 import os
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
 import robin_stocks.robinhood as rh
+from cryptography.fernet import Fernet, InvalidToken
 
 from open_stocks_mcp.logging_config import logger
 
@@ -66,6 +68,18 @@ class SessionManager:
         """Update timestamp of last successful API call."""
         self.last_successful_call = datetime.now()
 
+    def _get_tokens_dir(self) -> Path:
+        """Get the tokens directory, creating it with restricted permissions if needed."""
+        tokens_dir = Path.home() / ".tokens"
+        tokens_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
+        # Ensure correct mode if dir already existed.
+        if os.name != "nt":
+            try:
+                tokens_dir.chmod(0o700)
+            except OSError as e:
+                logger.warning(f"Could not set secure permissions on {tokens_dir}: {e}")
+        return tokens_dir
+
     def _get_pickle_file_path(self, pickle_name: str = "robinhood") -> Path:
         """Get the path to the Robin Stocks pickle file.
 
@@ -75,36 +89,98 @@ class SessionManager:
         Returns:
             Path to the pickle file
         """
-        tokens_dir = Path.home() / ".tokens"
-        tokens_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
-        # Ensure correct mode if dir already existed
-        if os.name != "nt":
-            try:
-                os.chmod(tokens_dir, 0o700)
-            except OSError as e:
-                logger.warning(f"Could not set secure permissions on {tokens_dir}: {e}")
-        return tokens_dir / f"{pickle_name}.pickle"
+        return self._get_tokens_dir() / f"{pickle_name}.pickle"
+
+    def _get_encrypted_pickle_path(self, pickle_name: str = "robinhood") -> Path:
+        """Get path to the encrypted session pickle file."""
+        return self._get_tokens_dir() / f"{pickle_name}.pickle.enc"
+
+    def _get_fernet_key_path(self) -> Path:
+        """Get path to the per-machine Fernet key file."""
+        return self._get_tokens_dir() / ".session.key"
+
+    def _get_or_create_fernet_key(self) -> bytes:
+        """Return the Fernet key for this machine, generating one if absent."""
+        key_path = self._get_fernet_key_path()
+        if key_path.exists():
+            return key_path.read_bytes()
+        key = Fernet.generate_key()
+        key_path.write_bytes(key)
+        key_path.chmod(0o600)
+        return key
+
+    def _encrypt_pickle_if_exists(self, pickle_name: str = "robinhood") -> None:
+        """Encrypt the plaintext pickle written by robin-stocks and remove it."""
+        pickle_path = self._get_pickle_file_path(pickle_name)
+        if not pickle_path.exists():
+            return
+        try:
+            key = self._get_or_create_fernet_key()
+            ciphertext = Fernet(key).encrypt(pickle_path.read_bytes())
+            enc_path = self._get_encrypted_pickle_path(pickle_name)
+            enc_path.write_bytes(ciphertext)
+            enc_path.chmod(0o600)
+            pickle_path.unlink()
+            logger.debug(f"Session pickle encrypted: {enc_path}")
+        except Exception as e:
+            logger.warning(f"Could not encrypt session pickle, hardening permissions: {e}")
+            # Fall back to permission hardening so the plaintext is at least owner-only
+            with contextlib.suppress(Exception):
+                pickle_path.chmod(0o600)
+
+    def _decrypt_pickle_if_exists(self, pickle_name: str = "robinhood") -> bool:
+        """Decrypt the encrypted session pickle so robin-stocks can read it.
+
+        Returns:
+            True if an encrypted pickle was decrypted, False if none existed.
+        """
+        enc_path = self._get_encrypted_pickle_path(pickle_name)
+        if not enc_path.exists():
+            return False
+        try:
+            key = self._get_or_create_fernet_key()
+            plaintext = Fernet(key).decrypt(enc_path.read_bytes())
+            pickle_path = self._get_pickle_file_path(pickle_name)
+            pickle_path.write_bytes(plaintext)
+            pickle_path.chmod(0o600)
+            logger.debug(f"Session pickle decrypted for use: {pickle_path}")
+            return True
+        except InvalidToken:
+            logger.warning("Session pickle decryption failed (key mismatch or corrupt), treating as missing")
+            enc_path.unlink(missing_ok=True)
+            return False
+        except Exception as e:
+            logger.warning(f"Could not decrypt session pickle, treating as missing: {e}")
+            enc_path.unlink(missing_ok=True)
+            return False
 
     def _clear_pickle_file(self, pickle_name: str = "robinhood") -> bool:
-        """Clear the Robin Stocks session pickle file.
+        """Clear the Robin Stocks session pickle file and its encrypted counterpart.
 
         Args:
             pickle_name: Name of the pickle file to clear (default: "robinhood")
 
         Returns:
-            True if file was removed or didn't exist, False if removal failed
+            True if files were removed or didn't exist, False if removal failed
         """
         try:
             pickle_path = self._get_pickle_file_path(pickle_name)
+            enc_path = self._get_encrypted_pickle_path(pickle_name)
+            cleared = False
             if pickle_path.exists():
                 pickle_path.unlink()
                 logger.info(f"Cleared pickle file: {pickle_path}")
-                self._consecutive_pickle_clear_failures = 0
-                return True
+                cleared = True
             else:
                 logger.debug(f"Pickle file does not exist: {pickle_path}")
-                self._consecutive_pickle_clear_failures = 0
-                return True
+            if enc_path.exists():
+                enc_path.unlink()
+                logger.info(f"Cleared encrypted pickle file: {enc_path}")
+                cleared = True
+            if not cleared:
+                logger.debug(f"No session files found for: {pickle_name}")
+            self._consecutive_pickle_clear_failures = 0
+            return True
         except Exception as e:
             self._consecutive_pickle_clear_failures += 1
             logger.error(f"Failed to clear pickle file: {e}")
@@ -315,14 +391,10 @@ class SessionManager:
 
                 try:
                     logger.info(f"Attempting login with {timeout}s timeout...")
+                    # Restore any previously encrypted session so robin-stocks can reuse it
+                    self._decrypt_pickle_if_exists()
                     # Attempt login with device verification handling
                     result = rh.login(username, password, store_session=True)
-
-                    # Restore original input function
-                    if isinstance(__builtins__, dict):
-                        __builtins__["input"] = original_input
-                    else:
-                        __builtins__.input = original_input
 
                     if result:
                         logger.info("Login successful")
@@ -332,12 +404,6 @@ class SessionManager:
                         return False
 
                 except Exception as inner_e:
-                    # Restore original input function
-                    if isinstance(__builtins__, dict):
-                        __builtins__["input"] = original_input
-                    else:
-                        __builtins__.input = original_input
-
                     error_msg = str(inner_e)
                     logger.error(f"Login exception: {error_msg}")
 
@@ -372,6 +438,13 @@ class SessionManager:
                         logger.error(f"Unexpected login error: {error_msg}")
 
                     return False
+                finally:
+                    # Restore input and re-encrypt any temporarily decrypted session.
+                    if isinstance(__builtins__, dict):
+                        __builtins__["input"] = original_input
+                    else:
+                        __builtins__.input = original_input
+                    self._encrypt_pickle_if_exists()
 
             # Log any captured output for debugging
             stdout_content = stdout_buffer.getvalue()

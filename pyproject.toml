@@ -30,6 +30,7 @@ classifiers = [
 dependencies = [
     "mcp>=1.25.0",
     "robin-stocks>=3.4.0",
+    "cryptography>=46.0.0",
     "schwab-py>=1.5.0",
     "pydantic>=2.12.0",
     "python-dotenv>=1.2.0",
