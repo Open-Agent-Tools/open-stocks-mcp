@@ -305,8 +305,68 @@ class TestSchwabTradingTools:
 
     @pytest.mark.journey_trading
     @pytest.mark.unit
+    @pytest.mark.asyncio
+    @patch(
+        "open_stocks_mcp.tools.schwab_trading_tools.get_authenticated_broker_or_error"
+    )
+    @patch("open_stocks_mcp.tools.schwab_trading_tools.asyncio.to_thread")
+    @patch("open_stocks_mcp.tools.schwab_trading_tools.equity_buy_market")
+    async def test_buy_market_api_failure(
+        self,
+        mock_equity_buy_market: MagicMock,
+        mock_to_thread: AsyncMock,
+        mock_get_broker: AsyncMock,
+    ) -> None:
+        """Test market buy order API failure (non-201 status)."""
+        # Mock broker
+        mock_broker = MagicMock()
+        mock_get_broker.return_value = (mock_broker, None)
+
+        # Mock order spec
+        mock_equity_buy_market.return_value = {"orderType": "MARKET"}
+
+        # Mock response with error status
+        mock_response = MagicMock()
+        mock_response.status_code = 400
+        mock_response.text = "Invalid order"
+        mock_to_thread.return_value = mock_response
+
+        result = await schwab_buy_market("abc123", "AAPL", 10)
+
+        assert "result" in result
+        assert result["result"]["status"] == "error"
+        assert "Invalid order" in result["result"]["error"]
+
+    @pytest.mark.journey_trading
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    @patch(
+        "open_stocks_mcp.tools.schwab_trading_tools.get_authenticated_broker_or_error"
+    )
+    @patch("open_stocks_mcp.tools.schwab_trading_tools.asyncio.to_thread")
+    async def test_cancel_order_api_failure(
+        self, mock_to_thread: AsyncMock, mock_get_broker: AsyncMock
+    ) -> None:
+        """Test order cancellation API failure."""
+        # Mock broker
+        mock_broker = MagicMock()
+        mock_get_broker.return_value = (mock_broker, None)
+
+        # Mock response with error status
+        mock_response = MagicMock()
+        mock_response.status_code = 404
+        mock_response.text = "Order not found"
+        mock_to_thread.return_value = mock_response
+
+        result = await cancel_schwab_order("abc123", "12345")
+
+        assert "result" in result
+        assert result["result"]["status"] == "error"
+        assert "Order not found" in result["result"]["error"]
+
+    @pytest.mark.journey_trading
+    @pytest.mark.unit
     @pytest.mark.exception_test
-    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @pytest.mark.asyncio
     @patch(
         "open_stocks_mcp.tools.schwab_trading_tools.get_authenticated_broker_or_error"
@@ -334,3 +394,38 @@ class TestSchwabTradingTools:
 
         assert "result" in result
         assert "error" in result["result"]
+
+    @pytest.mark.journey_trading
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    @patch(
+        "open_stocks_mcp.tools.schwab_trading_tools.get_authenticated_broker_or_error"
+    )
+    @patch("open_stocks_mcp.tools.schwab_trading_tools.asyncio.to_thread")
+    @pytest.mark.parametrize(
+        "function,args",
+        [
+            (schwab_sell_market, ("abc123", "AAPL", 5)),
+            (schwab_buy_limit, ("abc123", "AAPL", 10, 175.00)),
+            (schwab_sell_limit, ("abc123", "AAPL", 5, 180.00)),
+            (get_schwab_order_by_id, ("abc123", "12345")),
+            (place_schwab_order, ("abc123", {"orderType": "MARKET"})),
+        ],
+    )
+    async def test_trading_api_failures_bulk(
+        self,
+        mock_to_thread: AsyncMock,
+        mock_get_broker: AsyncMock,
+        function,
+        args,
+    ) -> None:
+        """Test various trading tools for API failure responses."""
+        mock_broker = MagicMock()
+        mock_get_broker.return_value = (mock_broker, None)
+
+        # Using side_effect covers both status-checking and non-status-checking functions
+        mock_to_thread.side_effect = Exception("Internal Server Error")
+
+        result = await function(*args)
+        assert result["result"]["status"] == "error"
+        assert "Internal Server Error" in result["result"]["error"]

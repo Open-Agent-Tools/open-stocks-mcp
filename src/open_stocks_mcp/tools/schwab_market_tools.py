@@ -3,6 +3,8 @@
 import asyncio
 from typing import Any
 
+from schwab.client import Client
+
 from open_stocks_mcp.logging_config import logger
 from open_stocks_mcp.tools.broker_utils import get_authenticated_broker_or_error
 from open_stocks_mcp.tools.error_handling import (
@@ -147,9 +149,8 @@ async def get_schwab_price_history(
         return error
 
     try:
-        from schwab.client import Client
+        # Map period type to enum
 
-        # Map period types
         period_type_map = {
             "day": Client.PriceHistory.PeriodType.DAY,
             "month": Client.PriceHistory.PeriodType.MONTH,

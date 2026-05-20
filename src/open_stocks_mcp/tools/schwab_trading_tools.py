@@ -3,6 +3,13 @@
 import asyncio
 from typing import Any
 
+from schwab.orders.equities import (
+    equity_buy_limit,
+    equity_buy_market,
+    equity_sell_limit,
+    equity_sell_market,
+)
+
 from open_stocks_mcp.logging_config import logger
 from open_stocks_mcp.tools.broker_utils import get_authenticated_broker_or_error
 from open_stocks_mcp.tools.error_handling import (
@@ -85,9 +92,6 @@ async def schwab_buy_market(
         return error
 
     try:
-        # Import order templates
-        from schwab.orders.equities import equity_buy_market
-
         # Create order spec
         order_spec = equity_buy_market(symbol.upper(), quantity)
 
@@ -145,9 +149,6 @@ async def schwab_sell_market(
         return error
 
     try:
-        # Import order templates
-        from schwab.orders.equities import equity_sell_market
-
         # Create order spec
         order_spec = equity_sell_market(symbol.upper(), quantity)
 
@@ -206,9 +207,6 @@ async def schwab_buy_limit(
         return error
 
     try:
-        # Import order templates
-        from schwab.orders.equities import equity_buy_limit
-
         # Create order spec
         order_spec = equity_buy_limit(symbol.upper(), quantity, price)
 
@@ -268,9 +266,6 @@ async def schwab_sell_limit(
         return error
 
     try:
-        # Import order templates
-        from schwab.orders.equities import equity_sell_limit
-
         # Create order spec
         order_spec = equity_sell_limit(symbol.upper(), quantity, price)
 

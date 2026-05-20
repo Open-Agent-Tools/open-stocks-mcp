@@ -4,6 +4,9 @@ import asyncio
 from datetime import date
 from typing import Any
 
+from schwab.client import Client
+from schwab.orders.options import option_buy_to_open_market, option_sell_to_close_market
+
 from open_stocks_mcp.logging_config import logger
 from open_stocks_mcp.tools.broker_utils import get_authenticated_broker_or_error
 from open_stocks_mcp.tools.error_handling import (
@@ -38,9 +41,6 @@ async def get_schwab_option_chain(
         return error
 
     try:
-        # Import option types
-        from schwab.client import Client
-
         # Map contract type string to enum
         contract_type_map = {
             "call": Client.Options.ContractType.CALL,
@@ -101,9 +101,6 @@ async def get_schwab_option_chain_by_expiration(
         return error
 
     try:
-        # Import option types
-        from schwab.client import Client
-
         # Map contract type string to enum
         contract_type_map = {
             "call": Client.Options.ContractType.CALL,
@@ -199,8 +196,6 @@ async def get_schwab_options_positions(account_hash: str) -> dict[str, Any]:
         return error
 
     try:
-        # Import client
-        from schwab.client import Client
 
         def _get_account() -> Any:
             response = broker.client.get_account(
@@ -279,9 +274,6 @@ async def schwab_option_buy_to_open(
         return error
 
     try:
-        # Import order templates
-        from schwab.orders.options import option_buy_to_open_market
-
         # Create option symbol (simplified - may need adjustment for Schwab format)
         option_symbol = (
             f"{symbol.upper()}_{expiration}_{option_type[0].upper()}{strike}"
@@ -354,9 +346,6 @@ async def schwab_option_sell_to_close(
         return error
 
     try:
-        # Import order templates
-        from schwab.orders.options import option_sell_to_close_market
-
         # Create option symbol (simplified - may need adjustment for Schwab format)
         option_symbol = (
             f"{symbol.upper()}_{expiration}_{option_type[0].upper()}{strike}"
