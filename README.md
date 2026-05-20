@@ -69,9 +69,17 @@ open-stocks-mcp-server --transport stdio
 # Health check (HTTP transport)
 curl http://localhost:3001/health
 
+# Prometheus metrics (no auth required)
+curl http://localhost:3001/metrics
+
 # Interactive testing
 uv run mcp dev src/open_stocks_mcp/server/app.py
 ```
+
+The `/metrics` endpoint exposes:
+- `open_stocks_mcp_tool_calls_total` (counter by tool)
+- `open_stocks_mcp_tool_calls_per_minute` (gauge by tool)
+- `open_stocks_mcp_tool_latency_ms` (gauge by tool and quantile: `0.50`, `0.95`, `0.99`)
 
 ## Docker Deployment
 

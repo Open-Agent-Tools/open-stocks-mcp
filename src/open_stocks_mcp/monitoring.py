@@ -1,6 +1,7 @@
 """Enhanced monitoring and metrics for the MCP server."""
 
 import asyncio
+import math
 import time
 from collections import defaultdict, deque
 from datetime import datetime, timedelta
@@ -25,6 +26,9 @@ class MetricsCollector:
         self.errors: deque[tuple[datetime, str, str | None]] = deque()
         self.response_times: deque[tuple[datetime, float]] = deque()
         self.tool_usage: dict[str, deque[tuple[datetime, bool]]] = defaultdict(deque)
+        self.tool_response_times: dict[str, deque[tuple[datetime, float]]] = (
+            defaultdict(deque)
+        )
         self.error_types: dict[str, int] = defaultdict(int)
 
         # Counters
@@ -68,6 +72,7 @@ class MetricsCollector:
 
             # Record tool usage
             self.tool_usage[tool_name].append((now, success))
+            self.tool_response_times[tool_name].append((now, duration))
 
             # Record error if failed
             if not success:
@@ -113,6 +118,25 @@ class MetricsCollector:
             while tool_calls and tool_calls[0][0] < cutoff:
                 tool_calls.popleft()
 
+        # Clean per-tool response times
+        for tool_durations in self.tool_response_times.values():
+            while tool_durations and tool_durations[0][0] < cutoff:
+                tool_durations.popleft()
+
+    @staticmethod
+    def _percentile(samples: list[float], quantile: float) -> float:
+        """Return percentile for a sorted sample list."""
+        if not samples:
+            return 0.0
+        rank = max(1, math.ceil(quantile * len(samples)))
+        index = min(len(samples) - 1, rank - 1)
+        return samples[index]
+
+    @staticmethod
+    def _escape_prometheus_label_value(value: str) -> str:
+        """Escape a label value according to Prometheus text format."""
+        return value.replace("\\", "\\\\").replace("\n", "\\n").replace('"', '\\"')
+
     async def get_metrics(self) -> dict[str, Any]:
         """Get current metrics summary.
 
@@ -143,30 +167,35 @@ class MetricsCollector:
             response_times_sorted = (
                 sorted(t[1] for t in self.response_times) if self.response_times else []
             )
-            p50 = (
-                response_times_sorted[len(response_times_sorted) // 2]
-                if response_times_sorted
-                else 0
-            )
-            p95 = (
-                response_times_sorted[int(len(response_times_sorted) * 0.95)]
-                if response_times_sorted
-                else 0
-            )
-            p99 = (
-                response_times_sorted[int(len(response_times_sorted) * 0.99)]
-                if response_times_sorted
-                else 0
-            )
+            p50 = self._percentile(response_times_sorted, 0.50)
+            p95 = self._percentile(response_times_sorted, 0.95)
+            p99 = self._percentile(response_times_sorted, 0.99)
 
             # Tool usage stats
             tool_stats = {}
             for tool, calls in self.tool_usage.items():
                 successful = sum(1 for _, success in calls if success)
                 total = len(calls)
+                durations = sorted(
+                    duration for _, duration in self.tool_response_times.get(tool, [])
+                )
                 tool_stats[tool] = {
                     "calls": total,
                     "success_rate": (successful / total * 100.0) if total > 0 else 0.0,
+                    "calls_per_minute": round(
+                        total / (self.window_size.total_seconds() / 60), 2
+                    )
+                    if total > 0
+                    else 0.0,
+                    "p50_response_time_ms": round(
+                        self._percentile(durations, 0.50) * 1000, 2
+                    ),
+                    "p95_response_time_ms": round(
+                        self._percentile(durations, 0.95) * 1000, 2
+                    ),
+                    "p99_response_time_ms": round(
+                        self._percentile(durations, 0.99) * 1000, 2
+                    ),
                 }
 
             cache_hit_rate: dict[str, float] = {}
@@ -197,6 +226,56 @@ class MetricsCollector:
                 "cache_hit_rate_percent": cache_hit_rate,
                 "timestamp": now.isoformat(),
             }
+
+    async def format_prometheus_metrics(self) -> str:
+        """Return metrics in Prometheus exposition format."""
+        metrics = await self.get_metrics()
+
+        lines = [
+            "# HELP open_stocks_mcp_total_calls Total API calls observed.",
+            "# TYPE open_stocks_mcp_total_calls counter",
+            f"open_stocks_mcp_total_calls {metrics['total_calls']}",
+            "# HELP open_stocks_mcp_total_errors Total API errors observed.",
+            "# TYPE open_stocks_mcp_total_errors counter",
+            f"open_stocks_mcp_total_errors {metrics['total_errors']}",
+            "# HELP open_stocks_mcp_calls_in_window API calls in rolling window.",
+            "# TYPE open_stocks_mcp_calls_in_window gauge",
+            f"open_stocks_mcp_calls_in_window {metrics['calls_in_window']}",
+            "# HELP open_stocks_mcp_errors_in_window API errors in rolling window.",
+            "# TYPE open_stocks_mcp_errors_in_window gauge",
+            f"open_stocks_mcp_errors_in_window {metrics['errors_in_window']}",
+            "# HELP open_stocks_mcp_tool_calls_total Total calls per tool.",
+            "# TYPE open_stocks_mcp_tool_calls_total counter",
+            "# HELP open_stocks_mcp_tool_calls_per_minute Calls per minute per tool.",
+            "# TYPE open_stocks_mcp_tool_calls_per_minute gauge",
+            "# HELP open_stocks_mcp_tool_latency_ms Tool latency percentile in milliseconds.",
+            "# TYPE open_stocks_mcp_tool_latency_ms gauge",
+        ]
+
+        for tool_name, tool_metrics in metrics["tool_usage"].items():
+            escaped_tool = self._escape_prometheus_label_value(tool_name)
+            lines.append(
+                f'open_stocks_mcp_tool_calls_total{{tool="{escaped_tool}"}} '
+                f"{tool_metrics['calls']}"
+            )
+            lines.append(
+                f'open_stocks_mcp_tool_calls_per_minute{{tool="{escaped_tool}"}} '
+                f"{tool_metrics['calls_per_minute']}"
+            )
+            lines.append(
+                f'open_stocks_mcp_tool_latency_ms{{tool="{escaped_tool}",quantile="0.50"}} '
+                f"{tool_metrics['p50_response_time_ms']}"
+            )
+            lines.append(
+                f'open_stocks_mcp_tool_latency_ms{{tool="{escaped_tool}",quantile="0.95"}} '
+                f"{tool_metrics['p95_response_time_ms']}"
+            )
+            lines.append(
+                f'open_stocks_mcp_tool_latency_ms{{tool="{escaped_tool}",quantile="0.99"}} '
+                f"{tool_metrics['p99_response_time_ms']}"
+            )
+
+        return "\n".join(lines) + "\n"
 
     async def get_health_status(self) -> dict[str, Any]:
         """Get health status based on metrics.
