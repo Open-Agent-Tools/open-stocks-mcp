@@ -7,6 +7,7 @@ import httpx
 import pytest
 from mcp.server.fastmcp import FastMCP
 
+from open_stocks_mcp import __version__
 from open_stocks_mcp.server.http_transport import create_http_server
 
 
@@ -39,9 +40,13 @@ async def http_client(mcp_server: FastMCP) -> Any:
 class TestHTTPAuthentication:
     """Test authentication scenarios for HTTP transport"""
 
-    @patch("open_stocks_mcp.tools.session_manager.get_session_manager")
+    @patch("open_stocks_mcp.server.http_transport.get_health_service")
+    @patch("open_stocks_mcp.server.http_transport.get_session_manager")
     async def test_health_check_with_authenticated_session(
-        self, mock_get_session_manager: Mock, http_client: httpx.AsyncClient
+        self,
+        mock_get_session_manager: Mock,
+        mock_get_health_service: Mock,
+        http_client: httpx.AsyncClient,
     ) -> None:
         """Test health check when session is authenticated"""
         # Mock authenticated session
@@ -52,6 +57,13 @@ class TestHTTPAuthentication:
             "username": "test_user",
         }
         mock_get_session_manager.return_value = mock_session_manager
+        mock_health_service = AsyncMock()
+        mock_health_service.get_status.return_value = {
+            "status": "healthy",
+            "components": {"session": {"status": "healthy"}},
+            "timestamp": 123.0,
+        }
+        mock_get_health_service.return_value = mock_health_service
 
         response = await http_client.get("/health")
         assert response.status_code == 200
@@ -61,9 +73,13 @@ class TestHTTPAuthentication:
         assert data["session"]["authenticated"] is True
         assert data["session"]["session_duration"] == 3600
 
-    @patch("open_stocks_mcp.tools.session_manager.get_session_manager")
+    @patch("open_stocks_mcp.server.http_transport.get_health_service")
+    @patch("open_stocks_mcp.server.http_transport.get_session_manager")
     async def test_health_check_with_unauthenticated_session(
-        self, mock_get_session_manager: Mock, http_client: httpx.AsyncClient
+        self,
+        mock_get_session_manager: Mock,
+        mock_get_health_service: Mock,
+        http_client: httpx.AsyncClient,
     ) -> None:
         """Test health check when session is not authenticated"""
         # Mock unauthenticated session
@@ -74,15 +90,22 @@ class TestHTTPAuthentication:
             "username": None,
         }
         mock_get_session_manager.return_value = mock_session_manager
+        mock_health_service = AsyncMock()
+        mock_health_service.get_status.return_value = {
+            "status": "degraded",
+            "components": {"session": {"status": "degraded"}},
+            "timestamp": 123.0,
+        }
+        mock_get_health_service.return_value = mock_health_service
 
         response = await http_client.get("/health")
         assert response.status_code == 200
 
         data = response.json()
-        assert data["status"] == "healthy"
+        assert data["status"] == "degraded"
         assert data["session"]["authenticated"] is False
 
-    @patch("open_stocks_mcp.tools.session_manager.get_session_manager")
+    @patch("open_stocks_mcp.server.http_transport.get_session_manager")
     async def test_session_refresh_success(
         self, mock_get_session_manager: Mock, http_client: httpx.AsyncClient
     ) -> None:
@@ -104,7 +127,7 @@ class TestHTTPAuthentication:
         assert data["status"] == "success"
         assert data["session"]["authenticated"] is True
 
-    @patch("open_stocks_mcp.tools.session_manager.get_session_manager")
+    @patch("open_stocks_mcp.server.http_transport.get_session_manager")
     async def test_session_refresh_failure(
         self, mock_get_session_manager: Mock, http_client: httpx.AsyncClient
     ) -> None:
@@ -120,7 +143,7 @@ class TestHTTPAuthentication:
         data = response.json()
         assert "Authentication failed" in data["detail"]
 
-    @patch("open_stocks_mcp.tools.session_manager.get_session_manager")
+    @patch("open_stocks_mcp.server.http_transport.get_session_manager")
     async def test_session_refresh_exception(
         self, mock_get_session_manager: Mock, http_client: httpx.AsyncClient
     ) -> None:
@@ -144,9 +167,9 @@ class TestHTTPAuthentication:
 class TestHTTPSessionStatus:
     """Test session status reporting"""
 
-    @patch("open_stocks_mcp.tools.session_manager.get_session_manager")
-    @patch("open_stocks_mcp.tools.rate_limiter.get_rate_limiter")
-    @patch("open_stocks_mcp.monitoring.get_metrics_collector")
+    @patch("open_stocks_mcp.server.http_transport.get_session_manager")
+    @patch("open_stocks_mcp.server.http_transport.get_rate_limiter")
+    @patch("open_stocks_mcp.server.http_transport.get_metrics_collector")
     async def test_server_status_comprehensive(
         self,
         mock_get_metrics_collector: Mock,
@@ -185,7 +208,7 @@ class TestHTTPSessionStatus:
 
         data = response.json()
         assert data["server"]["status"] == "running"
-        assert data["server"]["version"] == "0.6.4"
+        assert data["server"]["version"] == __version__
         assert data["server"]["transport"] == "http"
         assert data["session"]["authenticated"] is True
         assert data["rate_limiting"]["total_requests"] == 100
@@ -253,7 +276,7 @@ class TestHTTPSecurity:
 
         data = response.json()
         assert data["name"] == "Open Stocks MCP Server"
-        assert data["version"] == "0.6.4"
+        assert data["version"] == __version__
         assert data["transport"] == "http"
         assert "endpoints" in data
         assert data["endpoints"]["mcp"] == "/mcp"
@@ -379,14 +402,14 @@ class TestNonLoopbackBindingRequiresAuth:
 class TestHTTPErrorHandling:
     """Test error handling scenarios"""
 
-    @patch("open_stocks_mcp.monitoring.get_metrics_collector")
+    @patch("open_stocks_mcp.server.http_transport.get_health_service")
     async def test_health_check_service_error(
-        self, mock_get_metrics_collector: Mock, http_client: httpx.AsyncClient
+        self, mock_get_health_service: Mock, http_client: httpx.AsyncClient
     ) -> None:
         """Test health check when service components fail"""
-        mock_metrics_collector = AsyncMock()
-        mock_metrics_collector.get_health_status.side_effect = Exception("Service down")
-        mock_get_metrics_collector.return_value = mock_metrics_collector
+        mock_health_service = AsyncMock()
+        mock_health_service.get_status.side_effect = Exception("Service down")
+        mock_get_health_service.return_value = mock_health_service
 
         response = await http_client.get("/health")
         assert response.status_code == 503  # Service Unavailable

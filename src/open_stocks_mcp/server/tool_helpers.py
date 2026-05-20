@@ -10,6 +10,7 @@ from typing import Any
 from mcp.server.fastmcp import FastMCP
 
 from open_stocks_mcp.brokers.registry import get_broker_registry
+from open_stocks_mcp.health import get_health_service
 from open_stocks_mcp.logging_config import logger
 from open_stocks_mcp.monitoring import get_metrics_collector
 from open_stocks_mcp.tools.rate_limiter import get_rate_limiter
@@ -111,7 +112,5 @@ async def get_metrics_summary_data() -> dict[str, Any]:
 
 async def get_health_check_data() -> dict[str, Any]:
     """Return health status of the MCP server."""
-    metrics_collector = get_metrics_collector()
-    health_status = await metrics_collector.get_health_status()
-
-    return {"result": {**health_status, "status": "success"}}
+    health_status = await get_health_service().get_status()
+    return {"result": {**health_status, "health_status": health_status["status"], "status": "success"}}

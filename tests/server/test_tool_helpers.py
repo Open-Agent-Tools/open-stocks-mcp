@@ -175,23 +175,27 @@ class TestHealthCheckHelper:
 
     @pytest.mark.asyncio
     async def test_returns_health_status(self) -> None:
-        fake_health = {"healthy": True, "checks": {"db": "ok"}}
+        fake_health = {
+            "status": "degraded",
+            "components": {"metrics": {"status": "healthy", "last_checked": "x"}},
+            "timestamp": 123.0,
+        }
 
         async def fake_get_health() -> dict:
             return fake_health
 
         with patch(
-            "open_stocks_mcp.server.tool_helpers.get_metrics_collector"
-        ) as mock_get_mc:
-            mc = MagicMock()
-            mc.get_health_status.side_effect = fake_get_health
-            mock_get_mc.return_value = mc
+            "open_stocks_mcp.server.tool_helpers.get_health_service"
+        ) as mock_get_hs:
+            hs = MagicMock()
+            hs.get_status.side_effect = fake_get_health
+            mock_get_hs.return_value = hs
 
             response = await get_health_check_data()
 
         assert response["result"]["status"] == "success"
-        assert response["result"]["healthy"] is True
-        assert response["result"]["checks"] == {"db": "ok"}
+        assert response["result"]["health_status"] == "degraded"
+        assert "components" in response["result"]
 
 
 @pytest.mark.journey_system
