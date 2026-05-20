@@ -9,6 +9,7 @@ Focuses on the most regression-prone behaviors documented in CLAUDE.md:
 from unittest.mock import AsyncMock, patch
 
 import pytest
+import robin_stocks.robinhood as rh
 
 from open_stocks_mcp.tools.robinhood_trading_tools import (
     cancel_all_option_orders,
@@ -64,8 +65,12 @@ class TestOrderBuyMarket:
         assert result["result"]["side"] == "buy"
         assert result["result"]["order_type"] == "market"
 
-        # The third call must carry timeInForce='gfd'
+        # The third call must pass rh.order_buy_market as the callable with the
+        # correct symbol/quantity positional args and timeInForce='gfd' kwarg.
         order_call = mock_execute.call_args_list[2]
+        assert order_call.args[0] is rh.order_buy_market
+        assert order_call.args[1] == "AAPL"
+        assert order_call.args[2] == 5
         assert order_call.kwargs.get("timeInForce") == "gfd"
 
     @pytest.mark.journey_trading
@@ -182,8 +187,13 @@ class TestOrderSellMarket:
         assert result["result"]["side"] == "sell"
         assert result["result"]["order_type"] == "market"
 
-        # Second call (order placement) must carry timeInForce='gfd'
+        # Second call (order placement) must pass rh.order_sell_market as the
+        # callable with the correct symbol/quantity positional args and
+        # timeInForce='gfd' kwarg.
         order_call = mock_execute.call_args_list[1]
+        assert order_call.args[0] is rh.order_sell_market
+        assert order_call.args[1] == "AAPL"
+        assert order_call.args[2] == 5
         assert order_call.kwargs.get("timeInForce") == "gfd"
 
     @pytest.mark.journey_trading
@@ -334,16 +344,11 @@ class TestOrderBuyLimit:
         api_error = {"non_field_errors": ["Invalid limit price"]}
         mock_execute.side_effect = [MOCK_QUOTE, MOCK_ACCOUNT, api_error]
 
-        # order_buy_limit doesn't check non_field_errors in the code (no early return
-        # for it), but sanitize_api_response should still pass the dict through and the
-        # order_result.get("id") will return None which is falsy... let me check the
-        # actual code path for limit orders.
-        # Actually order_buy_limit does NOT have the non_field_errors check — but we
-        # should still verify it doesn't crash and returns something reasonable.
         result = await order_buy_limit("AAPL", 5, 140.00)
 
-        # At minimum the function should return a dict with a result key
-        assert "result" in result
+        assert "error" in result["result"]
+        assert "Invalid limit price" in result["result"]["error"]
+        assert result["result"]["status"] == "error"
 
     @pytest.mark.journey_trading
     @pytest.mark.unit
