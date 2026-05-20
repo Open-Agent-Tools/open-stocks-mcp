@@ -291,6 +291,13 @@ async def order_buy_limit(
                 {"error": "Order placement failed", "status": "error"}
             )
 
+        # Check for Robin Stocks API errors
+        if isinstance(order_result, dict) and "non_field_errors" in order_result:
+            error_msgs = order_result["non_field_errors"]
+            return create_success_response(
+                {"error": f"Order failed: {'; '.join(error_msgs)}", "status": "error"}
+            )
+
         order_result = sanitize_api_response(order_result)
 
         logger.info(
