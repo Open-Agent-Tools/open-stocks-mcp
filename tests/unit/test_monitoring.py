@@ -53,6 +53,22 @@ async def test_get_health_status_thresholds_map_correctly() -> None:
 
 
 @pytest.mark.asyncio
+async def test_get_health_status_response_time_thresholds_map_correctly() -> None:
+    collector = MetricsCollector()
+    now = datetime.now()
+
+    collector.api_calls.extend([(now, "tool", True) for _ in range(20)])
+    collector.response_times.extend([(now, 6.0) for _ in range(20)])
+    degraded = await collector.get_health_status()
+    assert degraded["status"] == "degraded"
+
+    collector.response_times.clear()
+    collector.response_times.extend([(now, 12.0) for _ in range(20)])
+    unhealthy = await collector.get_health_status()
+    assert unhealthy["status"] == "unhealthy"
+
+
+@pytest.mark.asyncio
 async def test_get_metrics_includes_per_tool_latency_and_throughput() -> None:
     collector = MetricsCollector(window_size_minutes=1)
 
