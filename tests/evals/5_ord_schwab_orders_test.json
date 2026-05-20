@@ -11,7 +11,7 @@
           "user_content": {
             "parts": [
               {
-                "text": "Show me my recent orders on Schwab for account REPLACE_WITH_SCHWAB_ACCOUNT_HASH."
+                "text": "Show me my recent orders on Schwab for account REPLACE_WITH_SCHWAB_ACCOUNT_HASH. Note: Before running this live, REPLACE_WITH_SCHWAB_ACCOUNT_HASH must be replaced with a real account hash returned by the schwab_account_numbers tool."
               }
             ],
             "role": "user"
@@ -19,7 +19,7 @@
           "final_response": {
             "parts": [
               {
-                "text": "I have retrieved your recent orders for Schwab account REPLACE_WITH_SCHWAB_ACCOUNT_HASH. You have 0 open orders."
+                "text": "I have retrieved your recent orders for Schwab account REPLACE_WITH_SCHWAB_ACCOUNT_HASH:\n\n*   **Symbol:** AAPL, **Side:** BUY, **Quantity:** 10, **Status:** FILLED, **Price:** $185.20, **Entered Time:** 2024-05-15 14:30:00\n*   **Symbol:** TSLA, **Side:** SELL, **Quantity:** 5, **Status:** FILLED, **Price:** $170.45, **Entered Time:** 2024-05-14 10:15:00\n*   **Symbol:** MSFT, **Side:** BUY, **Quantity:** 20, **Status:** CANCELLED, **Price:** N/A, **Entered Time:** 2024-05-13 16:05:00\n\nPlease note that this is a simulated response for evaluation. For live execution, ensure you use a valid account hash."
               }
             ],
             "role": "model"

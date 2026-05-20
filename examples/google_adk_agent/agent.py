@@ -1,10 +1,12 @@
 """Stock Trading Agent Configuration.
 
 This module configures Stock_Trader, a specialized agent for handling
-stock market operations and interactions with Robin Stocks through our MCP server.
+stock market operations and interactions with Robin Stocks and Schwab
+through our MCP server.
 
 It uses the specified Google model and connects to our open-stocks-mcp server
-to provide real-time stock market data and trading capabilities.
+to provide real-time stock market data and trading capabilities across
+multiple brokers.
 """
 
 import logging

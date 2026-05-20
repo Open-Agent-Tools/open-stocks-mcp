@@ -141,6 +141,24 @@ The agent has access to 60+ MCP tools organized into these categories:
 - **`metrics_summary`**: Performance metrics
 - **`health_check`**: System health
 
+## Evaluations
+
+The agent's tool-calling accuracy and response quality are verified using Google ADK evaluations.
+
+### Running Evaluations
+
+Always run evaluations from the **project root** directory:
+
+```bash
+# General evaluation (example: list tools)
+adk eval examples/google_adk_agent tests/evals/0_list_available_tools_test.json --config_file_path tests/evals/test_config.json
+
+# Schwab Orders evaluation (requires MCP server and credentials)
+MCP_HTTP_URL="http://localhost:3001/mcp" adk eval examples/google_adk_agent tests/evals/5_ord_schwab_orders_test.json --config_file_path tests/evals/test_config.json
+```
+
+See [ADK Testing and Evaluations Guide](../../tests/evals/ADK-testing-evals.md) for full documentation on all available evaluation tests and prerequisites.
+
 ## Agent Capabilities
 
 The Stock_Trader agent specializes in:
