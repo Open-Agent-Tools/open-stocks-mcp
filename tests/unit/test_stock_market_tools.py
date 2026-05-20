@@ -1,10 +1,13 @@
 """Unit tests for stock market and core tools."""
 
+from collections.abc import Iterator
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
+from open_stocks_mcp.config import reset_cache_config
+from open_stocks_mcp.tools.cache import clear_all_caches
 from open_stocks_mcp.tools.robinhood_stock_tools import (
     find_instrument_data,
     get_instruments_by_symbols,
@@ -19,6 +22,15 @@ from open_stocks_mcp.tools.robinhood_stock_tools import (
 from open_stocks_mcp.tools.robinhood_tools import list_available_tools
 
 
+@pytest.fixture(autouse=True)
+def _reset_cache_state() -> Iterator[None]:
+    reset_cache_config()
+    clear_all_caches()
+    yield
+    reset_cache_config()
+    clear_all_caches()
+
+
 class TestStockMarketTools:
     """Test stock market data tools with mocked responses."""
 
@@ -31,6 +43,7 @@ class TestStockMarketTools:
         self, mock_latest_price: Any, mock_quotes: Any
     ) -> None:
         """Test successful stock price retrieval."""
+        clear_all_caches()
         mock_latest_price.return_value = ["150.25"]
         mock_quotes.return_value = [
             {
@@ -52,6 +65,73 @@ class TestStockMarketTools:
         assert result["result"]["previous_close"] == 148.50
         assert result["result"]["volume"] == 1000000
         assert result["result"]["status"] == "success"
+
+    @pytest.mark.journey_market_data
+    @pytest.mark.unit
+    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_quotes")
+    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_latest_price")
+    @pytest.mark.asyncio
+    async def test_get_stock_price_cached(
+        self, mock_latest_price: Any, mock_quotes: Any
+    ) -> None:
+        """Test that get_stock_price returns cached value on second call."""
+        reset_cache_config()
+        clear_all_caches()
+        mock_latest_price.return_value = ["150.25"]
+        mock_quotes.return_value = [
+            {
+                "previous_close": "148.50",
+                "volume": "1000000",
+                "ask_price": "150.30",
+                "bid_price": "150.20",
+                "last_trade_price": "150.25",
+            }
+        ]
+
+        # First call
+        res1 = await get_stock_price("AAPL")
+        assert mock_latest_price.call_count == 1
+        assert mock_quotes.call_count == 1
+
+        # Second call - should hit cache
+        res2 = await get_stock_price("AAPL")
+        assert res2 == res1
+        assert mock_latest_price.call_count == 1
+        assert mock_quotes.call_count == 1
+
+    @pytest.mark.journey_market_data
+    @pytest.mark.unit
+    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_quotes")
+    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_latest_price")
+    @pytest.mark.asyncio
+    async def test_get_stock_price_cache_disabled(
+        self, mock_latest_price: Any, mock_quotes: Any
+    ) -> None:
+        """Test that get_stock_price bypasses cache when disabled."""
+        reset_cache_config()
+        clear_all_caches()
+        from open_stocks_mcp.config import get_cache_config
+
+        get_cache_config().enabled = False
+
+        mock_latest_price.return_value = ["150.25"]
+        mock_quotes.return_value = [
+            {
+                "previous_close": "148.50",
+                "volume": "1000000",
+                "ask_price": "150.30",
+                "bid_price": "150.20",
+                "last_trade_price": "150.25",
+            }
+        ]
+
+        # First call
+        await get_stock_price("AAPL")
+        assert mock_latest_price.call_count == 1
+
+        # Second call - should NOT hit cache
+        await get_stock_price("AAPL")
+        assert mock_latest_price.call_count == 2
 
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")

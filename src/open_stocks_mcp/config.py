@@ -14,6 +14,37 @@ def _env_int(name: str, default: int) -> int:
         raise ValueError(f"{name} must be an integer") from exc
 
 
+def _env_bool(name: str, default: bool) -> bool:
+    raw_value = os.getenv(name)
+    if raw_value is None:
+        return default
+    return raw_value.lower() in {"1", "true", "yes", "on"}
+
+
+def _env_float_from(names: tuple[str, ...], default: float) -> float:
+    for name in names:
+        raw_value = os.getenv(name)
+        if raw_value is None:
+            continue
+        try:
+            return float(raw_value)
+        except ValueError as exc:
+            raise ValueError(f"{name} must be a number") from exc
+    return default
+
+
+def _env_int_from(names: tuple[str, ...], default: int) -> int:
+    for name in names:
+        raw_value = os.getenv(name)
+        if raw_value is None:
+            continue
+        try:
+            return int(raw_value)
+        except ValueError as exc:
+            raise ValueError(f"{name} must be an integer") from exc
+    return default
+
+
 def _env_optional_int(name: str) -> int | None:
     raw_value = os.getenv(name)
     if raw_value is None or raw_value == "":
@@ -38,10 +69,21 @@ def _env_float(name: str, default: float) -> float:
 class CacheConfig:
     """Configuration for the in-memory caching layer."""
 
-    quotes_ttl_seconds: int = 15
-    account_ttl_seconds: int = 300
+    enabled: bool = True
+    quotes_ttl_seconds: float = 15.0
+    account_ttl_seconds: float = 60.0
     max_size: int = 1024
     strategy: str = "ttl"
+
+    @property
+    def ttl_market_seconds(self) -> float:
+        """Compatibility alias for the market-data cache TTL."""
+        return self.quotes_ttl_seconds
+
+    @property
+    def ttl_account_seconds(self) -> float:
+        """Compatibility alias for the account-data cache TTL."""
+        return self.account_ttl_seconds
 
 
 @dataclass
@@ -101,9 +143,14 @@ class ServerConfig:
 def load_config() -> ServerConfig:
     """Load server configuration from environment or defaults"""
     cache = CacheConfig(
-        quotes_ttl_seconds=_env_int("CACHE_QUOTES_TTL", 15),
-        account_ttl_seconds=_env_int("CACHE_ACCOUNT_TTL", 300),
-        max_size=_env_int("CACHE_MAX_SIZE", 1024),
+        enabled=_env_bool("CACHE_ENABLED", True),
+        quotes_ttl_seconds=_env_float_from(
+            ("CACHE_TTL_MARKET_SECONDS", "CACHE_QUOTES_TTL"), 15.0
+        ),
+        account_ttl_seconds=_env_float_from(
+            ("CACHE_TTL_ACCOUNT_SECONDS", "CACHE_ACCOUNT_TTL"), 60.0
+        ),
+        max_size=_env_int_from(("CACHE_MAX_SIZE",), 1024),
         strategy=os.getenv("CACHE_STRATEGY", "ttl"),
     )
     return ServerConfig(
@@ -136,3 +183,26 @@ def load_config() -> ServerConfig:
             )
         ),
     )
+
+
+# Global config instance for process-level access.
+_global_config: ServerConfig | None = None
+
+
+def get_config() -> ServerConfig:
+    """Get the global server configuration instance."""
+    global _global_config
+    if _global_config is None:
+        _global_config = load_config()
+    return _global_config
+
+
+def get_cache_config() -> CacheConfig:
+    """Get the global cache configuration."""
+    return get_config().cache
+
+
+def reset_cache_config() -> None:
+    """Reset the global configuration instance, primarily for tests."""
+    global _global_config
+    _global_config = None
