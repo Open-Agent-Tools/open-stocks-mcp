@@ -30,6 +30,8 @@ class SessionManager:
         self._lock = asyncio.Lock()
         self._is_authenticated = False
         self._failed_login_attempts = 0
+        self._consecutive_pickle_clear_failures = 0
+        self._max_pickle_clear_failures = 3
 
     def set_credentials(self, username: str, password: str) -> None:
         """Store credentials for re-authentication.
@@ -97,13 +99,27 @@ class SessionManager:
             if pickle_path.exists():
                 pickle_path.unlink()
                 logger.info(f"Cleared pickle file: {pickle_path}")
+                self._consecutive_pickle_clear_failures = 0
                 return True
             else:
                 logger.debug(f"Pickle file does not exist: {pickle_path}")
+                self._consecutive_pickle_clear_failures = 0
                 return True
         except Exception as e:
+            self._consecutive_pickle_clear_failures += 1
             logger.error(f"Failed to clear pickle file: {e}")
+            if self._consecutive_pickle_clear_failures >= self._max_pickle_clear_failures:
+                logger.critical(
+                    "Session cache clear failed %s consecutive times; authentication retries will be blocked until cache clear succeeds",
+                    self._consecutive_pickle_clear_failures,
+                )
             return False
+
+    def should_block_auth_retries(self) -> bool:
+        """Return True when persistent pickle clear failures make auth retries unsafe."""
+        return (
+            self._consecutive_pickle_clear_failures >= self._max_pickle_clear_failures
+        )
 
     def _increment_failed_attempts(self) -> None:
         """Increment failed login attempts and clear pickle if threshold reached."""
@@ -433,6 +449,7 @@ class SessionManager:
                 self.last_successful_call = None
                 # Reset failed attempts on logout
                 self._failed_login_attempts = 0
+                self._consecutive_pickle_clear_failures = 0
 
     def clear_session_cache(self) -> bool:
         """Manually clear the Robin Stocks session cache (pickle file).

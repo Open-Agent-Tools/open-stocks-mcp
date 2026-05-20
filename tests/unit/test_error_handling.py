@@ -1,13 +1,17 @@
-"""Tests for configurable retry behavior."""
+"""Tests for configurable retry behavior and authentication error handling."""
 
 from collections.abc import Callable
-from unittest.mock import Mock
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
 
 from open_stocks_mcp.tools import rate_limiter, retry
 from open_stocks_mcp.tools import session_manager as session_manager_module
-from open_stocks_mcp.tools.error_handling import NetworkError, execute_with_retry
+from open_stocks_mcp.tools.error_handling import (
+    AuthenticationError,
+    NetworkError,
+    execute_with_retry,
+)
 
 
 def _patch_retry_dependencies(
@@ -16,6 +20,7 @@ def _patch_retry_dependencies(
     session_manager = Mock()
     session_manager.update_last_successful_call = Mock()
     session_manager.refresh_session = Mock()
+    session_manager.should_block_auth_retries = Mock(return_value=False)
     monkeypatch.setattr(
         session_manager_module, "get_session_manager", lambda: session_manager
     )
@@ -90,3 +95,51 @@ async def test_execute_with_retry_explicit_arguments_override_config(
 
     assert len(attempts) == 1
     assert sleep_calls == []
+
+
+@pytest.mark.asyncio
+async def test_execute_with_retry_blocks_auth_retry_when_pickle_clear_failures_persist() -> None:
+    """Auth retries should short-circuit when session cache clear keeps failing."""
+
+    def auth_fail() -> None:
+        raise Exception("authentication token expired")
+
+    mock_session_manager = MagicMock()
+    mock_session_manager.should_block_auth_retries.return_value = True
+    mock_session_manager.refresh_session = AsyncMock(return_value=False)
+
+    with (
+        patch(
+            "open_stocks_mcp.tools.session_manager.get_session_manager",
+            return_value=mock_session_manager,
+        ),
+        patch("open_stocks_mcp.tools.rate_limiter.get_rate_limiter", return_value=None),
+        pytest.raises(AuthenticationError, match="Session cache clear failures"),
+    ):
+        await execute_with_retry(auth_fail, max_retries=0)
+
+    mock_session_manager.refresh_session.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_execute_with_retry_attempts_reauth_when_not_blocked() -> None:
+    """Auth retries should still attempt reauth when not blocked."""
+
+    def auth_fail() -> None:
+        raise Exception("authentication token expired")
+
+    mock_session_manager = MagicMock()
+    mock_session_manager.should_block_auth_retries.return_value = False
+    mock_session_manager.refresh_session = AsyncMock(return_value=False)
+
+    with (
+        patch(
+            "open_stocks_mcp.tools.session_manager.get_session_manager",
+            return_value=mock_session_manager,
+        ),
+        patch("open_stocks_mcp.tools.rate_limiter.get_rate_limiter", return_value=None),
+        pytest.raises(AuthenticationError),
+    ):
+        await execute_with_retry(auth_fail, max_retries=0)
+
+    mock_session_manager.refresh_session.assert_awaited_once()
