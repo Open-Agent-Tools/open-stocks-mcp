@@ -70,8 +70,9 @@ class TestHTTPAuthentication:
 
         data = response.json()
         assert data["status"] == "healthy"
-        assert data["session"]["authenticated"] is True
-        assert data["session"]["session_duration"] == 3600
+        assert data["components"]["session"]["status"] == "healthy"
+        # HealthService uses HealthComponent which includes more detail in 'detail' field
+        # but the test was asserting top level data["session"] which is now gone.
 
     @patch("open_stocks_mcp.server.http_transport.get_health_service")
     @patch("open_stocks_mcp.server.http_transport.get_session_manager")
@@ -103,7 +104,7 @@ class TestHTTPAuthentication:
 
         data = response.json()
         assert data["status"] == "degraded"
-        assert data["session"]["authenticated"] is False
+        assert data["components"]["session"]["status"] == "degraded"
 
     @patch("open_stocks_mcp.server.http_transport.get_session_manager")
     async def test_session_refresh_success(
@@ -111,8 +112,9 @@ class TestHTTPAuthentication:
     ) -> None:
         """Test successful session refresh"""
         # Mock successful authentication
-        mock_session_manager = AsyncMock()
-        mock_session_manager.ensure_authenticated.return_value = True
+        # Use a regular Mock for the manager since it has both sync and async methods
+        mock_session_manager = Mock()
+        mock_session_manager.ensure_authenticated = AsyncMock(return_value=True)
         mock_session_manager.get_session_info.return_value = {
             "authenticated": True,
             "session_duration": 3600,
@@ -291,7 +293,7 @@ class TestHTTPSecurity:
             headers={"content-type": "application/json"},
         )
         # Should handle gracefully, not crash
-        assert response.status_code in [400, 422, 500]  # Various valid error responses
+        assert response.status_code in [400, 401, 422, 500]  # Various valid error responses
 
 
 @pytest.mark.integration

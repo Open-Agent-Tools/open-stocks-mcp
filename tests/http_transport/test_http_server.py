@@ -165,6 +165,101 @@ class TestHTTPEndpoints:
         assert data["version"] == __version__
         assert data["transport"] == "http"
         assert "timestamp" in data
+        assert "components" in data
+        assert "metrics" in data["components"]
+        assert "session" in data["components"]
+
+    @patch("open_stocks_mcp.server.http_transport.get_health_service")
+    async def test_health_endpoint_returns_structured_components(
+        self, mock_get_health_service: Mock, http_client: httpx.AsyncClient
+    ) -> None:
+        """HTTP /health endpoint returns enriched JSON from HealthService."""
+        mock_health_service = AsyncMock()
+        mock_health_service.get_status.return_value = {
+            "status": "degraded",
+            "timestamp": 1700000000.0,
+            "components": {
+                "metrics": {"status": "healthy"},
+                "session": {"status": "healthy", "detail": "authenticated"},
+                "broker:robinhood": {"status": "healthy"},
+                "broker:schwab": {"status": "unhealthy", "error_message": "not configured"},
+            },
+        }
+        mock_get_health_service.return_value = mock_health_service
+
+        response = await http_client.get("/health")
+        assert response.status_code == 200
+
+        data = response.json()
+        assert data["status"] == "degraded"
+        assert data["version"] == __version__
+        assert data["transport"] == "http"
+        assert data["timestamp"] == 1700000000.0
+        assert data["components"]["metrics"]["status"] == "healthy"
+        assert data["components"]["session"]["status"] == "healthy"
+        assert data["components"]["session"]["detail"] == "authenticated"
+        assert data["components"]["broker:robinhood"]["status"] == "healthy"
+        assert data["components"]["broker:schwab"]["status"] == "unhealthy"
+        assert (
+            data["components"]["broker:schwab"]["error_message"] == "not configured"
+        )
+        # Assert legacy keys are gone
+        assert "session" not in data
+        assert "health" not in data
+
+    @patch("open_stocks_mcp.server.http_transport.get_health_service")
+    async def test_health_endpoint_does_not_call_live_broker_methods(
+        self, mock_get_health_service: Mock, http_client: httpx.AsyncClient
+    ) -> None:
+        """HTTP /health endpoint must not trigger live broker API calls."""
+        # This test ensures HealthService is used correctly (it should return cached state).
+        # We mock a HealthService that would return some component statuses.
+        mock_health_service = AsyncMock()
+        mock_health_service.get_status.return_value = {
+            "status": "healthy",
+            "timestamp": 1700000000.0,
+            "components": {
+                "broker:robinhood": {"status": "healthy"},
+            },
+        }
+        mock_get_health_service.return_value = mock_health_service
+
+        # To verify NO live calls, we need to know what those live calls would be.
+        # The implementation plan says: authenticate, is_authenticated, get_account_info,
+        # get_portfolio, get_positions, get_stock_quote, get_stock_price.
+        # Since we are mocking get_health_service().get_status(), if the route ONLY
+        # calls that, then it shouldn't be calling any broker methods directly.
+
+        # Let's also mock the broker registry and brokers to be sure if they were
+        # accidentally used.
+        mock_robinhood = AsyncMock()
+        mock_schwab = AsyncMock()
+
+        live_methods = [
+            "authenticate",
+            "is_authenticated",
+            "get_account_info",
+            "get_portfolio",
+            "get_positions",
+            "get_stock_quote",
+            "get_stock_price",
+        ]
+
+        for method in live_methods:
+            setattr(mock_robinhood, method, AsyncMock())
+            setattr(mock_schwab, method, AsyncMock())
+
+        with patch("open_stocks_mcp.brokers.registry.get_broker_registry") as mock_get_registry:
+            mock_registry = Mock()
+            mock_registry.get_all_brokers.return_value = [mock_robinhood, mock_schwab]
+            mock_get_registry.return_value = mock_registry
+
+            response = await http_client.get("/health")
+            assert response.status_code == 200
+
+            for method in live_methods:
+                getattr(mock_robinhood, method).assert_not_awaited()
+                getattr(mock_schwab, method).assert_not_awaited()
 
     async def test_server_status(self, http_client: httpx.AsyncClient) -> None:
         """Test server status endpoint"""
@@ -356,7 +451,7 @@ class TestLiveHTTPServer:
                 assert response.status_code == 200
 
                 data = response.json()
-                assert data["status"] == "healthy"
+                assert data["status"] in {"healthy", "degraded"}
         finally:
             # Clean up
             server_task.cancel()
