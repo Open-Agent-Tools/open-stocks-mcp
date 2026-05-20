@@ -304,24 +304,17 @@ def create_http_server(
     async def health_check() -> dict[str, Any]:
         """Health check endpoint"""
         try:
-            session_manager = _require_session_manager()
-            session_info = session_manager.get_session_info()
-            health_status = await get_health_service().get_status()
+            health_service = get_health_service()
+            health_status = await health_service.get_status()
 
+            # The health service snapshot provides status, components, and timestamp.
+            # We preserve HTTP metadata: version and transport.
             return {
                 "status": health_status["status"],
                 "components": health_status["components"],
-                "timestamp": health_status["timestamp"],
+                "timestamp": health_status.get("timestamp", time.time()),
                 "version": __version__,
                 "transport": "http",
-                "session": {
-                    "authenticated": session_info.get("authenticated", False),
-                    "session_duration": session_info.get("session_duration"),
-                },
-                "health": {
-                    "status": health_status["status"],
-                    "components": health_status["components"],
-                },
             }
         except HTTPException:
             raise

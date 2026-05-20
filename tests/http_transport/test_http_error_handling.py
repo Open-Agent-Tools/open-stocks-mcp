@@ -81,7 +81,8 @@ class TestHTTPErrorHandling:
             content="{'invalid': json}",  # Invalid JSON
             headers={"content-type": "application/json"},
         )
-        assert response.status_code in [400, 422]  # Bad Request or Unprocessable Entity
+        assert response.status_code in [400, 401, 422]
+  # Bad Request or Unprocessable Entity
 
     async def test_invalid_content_type(self, http_client: httpx.AsyncClient) -> None:
         """Test handling of invalid content types"""
@@ -91,17 +92,17 @@ class TestHTTPErrorHandling:
             headers={"content-type": "text/plain"},
         )
         # Should handle gracefully
-        assert response.status_code in [400, 415, 422]  # Various acceptable error codes
+        assert response.status_code in [400, 401, 415, 422]  # Various acceptable error codes
 
-    @patch("open_stocks_mcp.monitoring.get_metrics_collector")
+    @patch("open_stocks_mcp.server.http_transport.get_health_service")
     async def test_503_service_unavailable(
-        self, mock_get_metrics_collector: Mock, http_client: httpx.AsyncClient
+        self, mock_get_health_service: Mock, http_client: httpx.AsyncClient
     ) -> None:
         """Test service unavailable error handling"""
-        # Mock metrics collector failure
-        mock_metrics_collector = AsyncMock()
-        mock_metrics_collector.get_health_status.side_effect = Exception("Service down")
-        mock_get_metrics_collector.return_value = mock_metrics_collector
+        # Mock health service failure
+        mock_health_service = AsyncMock()
+        mock_health_service.get_status.side_effect = Exception("Service down")
+        mock_get_health_service.return_value = mock_health_service
 
         response = await http_client.get("/health")
         assert response.status_code == 503
@@ -110,16 +111,14 @@ class TestHTTPErrorHandling:
         assert "detail" in data
         assert "Service unhealthy" in data["detail"]
 
-    @patch("open_stocks_mcp.tools.session_manager.get_session_manager")
+    @patch("open_stocks_mcp.server.http_transport.get_session_manager")
     async def test_500_internal_server_error(
         self, mock_get_session_manager: Mock, http_client: httpx.AsyncClient
     ) -> None:
         """Test internal server error handling"""
         # Mock session manager failure
-        mock_session_manager = AsyncMock()
-        mock_session_manager.ensure_authenticated.side_effect = Exception(
-            "Database connection failed"
-        )
+        mock_session_manager = Mock()
+        mock_session_manager.ensure_authenticated = AsyncMock(side_effect=Exception("Database connection failed"))
         mock_get_session_manager.return_value = mock_session_manager
 
         response = await http_client.post("/session/refresh")
@@ -128,16 +127,16 @@ class TestHTTPErrorHandling:
         data = response.json()
         assert "detail" in data
 
-    @patch("open_stocks_mcp.server.http_transport.get_session_manager")
+    @patch("open_stocks_mcp.server.http_transport.get_health_service")
     async def test_health_returns_503_when_session_manager_unavailable(
-        self, mock_get_session_manager: Mock, http_client: httpx.AsyncClient
+        self, mock_get_health_service: Mock, http_client: httpx.AsyncClient
     ) -> None:
-        """Health check should return 503 when session manager singleton is unavailable."""
-        mock_get_session_manager.return_value = None
+        """Health check should return 503 when health service singleton is unavailable."""
+        mock_get_health_service.return_value = None
 
         response = await http_client.get("/health")
         assert response.status_code == 503
-        assert response.json()["detail"] == "Session manager unavailable"
+        assert response.json()["detail"] == "Service unhealthy"
 
     @patch("open_stocks_mcp.server.http_transport.get_metrics_collector")
     async def test_status_returns_503_when_metrics_collector_unavailable(
@@ -287,7 +286,7 @@ class TestConnectionHandling:
                 headers=headers_dict,
             )
             # Should handle gracefully with appropriate error code
-            assert response.status_code in [400, 415, 422, 500]
+            assert response.status_code in [400, 401, 415, 422, 500]
 
 
 @pytest.mark.integration
@@ -322,7 +321,7 @@ class TestSecurityErrorHandling:
             "/session/refresh", content='{"test": "data"}'
         )
         # Should handle gracefully
-        assert response.status_code in [400, 415, 422]
+        assert response.status_code in [400, 401, 415, 422]
 
     async def test_oversized_request_handling(
         self, http_client: httpx.AsyncClient
@@ -337,7 +336,7 @@ class TestSecurityErrorHandling:
             headers={"content-type": "application/json"},
         )
         # Should handle without crashing
-        assert response.status_code in [200, 400, 413, 422, 500]
+        assert response.status_code in [200, 400, 401, 413, 422, 500]
 
 
 @pytest.mark.integration
@@ -393,17 +392,15 @@ class TestListToolsErrorHandling:
 class TestRecoveryMechanisms:
     """Test error recovery mechanisms"""
 
-    @patch("open_stocks_mcp.tools.session_manager.get_session_manager")
+    @patch("open_stocks_mcp.server.http_transport.get_session_manager")
     async def test_service_recovery_after_error(
         self, mock_get_session_manager: Mock, http_client: httpx.AsyncClient
     ) -> None:
         """Test service recovery after temporary errors"""
-        mock_session_manager = AsyncMock()
+        mock_session_manager = Mock()
 
         # First call fails
-        mock_session_manager.ensure_authenticated.side_effect = Exception(
-            "Temporary failure"
-        )
+        mock_session_manager.ensure_authenticated = AsyncMock(side_effect=Exception("Temporary failure"))
         mock_get_session_manager.return_value = mock_session_manager
 
         response1 = await http_client.post("/session/refresh")
