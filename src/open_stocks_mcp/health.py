@@ -75,9 +75,12 @@ class HealthService:
             return ComponentStatus.DEGRADED
         return ComponentStatus.HEALTHY
 
-    async def _get_registry(self) -> BrokerRegistry:
+    async def _get_registry(self) -> BrokerRegistry | None:
         if self.registry is None:
-            self.registry = await get_broker_registry()
+            try:
+                self.registry = await get_broker_registry()
+            except Exception:
+                return None
         return self.registry
 
     def _get_session_manager(self) -> SessionManager:
@@ -105,7 +108,9 @@ class HealthService:
                 name="metrics",
                 status=metrics_state,
                 last_checked=now,
-                detail=", ".join(metrics.get("issues", [])) if metrics.get("issues") else None,
+                detail=", ".join(metrics.get("issues", []))
+                if metrics.get("issues")
+                else None,
             )
         else:
             metrics_component = ComponentHealth(
@@ -121,7 +126,7 @@ class HealthService:
         session_status = (
             ComponentStatus.HEALTHY
             if session_info.get("authenticated", False)
-            else ComponentStatus.DEGRADED
+            else ComponentStatus.UNHEALTHY
         )
         session_component = ComponentHealth(
             name="session",
@@ -136,25 +141,34 @@ class HealthService:
         components["session"] = session_component.to_dict()
         component_states.append(session_component.status)
 
+        broker_states: list[ComponentStatus] = []
         registry = await self._get_registry()
-        for broker_name in registry.list_brokers():
-            broker = registry.get_broker(broker_name)
-            if broker is None:
-                continue
-            broker_status = self._map_broker_auth_status(broker.auth_info.status)
-            broker_component = ComponentHealth(
-                name=f"broker:{broker_name}",
-                status=broker_status,
-                last_checked=now,
-                error_message=broker.auth_info.error_message,
-            )
-            components[f"broker:{broker_name}"] = broker_component.to_dict()
-            component_states.append(broker_component.status)
+        if registry is not None:
+            for broker_name in registry.list_brokers():
+                broker = registry.get_broker(broker_name)
+                if broker is None:
+                    continue
+                broker_status = self._map_broker_auth_status(broker.auth_info.status)
+                broker_component = ComponentHealth(
+                    name=f"broker:{broker_name}",
+                    status=broker_status,
+                    last_checked=now,
+                    error_message=broker.auth_info.error_message,
+                )
+                components[f"broker:{broker_name}"] = broker_component.to_dict()
+                component_states.append(broker_component.status)
+                broker_states.append(broker_component.status)
 
         overall = ComponentStatus.HEALTHY
-        if any(state == ComponentStatus.UNHEALTHY for state in component_states):
+        core_states = component_states[:2]
+        if any(state == ComponentStatus.UNHEALTHY for state in core_states) or (
+            broker_states
+            and all(state == ComponentStatus.UNHEALTHY for state in broker_states)
+        ):
             overall = ComponentStatus.UNHEALTHY
-        elif any(state == ComponentStatus.DEGRADED for state in component_states):
+        elif any(
+            state == ComponentStatus.DEGRADED for state in component_states
+        ) or any(state == ComponentStatus.UNHEALTHY for state in broker_states):
             overall = ComponentStatus.DEGRADED
 
         return {
