@@ -123,7 +123,9 @@ class SessionManager:
             pickle_path.unlink()
             logger.debug(f"Session pickle encrypted: {enc_path}")
         except Exception as e:
-            logger.warning(f"Could not encrypt session pickle, hardening permissions: {e}")
+            logger.warning(
+                f"Could not encrypt session pickle, hardening permissions: {e}"
+            )
             # Fall back to permission hardening so the plaintext is at least owner-only
             with contextlib.suppress(Exception):
                 pickle_path.chmod(0o600)
@@ -146,11 +148,15 @@ class SessionManager:
             logger.debug(f"Session pickle decrypted for use: {pickle_path}")
             return True
         except InvalidToken:
-            logger.warning("Session pickle decryption failed (key mismatch or corrupt), treating as missing")
+            logger.warning(
+                "Session pickle decryption failed (key mismatch or corrupt), treating as missing"
+            )
             enc_path.unlink(missing_ok=True)
             return False
         except Exception as e:
-            logger.warning(f"Could not decrypt session pickle, treating as missing: {e}")
+            logger.warning(
+                f"Could not decrypt session pickle, treating as missing: {e}"
+            )
             enc_path.unlink(missing_ok=True)
             return False
 
@@ -184,7 +190,10 @@ class SessionManager:
         except Exception as e:
             self._consecutive_pickle_clear_failures += 1
             logger.error(f"Failed to clear pickle file: {e}")
-            if self._consecutive_pickle_clear_failures >= self._max_pickle_clear_failures:
+            if (
+                self._consecutive_pickle_clear_failures
+                >= self._max_pickle_clear_failures
+            ):
                 logger.critical(
                     "Session cache clear failed %s consecutive times; authentication retries will be blocked until cache clear succeeds",
                     self._consecutive_pickle_clear_failures,
@@ -224,6 +233,33 @@ class SessionManager:
                 f"Resetting failed login attempts (was {self._failed_login_attempts})"
             )
             self._failed_login_attempts = 0
+
+    def _resolve_mfa_code(self) -> str:
+        """Resolve MFA code from environment variable or interactive input.
+
+        Returns:
+            The resolved MFA code, or an empty string if not found.
+        """
+        # 1. Check environment variable first
+        mfa_code = os.environ.get("ROBINHOOD_MFA_CODE", "").strip()
+        if mfa_code:
+            logger.info("Using MFA code from ROBINHOOD_MFA_CODE environment variable")
+            return mfa_code
+
+        # 2. Fall back to interactive prompt if in a TTY
+        import sys
+
+        if sys.stdin.isatty():
+            try:
+                # Use stderr for prompt to avoid polluting stdout in some environments
+                sys.stderr.write("\nROBINHOOD MFA REQUIRED\n")
+                sys.stderr.write("Enter verification code: ")
+                sys.stderr.flush()
+                return sys.stdin.readline().strip()
+            except Exception as e:
+                logger.error(f"Failed to read interactive MFA code: {e}")
+
+        return ""
 
     async def ensure_authenticated(self) -> bool:
         """Ensure session is authenticated, re-authenticating if necessary.
@@ -358,8 +394,8 @@ class SessionManager:
                             "Suggestion: Clear session cache and try fresh login"
                         )
 
-                        # Return empty string to let Robin Stocks handle timeout
-                        return ""
+                        # Attempt to resolve the code
+                        return self._resolve_mfa_code()
 
                     # Handle device approval prompts
                     if any(
