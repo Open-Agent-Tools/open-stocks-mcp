@@ -1,7 +1,7 @@
 {
   "eval_set_id": "schwab_option_chain_test_set",
   "name": "Schwab Option Chain Test",
-  "description": "Test case for retrieving Schwab option chains through agent interaction",
+  "description": "Test case for retrieving the Schwab option chain for a symbol through agent interaction",
   "eval_cases": [
     {
       "eval_id": "schwab_option_chain_test",
@@ -11,7 +11,7 @@
           "user_content": {
             "parts": [
               {
-                "text": "Get the option chain for TSLA on Schwab with 5 strikes."
+                "text": "Show me the Schwab option chain for Apple (AAPL)."
               }
             ],
             "role": "user"
@@ -19,7 +19,7 @@
           "final_response": {
             "parts": [
               {
-                "text": "I have retrieved the option chain for TSLA from Schwab with 5 strikes."
+                "text": "I attempted to retrieve the Schwab option chain for Apple (AAPL). The option chain includes available call and put contracts across multiple expiration dates and strike prices. Note that Schwab authentication is required to access live option chain data."
               }
             ],
             "role": "model"
@@ -29,10 +29,7 @@
               {
                 "id": "adk-tool-use-id",
                 "args": {
-                  "symbol": "TSLA",
-                  "contract_type": "ALL",
-                  "strike_count": 5,
-                  "include_underlying_quote": true
+                  "symbol": "AAPL"
                 },
                 "name": "schwab_option_chain"
               }
