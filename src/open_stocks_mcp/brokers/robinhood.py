@@ -1,7 +1,7 @@
 """Robinhood broker implementation using existing robin-stocks integration."""
 
 from datetime import datetime
-from typing import Any, cast
+from typing import Any
 
 from open_stocks_mcp.brokers.base import BaseBroker, BrokerAuthStatus
 from open_stocks_mcp.logging_config import logger
