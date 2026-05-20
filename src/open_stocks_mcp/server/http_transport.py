@@ -285,7 +285,13 @@ def create_http_server(
     # Add middleware
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["http://localhost:*", "https://localhost:*"],
+        allow_origins=[
+            "http://localhost",
+            "https://localhost",
+            "http://127.0.0.1",
+            "https://127.0.0.1",
+        ],
+        allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$",
         allow_credentials=True,
         allow_methods=["GET", "POST", "OPTIONS"],
         allow_headers=["*"],
@@ -304,6 +310,8 @@ def create_http_server(
     async def health_check() -> dict[str, Any]:
         """Health check endpoint"""
         try:
+            _require_session_manager()
+            _require_metrics_collector()
             health_service = get_health_service()
             health_status = await health_service.get_status()
 
@@ -518,6 +526,22 @@ def create_http_server(
                     tool_name = params.get("name")
                     arguments = params.get("arguments", {})
 
+                    if not tool_name:
+                        return Response(
+                            content=json.dumps(
+                                {
+                                    "jsonrpc": "2.0",
+                                    "error": {
+                                        "code": -32602,
+                                        "message": "Invalid params: missing tool name",
+                                    },
+                                    "id": request_id,
+                                }
+                            ).encode(),
+                            status_code=200,
+                            headers={"content-type": "application/json"},
+                        )
+
                     if not _is_tool_allowed(tool_name):
                         logger.warning(
                             "Blocked MCP tool call in read-only mode: %s", tool_name
@@ -610,7 +634,20 @@ def create_http_server(
                     return Response(status_code=200)
 
                 else:
-                    raise ValueError(f"Unknown method: {method}")
+                    return Response(
+                        content=json.dumps(
+                            {
+                                "jsonrpc": "2.0",
+                                "error": {
+                                    "code": -32601,
+                                    "message": f"Method not found: {method}",
+                                },
+                                "id": request_id,
+                            }
+                        ).encode(),
+                        status_code=200,
+                        headers={"content-type": "application/json"},
+                    )
 
                 # Return successful response
                 response_data = {"jsonrpc": "2.0", "result": result, "id": request_id}
