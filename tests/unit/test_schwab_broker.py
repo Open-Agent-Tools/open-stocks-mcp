@@ -45,21 +45,21 @@ class TestSchwabBroker:
         token_file.write_text('{"access_token": "test_token"}')
         schwab_broker.token_path = str(token_file)
 
-        # Mock the schwab auth module
-        with patch("schwab.auth.client_from_token_file") as mock_client_from_token:
-            mock_client = MagicMock()
-            mock_client_from_token.return_value = mock_client
+        try:
+            # Mock the schwab auth module
+            with patch("schwab.auth.client_from_token_file") as mock_client_from_token:
+                mock_client = MagicMock()
+                mock_client_from_token.return_value = mock_client
 
-            result = await schwab_broker.authenticate()
+                result = await schwab_broker.authenticate()
 
-            assert result is True
-            assert schwab_broker._auth_info.status == BrokerAuthStatus.AUTHENTICATED
-            assert schwab_broker.client == mock_client
-            mock_client_from_token.assert_called_once()
-
-        # Cleanup
-        if token_file.exists():
-            token_file.unlink()
+                assert result is True
+                assert schwab_broker._auth_info.status == BrokerAuthStatus.AUTHENTICATED
+                assert schwab_broker.client == mock_client
+                mock_client_from_token.assert_called_once()
+        finally:
+            if token_file.exists():
+                token_file.unlink()
 
     @pytest.mark.asyncio
     async def test_authenticate_with_easy_client(
@@ -130,23 +130,26 @@ class TestSchwabBroker:
         token_file.write_text("{}")
         schwab_broker.token_path = str(token_file)
 
-        schwab_broker.client = MagicMock()
-        schwab_broker._auth_info.status = BrokerAuthStatus.AUTHENTICATED
+        try:
+            schwab_broker.client = MagicMock()
+            schwab_broker._auth_info.status = BrokerAuthStatus.AUTHENTICATED
 
-        await schwab_broker.logout()
+            await schwab_broker.logout()
 
-        assert schwab_broker.client is None
-        assert schwab_broker._auth_info.status == BrokerAuthStatus.NOT_AUTHENTICATED
-
-        # Cleanup
-        if token_file.exists():
-            token_file.unlink()
+            assert schwab_broker.client is None
+            assert schwab_broker._auth_info.status == BrokerAuthStatus.NOT_AUTHENTICATED
+        finally:
+            if token_file.exists():
+                token_file.unlink()
 
     @pytest.mark.asyncio
     async def test_logout_exception(self, schwab_broker: SchwabBroker) -> None:
         """Test logout with an exception."""
         schwab_broker.client = MagicMock()
-        with patch("pathlib.Path.exists", side_effect=Exception("Path error")):
+        with patch(
+            "open_stocks_mcp.brokers.schwab.Path",
+            side_effect=Exception("Path error"),
+        ):
             await schwab_broker.logout()
             # Should log error and return
             assert schwab_broker._auth_info.status == BrokerAuthStatus.NOT_AUTHENTICATED
@@ -193,22 +196,22 @@ class TestSchwabBroker:
         token_file.write_text("invalid json")
         schwab_broker.token_path = str(token_file)
 
-        with (
-            patch(
-                "schwab.auth.client_from_token_file",
-                side_effect=Exception("Invalid token"),
-            ),
-            patch("os.isatty", return_value=True),
-            patch("schwab.auth.easy_client") as mock_easy_client,
-        ):
-            mock_easy_client.return_value = MagicMock()
-            result = await schwab_broker.authenticate()
-            assert result is True
-            mock_easy_client.assert_called_once()
-
-        # Cleanup
-        if token_file.exists():
-            token_file.unlink()
+        try:
+            with (
+                patch(
+                    "schwab.auth.client_from_token_file",
+                    side_effect=Exception("Invalid token"),
+                ),
+                patch("os.isatty", return_value=True),
+                patch("schwab.auth.easy_client") as mock_easy_client,
+            ):
+                mock_easy_client.return_value = MagicMock()
+                result = await schwab_broker.authenticate()
+                assert result is True
+                mock_easy_client.assert_called_once()
+        finally:
+            if token_file.exists():
+                token_file.unlink()
 
     @pytest.mark.asyncio
     async def test_authenticate_non_interactive(
