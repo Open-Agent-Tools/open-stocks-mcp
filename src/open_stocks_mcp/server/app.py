@@ -20,6 +20,7 @@ from open_stocks_mcp.server.tool_helpers import (
     get_rate_limit_status_data,
     get_session_status_data,
 )
+from open_stocks_mcp.tools.broker_comparison_tools import get_broker_comparison
 
 # Cross-Broker Tools
 from open_stocks_mcp.tools.cross_broker_tools import get_aggregated_portfolio
@@ -1054,6 +1055,16 @@ async def aggregated_portfolio() -> dict[str, Any]:
         partial_failure flag, and unavailable_brokers list.
     """
     return await get_aggregated_portfolio()
+
+
+@mcp.tool()
+async def broker_comparison(
+    symbols: list[str] | None = None,
+    include_orders: bool = True,
+    max_orders: int = 5,
+) -> dict[str, Any]:
+    """Compare normalized pricing, holdings, and orders across brokers."""
+    return await get_broker_comparison(symbols, include_orders, max_orders)
 
 
 # Schwab Market Data Tools

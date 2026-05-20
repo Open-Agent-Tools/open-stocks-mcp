@@ -143,6 +143,7 @@ class TestToolRegistration:
             "account_info",
             "account_details",
             "positions",
+            "broker_comparison",
         ]
 
         for tool_name in expected_tools:
