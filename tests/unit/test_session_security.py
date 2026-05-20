@@ -1,7 +1,7 @@
 """Tests for session-pickle encryption and directory-permission hardening."""
 
-import os
 import stat
+from collections.abc import Generator
 from pathlib import Path
 from unittest.mock import patch
 
@@ -18,7 +18,7 @@ def tmp_tokens_dir(tmp_path: Path) -> Path:
 
 
 @pytest.fixture()
-def manager(tmp_tokens_dir: Path) -> SessionManager:
+def manager(tmp_tokens_dir: Path) -> Generator[SessionManager, None, None]:
     """SessionManager with home directory patched to a temp location."""
     with patch("open_stocks_mcp.tools.session_manager.Path.home", return_value=tmp_tokens_dir.parent):
         yield SessionManager()
@@ -142,6 +142,38 @@ class TestPickleDecryption:
 
         mode = stat.S_IMODE(pickle_path.stat().st_mode)
         assert mode == 0o600
+
+
+class TestLoginPickleReencryption:
+    @pytest.mark.parametrize("login_result", [False, RuntimeError("login failed")])
+    def test_login_failure_reencrypts_decrypted_pickle(
+        self,
+        manager: SessionManager,
+        tmp_tokens_dir: Path,
+        login_result: bool | RuntimeError,
+    ) -> None:
+        pickle_path = tmp_tokens_dir / "robinhood.pickle"
+        enc_path = tmp_tokens_dir / "robinhood.pickle.enc"
+        tmp_tokens_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
+        pickle_path.write_bytes(b"serialized-oauth-token-data")
+        manager._encrypt_pickle_if_exists()
+
+        if isinstance(login_result, Exception):
+            side_effect = login_result
+            return_value = None
+        else:
+            side_effect = None
+            return_value = login_result
+
+        with patch(
+            "open_stocks_mcp.tools.session_manager.rh.login",
+            return_value=return_value,
+            side_effect=side_effect,
+        ):
+            assert manager._login_with_device_verification("user", "pass") is False
+
+        assert not pickle_path.exists()
+        assert enc_path.exists()
 
 
 class TestClearPickleFile:

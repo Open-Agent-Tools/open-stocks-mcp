@@ -396,28 +396,14 @@ class SessionManager:
                     # Attempt login with device verification handling
                     result = rh.login(username, password, store_session=True)
 
-                    # Restore original input function
-                    if isinstance(__builtins__, dict):
-                        __builtins__["input"] = original_input
-                    else:
-                        __builtins__.input = original_input
-
                     if result:
                         logger.info("Login successful")
-                        # Encrypt the session pickle written by robin-stocks
-                        self._encrypt_pickle_if_exists()
                         return True
                     else:
                         logger.error("Login failed - authentication rejected")
                         return False
 
                 except Exception as inner_e:
-                    # Restore original input function
-                    if isinstance(__builtins__, dict):
-                        __builtins__["input"] = original_input
-                    else:
-                        __builtins__.input = original_input
-
                     error_msg = str(inner_e)
                     logger.error(f"Login exception: {error_msg}")
 
@@ -452,6 +438,13 @@ class SessionManager:
                         logger.error(f"Unexpected login error: {error_msg}")
 
                     return False
+                finally:
+                    # Restore input and re-encrypt any temporarily decrypted session.
+                    if isinstance(__builtins__, dict):
+                        __builtins__["input"] = original_input
+                    else:
+                        __builtins__.input = original_input
+                    self._encrypt_pickle_if_exists()
 
             # Log any captured output for debugging
             stdout_content = stdout_buffer.getvalue()
