@@ -252,9 +252,10 @@ class SessionManager:
         if sys.stdin.isatty():
             try:
                 # Use stderr for prompt to avoid polluting stdout in some environments
-                sys.stderr.write("\nROBINHOOD MFA REQUIRED\n")
-                sys.stderr.write("Enter verification code: ")
-                sys.stderr.flush()
+                prompt_stream = getattr(sys, "__stderr__", None) or sys.stderr
+                prompt_stream.write("\nROBINHOOD MFA REQUIRED\n")
+                prompt_stream.write("Enter verification code: ")
+                prompt_stream.flush()
                 return sys.stdin.readline().strip()
             except Exception as e:
                 logger.error(f"Failed to read interactive MFA code: {e}")

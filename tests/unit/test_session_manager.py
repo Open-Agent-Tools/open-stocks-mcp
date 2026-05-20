@@ -1,6 +1,8 @@
 """Unit tests for session manager behavior."""
 
 import asyncio
+import io
+from contextlib import redirect_stderr
 from datetime import datetime
 from unittest.mock import patch
 
@@ -100,3 +102,28 @@ def test_logout_reraises_exception_and_still_clears_state() -> None:
     assert manager.login_time is None
     assert manager.last_successful_call is None
     assert manager._failed_login_attempts == 0
+
+
+def test_interactive_mfa_prompt_uses_original_stderr_when_stderr_is_redirected() -> (
+    None
+):
+    """Interactive MFA prompt should bypass redirected stderr capture."""
+    manager = SessionManager()
+
+    fake_stdin = io.StringIO("654321\n")
+    fake_stdin.isatty = lambda: True  # type: ignore[attr-defined]
+    original_stderr = io.StringIO()
+    redirected_stderr = io.StringIO()
+
+    with (
+        patch.dict("os.environ", {}, clear=True),
+        patch("sys.stdin", fake_stdin),
+        patch("sys.__stderr__", original_stderr),
+        redirect_stderr(redirected_stderr),
+    ):
+        code = manager._resolve_mfa_code()
+
+    assert code == "654321"
+    assert "ROBINHOOD MFA REQUIRED" in original_stderr.getvalue()
+    assert "Enter verification code:" in original_stderr.getvalue()
+    assert "ROBINHOOD MFA REQUIRED" not in redirected_stderr.getvalue()
