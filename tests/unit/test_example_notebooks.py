@@ -12,14 +12,27 @@ NOTEBOOK_02 = Path("examples/notebooks/02_trading_safe_dry_run.ipynb")
 def test_market_data_notebook_is_valid():
     notebook = json.loads(NOTEBOOK_01.read_text(encoding="utf-8"))
 
+    def source_text(cell: dict) -> str:
+        source = cell.get("source", "")
+        if isinstance(source, list):
+            return "".join(source)
+        return str(source)
+
     assert notebook.get("nbformat", 0) >= 4
     first_cell = notebook["cells"][0]
     assert first_cell["cell_type"] == "markdown"
-    first_source = "".join(first_cell.get("source", []))
+    first_source = source_text(first_cell)
     assert "Prerequisites & Safety" in first_source
     assert "ROBINHOOD_USERNAME" in first_source
 
-    code_sources = ["".join(cell.get("source", [])) for cell in notebook["cells"] if cell["cell_type"] == "code"]
+    code_cells = [cell for cell in notebook["cells"] if cell["cell_type"] == "code"]
+    code_sources = [source_text(cell) for cell in code_cells]
+
+    assert any("MCP_HTTP_URL" in src and "http://localhost:3001/mcp" in src for src in code_sources)
+    for cell in code_cells:
+        assert cell.get("outputs") == []
+        assert cell.get("execution_count") is None
+
     assert any(
         token in src for src in code_sources for token in ["account_info", "portfolio", "stock_price"]
     )
