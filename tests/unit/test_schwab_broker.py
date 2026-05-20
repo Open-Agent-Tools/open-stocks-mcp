@@ -2,7 +2,7 @@
 
 import builtins
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -270,19 +270,13 @@ class TestSchwabBroker:
             assert "Unexpected error" in schwab_broker._auth_info.error_message
 
     @pytest.mark.asyncio
-    async def test_placeholder_methods(self, schwab_broker: SchwabBroker) -> None:
-        """Test placeholder methods in SchwabBroker."""
-        # Not available
+    async def test_unavailable_state_returns_broker_unavailable(
+        self, schwab_broker: SchwabBroker
+    ) -> None:
+        """All methods return broker_unavailable when not authenticated."""
         schwab_broker._auth_info.status = BrokerAuthStatus.NOT_AUTHENTICATED
-        assert (await schwab_broker.get_account_info())["result"][
-            "status"
-        ] == "broker_unavailable"
 
-        # Available but not implemented
-        schwab_broker._auth_info.status = BrokerAuthStatus.AUTHENTICATED
-        schwab_broker.client = MagicMock()
-
-        methods = [
+        for coro in [
             schwab_broker.get_account_info(),
             schwab_broker.get_portfolio(),
             schwab_broker.get_positions(),
@@ -290,8 +284,103 @@ class TestSchwabBroker:
             schwab_broker.get_stock_price("AAPL"),
             schwab_broker.order_buy_market("AAPL", 1),
             schwab_broker.order_sell_market("AAPL", 1),
-        ]
+        ]:
+            result = await coro
+            assert result["result"]["status"] == "broker_unavailable"
 
-        for coro in methods:
-            res = await coro
-            assert res["result"]["status"] == "not_implemented"
+    @pytest.mark.asyncio
+    async def test_get_account_info_delegates_to_tool(
+        self, schwab_broker: SchwabBroker
+    ) -> None:
+        schwab_broker._auth_info.status = BrokerAuthStatus.AUTHENTICATED
+        schwab_broker.client = MagicMock()
+        expected = {"result": {"accounts": []}}
+        with patch(
+            "open_stocks_mcp.tools.schwab_account_tools.get_schwab_accounts",
+            new=AsyncMock(return_value=expected),
+        ) as mock_tool:
+            result = await schwab_broker.get_account_info()
+        mock_tool.assert_awaited_once_with(include_positions=False)
+        assert result == expected
+
+    @pytest.mark.asyncio
+    async def test_get_portfolio_delegates_to_tool(
+        self, schwab_broker: SchwabBroker
+    ) -> None:
+        schwab_broker._auth_info.status = BrokerAuthStatus.AUTHENTICATED
+        schwab_broker.client = MagicMock()
+        expected = {"result": {"accounts": [{"positions": []}]}}
+        with patch(
+            "open_stocks_mcp.tools.schwab_account_tools.get_schwab_accounts",
+            new=AsyncMock(return_value=expected),
+        ) as mock_tool:
+            result = await schwab_broker.get_portfolio()
+        mock_tool.assert_awaited_once_with(include_positions=True)
+        assert result == expected
+
+    @pytest.mark.asyncio
+    async def test_get_positions_delegates_to_tool(
+        self, schwab_broker: SchwabBroker
+    ) -> None:
+        schwab_broker._auth_info.status = BrokerAuthStatus.AUTHENTICATED
+        schwab_broker.client = MagicMock()
+        expected = {"result": {"accounts": []}}
+        with patch(
+            "open_stocks_mcp.tools.schwab_account_tools.get_schwab_accounts",
+            new=AsyncMock(return_value=expected),
+        ) as mock_tool:
+            result = await schwab_broker.get_positions()
+        mock_tool.assert_awaited_once_with(include_positions=True)
+        assert result == expected
+
+    @pytest.mark.asyncio
+    async def test_get_stock_quote_delegates_to_tool(
+        self, schwab_broker: SchwabBroker
+    ) -> None:
+        schwab_broker._auth_info.status = BrokerAuthStatus.AUTHENTICATED
+        schwab_broker.client = MagicMock()
+        expected = {"result": {"symbol": "AAPL", "last_price": 175.0}}
+        with patch(
+            "open_stocks_mcp.tools.schwab_market_tools.get_schwab_quote",
+            new=AsyncMock(return_value=expected),
+        ) as mock_tool:
+            result = await schwab_broker.get_stock_quote("AAPL")
+        mock_tool.assert_awaited_once_with("AAPL")
+        assert result == expected
+
+    @pytest.mark.asyncio
+    async def test_get_stock_price_delegates_to_tool(
+        self, schwab_broker: SchwabBroker
+    ) -> None:
+        schwab_broker._auth_info.status = BrokerAuthStatus.AUTHENTICATED
+        schwab_broker.client = MagicMock()
+        expected = {"result": {"symbol": "TSLA", "last_price": 200.0}}
+        with patch(
+            "open_stocks_mcp.tools.schwab_market_tools.get_schwab_quote",
+            new=AsyncMock(return_value=expected),
+        ) as mock_tool:
+            result = await schwab_broker.get_stock_price("TSLA")
+        mock_tool.assert_awaited_once_with("TSLA")
+        assert result == expected
+
+    @pytest.mark.asyncio
+    async def test_order_buy_market_returns_explicit_error(
+        self, schwab_broker: SchwabBroker
+    ) -> None:
+        schwab_broker._auth_info.status = BrokerAuthStatus.AUTHENTICATED
+        schwab_broker.client = MagicMock()
+        result = await schwab_broker.order_buy_market("AAPL", 5)
+        assert result["result"]["status"] == "error"
+        assert result["result"]["status"] != "not_implemented"
+        assert "account hash" in result["result"]["error"].lower()
+
+    @pytest.mark.asyncio
+    async def test_order_sell_market_returns_explicit_error(
+        self, schwab_broker: SchwabBroker
+    ) -> None:
+        schwab_broker._auth_info.status = BrokerAuthStatus.AUTHENTICATED
+        schwab_broker.client = MagicMock()
+        result = await schwab_broker.order_sell_market("AAPL", 5)
+        assert result["result"]["status"] == "error"
+        assert result["result"]["status"] != "not_implemented"
+        assert "account hash" in result["result"]["error"].lower()

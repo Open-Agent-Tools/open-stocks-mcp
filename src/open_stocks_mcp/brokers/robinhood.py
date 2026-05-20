@@ -111,19 +111,11 @@ class RobinhoodBroker(BaseBroker):
         except Exception as e:
             logger.error(f"Error during Robinhood logout: {e}")
 
-    # Placeholder implementations for required abstract methods
-    # These will be implemented by delegating to existing tool functions
-
     async def get_account_info(self) -> dict[str, Any]:
-        """Get account information.
-
-        Note: Implementation delegates to existing tool functions.
-        This will be connected in Phase 2 of the migration.
-        """
+        """Get account information."""
         if not self.is_available():
             return self.create_unavailable_response("get_account_info")
 
-        # TODO: Phase 2 - delegate to existing get_account_info() function
         from open_stocks_mcp.tools.robinhood_account_tools import get_account_info
 
         return await get_account_info()
@@ -133,7 +125,6 @@ class RobinhoodBroker(BaseBroker):
         if not self.is_available():
             return self.create_unavailable_response("get_portfolio")
 
-        # TODO: Phase 2 - delegate to existing get_portfolio() function
         from open_stocks_mcp.tools.robinhood_account_tools import get_portfolio
 
         return await get_portfolio()
@@ -143,7 +134,6 @@ class RobinhoodBroker(BaseBroker):
         if not self.is_available():
             return self.create_unavailable_response("get_positions")
 
-        # TODO: Phase 2 - delegate to existing get_positions() function
         from open_stocks_mcp.tools.robinhood_account_tools import get_positions
 
         return await get_positions()
@@ -162,7 +152,6 @@ class RobinhoodBroker(BaseBroker):
         if not self.is_available():
             return self.create_unavailable_response(f"get stock price for {symbol}")
 
-        # TODO: Phase 2 - delegate to existing get_stock_price() function
         from open_stocks_mcp.tools.robinhood_stock_tools import get_stock_price
 
         return await get_stock_price(symbol)
@@ -172,7 +161,6 @@ class RobinhoodBroker(BaseBroker):
         if not self.is_available():
             return self.create_unavailable_response(f"place buy order for {symbol}")
 
-        # TODO: Phase 2 - delegate to existing order_buy_market() function
         from open_stocks_mcp.tools.robinhood_trading_tools import order_buy_market
 
         return await order_buy_market(symbol, int(quantity))
@@ -182,7 +170,6 @@ class RobinhoodBroker(BaseBroker):
         if not self.is_available():
             return self.create_unavailable_response(f"place sell order for {symbol}")
 
-        # TODO: Phase 2 - delegate to existing order_sell_market() function
         from open_stocks_mcp.tools.robinhood_trading_tools import order_sell_market
 
         return await order_sell_market(symbol, int(quantity))
