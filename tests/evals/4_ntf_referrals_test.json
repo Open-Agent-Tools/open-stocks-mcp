@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "referrals_test_set",
+  "name": "Referrals Test",
+  "description": "Read-only test case for retrieving Robinhood referral program status and history. Legitimately returns empty/no-data if the account has no referral activity. Does not invoke any order-placement, account-mutation, or watchlist-mutation tools.",
+  "eval_cases": [
+    {
+      "eval_id": "referrals_test",
+      "conversation": [
+        {
+          "invocation_id": "referrals-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show my Robinhood referral program status."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here is your Robinhood referral program status. The response describes your referral history and any pending or completed rewards, or notes that no referral activity was found on this account."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "referrals"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

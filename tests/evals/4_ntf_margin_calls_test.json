@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "margin_calls_test_set",
+  "name": "Margin Calls Test",
+  "description": "Read-only test case for checking Robinhood margin call status. Legitimately returns empty/no-data when the account has no active margin calls. Does not invoke any order-placement, account-mutation, or watchlist-mutation tools.",
+  "eval_cases": [
+    {
+      "eval_id": "margin_calls_test",
+      "conversation": [
+        {
+          "invocation_id": "margin-calls-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Check whether I have any margin calls."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "I checked your Robinhood account for margin calls. The response reports active margin call details or confirms that you currently have no outstanding margin calls."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "margin_calls"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

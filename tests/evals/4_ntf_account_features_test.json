@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "account_features_test_set",
+  "name": "Account Features Test",
+  "description": "Read-only test case for summarizing Robinhood account features (aggregates subscription, margin, notification, and referral data). May return partial_success if one data source is unavailable; the expected response describes available features without requiring every subsection to be populated. Does not invoke any order-placement, account-mutation, or watchlist-mutation tools.",
+  "eval_cases": [
+    {
+      "eval_id": "account_features_test",
+      "conversation": [
+        {
+          "invocation_id": "account-features-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Summarize my Robinhood account features."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here is a summary of your Robinhood account features. The response covers available subscription details, margin status, notification settings, and referral program information. Sections with no data are noted as unavailable rather than omitted."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "account_features"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

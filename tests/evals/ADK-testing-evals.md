@@ -150,7 +150,51 @@ adk eval examples/google_adk_agent tests/evals/0_sys_metrics_summary_test.json -
 adk eval examples/google_adk_agent tests/evals/0_sys_rate_limit_status_test.json --config_file_path tests/evals/test_config.json
 ```
 
-### 3. Schwab Market & Account Evals (`schwab_*`)
+### 3. Watchlist Read-Only Evaluations (`3_wth_*`)
+
+Read-only evals that exercise the three watchlist retrieval tools registered in `src/open_stocks_mcp/server/app.py`. None of these evals invoke `add_to_watchlist`, `remove_from_watchlist`, or any order-placement or account-mutation tool.
+
+- `tests/evals/3_wth_all_watchlists_test.json` — exercises `all_watchlists` with empty args; retrieves the list of all watchlist names and item counts.
+- `tests/evals/3_wth_watchlist_by_name_test.json` — exercises `watchlist_by_name` with `{"watchlist_name": "Tech Stocks"}`; retrieves the symbols in a named watchlist.
+- `tests/evals/3_wth_watchlist_performance_test.json` — exercises `watchlist_performance` with `{"watchlist_name": "Tech Stocks"}`; retrieves price-change and performance metrics for each symbol in a named watchlist.
+
+**Credential assumptions**: All three evals require `GOOGLE_API_KEY`, a reachable MCP server (`MCP_HTTP_URL`), and Robinhood credentials with read access. The `3_wth_watchlist_by_name_test.json` and `3_wth_watchlist_performance_test.json` evals assume a watchlist named `Tech Stocks` exists in the live account. Before running those two evals against a real account, update `watchlist_name` to a watchlist name that actually exists in the account.
+
+Run with:
+
+```bash
+adk eval examples/google_adk_agent tests/evals/3_wth_all_watchlists_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/3_wth_watchlist_by_name_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/3_wth_watchlist_performance_test.json --config_file_path tests/evals/test_config.json
+```
+
+### 4. Notifications and Account Features Read-Only Evaluations (`4_ntf_*`)
+
+Read-only evals that exercise the seven notification and account-feature retrieval tools registered in `src/open_stocks_mcp/server/app.py`. None of these evals invoke any order-placement, watchlist-mutation, or account-mutation tool. All seven tools may legitimately return empty or no-data responses when the live account has no relevant activity.
+
+- `tests/evals/4_ntf_notifications_test.json` — exercises `notifications` with `{"count": 5}`; retrieves the five most recent account notification messages.
+- `tests/evals/4_ntf_latest_notification_test.json` — exercises `latest_notification` with empty args; retrieves the single most recent account notification.
+- `tests/evals/4_ntf_margin_calls_test.json` — exercises `margin_calls` with empty args; reports active margin calls or confirms none are outstanding.
+- `tests/evals/4_ntf_margin_interest_test.json` — exercises `margin_interest` with empty args; retrieves margin interest charges and current rate (empty if account is not a margin account).
+- `tests/evals/4_ntf_subscription_fees_test.json` — exercises `subscription_fees` with empty args; retrieves Robinhood Gold subscription fee history (empty if no Gold membership).
+- `tests/evals/4_ntf_referrals_test.json` — exercises `referrals` with empty args; retrieves referral program status and history (empty if no referral activity).
+- `tests/evals/4_ntf_account_features_test.json` — exercises `account_features` with empty args; aggregates subscription, margin, notification, and referral data into a feature summary. May return `partial_success` if one data source is unavailable; expected responses describe available features without requiring every subsection to be populated.
+
+**Credential assumptions**: All seven evals require `GOOGLE_API_KEY`, a reachable MCP server (`MCP_HTTP_URL`), and Robinhood credentials with read access. Empty-data responses from the API are valid outcomes for notifications, margin, subscription fees, and referrals — the expected agent response should describe what was found or note that no data was returned.
+
+Run with:
+
+```bash
+adk eval examples/google_adk_agent tests/evals/4_ntf_notifications_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/4_ntf_latest_notification_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/4_ntf_margin_calls_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/4_ntf_margin_interest_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/4_ntf_subscription_fees_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/4_ntf_referrals_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/4_ntf_account_features_test.json --config_file_path tests/evals/test_config.json
+```
+
+### 5. Schwab Market & Account Evals (`schwab_*`)
 
 Evaluations for Schwab-specific tools. These typically require live Schwab OAuth credentials and a running MCP server.
 
@@ -176,7 +220,7 @@ adk eval examples/google_adk_agent tests/evals/8_opt_schwab_option_expirations_t
 adk eval examples/google_adk_agent tests/evals/5_ord_schwab_orders_test.json --config_file_path tests/evals/test_config.json
 ```
 
-### 4. Creating Custom Evaluation Tests
+### 6. Creating Custom Evaluation Tests
 
 #### Test File Structure
 ```json

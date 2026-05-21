@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "subscription_fees_test_set",
+  "name": "Subscription Fees Test",
+  "description": "Read-only test case for retrieving Robinhood Gold subscription fee history. Legitimately returns empty/no-data if the account has no Gold subscription. Does not invoke any order-placement, account-mutation, or watchlist-mutation tools.",
+  "eval_cases": [
+    {
+      "eval_id": "subscription_fees_test",
+      "conversation": [
+        {
+          "invocation_id": "subscription-fees-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show my Robinhood Gold subscription fee history."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here is your Robinhood Gold subscription fee history. The response lists past subscription charges or notes that no subscription fee history is available if the account does not have a Gold membership."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "subscription_fees"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

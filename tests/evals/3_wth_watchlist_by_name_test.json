@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "watchlist_by_name_test_set",
+  "name": "Watchlist By Name Test",
+  "description": "Read-only test case for retrieving the contents of a named Robinhood watchlist. Assumes a watchlist named 'Tech Stocks' exists in the live account; rename to an existing watchlist name before running against a real account. Does not invoke add_to_watchlist, remove_from_watchlist, or any trading tool.",
+  "eval_cases": [
+    {
+      "eval_id": "watchlist_by_name_test",
+      "conversation": [
+        {
+          "invocation_id": "watchlist-by-name-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me the contents of my Tech Stocks watchlist."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here are the contents of your Tech Stocks watchlist. The response summarizes the symbols included or notes that no data was returned if the watchlist is empty or does not exist."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {"watchlist_name": "Tech Stocks"},
+                "name": "watchlist_by_name"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

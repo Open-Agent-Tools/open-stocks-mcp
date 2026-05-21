@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "notifications_test_set",
+  "name": "Notifications Test",
+  "description": "Read-only test case for retrieving recent Robinhood account notifications. Does not invoke any order-placement, account-mutation, or watchlist-mutation tools.",
+  "eval_cases": [
+    {
+      "eval_id": "notifications_test",
+      "conversation": [
+        {
+          "invocation_id": "notifications-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me my five most recent account notifications."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here are your five most recent Robinhood account notifications. The response lists the notification messages or notes that no recent notifications were found if the account has none."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {"count": 5},
+                "name": "notifications"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

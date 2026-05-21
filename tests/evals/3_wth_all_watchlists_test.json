@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "all_watchlists_test_set",
+  "name": "All Watchlists Test",
+  "description": "Read-only test case for retrieving all Robinhood watchlists. Does not invoke any watchlist mutation, order-placement, or account-modification tools.",
+  "eval_cases": [
+    {
+      "eval_id": "all_watchlists_test",
+      "conversation": [
+        {
+          "invocation_id": "all-watchlists-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me all of my Robinhood watchlists."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here are your Robinhood watchlists. The response lists the names and item counts of each watchlist without modifying any watchlist data."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "all_watchlists"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

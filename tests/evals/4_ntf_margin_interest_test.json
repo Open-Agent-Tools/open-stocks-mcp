@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "margin_interest_test_set",
+  "name": "Margin Interest Test",
+  "description": "Read-only test case for retrieving Robinhood margin interest charges and current rate. Legitimately returns empty/no-data if the account has no margin history. Does not invoke any order-placement, account-mutation, or watchlist-mutation tools.",
+  "eval_cases": [
+    {
+      "eval_id": "margin_interest_test",
+      "conversation": [
+        {
+          "invocation_id": "margin-interest-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show my margin interest charges and current rate."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here are your Robinhood margin interest details. The response shows current interest rate and any accrued charges, or notes that no margin interest data is available if the account is not a margin account."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "margin_interest"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}
