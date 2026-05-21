@@ -189,10 +189,39 @@ class TestToolRegistration:
         }
         health_service = MagicMock()
         health_service.get_status = AsyncMock(return_value=expected_health)
+        metrics_collector = MagicMock()
+        metrics_collector.get_metrics = AsyncMock(
+            return_value={
+                "broker_health": {"robinhood": {"status": "healthy"}},
+                "account_health": {"robinhood:primary": {"status": "healthy"}},
+            }
+        )
+        circuit_breaker = MagicMock()
+        circuit_breaker.snapshot.return_value = {"state": "closed"}
 
-        with patch(
-            "open_stocks_mcp.server.app.get_health_service", return_value=health_service
+        with (
+            patch(
+                "open_stocks_mcp.server.tool_helpers.get_health_service",
+                return_value=health_service,
+            ),
+            patch(
+                "open_stocks_mcp.server.tool_helpers.get_metrics_collector",
+                return_value=metrics_collector,
+            ),
+            patch(
+                "open_stocks_mcp.server.tool_helpers.get_broker_circuit_breaker",
+                return_value=circuit_breaker,
+            ),
         ):
             result = await health_check()
 
-        assert result == {"result": expected_health}
+        assert result == {
+            "result": {
+                **expected_health,
+                "circuit_breaker": {"state": "closed"},
+                "broker_health": {"robinhood": {"status": "healthy"}},
+                "account_health": {"robinhood:primary": {"status": "healthy"}},
+                "health_status": "healthy",
+                "status": "success",
+            }
+        }

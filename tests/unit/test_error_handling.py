@@ -1,7 +1,7 @@
 """Tests for configurable retry behavior and authentication error handling."""
 
 import asyncio
-from collections.abc import Callable
+from collections.abc import Callable, Generator
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
@@ -9,11 +9,20 @@ import pytest
 from open_stocks_mcp.brokers.registry import BrokerRegistry
 from open_stocks_mcp.tools import rate_limiter, retry
 from open_stocks_mcp.tools import session_manager as session_manager_module
+from open_stocks_mcp.tools.circuit_breaker import reset_broker_circuit_breaker
 from open_stocks_mcp.tools.error_handling import (
     AuthenticationError,
     NetworkError,
     execute_with_retry,
 )
+
+
+@pytest.fixture(autouse=True)
+def reset_circuit_breaker() -> Generator[None, None, None]:
+    """Keep process-global circuit breaker state isolated between retry tests."""
+    reset_broker_circuit_breaker()
+    yield
+    reset_broker_circuit_breaker()
 
 
 def _patch_retry_dependencies(
