@@ -36,8 +36,16 @@ class RateLimiter:
         self.endpoint_buckets: dict[str, deque[float]] = defaultdict(
             lambda: deque(maxlen=100)
         )
+        self.broker_buckets: dict[str, deque[float]] = defaultdict(
+            lambda: deque(maxlen=100)
+        )
 
-    async def acquire(self, endpoint: str | None = None, weight: float = 1.0) -> None:
+    async def acquire(
+        self,
+        endpoint: str | None = None,
+        weight: float = 1.0,
+        broker: str | None = None,
+    ) -> None:
         """Acquire permission to make an API call.
 
         Args:
@@ -103,6 +111,8 @@ class RateLimiter:
             # Track per-endpoint if specified
             if endpoint:
                 self.endpoint_buckets[endpoint].append(now)
+            if broker:
+                self.broker_buckets[broker].append(now)
 
     def get_stats(self) -> dict[str, Any]:
         """Get current rate limiter statistics.
@@ -132,6 +142,13 @@ class RateLimiter:
                     "calls_last_hour": sum(1 for t in bucket if t > now - 3600),
                 }
                 for endpoint, bucket in self.endpoint_buckets.items()
+            },
+            "broker_usage": {
+                broker: {
+                    "calls_last_minute": sum(1 for t in bucket if t > cutoff_minute),
+                    "calls_last_hour": sum(1 for t in bucket if t > now - 3600),
+                }
+                for broker, bucket in self.broker_buckets.items()
             },
         }
 

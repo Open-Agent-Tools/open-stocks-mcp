@@ -302,7 +302,7 @@ class TestBrokerRegistry:
         by_broker = {row["broker"]: row for row in results}
         assert by_broker["robinhood"]["status"] == "success"
         assert "result" in by_broker["robinhood"]
-        assert by_broker["schwab"]["status"] == "error"
+        assert by_broker["schwab"]["status"] == "timeout"
         assert by_broker["schwab"]["error"]["type"] == "timeout"
 
     @pytest.mark.asyncio

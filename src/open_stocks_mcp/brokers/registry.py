@@ -285,11 +285,13 @@ class BrokerRegistry:
         async def _run(op: dict[str, Any]) -> dict[str, Any]:
             broker = str(op.get("broker", "unknown"))
             account_id = op.get("account_id")
-            operation = op.get("operation")
+            operation_name = str(op.get("operation", "operation"))
+            operation = op.get("call") or op.get("operation")
             if not callable(operation):
                 return {
                     "broker": broker,
                     "account_id": account_id,
+                    "operation": operation_name,
                     "status": "error",
                     "duration_ms": 0,
                     "error": {"type": "invalid_operation", "message": "Operation must be callable"},
@@ -302,6 +304,7 @@ class BrokerRegistry:
                 return {
                     "broker": broker,
                     "account_id": account_id,
+                    "operation": operation_name,
                     "status": "success",
                     "duration_ms": round((time.perf_counter() - start) * 1000, 2),
                     "result": result,
@@ -310,14 +313,20 @@ class BrokerRegistry:
                 return {
                     "broker": broker,
                     "account_id": account_id,
-                    "status": "error",
+                    "operation": operation_name,
+                    "status": "timeout",
                     "duration_ms": round((time.perf_counter() - start) * 1000, 2),
-                    "error": {"type": "timeout", "message": str(exc) or "operation timed out"},
+                    "error": {
+                        "type": "timeout",
+                        "failure_class": "timeout",
+                        "message": str(exc) or "operation timed out",
+                    },
                 }
             except Exception as exc:
                 return {
                     "broker": broker,
                     "account_id": account_id,
+                    "operation": operation_name,
                     "status": "error",
                     "duration_ms": round((time.perf_counter() - start) * 1000, 2),
                     "error": {"type": type(exc).__name__, "message": str(exc)},
@@ -356,6 +365,14 @@ class BrokerRegistry:
             raise
         finally:
             self._refresh_futures.pop(key, None)
+
+    async def coordinate_auth_refresh(
+        self, broker_name: str, account_id: str | None, refresh_coro: Any
+    ) -> bool:
+        """Backward-compatible alias for coordinated refresh."""
+        return await self.coordinated_refresh(
+            broker_name=broker_name, account_id=account_id, refresh_coro=refresh_coro
+        )
 
 
 # Global registry instance

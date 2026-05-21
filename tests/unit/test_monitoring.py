@@ -164,4 +164,9 @@ async def test_metrics_include_broker_and_account_health() -> None:
     assert metrics["broker_health"]["robinhood"]["total"] == 2
     assert metrics["broker_health"]["robinhood"]["errors"] == 1
     assert metrics["broker_health"]["schwab"]["failure_classes"]["client_pool"] == 1
-    assert metrics["account_health"]["robinhood:acct-1"]["failure_classes"]["authentication"] == 1
+    assert (
+        metrics["account_health"]["robinhood"]["acct-1"]["failure_classes"][
+            "authentication"
+        ]
+        == 1
+    )

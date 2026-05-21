@@ -95,7 +95,8 @@ class MetricsCollector:
         account_id: str | None,
         operation: str,
         success: bool,
-        duration_ms: float,
+        duration_ms: float | None = None,
+        duration: float | None = None,
         failure_class: str | None = None,
         error_type: str | None = None,
     ) -> None:
@@ -103,6 +104,11 @@ class MetricsCollector:
         async with self._lock:
             now = datetime.now()
             self._clean_old_entries(now)
+            duration_ms_val = (
+                duration_ms
+                if duration_ms is not None
+                else ((duration or 0.0) * 1000.0)
+            )
             self.broker_operations.append(
                 {
                     "timestamp": now,
@@ -110,7 +116,7 @@ class MetricsCollector:
                     "account_id": account_id or "default",
                     "operation": operation,
                     "success": success,
-                    "duration_ms": duration_ms,
+                    "duration_ms": duration_ms_val,
                     "failure_class": failure_class,
                     "error_type": error_type,
                 }
@@ -240,48 +246,71 @@ class MetricsCollector:
                 )
 
             broker_health: dict[str, dict[str, Any]] = {}
-            account_health: dict[str, dict[str, Any]] = {}
+            account_health: dict[str, dict[str, dict[str, Any]]] = {}
             for item in self.broker_operations:
                 broker_key = item["broker"]
-                account_key = f"{broker_key}:{item['account_id']}"
-                for target, key in ((broker_health, broker_key), (account_health, account_key)):
-                    state = target.setdefault(
-                        key,
-                        {
-                            "total": 0,
-                            "success": 0,
-                            "errors": 0,
-                            "last_error_type": None,
-                            "failure_classes": defaultdict(int),
-                        },
-                    )
-                    state["total"] += 1
-                    if item["success"]:
-                        state["success"] += 1
-                    else:
-                        state["errors"] += 1
-                        state["last_error_type"] = item["error_type"]
-                        if item["failure_class"]:
-                            state["failure_classes"][item["failure_class"]] += 1
+                acct = str(item["account_id"])
+                state = broker_health.setdefault(
+                    broker_key,
+                    {
+                        "total": 0,
+                        "success": 0,
+                        "errors": 0,
+                        "last_error_type": None,
+                        "failure_classes": defaultdict(int),
+                    },
+                )
+                state["total"] += 1
+                if item["success"]:
+                    state["success"] += 1
+                else:
+                    state["errors"] += 1
+                    state["last_error_type"] = item["error_type"]
+                    if item["failure_class"]:
+                        state["failure_classes"][item["failure_class"]] += 1
+
+                broker_accounts = account_health.setdefault(broker_key, {})
+                account_state = broker_accounts.setdefault(
+                    acct,
+                    {
+                        "total": 0,
+                        "success": 0,
+                        "errors": 0,
+                        "last_error_type": None,
+                        "failure_classes": defaultdict(int),
+                    },
+                )
+                account_state["total"] += 1
+                if item["success"]:
+                    account_state["success"] += 1
+                else:
+                    account_state["errors"] += 1
+                    account_state["last_error_type"] = item["error_type"]
+                    if item["failure_class"]:
+                        account_state["failure_classes"][item["failure_class"]] += 1
 
             broker_health_out = {}
             for key, state in broker_health.items():
                 broker_health_out[key] = {
+                    "status": "healthy" if state["errors"] == 0 else "degraded",
                     "total": state["total"],
                     "success": state["success"],
                     "errors": state["errors"],
                     "last_error_type": state["last_error_type"],
                     "failure_classes": dict(state["failure_classes"]),
                 }
-            account_health_out = {}
-            for key, state in account_health.items():
-                account_health_out[key] = {
-                    "total": state["total"],
-                    "success": state["success"],
-                    "errors": state["errors"],
-                    "last_error_type": state["last_error_type"],
-                    "failure_classes": dict(state["failure_classes"]),
-                }
+            account_health_out: dict[str, dict[str, dict[str, Any]]] = {}
+            for broker_name, accounts in account_health.items():
+                account_health_out[broker_name] = {}
+                for account_id_key, state in accounts.items():
+                    account_health_out[broker_name][account_id_key] = {
+                        "status": "healthy" if state["errors"] == 0 else "degraded",
+                        "total": state["total"],
+                        "success": state["success"],
+                        "errors": state["errors"],
+                        "last_error_type": state["last_error_type"],
+                        "failure_classes": dict(state["failure_classes"]),
+                    }
 
             return {
                 "window_minutes": self.window_size.total_seconds() / 60,

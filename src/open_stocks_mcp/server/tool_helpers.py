@@ -44,7 +44,11 @@ async def get_broker_status_data() -> dict[str, Any]:
         registry = await get_broker_registry()
         auth_status = registry.get_auth_status()
         available_brokers = registry.get_available_brokers()
-        broker_health = {}
+        broker_health = {
+            name: broker.get_health_status()
+            for name in registry.list_brokers()
+            if (broker := registry.get_broker(name)) is not None
+        }
         account_health = {}
         get_broker_health = getattr(registry, "get_broker_health", None)
         if callable(get_broker_health):
@@ -57,11 +61,6 @@ async def get_broker_status_data() -> dict[str, Any]:
             "result": {
                 "brokers": auth_status,
                 "available_brokers": available_brokers,
-                "broker_health": {
-                    name: broker.get_health_status()
-                    for name in registry.list_brokers()
-                    if (broker := registry.get_broker(name)) is not None
-                },
                 "total_configured": len(registry.list_brokers()),
                 "total_authenticated": len(available_brokers),
                 "broker_health": broker_health,
@@ -156,8 +155,6 @@ async def get_health_check_data() -> dict[str, Any]:
             "broker_health": metrics.get("broker_health", {}),
             "account_health": metrics.get("account_health", {}),
             "circuit_breaker": get_broker_circuit_breaker().snapshot(),
-            "broker_health": metrics.get("broker_health", {}),
-            "account_health": metrics.get("account_health", {}),
             "health_status": health_status["status"],
             "status": "success",
         }
