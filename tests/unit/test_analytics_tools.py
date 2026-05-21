@@ -575,3 +575,41 @@ class TestServerMetrics:
         assert result["result"]["health_status"] == "degraded"
         assert result["result"]["components"]["session"]["status"] == "degraded"
         assert result["result"]["circuit_breaker"]["state"] == "open"
+
+    @patch("open_stocks_mcp.server.tool_helpers.get_metrics_collector")
+    @pytest.mark.journey_system
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    async def test_metrics_summary_includes_alert_state(
+        self, mock_get_metrics_collector: Any
+    ) -> None:
+        """metrics_summary MCP tool includes active_alerts and degraded_sink_total."""
+        from open_stocks_mcp.server.app import metrics_summary
+
+        mock_metrics_collector = AsyncMock()
+        mock_metrics_collector.get_metrics.return_value = {
+            "total_calls": 100,
+            "total_errors": 20,
+            "error_rate_percent": 20.0,
+            "avg_response_time_ms": 300.0,
+            "session_refreshes": 0,
+            "timestamp": "2026-01-01T00:00:00",
+            "active_alerts": [
+                {
+                    "signal": "high_error_rate",
+                    "severity": "degraded",
+                    "message": "High error rate: 20.0%",
+                    "timestamp": "2026-01-01T00:00:00",
+                }
+            ],
+            "degraded_sink_total": 0,
+        }
+        mock_get_metrics_collector.return_value = mock_metrics_collector
+
+        result = await metrics_summary()
+
+        assert "result" in result
+        assert "active_alerts" in result["result"]
+        assert len(result["result"]["active_alerts"]) == 1
+        assert result["result"]["active_alerts"][0]["signal"] == "high_error_rate"
+        assert "degraded_sink_total" in result["result"]

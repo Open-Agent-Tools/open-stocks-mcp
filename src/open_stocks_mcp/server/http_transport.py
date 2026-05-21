@@ -347,6 +347,7 @@ def create_http_server(
                 "timestamp": health_status.get("timestamp", time.time()),
                 "version": __version__,
                 "transport": "http",
+                "active_alerts": metrics.get("active_alerts", []),
             }
         except HTTPException:
             raise

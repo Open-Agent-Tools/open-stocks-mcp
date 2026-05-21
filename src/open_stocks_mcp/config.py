@@ -199,6 +199,19 @@ class BrokerRequestConfig:
 
 
 @dataclass
+class AlertConfig:
+    """Configuration for the proactive alerting system."""
+
+    enabled: bool = False
+    webhook_url: str | None = None
+    error_rate_degraded_threshold: float = 10.0
+    error_rate_unhealthy_threshold: float = 25.0
+    avg_response_time_degraded_ms: float = 5000.0
+    avg_response_time_unhealthy_ms: float = 10000.0
+    dedup_window_seconds: float = 300.0
+
+
+@dataclass
 class OtelConfig:
     enabled: bool = False
     service_name: str = "open-stocks-mcp"
@@ -217,6 +230,7 @@ class ServerConfig:
     timeout: TimeoutConfig | None = None
     circuit_breaker: CircuitBreakerConfig = field(default_factory=CircuitBreakerConfig)
     broker_requests: BrokerRequestConfig = field(default_factory=BrokerRequestConfig)
+    alerts: AlertConfig = field(default_factory=AlertConfig)
     otel: OtelConfig = field(default_factory=OtelConfig)
 
     def __post_init__(self) -> None:
@@ -443,6 +457,32 @@ def load_config(config_path: Path | str | None = None) -> ServerConfig:
                 )
                 if os.getenv("OPEN_STOCKS_MCP_BROKER_REQUEST_TOTAL_DEADLINE_SECONDS")
                 else None
+            ),
+        ),
+        alerts=AlertConfig(
+            enabled=_parse_bool(
+                os.getenv("ALERTS_ENABLED", "false"), "ALERTS_ENABLED"
+            ),
+            webhook_url=os.getenv("ALERT_WEBHOOK_URL") or None,
+            error_rate_degraded_threshold=_parse_float(
+                os.getenv("ALERT_ERROR_RATE_DEGRADED_THRESHOLD", "10.0"),
+                "ALERT_ERROR_RATE_DEGRADED_THRESHOLD",
+            ),
+            error_rate_unhealthy_threshold=_parse_float(
+                os.getenv("ALERT_ERROR_RATE_UNHEALTHY_THRESHOLD", "25.0"),
+                "ALERT_ERROR_RATE_UNHEALTHY_THRESHOLD",
+            ),
+            avg_response_time_degraded_ms=_parse_float(
+                os.getenv("ALERT_AVG_RESPONSE_TIME_DEGRADED_MS", "5000.0"),
+                "ALERT_AVG_RESPONSE_TIME_DEGRADED_MS",
+            ),
+            avg_response_time_unhealthy_ms=_parse_float(
+                os.getenv("ALERT_AVG_RESPONSE_TIME_UNHEALTHY_MS", "10000.0"),
+                "ALERT_AVG_RESPONSE_TIME_UNHEALTHY_MS",
+            ),
+            dedup_window_seconds=_parse_float(
+                os.getenv("ALERT_DEDUP_WINDOW_SECONDS", "300.0"),
+                "ALERT_DEDUP_WINDOW_SECONDS",
             ),
         ),
         otel=OtelConfig(
