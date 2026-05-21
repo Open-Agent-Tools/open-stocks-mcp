@@ -375,3 +375,4 @@ _site/
 # Pipfile.lock
 # package-lock.json
 # yarn.lock
+examples/kubernetes/secret.yaml
