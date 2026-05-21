@@ -1,6 +1,6 @@
 """Tests for server app module."""
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -173,18 +173,21 @@ class TestToolRegistration:
 
     @pytest.mark.asyncio
     async def test_health_check_tool_returns_structured_components(self) -> None:
-        """Health tool should return structured component payload from helper."""
-        expected = {
-            "result": {
-                "status": "success",
-                "health_status": "healthy",
-                "components": {"broker:robinhood": {"status": "healthy"}},
-            }
+        """Health tool should return structured component payload from service."""
+        expected_health = {
+            "status": "healthy",
+            "components": {
+                "metrics": {"status": "healthy"},
+                "broker:robinhood": {"status": "healthy"},
+            },
+            "timestamp": "2026-01-01T00:00:00+00:00",
         }
+        health_service = MagicMock()
+        health_service.get_status = AsyncMock(return_value=expected_health)
+
         with patch(
-            "open_stocks_mcp.server.app.get_health_check_data", return_value=expected
+            "open_stocks_mcp.server.app.get_health_service", return_value=health_service
         ):
             result = await health_check()
 
-        assert result["result"]["status"] == "success"
-        assert result["result"]["components"]["broker:robinhood"]["status"] == "healthy"
+        assert result == {"result": expected_health}

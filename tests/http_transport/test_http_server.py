@@ -182,7 +182,10 @@ class TestHTTPEndpoints:
                 "metrics": {"status": "healthy"},
                 "session": {"status": "healthy", "detail": "authenticated"},
                 "broker:robinhood": {"status": "healthy"},
-                "broker:schwab": {"status": "unhealthy", "error_message": "not configured"},
+                "broker:schwab": {
+                    "status": "unhealthy",
+                    "error_message": "not configured",
+                },
             },
         }
         mock_get_health_service.return_value = mock_health_service
@@ -200,9 +203,7 @@ class TestHTTPEndpoints:
         assert data["components"]["session"]["detail"] == "authenticated"
         assert data["components"]["broker:robinhood"]["status"] == "healthy"
         assert data["components"]["broker:schwab"]["status"] == "unhealthy"
-        assert (
-            data["components"]["broker:schwab"]["error_message"] == "not configured"
-        )
+        assert data["components"]["broker:schwab"]["error_message"] == "not configured"
         # Assert legacy keys are gone
         assert "session" not in data
         assert "health" not in data
@@ -249,7 +250,9 @@ class TestHTTPEndpoints:
             setattr(mock_robinhood, method, AsyncMock())
             setattr(mock_schwab, method, AsyncMock())
 
-        with patch("open_stocks_mcp.brokers.registry.get_broker_registry") as mock_get_registry:
+        with patch(
+            "open_stocks_mcp.brokers.registry.get_broker_registry"
+        ) as mock_get_registry:
             mock_registry = Mock()
             mock_registry.get_all_brokers.return_value = [mock_robinhood, mock_schwab]
             mock_get_registry.return_value = mock_registry
@@ -260,6 +263,39 @@ class TestHTTPEndpoints:
             for method in live_methods:
                 getattr(mock_robinhood, method).assert_not_awaited()
                 getattr(mock_schwab, method).assert_not_awaited()
+
+    async def test_health_endpoint_reports_monitoring_disabled(
+        self, http_client: httpx.AsyncClient
+    ) -> None:
+        """Health endpoint should preserve disabled-monitoring component details."""
+        expected_health = {
+            "status": "healthy",
+            "components": {
+                "metrics": {
+                    "status": "healthy",
+                    "detail": "monitoring disabled",
+                    "last_checked": "2026-01-01T00:00:00+00:00",
+                }
+            },
+            "timestamp": 1704067200.0,
+        }
+        health_service = AsyncMock()
+        health_service.get_status.return_value = expected_health
+
+        with patch(
+            "open_stocks_mcp.server.http_transport.get_health_service",
+            return_value=health_service,
+        ):
+            response = await http_client.get("/health")
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["status"] == "healthy"
+        assert data["components"]["metrics"]["status"] == "healthy"
+        assert data["components"]["metrics"]["detail"] == "monitoring disabled"
+        assert data["version"] == __version__
+        assert data["transport"] == "http"
+        assert "timestamp" in data
 
     async def test_server_status(self, http_client: httpx.AsyncClient) -> None:
         """Test server status endpoint"""
