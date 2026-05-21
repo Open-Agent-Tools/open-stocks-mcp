@@ -1,0 +1,18 @@
+[
+  {
+    "begins_at": "2023-01-01T00:00:00Z",
+    "open_price": "148.00",
+    "high_price": "150.50",
+    "low_price": "147.50",
+    "close_price": "149.75",
+    "volume": "1000000"
+  },
+  {
+    "begins_at": "2023-01-02T00:00:00Z",
+    "open_price": "149.80",
+    "high_price": "151.20",
+    "low_price": "149.00",
+    "close_price": "150.25",
+    "volume": "1200000"
+  }
+]

@@ -1,0 +1,11 @@
+{
+  "AAPL": {
+    "assetMainType": "EQUITY",
+    "reference": {
+      "description": "Apple Inc",
+      "exchange": "Q",
+      "exchangeName": "NASDAQ",
+      "cusip": "037833100"
+    }
+  }
+}

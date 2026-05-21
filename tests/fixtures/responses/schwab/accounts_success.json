@@ -1,0 +1,14 @@
+[
+  {
+    "securitiesAccount": {
+      "accountNumber": "12345678",
+      "type": "MARGIN"
+    }
+  },
+  {
+    "securitiesAccount": {
+      "accountNumber": "87654321",
+      "type": "CASH"
+    }
+  }
+]

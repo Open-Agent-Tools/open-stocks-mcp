@@ -1,0 +1,16 @@
+[
+  {
+    "id": "450dfc6d-5510-4d40-abfb-f633b7d9be3e",
+    "url": "https://robinhood.com/instruments/450dfc6d-5510-4d40-abfb-f633b7d9be3e/",
+    "symbol": "AAPL",
+    "name": "Apple Inc.",
+    "tradeable": true,
+    "market": "NASDAQ",
+    "list_date": "1980-12-12",
+    "state": "active",
+    "type": "stock",
+    "simple_name": "Apple",
+    "country": "US",
+    "symbol_description": "Apple Inc. - Common Stock"
+  }
+]

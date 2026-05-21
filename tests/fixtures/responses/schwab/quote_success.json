@@ -1,0 +1,20 @@
+{
+  "AAPL": {
+    "quote": {
+      "lastPrice": 175.50,
+      "bidPrice": 175.45,
+      "askPrice": 175.55,
+      "bidSize": 100,
+      "askSize": 200,
+      "totalVolume": 50000000,
+      "openPrice": 174.00,
+      "highPrice": 176.00,
+      "lowPrice": 173.50,
+      "closePrice": 174.50,
+      "netChange": 1.00,
+      "netPercentChange": 0.57,
+      "52WkHigh": 200.00,
+      "52WkLow": 125.00
+    }
+  }
+}

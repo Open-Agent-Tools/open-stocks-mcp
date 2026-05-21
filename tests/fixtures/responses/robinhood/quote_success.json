@@ -1,0 +1,19 @@
+{
+  "ask_price": "150.30",
+  "ask_size": "100",
+  "bid_price": "150.20",
+  "bid_size": "200",
+  "last_trade_price": "150.25",
+  "last_extended_hours_trade_price": "150.00",
+  "previous_close": "148.50",
+  "adjusted_previous_close": "148.50",
+  "previous_close_date": "2024-01-12",
+  "symbol": "AAPL",
+  "trading_halted": false,
+  "has_traded": true,
+  "last_trade_price_source": "consolidated",
+  "updated_at": "2024-01-13T21:00:00Z",
+  "instrument": "https://robinhood.com/instruments/450dfc6d-5510-4d40-abfb-f633b7d9be3e/",
+  "instrument_id": "450dfc6d-5510-4d40-abfb-f633b7d9be3e",
+  "volume": "1000000"
+}

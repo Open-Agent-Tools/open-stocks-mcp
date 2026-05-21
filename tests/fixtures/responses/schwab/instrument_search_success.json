@@ -1,0 +1,9 @@
+{
+  "AAPL": {
+    "assetMainType": "EQUITY",
+    "reference": {
+      "description": "Apple Inc",
+      "exchangeName": "NASDAQ"
+    }
+  }
+}

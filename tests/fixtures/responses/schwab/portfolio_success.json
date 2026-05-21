@@ -1,0 +1,21 @@
+{
+  "securitiesAccount": {
+    "positions": [
+      {
+        "shortQuantity": 0.0,
+        "averagePrice": 150.0,
+        "currentDayProfitLoss": 50.0,
+        "currentDayProfitLossPercentage": 2.5,
+        "longQuantity": 10.0,
+        "settledLongQuantity": 10.0,
+        "settledShortQuantity": 0.0,
+        "instrument": {
+          "assetType": "EQUITY",
+          "cusip": "037833100",
+          "symbol": "AAPL"
+        },
+        "marketValue": 1500.0
+      }
+    ]
+  }
+}

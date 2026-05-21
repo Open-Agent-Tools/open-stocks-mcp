@@ -1,0 +1,10 @@
+{
+  "securitiesAccount": {
+    "accountNumber": "12345678",
+    "type": "MARGIN",
+    "roundTrips": 0,
+    "isDayTrader": false,
+    "isClosingOnlyRestricted": false,
+    "positions": []
+  }
+}

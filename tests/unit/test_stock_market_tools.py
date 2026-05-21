@@ -40,15 +40,12 @@ class TestStockMarketTools:
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_latest_price")
     @pytest.mark.asyncio
     async def test_get_stock_price_success(
-        self,
-        mock_latest_price: Any,
-        mock_quotes: Any,
-        robinhood_quote_payload: dict[str, Any],
+        self, mock_latest_price: Any, mock_quotes: Any, mock_robinhood_quote: Any
     ) -> None:
         """Test successful stock price retrieval."""
         clear_all_caches()
-        mock_latest_price.return_value = [robinhood_quote_payload["last_trade_price"]]
-        mock_quotes.return_value = [robinhood_quote_payload]
+        mock_latest_price.return_value = ["150.25"]
+        mock_quotes.return_value = [mock_robinhood_quote]
 
         result = await get_stock_price("AAPL")
 
@@ -172,12 +169,11 @@ class TestStockMarketTools:
         mock_fundamentals: Any,
         mock_instruments: Any,
         mock_name: Any,
-        robinhood_fundamentals_payload: dict[str, Any],
-        robinhood_instrument_payload: dict[str, Any],
+        mock_robinhood_fundamentals: Any,
     ) -> None:
         """Test successful stock info retrieval."""
-        mock_fundamentals.return_value = [robinhood_fundamentals_payload]
-        mock_instruments.return_value = [robinhood_instrument_payload]
+        mock_fundamentals.return_value = mock_robinhood_fundamentals
+        mock_instruments.return_value = [{"simple_name": "Apple", "tradeable": True}]
         mock_name.return_value = "Apple Inc."
 
         result = await get_stock_info("AAPL")
@@ -216,13 +212,24 @@ class TestStockMarketTools:
     @pytest.mark.unit
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.find_instrument_data")
     @pytest.mark.asyncio
-    async def test_search_stocks_success(
-        self,
-        mock_find_instrument: Any,
-        robinhood_search_payload: list[dict[str, Any]],
-    ) -> None:
+    async def test_search_stocks_success(self, mock_find_instrument: Any) -> None:
         """Test successful stock search."""
-        mock_find_instrument.return_value = robinhood_search_payload
+        mock_find_instrument.return_value = [
+            {
+                "symbol": "AAPL",
+                "simple_name": "Apple Inc.",
+                "tradeable": True,
+                "country": "US",
+                "type": "stock",
+            },
+            {
+                "symbol": "GOOGL",
+                "simple_name": "Alphabet Inc.",
+                "tradeable": True,
+                "country": "US",
+                "type": "stock",
+            },
+        ]
 
         result = await search_stocks("Apple")
 
@@ -267,24 +274,11 @@ class TestStockMarketTools:
     @pytest.mark.unit
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_markets")
     @pytest.mark.asyncio
-    async def test_get_market_hours_success(self, mock_markets: Any) -> None:
+    async def test_get_market_hours_success(
+        self, mock_markets: Any, mock_robinhood_markets: Any
+    ) -> None:
         """Test successful market hours retrieval."""
-        mock_markets.return_value = [
-            {
-                "name": "NASDAQ Global Select Market",
-                "mic": "XNAS",
-                "operating_mic": "XNAS",
-                "timezone": "US/Eastern",
-                "website": "https://www.nasdaq.com/",
-            },
-            {
-                "name": "New York Stock Exchange",
-                "mic": "XNYS",
-                "operating_mic": "XNYS",
-                "timezone": "US/Eastern",
-                "website": "https://www.nyse.com/",
-            },
-        ]
+        mock_markets.return_value = mock_robinhood_markets
 
         result = await get_market_hours()
 
@@ -316,26 +310,11 @@ class TestStockMarketTools:
     @pytest.mark.unit
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_stock_historicals")
     @pytest.mark.asyncio
-    async def test_get_price_history_success(self, mock_historicals: Any) -> None:
+    async def test_get_price_history_success(
+        self, mock_historicals: Any, mock_robinhood_price_history: Any
+    ) -> None:
         """Test successful price history retrieval."""
-        mock_historicals.return_value = [
-            {
-                "begins_at": "2023-01-01T00:00:00Z",
-                "open_price": "148.00",
-                "high_price": "150.50",
-                "low_price": "147.50",
-                "close_price": "149.75",
-                "volume": "1000000",
-            },
-            {
-                "begins_at": "2023-01-02T00:00:00Z",
-                "open_price": "149.80",
-                "high_price": "151.20",
-                "low_price": "149.00",
-                "close_price": "150.25",
-                "volume": "1200000",
-            },
-        ]
+        mock_historicals.return_value = mock_robinhood_price_history
 
         result = await get_price_history("AAPL", "week")
 
@@ -564,71 +543,10 @@ class TestAdvancedInstrumentTools:
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_instruments_by_symbols")
     @pytest.mark.asyncio
     async def test_get_instruments_by_symbols_success(
-        self, mock_get_instruments: Any
+        self, mock_get_instruments: Any, mock_robinhood_instruments: Any
     ) -> None:
         """Test successful instrument retrieval for multiple symbols."""
-        mock_get_instruments.return_value = [
-            {
-                "id": "450dfc6d-5510-4d40-abfb-f633b7d9be3e",
-                "url": "https://robinhood.com/instruments/450dfc6d-5510-4d40-abfb-f633b7d9be3e/",
-                "symbol": "AAPL",
-                "name": "Apple Inc.",
-                "tradeable": True,
-                "market": "NASDAQ",
-                "list_date": "1980-12-12",
-                "state": "active",
-                "type": "stock",
-                "tradability": "tradable",
-                "splits": "https://robinhood.com/instruments/450dfc6d-5510-4d40-abfb-f633b7d9be3e/splits/",
-                "fundamentals": "https://robinhood.com/instruments/450dfc6d-5510-4d40-abfb-f633b7d9be3e/fundamentals/",
-                "quote": "https://robinhood.com/quotes/AAPL/",
-                "simple_name": "Apple",
-                "min_tick_size": None,
-                "maintenance_ratio": "0.2500",
-                "day_trade_ratio": "0.2500",
-                "margin_initial_ratio": "0.5000",
-                "bloomberg_unique": "EQ0010169500001000",
-                "rhs_tradability": "tradable",
-                "tradable_chain_id": "1df78b0f-8362-4c73-9c41-6e8c5f7dc4a4",
-                "default_collar_fraction": "0.0500",
-                "fractional_tradability": "tradable",
-                "terminal_currencies": ["USD"],
-                "country": "US",
-                "day_trade_buying_power_ratio": "0.2500",
-                "symbol_description": "Apple Inc. - Common Stock",
-                "instrument_id": "450dfc6d-5510-4d40-abfb-f633b7d9be3e",
-            },
-            {
-                "id": "943c5009-a0bb-4665-8cf4-a95dab5874e4",
-                "url": "https://robinhood.com/instruments/943c5009-a0bb-4665-8cf4-a95dab5874e4/",
-                "symbol": "GOOGL",
-                "name": "Alphabet Inc. - Class A",
-                "tradeable": True,
-                "market": "NASDAQ",
-                "list_date": "2004-08-19",
-                "state": "active",
-                "type": "stock",
-                "tradability": "tradable",
-                "splits": "https://robinhood.com/instruments/943c5009-a0bb-4665-8cf4-a95dab5874e4/splits/",
-                "fundamentals": "https://robinhood.com/instruments/943c5009-a0bb-4665-8cf4-a95dab5874e4/fundamentals/",
-                "quote": "https://robinhood.com/quotes/GOOGL/",
-                "simple_name": "Alphabet",
-                "min_tick_size": None,
-                "maintenance_ratio": "0.2500",
-                "day_trade_ratio": "0.2500",
-                "margin_initial_ratio": "0.5000",
-                "bloomberg_unique": "EQ0010080100001000",
-                "rhs_tradability": "tradable",
-                "tradable_chain_id": "6df56bd0-0bf2-44ab-8875-f94fd8526942",
-                "default_collar_fraction": "0.0500",
-                "fractional_tradability": "tradable",
-                "terminal_currencies": ["USD"],
-                "country": "US",
-                "day_trade_buying_power_ratio": "0.2500",
-                "symbol_description": "Alphabet Inc. - Class A - Common Stock",
-                "instrument_id": "943c5009-a0bb-4665-8cf4-a95dab5874e4",
-            },
-        ]
+        mock_get_instruments.return_value = mock_robinhood_instruments
 
         result = await get_instruments_by_symbols(["AAPL", "GOOGL"])
 
@@ -667,25 +585,10 @@ class TestAdvancedInstrumentTools:
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.find_instrument_data")
     @pytest.mark.asyncio
     async def test_find_instrument_data_success(
-        self, mock_find_instrument: Any
+        self, mock_find_instrument: Any, mock_robinhood_instrument_search: Any
     ) -> None:
         """Test successful instrument data search."""
-        mock_find_instrument.return_value = [
-            {
-                "id": "450dfc6d-5510-4d40-abfb-f633b7d9be3e",
-                "url": "https://robinhood.com/instruments/450dfc6d-5510-4d40-abfb-f633b7d9be3e/",
-                "symbol": "AAPL",
-                "name": "Apple Inc.",
-                "tradeable": True,
-                "market": "NASDAQ",
-                "list_date": "1980-12-12",
-                "state": "active",
-                "type": "stock",
-                "simple_name": "Apple",
-                "country": "US",
-                "symbol_description": "Apple Inc. - Common Stock",
-            }
-        ]
+        mock_find_instrument.return_value = mock_robinhood_instrument_search
 
         result = await find_instrument_data("Apple")
 
@@ -711,27 +614,10 @@ class TestAdvancedInstrumentTools:
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_stock_quote_by_id")
     @pytest.mark.asyncio
     async def test_get_stock_quote_by_id_success(
-        self, mock_get_stock_quote_by_id: Any
+        self, mock_get_stock_quote_by_id: Any, mock_robinhood_quote: Any
     ) -> None:
         """Test successful stock quote retrieval by ID."""
-        mock_get_stock_quote_by_id.return_value = {
-            "ask_price": "150.30",
-            "ask_size": "100",
-            "bid_price": "150.20",
-            "bid_size": "200",
-            "last_trade_price": "150.25",
-            "last_extended_hours_trade_price": "150.00",
-            "previous_close": "148.50",
-            "adjusted_previous_close": "148.50",
-            "previous_close_date": "2024-01-12",
-            "symbol": "AAPL",
-            "trading_halted": False,
-            "has_traded": True,
-            "last_trade_price_source": "consolidated",
-            "updated_at": "2024-01-13T21:00:00Z",
-            "instrument": "https://robinhood.com/instruments/450dfc6d-5510-4d40-abfb-f633b7d9be3e/",
-            "instrument_id": "450dfc6d-5510-4d40-abfb-f633b7d9be3e",
-        }
+        mock_get_stock_quote_by_id.return_value = mock_robinhood_quote
 
         result = await get_stock_quote_by_id("450dfc6d-5510-4d40-abfb-f633b7d9be3e")
 

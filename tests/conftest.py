@@ -1,7 +1,10 @@
 """Shared pytest fixtures for open-stocks-mcp tests."""
 
+import copy
+import json
 import os
 import sys
+from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock
 
@@ -493,3 +496,154 @@ def journey_system_data() -> dict[str, Any]:
             "uptime": "99.9%",
         },
     }
+
+
+# --- Shared API response fixtures ---
+
+_FIXTURES_ROOT = Path(__file__).parent / "fixtures" / "responses"
+
+
+def _load_response_fixture(*parts: str) -> Any:
+    path = _FIXTURES_ROOT.joinpath(*parts)
+    with path.open() as f:
+        return json.load(f)
+
+
+@pytest.fixture
+def mock_robinhood_quote() -> dict[str, Any]:
+    """Canonical Robinhood quote payload (deep copy — safe to mutate)."""
+    return copy.deepcopy(_load_response_fixture("robinhood", "quote_success.json"))
+
+
+@pytest.fixture
+def mock_robinhood_api_error() -> dict[str, Any]:
+    """Structured Robinhood error payload."""
+    return copy.deepcopy(_load_response_fixture("robinhood", "quote_error.json"))
+
+
+@pytest.fixture
+def mock_robinhood_fundamentals() -> list[dict[str, Any]]:
+    """Canonical Robinhood fundamentals list payload."""
+    return copy.deepcopy(
+        _load_response_fixture("robinhood", "fundamentals_success.json")
+    )
+
+
+@pytest.fixture
+def mock_robinhood_instruments() -> list[dict[str, Any]]:
+    """Canonical Robinhood instruments list payload (AAPL + GOOGL)."""
+    return copy.deepcopy(
+        _load_response_fixture("robinhood", "instruments_success.json")
+    )
+
+
+@pytest.fixture
+def mock_robinhood_markets() -> list[dict[str, Any]]:
+    """Canonical Robinhood market hours list payload."""
+    return copy.deepcopy(_load_response_fixture("robinhood", "markets_success.json"))
+
+
+@pytest.fixture
+def mock_robinhood_price_history() -> list[dict[str, Any]]:
+    """Canonical Robinhood historical candles payload."""
+    return copy.deepcopy(
+        _load_response_fixture("robinhood", "price_history_success.json")
+    )
+
+
+@pytest.fixture
+def mock_robinhood_top_movers() -> list[dict[str, Any]]:
+    """Canonical Robinhood top movers payload."""
+    return copy.deepcopy(_load_response_fixture("robinhood", "top_movers_success.json"))
+
+
+@pytest.fixture
+def mock_robinhood_top_100() -> list[dict[str, Any]]:
+    """Canonical Robinhood top 100 stocks payload."""
+    return copy.deepcopy(_load_response_fixture("robinhood", "top_100_success.json"))
+
+
+@pytest.fixture
+def mock_robinhood_market_tag() -> list[dict[str, Any]]:
+    """Canonical Robinhood market tag (stocks by tag) payload."""
+    return copy.deepcopy(_load_response_fixture("robinhood", "market_tag_success.json"))
+
+
+@pytest.fixture
+def mock_robinhood_instrument_search() -> list[dict[str, Any]]:
+    """Canonical Robinhood instrument search result payload (single AAPL item)."""
+    return copy.deepcopy(
+        _load_response_fixture("robinhood", "instrument_search_success.json")
+    )
+
+
+@pytest.fixture
+def mock_schwab_quote() -> dict[str, Any]:
+    """Canonical Schwab single-quote payload."""
+    return copy.deepcopy(_load_response_fixture("schwab", "quote_success.json"))
+
+
+@pytest.fixture
+def mock_schwab_quotes() -> dict[str, Any]:
+    """Canonical Schwab multi-quote payload (AAPL + GOOGL)."""
+    return copy.deepcopy(_load_response_fixture("schwab", "quotes_success.json"))
+
+
+@pytest.fixture
+def mock_schwab_auth_error() -> dict[str, Any]:
+    """Canonical Schwab authentication error payload."""
+    return copy.deepcopy(_load_response_fixture("schwab", "auth_error.json"))
+
+
+@pytest.fixture
+def mock_schwab_price_history() -> dict[str, Any]:
+    """Canonical Schwab price history (candles) payload."""
+    return copy.deepcopy(_load_response_fixture("schwab", "price_history_success.json"))
+
+
+@pytest.fixture
+def mock_schwab_instrument() -> dict[str, Any]:
+    """Canonical Schwab instrument (by symbol) payload."""
+    return copy.deepcopy(_load_response_fixture("schwab", "instrument_success.json"))
+
+
+@pytest.fixture
+def mock_schwab_instrument_search() -> dict[str, Any]:
+    """Canonical Schwab instrument search result payload."""
+    return copy.deepcopy(
+        _load_response_fixture("schwab", "instrument_search_success.json")
+    )
+
+
+@pytest.fixture
+def mock_schwab_account_numbers() -> list[dict[str, Any]]:
+    """Canonical Schwab account numbers list payload."""
+    return copy.deepcopy(
+        _load_response_fixture("schwab", "account_numbers_success.json")
+    )
+
+
+@pytest.fixture
+def mock_schwab_account() -> dict[str, Any]:
+    """Canonical Schwab single account payload."""
+    return copy.deepcopy(_load_response_fixture("schwab", "account_success.json"))
+
+
+@pytest.fixture
+def mock_schwab_accounts() -> list[dict[str, Any]]:
+    """Canonical Schwab accounts list payload."""
+    return copy.deepcopy(_load_response_fixture("schwab", "accounts_success.json"))
+
+
+@pytest.fixture
+def mock_schwab_portfolio() -> dict[str, Any]:
+    """Canonical Schwab portfolio (account with positions) payload."""
+    return copy.deepcopy(_load_response_fixture("schwab", "portfolio_success.json"))
+
+
+@pytest.fixture
+def mock_schwab_account_balances() -> dict[str, Any]:
+    """Canonical Schwab account balances payload."""
+    return copy.deepcopy(
+        _load_response_fixture("schwab", "account_balances_success.json")
+    )

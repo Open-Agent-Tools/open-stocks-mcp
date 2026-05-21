@@ -28,14 +28,12 @@ class TestSchwabMarketTools:
         self,
         mock_to_thread: AsyncMock,
         mock_get_broker: AsyncMock,
-        schwab_quote_payload: dict[str, Any],
+        mock_schwab_quote: Any,
     ) -> None:
         """Test successful stock quote retrieval."""
-        # Mock broker
         mock_broker = MagicMock()
         mock_get_broker.return_value = (mock_broker, None)
-
-        mock_to_thread.return_value = schwab_quote_payload
+        mock_to_thread.return_value = mock_schwab_quote
 
         result = await get_schwab_quote("AAPL")
 
@@ -52,16 +50,14 @@ class TestSchwabMarketTools:
         "open_stocks_mcp.tools.schwab_market_tools.get_authenticated_broker_or_error"
     )
     async def test_get_quote_auth_error(
-        self,
-        mock_get_broker: AsyncMock,
-        broker_auth_error_payload: dict[str, Any],
+        self, mock_get_broker: AsyncMock, mock_schwab_auth_error: Any
     ) -> None:
         """Test quote retrieval when authentication fails."""
-        mock_get_broker.return_value = (None, broker_auth_error_payload)
+        mock_get_broker.return_value = (None, mock_schwab_auth_error)
 
         result = await get_schwab_quote("AAPL")
 
-        assert result == broker_auth_error_payload
+        assert result == mock_schwab_auth_error
 
     @pytest.mark.journey_market_data
     @pytest.mark.unit
@@ -74,14 +70,12 @@ class TestSchwabMarketTools:
         self,
         mock_to_thread: AsyncMock,
         mock_get_broker: AsyncMock,
-        schwab_quotes_payload: dict[str, Any],
+        mock_schwab_quotes: Any,
     ) -> None:
         """Test successful multiple quotes retrieval."""
-        # Mock broker
         mock_broker = MagicMock()
         mock_get_broker.return_value = (mock_broker, None)
-
-        mock_to_thread.return_value = schwab_quotes_payload
+        mock_to_thread.return_value = mock_schwab_quotes
 
         result = await get_schwab_quotes(["AAPL", "GOOGL"])
 
@@ -102,20 +96,16 @@ class TestSchwabMarketTools:
     async def test_get_price_history_success(
         self,
         mock_client: MagicMock,
-        mock_to_thread: AsyncMock,
-        mock_get_broker: AsyncMock,
-        schwab_price_history_payload: dict[str, Any],
+        mock_to_thread: MagicMock,
+        mock_get_broker: MagicMock,
+        mock_schwab_price_history: Any,
     ) -> None:
         """Test successful price history retrieval."""
-        # Mock broker
         mock_broker = MagicMock()
         mock_get_broker.return_value = (mock_broker, None)
-
-        # Mock Client enums
         mock_client.PriceHistory.PeriodType.DAY = "day"
         mock_client.PriceHistory.FrequencyType.MINUTE = "minute"
-
-        mock_to_thread.return_value = schwab_price_history_payload
+        mock_to_thread.return_value = mock_schwab_price_history
 
         result = await get_schwab_price_history("AAPL", "day", 1, "minute", 1)
 
@@ -135,7 +125,6 @@ class TestSchwabMarketTools:
         self, mock_get_broker: AsyncMock
     ) -> None:
         """Test price history with invalid period type."""
-        # Mock broker
         mock_broker = MagicMock()
         mock_get_broker.return_value = (mock_broker, None)
 
@@ -158,14 +147,12 @@ class TestSchwabMarketTools:
         self,
         mock_to_thread: AsyncMock,
         mock_get_broker: AsyncMock,
-        schwab_quote_payload: dict[str, Any],
+        mock_schwab_instrument: Any,
     ) -> None:
         """Test successful instrument retrieval."""
-        # Mock broker
         mock_broker = MagicMock()
         mock_get_broker.return_value = (mock_broker, None)
-
-        mock_to_thread.return_value = schwab_quote_payload
+        mock_to_thread.return_value = mock_schwab_instrument
 
         result = await get_schwab_instrument("AAPL")
 
@@ -185,14 +172,12 @@ class TestSchwabMarketTools:
         self,
         mock_to_thread: AsyncMock,
         mock_get_broker: AsyncMock,
-        schwab_quote_payload: dict[str, Any],
+        mock_schwab_instrument_search: Any,
     ) -> None:
         """Test successful instrument search."""
-        # Mock broker
         mock_broker = MagicMock()
         mock_get_broker.return_value = (mock_broker, None)
-
-        mock_to_thread.return_value = schwab_quote_payload
+        mock_to_thread.return_value = mock_schwab_instrument_search
 
         result = await search_schwab_instruments("AAPL")
 
@@ -213,11 +198,8 @@ class TestSchwabMarketTools:
         self, mock_to_thread: AsyncMock, mock_get_broker: AsyncMock
     ) -> None:
         """Test quote retrieval error handling."""
-        # Mock broker
         mock_broker = MagicMock()
         mock_get_broker.return_value = (mock_broker, None)
-
-        # Mock API error
         mock_to_thread.side_effect = Exception("API Error")
 
         result = await get_schwab_quote("AAPL")
@@ -256,6 +238,5 @@ class TestSchwabMarketTools:
 
         result = await function(*args)
         assert result["result"]["status"] == "error"
-        # Search has a custom error message, so we just check status
         if function.__name__ != "search_schwab_instruments":
             assert "API Error" in result["result"]["error"]

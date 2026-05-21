@@ -1,0 +1,13 @@
+{
+  "securitiesAccount": {
+    "currentBalances": {
+      "liquidationValue": 50000.0,
+      "cashBalance": 10000.0,
+      "longMarketValue": 40000.0,
+      "shortMarketValue": 0.0
+    },
+    "initialBalances": {
+      "accountValue": 48000.0
+    }
+  }
+}

@@ -1,0 +1,16 @@
+[
+  {
+    "name": "NASDAQ Global Select Market",
+    "mic": "XNAS",
+    "operating_mic": "XNAS",
+    "timezone": "US/Eastern",
+    "website": "https://www.nasdaq.com/"
+  },
+  {
+    "name": "New York Stock Exchange",
+    "mic": "XNYS",
+    "operating_mic": "XNYS",
+    "timezone": "US/Eastern",
+    "website": "https://www.nyse.com/"
+  }
+]
