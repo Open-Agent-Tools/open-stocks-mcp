@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: open-stocks-mcp
+  labels:
+    app: open-stocks-mcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: open-stocks-mcp
+  template:
+    metadata:
+      labels:
+        app: open-stocks-mcp
+    spec:
+      securityContext:
+        runAsUser: 1001
+        runAsGroup: 1001
+        runAsNonRoot: true
+      containers:
+      - name: open-stocks-mcp
+        image: open-stocks-mcp:latest
+        imagePullPolicy: IfNotPresent
+        command: ["open-stocks-mcp-server", "--transport", "http", "--host", "0.0.0.0", "--port", "3001"]
+        ports:
+        - containerPort: 3001
+          name: http
+        envFrom:
+        - configMapRef:
+            name: open-stocks-mcp-config
+        - secretRef:
+            name: open-stocks-mcp-credentials
+        volumeMounts:
+        - name: tokens
+          mountPath: /home/mcp/.tokens
+        - name: logs
+          mountPath: /home/mcp/.local/state/mcp-servers/logs
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3001
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3001
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+      volumes:
+      - name: tokens
+        persistentVolumeClaim:
+          claimName: open-stocks-mcp-tokens
+      - name: logs
+        persistentVolumeClaim:
+          claimName: open-stocks-mcp-logs

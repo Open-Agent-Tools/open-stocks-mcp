@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: open-stocks-mcp-config
+  labels:
+    app: open-stocks-mcp
+data:
+  # Logging level: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  # Cross-reference: examples/open-stocks-mcp-docker/.env.example
+  LOG_LEVEL: "INFO"
+  # Comma-separated list of enabled brokers (robinhood, schwab)
+  ENABLED_BROKERS: "robinhood"
+  # Default broker for tools that don't specify
+  DEFAULT_BROKER: "robinhood"

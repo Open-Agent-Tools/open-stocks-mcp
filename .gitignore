@@ -373,3 +373,6 @@ _site/
 # Pipfile.lock
 # package-lock.json
 # yarn.lock
+
+# Kubernetes
+examples/kubernetes/secret.yaml
