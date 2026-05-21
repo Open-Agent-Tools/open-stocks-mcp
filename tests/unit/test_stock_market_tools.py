@@ -1,5 +1,6 @@
 """Unit tests for stock market and core tools."""
 
+import asyncio
 from collections.abc import Iterator
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -127,6 +128,43 @@ class TestStockMarketTools:
         # Second call - should NOT hit cache
         await get_stock_price("AAPL")
         assert mock_latest_price.call_count == 2
+
+    @pytest.mark.journey_market_data
+    @pytest.mark.unit
+    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_quotes")
+    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_latest_price")
+    @pytest.mark.asyncio
+    async def test_get_stock_price_coalesces_concurrent_calls(
+        self, mock_latest_price: Any, mock_quotes: Any
+    ) -> None:
+        """Two concurrent get_stock_price calls for same symbol share one set of broker calls."""
+        reset_cache_config()
+        clear_all_caches()
+        from open_stocks_mcp.config import get_cache_config
+
+        get_cache_config().enabled = False
+
+        mock_latest_price.return_value = ["150.25"]
+        mock_quotes.return_value = [
+            {
+                "previous_close": "148.50",
+                "volume": "1000000",
+                "ask_price": "150.30",
+                "bid_price": "150.20",
+                "last_trade_price": "150.25",
+            }
+        ]
+
+        results = await asyncio.gather(
+            get_stock_price("AAPL"),
+            get_stock_price("AAPL"),
+        )
+
+        assert mock_latest_price.call_count == 1
+        assert mock_quotes.call_count == 1
+        assert results[0] == results[1]
+        assert results[0]["result"]["symbol"] == "AAPL"
+        assert results[0]["result"]["status"] == "success"
 
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")

@@ -454,45 +454,62 @@ async def get_watchlist_performance(watchlist_name: str) -> dict[str, Any]:
             }
         }
 
+    symbols_list = [s for s in symbols if isinstance(s, str)]
+
     # Get current prices for all symbols
-    performance_data = []
+    performance_data: list[dict[str, Any]] = []
     gainers = 0
     losers = 0
     unchanged = 0
     total_volume = 0
     total_change_percent = 0.0
 
-    for symbol in symbols:
-        try:
-            # Get current price data for symbol
-            price_data = await execute_with_retry(
-                func=rh.get_latest_price,
-                func_name="get_latest_price",
-                max_retries=2,
-                inputSymbols=[symbol],
+    try:
+        # Bulk fetch: one call for all prices, one for all quotes
+        price_results = await execute_with_retry(rh.get_latest_price, symbols_list)
+        quote_results = await execute_with_retry(rh.get_quotes, symbols_list)
+
+        if not isinstance(price_results, list):
+            price_results = []
+        if not isinstance(quote_results, list):
+            quote_results = []
+
+        quote_by_symbol = {
+            str(quote["symbol"]).upper(): quote
+            for quote in quote_results
+            if isinstance(quote, dict) and quote.get("symbol")
+        }
+        quotes_have_symbols = bool(quote_by_symbol)
+        prices_are_aligned = len(price_results) == len(symbols_list)
+
+        for i, symbol in enumerate(symbols_list):
+            symbol_key = symbol.upper()
+            quote = quote_by_symbol.get(symbol_key)
+            if quote is None and not quotes_have_symbols:
+                maybe_quote = quote_results[i] if i < len(quote_results) else {}
+                quote = maybe_quote if isinstance(maybe_quote, dict) else {}
+            elif quote is None:
+                quote = {}
+
+            price_str = (
+                quote.get("last_trade_price")
+                or quote.get("last_extended_hours_trade_price")
+                or quote.get("ask_price")
+                or quote.get("bid_price")
             )
+            if price_str in (None, "") and prices_are_aligned and not quotes_have_symbols:
+                price_str = price_results[i]
 
-            if price_data and len(price_data) > 0:
-                current_price = price_data[0]
-
-                # Get quote for additional data
-                quote_data = await execute_with_retry(
-                    func=rh.get_quote,
-                    func_name="get_quote",
-                    max_retries=2,
-                    inputSymbols=[symbol],
-                )
-
-                if quote_data and len(quote_data) > 0:
-                    quote = quote_data[0]
+            if price_str is not None:
+                try:
+                    current_price = float(price_str)
                     previous_close = float(quote.get("previous_close", 0))
                     volume = int(quote.get("volume", 0))
 
                     if previous_close > 0:
-                        change = float(current_price) - previous_close
+                        change = current_price - previous_close
                         change_percent = (change / previous_close) * 100
 
-                        # Categorize performance
                         if change_percent > 0:
                             gainers += 1
                         elif change_percent < 0:
@@ -506,25 +523,49 @@ async def get_watchlist_performance(watchlist_name: str) -> dict[str, Any]:
                         performance_data.append(
                             {
                                 "symbol": symbol,
-                                "current_price": current_price,
+                                "current_price": price_str,
                                 "change": f"{change:+.2f}",
                                 "change_percent": f"{change_percent:+.2f}%",
                                 "volume": volume,
                             }
                         )
                     else:
+                        total_volume += volume
                         performance_data.append(
                             {
                                 "symbol": symbol,
-                                "current_price": current_price,
+                                "current_price": price_str,
                                 "change": "N/A",
                                 "change_percent": "N/A",
                                 "volume": volume,
                             }
                         )
+                except (ValueError, TypeError) as exc:
+                    logger.warning(f"Could not parse data for {symbol}: {exc}")
+                    performance_data.append(
+                        {
+                            "symbol": symbol,
+                            "current_price": "N/A",
+                            "change": "N/A",
+                            "change_percent": "N/A",
+                            "volume": 0,
+                            "error": str(exc),
+                        }
+                    )
+            else:
+                performance_data.append(
+                    {
+                        "symbol": symbol,
+                        "current_price": "N/A",
+                        "change": "N/A",
+                        "change_percent": "N/A",
+                        "volume": 0,
+                    }
+                )
 
-        except Exception as e:
-            logger.warning(f"Could not get performance data for {symbol}: {e}")
+    except Exception as exc:
+        logger.warning(f"Could not get performance data for watchlist: {exc}")
+        for symbol in symbols_list:
             performance_data.append(
                 {
                     "symbol": symbol,
@@ -532,12 +573,12 @@ async def get_watchlist_performance(watchlist_name: str) -> dict[str, Any]:
                     "change": "N/A",
                     "change_percent": "N/A",
                     "volume": 0,
-                    "error": str(e),
+                    "error": str(exc),
                 }
             )
 
     # Calculate summary metrics
-    total_symbols = len(symbols)
+    total_symbols = len(symbols_list)
     avg_change_percent = (
         total_change_percent / total_symbols if total_symbols > 0 else 0
     )

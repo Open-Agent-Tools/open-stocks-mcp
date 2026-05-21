@@ -26,9 +26,39 @@ async def execute_with_retry(
     endpoint: str | None = None,
     broker_name: str = "robinhood",
     account_id: str | None = None,
+    coalesce_key: str | None = None,
     **kwargs: Any,
 ) -> Any:
-    """Execute a function with retry logic for transient errors."""
+    """Execute a function with retry logic for transient errors.
+
+    When *coalesce_key* is supplied the call is wrapped in a singleflight
+    coordinator: if an identical key is already in-flight the caller shares
+    that result instead of triggering a new broker call. Only supply a key for
+    read-only operations; never use it for mutating/trading calls.
+    """
+    if coalesce_key is not None:
+        from open_stocks_mcp.tools.rate_limiter import get_request_coordinator
+
+        coordinator = get_request_coordinator()
+
+        async def _call() -> Any:
+            return await execute_with_retry(
+                func,
+                *args,
+                max_retries=max_retries,
+                delay=delay,
+                backoff_factor=backoff_factor,
+                handle_auth_errors=handle_auth_errors,
+                rate_limit=rate_limit,
+                endpoint=endpoint,
+                broker_name=broker_name,
+                account_id=account_id,
+                coalesce_key=None,
+                **kwargs,
+            )
+
+        return await coordinator.execute(coalesce_key, _call)
+
     from open_stocks_mcp.brokers.registry import get_broker_registry
     from open_stocks_mcp.tools.circuit_breaker import get_broker_circuit_breaker
     from open_stocks_mcp.tools.rate_limiter import get_rate_limiter
