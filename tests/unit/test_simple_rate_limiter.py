@@ -74,3 +74,28 @@ class TestSimpleRateLimiter:
 
         # Should have recorded the call
         assert len(limiter.call_times) == 1
+
+    @patch("open_stocks_mcp.tools.rate_limiter.time.time")
+    @patch("open_stocks_mcp.tools.rate_limiter.asyncio.sleep")
+    @pytest.mark.journey_system
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    async def test_get_stats_includes_endpoint_and_broker_usage(
+        self, mock_sleep: Any, mock_time: Any
+    ) -> None:
+        """Endpoint and broker usage stats should be additive to legacy keys."""
+        mock_time.return_value = 1000.0
+        mock_sleep.return_value = None
+
+        limiter = RateLimiter(calls_per_minute=60)
+        await limiter.acquire(endpoint="/quotes", broker="robinhood")
+        await limiter.acquire(endpoint="/quotes", broker="robinhood")
+        await limiter.acquire(endpoint="/orders", broker="schwab")
+
+        stats = limiter.get_stats()
+
+        assert stats["calls_last_minute"] == 3
+        assert stats["endpoint_usage"]["/quotes"]["calls_last_minute"] == 2
+        assert stats["endpoint_usage"]["/orders"]["calls_last_minute"] == 1
+        assert stats["broker_usage"]["robinhood"]["calls_last_minute"] == 2
+        assert stats["broker_usage"]["schwab"]["calls_last_minute"] == 1

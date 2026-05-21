@@ -44,6 +44,14 @@ async def get_broker_status_data() -> dict[str, Any]:
         registry = await get_broker_registry()
         auth_status = registry.get_auth_status()
         available_brokers = registry.get_available_brokers()
+        broker_health = {}
+        account_health = {}
+        get_broker_health = getattr(registry, "get_broker_health", None)
+        if callable(get_broker_health):
+            health_summary = get_broker_health()
+            if isinstance(health_summary, dict):
+                broker_health = health_summary.get("broker_health", {})
+                account_health = health_summary.get("account_health", {})
 
         return {
             "result": {
@@ -51,6 +59,8 @@ async def get_broker_status_data() -> dict[str, Any]:
                 "available_brokers": available_brokers,
                 "total_configured": len(registry.list_brokers()),
                 "total_authenticated": len(available_brokers),
+                "broker_health": broker_health,
+                "account_health": account_health,
                 "status": "success",
             }
         }
@@ -126,10 +136,13 @@ async def get_metrics_summary_data() -> dict[str, Any]:
 async def get_health_check_data() -> dict[str, Any]:
     """Return health status of the MCP server."""
     health_status = await get_health_service().get_status()
+    metrics = await get_metrics_collector().get_metrics()
     return {
         "result": {
             **health_status,
             "circuit_breaker": get_broker_circuit_breaker().snapshot(),
+            "broker_health": metrics.get("broker_health", {}),
+            "account_health": metrics.get("account_health", {}),
             "health_status": health_status["status"],
             "status": "success",
         }

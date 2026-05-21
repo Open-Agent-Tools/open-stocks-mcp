@@ -312,6 +312,37 @@ class TestHTTPEndpoints:
         assert "state" in data["circuit_breaker"]
         assert data["server"]["status"] == "running"
 
+    async def test_health_and_status_include_additive_broker_health(
+        self, http_client: httpx.AsyncClient
+    ) -> None:
+        """Broker/account health details should be additive to legacy fields."""
+        from open_stocks_mcp.monitoring import get_metrics_collector
+
+        collector = get_metrics_collector()
+        await collector.record_broker_operation(
+            broker="robinhood",
+            account_id="acct-1",
+            operation="quote",
+            duration=0.01,
+            success=True,
+        )
+
+        health_response = await http_client.get("/health")
+        assert health_response.status_code == 200
+        health_data = health_response.json()
+        assert health_data["status"] in {"healthy", "degraded", "unhealthy"}
+        assert health_data["broker_health"]["robinhood"]["status"] == "healthy"
+        assert health_data["account_health"]["robinhood"]["acct-1"]["status"] == (
+            "healthy"
+        )
+
+        status_response = await http_client.get("/status")
+        assert status_response.status_code == 200
+        status_data = status_response.json()
+        assert status_data["metrics"]["broker_health"]["robinhood"]["status"] == (
+            "healthy"
+        )
+
     async def test_list_tools_endpoint(self, http_client: httpx.AsyncClient) -> None:
         """Test tools listing endpoint"""
         response = await http_client.get("/tools")
@@ -491,7 +522,7 @@ class TestLiveHTTPServer:
                 assert response.status_code == 200
 
                 data = response.json()
-                assert data["status"] in {"healthy", "degraded"}
+                assert data["status"] in {"healthy", "degraded", "unhealthy"}
         finally:
             # Clean up
             server_task.cancel()

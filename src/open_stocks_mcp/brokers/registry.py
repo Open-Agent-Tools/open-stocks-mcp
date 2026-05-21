@@ -1,6 +1,9 @@
 """Broker registry for managing multiple broker instances."""
 
 import asyncio
+import inspect
+import time
+from collections.abc import Awaitable, Callable
 from typing import Any
 
 from open_stocks_mcp.brokers.base import BaseBroker, BrokerAuthStatus
@@ -28,6 +31,9 @@ class BrokerRegistry:
         self._brokers: dict[str, BaseBroker] = {}
         self._active_broker: str | None = None
         self._authentication_attempts: dict[str, int] = {}
+        self._auth_refresh_futures: dict[tuple[str, str], asyncio.Task[Any]] = {}
+        self._auth_refresh_lock = asyncio.Lock()
+        self._auth_operation_locks: dict[tuple[str, str], asyncio.Lock] = {}
 
     def register(self, broker: BaseBroker) -> None:
         """Register a broker instance.
@@ -152,6 +158,159 @@ class BrokerRegistry:
             }
             for name, broker in self._brokers.items()
         }
+
+    def get_broker_health(self) -> dict[str, Any]:
+        """Get broker and account health summaries from collected telemetry."""
+        from open_stocks_mcp.monitoring import get_metrics_collector
+
+        return get_metrics_collector().get_broker_health_summary()
+
+    @staticmethod
+    def _account_key(account_id: str | None) -> str:
+        return account_id or "default"
+
+    @staticmethod
+    async def _maybe_await(value: Any) -> Any:
+        if inspect.isawaitable(value):
+            return await value
+        return value
+
+    async def coordinate_auth_refresh(
+        self,
+        broker_name: str,
+        account_id: str | None,
+        refresh_call: Callable[[], Awaitable[Any] | Any],
+    ) -> Any:
+        """Run one in-flight auth refresh per broker/account key.
+
+        Concurrent callers for the same key await the same refresh task. Different
+        account keys are independent so one account refresh does not serialize all
+        broker activity.
+        """
+        key = (broker_name, self._account_key(account_id))
+
+        async with self._auth_refresh_lock:
+            refresh_task = self._auth_refresh_futures.get(key)
+            if refresh_task is None or refresh_task.done():
+                refresh_task = asyncio.create_task(
+                    self._maybe_await(refresh_call())
+                )
+                self._auth_refresh_futures[key] = refresh_task
+
+        try:
+            return await refresh_task
+        finally:
+            if refresh_task.done():
+                async with self._auth_refresh_lock:
+                    if self._auth_refresh_futures.get(key) is refresh_task:
+                        self._auth_refresh_futures.pop(key, None)
+
+    async def run_with_auth_guard(
+        self,
+        broker_name: str,
+        account_id: str | None,
+        operation: Callable[[], Awaitable[Any] | Any],
+    ) -> Any:
+        """Run an operation under a per broker/account session-state guard."""
+        key = (broker_name, self._account_key(account_id))
+        async with self._auth_refresh_lock:
+            lock = self._auth_operation_locks.setdefault(key, asyncio.Lock())
+
+        async with lock:
+            return await self._maybe_await(operation())
+
+    @staticmethod
+    def _classify_failure(error_type: str) -> str:
+        normalized = error_type.lower()
+        if "pool" in normalized:
+            return "client_pool"
+        if "timeout" in normalized:
+            return "timeout"
+        if "auth" in normalized or "401" in normalized or "token" in normalized:
+            return "authentication"
+        if "account" in normalized:
+            return "account"
+        return "broker_api"
+
+    async def _record_operation_metric(self, result: dict[str, Any]) -> None:
+        try:
+            from open_stocks_mcp.monitoring import get_metrics_collector
+
+            await get_metrics_collector().record_broker_operation(
+                broker=result["broker"],
+                account_id=result["account_id"],
+                operation=result["operation"],
+                duration=result["duration_ms"] / 1000.0,
+                success=result["status"] == "success",
+                error_type=result.get("error", {}).get("type"),
+                failure_class=result.get("error", {}).get("failure_class"),
+            )
+        except Exception as exc:
+            logger.debug(f"Failed to record broker operation metric: {exc}")
+
+    async def run_concurrent_operations(
+        self,
+        operations: list[dict[str, Any]],
+        concurrency_limit: int = 5,
+        timeout_seconds: float = 30.0,
+    ) -> list[dict[str, Any]]:
+        """Run broker operations with bounded fan-out and isolated results."""
+        semaphore = asyncio.Semaphore(max(1, concurrency_limit))
+
+        async def run_one(spec: dict[str, Any]) -> dict[str, Any]:
+            async with semaphore:
+                broker = str(spec.get("broker") or "unknown")
+                account_id = self._account_key(spec.get("account_id"))
+                operation_name = str(spec.get("operation") or "operation")
+                call = spec["call"]
+                start = time.perf_counter()
+
+                try:
+                    result_value = await asyncio.wait_for(
+                        self._maybe_await(call()), timeout=timeout_seconds
+                    )
+                    status = "success"
+                    result: dict[str, Any] = {
+                        "broker": broker,
+                        "account_id": account_id,
+                        "operation": operation_name,
+                        "status": status,
+                        "duration_ms": round((time.perf_counter() - start) * 1000, 2),
+                        "result": result_value,
+                    }
+                except TimeoutError as exc:
+                    error_type = type(exc).__name__
+                    result = {
+                        "broker": broker,
+                        "account_id": account_id,
+                        "operation": operation_name,
+                        "status": "timeout",
+                        "duration_ms": round((time.perf_counter() - start) * 1000, 2),
+                        "error": {
+                            "type": error_type,
+                            "message": f"Operation timed out after {timeout_seconds}s",
+                            "failure_class": "timeout",
+                        },
+                    }
+                except Exception as exc:
+                    error_type = type(exc).__name__
+                    result = {
+                        "broker": broker,
+                        "account_id": account_id,
+                        "operation": operation_name,
+                        "status": "error",
+                        "duration_ms": round((time.perf_counter() - start) * 1000, 2),
+                        "error": {
+                            "type": error_type,
+                            "message": str(exc),
+                            "failure_class": self._classify_failure(error_type),
+                        },
+                    }
+
+                await self._record_operation_metric(result)
+                return result
+
+        return await asyncio.gather(*(run_one(spec) for spec in operations))
 
     async def authenticate_all(self, fail_fast: bool = False) -> dict[str, bool]:
         """Authenticate all registered brokers.
