@@ -248,6 +248,10 @@ uv run pytest -m "journey_market_data"  # Market data tests (~3.8s)
 uv run pytest -m "not slow and not exception_test"  # Recommended for development
 uv run pytest -m rate_limited           # Opt-in live API tests that may hit broker rate limits
 RUN_RATE_LIMITED=1 uv run pytest        # Include rate-limited tests in a full run
+uv run pytest -m performance tests/performance -v  # Mocked performance benchmarks
+RUN_PERFORMANCE=1 uv run pytest         # Include performance tests in a full run
+
+# Performance tests use mocked broker APIs and require no credentials.
 
 # See CLAUDE.md for complete journey testing guide
 ```

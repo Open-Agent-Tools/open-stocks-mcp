@@ -49,6 +49,7 @@ dependencies = [
 dev = [
     "pytest>=9.0.0",
     "pytest-asyncio>=1.3.0",
+    "pytest-benchmark>=5.0.0",
     "pytest-mock>=3.15.0",
     "ruff>=0.14.0",
     "mypy>=1.19.0",
@@ -148,7 +149,7 @@ addopts = [
     "--strict-config",
     "--verbose",
     "-m",
-    "not live_market and not performance",
+    "not live_market",
 ]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
@@ -159,7 +160,7 @@ markers = [
     "agent_evaluation: marks tests as ADK agent evaluation tests",
     "exception_test: marks tests that handle exceptions and error states (skipped by default for faster test runs)",
     "unit: marks tests as fast unit tests",
-    "performance: marks tests as performance/benchmark tests",
+    "performance: marks tests as performance/benchmark tests (skipped by default; opt in with '-m performance' or RUN_PERFORMANCE=1)",
     "auth_required: marks tests that require authentication",
     "rate_limited: marks tests that may hit live endpoints with rate limit risk (skipped by default; opt in with '-m rate_limited' or RUN_RATE_LIMITED=1)",
     "journey_account: Account management tests (account_info, profiles, settings)",
@@ -182,6 +183,7 @@ managed = true
 dev = [
     "pytest>=9.0.0",
     "pytest-asyncio>=1.3.0",
+    "pytest-benchmark>=5.0.0",
     "pytest-mock>=3.15.0",
     "pytest-cov>=6.2.1",
     "httpx>=0.28.0",

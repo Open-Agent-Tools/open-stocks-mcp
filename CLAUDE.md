@@ -49,6 +49,8 @@ pytest tests/unit/                                        # Unit tests (fast)
 pytest tests/integration/ -m integration                  # Integration (needs auth)
 pytest -m rate_limited                                    # Live rate-limited API tests
 RUN_RATE_LIMITED=1 pytest                                 # Include rate-limited tests in full run
+uv run pytest -m performance tests/performance -v         # Mocked performance benchmarks
+RUN_PERFORMANCE=1 uv run pytest                           # Include performance tests in full run
 
 # READ ONLY journeys (perfect for ADK evaluations)
 pytest -m "journey_account or journey_portfolio or journey_market_data or journey_research or journey_notifications or journey_system"
@@ -56,8 +58,8 @@ pytest -m "journey_account or journey_portfolio or journey_market_data or journe
 # Failure-mode regression tests (network/auth failures, no live credentials needed)
 uv run pytest tests/unit/test_error_handling.py tests/unit/test_auth_coordinator.py -k 'retry or timeout or connection or auth_failed' -q
 
-# Performance/load smoke tests (mocked, CI-safe, no credentials needed)
-uv run pytest tests/performance -k smoke -q
+# Performance/load benchmarks (mocked, CI-safe, no credentials needed)
+uv run pytest -m performance tests/performance -v
 ```
 
 **Journey Categories:**
@@ -73,6 +75,10 @@ uv run pytest tests/performance -k smoke -q
 - `rate_limited` - Live endpoint tests that may hit Robinhood or Schwab rate
   limits; skipped by default unless selected with `-m rate_limited` or
   `RUN_RATE_LIMITED=1`
+- `performance` - Mocked pytest-benchmark latency tests for representative MCP
+  wrappers; skipped by default unless selected with `-m performance` or
+  `RUN_PERFORMANCE=1`. Run deliberately with
+  `uv run pytest -m performance tests/performance -v`.
 
 ### Code Quality
 ```bash

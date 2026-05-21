@@ -27,6 +27,9 @@ from tests.integration.live_market_harness import (
 RATE_LIMITED_SKIP_REASON = (
     "rate_limited test; set RUN_RATE_LIMITED=1 or pass '-m rate_limited' to enable"
 )
+PERFORMANCE_SKIP_REASON = (
+    "performance test; set RUN_PERFORMANCE=1 or pass '-m performance' to enable"
+)
 
 
 def pytest_configure(config: Any) -> None:
@@ -35,6 +38,11 @@ def pytest_configure(config: Any) -> None:
         "markers",
         "rate_limited: marks tests that may hit live endpoints with rate limit risk "
         "(skipped by default; opt in with '-m rate_limited' or RUN_RATE_LIMITED=1)",
+    )
+    config.addinivalue_line(
+        "markers",
+        "performance: marks tests as performance/benchmark tests "
+        "(skipped by default; opt in with '-m performance' or RUN_PERFORMANCE=1)",
     )
     config.addinivalue_line(
         "markers",
@@ -96,7 +104,7 @@ def pytest_addoption(parser: Any) -> None:
 
 
 def pytest_collection_modifyitems(config: Any, items: list[Any]) -> None:
-    """Skip rate-limited and live-market tests unless explicitly opted in."""
+    """Skip opt-in test groups unless explicitly selected."""
     markexpr = config.option.markexpr or ""
 
     if "rate_limited" not in markexpr and not os.environ.get("RUN_RATE_LIMITED"):
@@ -105,7 +113,18 @@ def pytest_collection_modifyitems(config: Any, items: list[Any]) -> None:
             if list(item.iter_markers(name="rate_limited")):
                 item.add_marker(skip_rate_limited)
 
-    run_live = config.getoption("--run-live-market", default=False)
+    if "performance" not in markexpr and not os.environ.get("RUN_PERFORMANCE"):
+        skip_performance = pytest.mark.skip(reason=PERFORMANCE_SKIP_REASON)
+        for item in items:
+            if list(item.iter_markers(name="performance")):
+                item.add_marker(skip_performance)
+
+    getoption = getattr(config, "getoption", None)
+    run_live = (
+        getoption("--run-live-market", default=False)
+        if getoption is not None
+        else False
+    )
     env_live = bool(os.environ.get(LIVE_MARKET_ENV_VAR))
     if not (run_live and env_live):
         skip_live = pytest.mark.skip(reason=LIVE_MARKET_SKIP_REASON)
