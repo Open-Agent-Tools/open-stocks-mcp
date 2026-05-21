@@ -678,3 +678,60 @@ class TestSessionManagement:
         asyncio.run(run_lifespan())
 
         mock_session_manager.logout.assert_awaited_once()
+
+    @patch("open_stocks_mcp.server.http_transport.get_metrics_collector")
+    @patch("open_stocks_mcp.server.http_transport.get_health_service")
+    async def test_health_endpoint_includes_alert_state(
+        self,
+        mock_get_health_service: Mock,
+        mock_get_metrics_collector: Mock,
+        http_client: httpx.AsyncClient,
+    ) -> None:
+        """HTTP /health exposes active_alerts when metrics collector has active alerts."""
+        mock_health_service = AsyncMock()
+        mock_health_service.get_status.return_value = {
+            "status": "degraded",
+            "timestamp": 1700000000.0,
+            "components": {
+                "metrics": {"status": "healthy"},
+                "session": {"status": "healthy"},
+            },
+        }
+        mock_get_health_service.return_value = mock_health_service
+
+        mock_collector = AsyncMock()
+        mock_collector.get_metrics.return_value = {
+            "broker_health": {},
+            "account_health": {},
+            "active_alerts": [
+                {
+                    "signal": "high_error_rate",
+                    "severity": "degraded",
+                    "message": "High error rate: 15.0%",
+                    "timestamp": "2026-01-01T00:00:00",
+                }
+            ],
+            "degraded_sink_total": 0,
+        }
+        mock_get_metrics_collector.return_value = mock_collector
+
+        response = await http_client.get("/health")
+        assert response.status_code == 200
+
+        data = response.json()
+        assert data["status"] == "degraded"
+        assert "active_alerts" in data
+        assert len(data["active_alerts"]) == 1
+        assert data["active_alerts"][0]["signal"] == "high_error_rate"
+
+    async def test_status_endpoint_includes_alert_fields(
+        self, http_client: httpx.AsyncClient
+    ) -> None:
+        """HTTP /status metrics section includes active_alerts and degraded_sink_total."""
+        response = await http_client.get("/status")
+        assert response.status_code == 200
+
+        data = response.json()
+        assert "metrics" in data
+        assert "active_alerts" in data["metrics"]
+        assert "degraded_sink_total" in data["metrics"]

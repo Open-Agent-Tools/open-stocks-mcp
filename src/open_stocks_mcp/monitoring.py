@@ -4,21 +4,57 @@ import asyncio
 import math
 import time
 from collections import defaultdict, deque
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Any
+from typing import Any, Protocol, runtime_checkable
 
 from open_stocks_mcp.logging_config import logger
+
+
+@dataclass
+class AlertEvent:
+    """A monitoring alert event emitted when a threshold condition is met."""
+
+    signal: str
+    severity: str
+    message: str
+    timestamp: str = field(default_factory=lambda: datetime.now().isoformat())
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+
+@runtime_checkable
+class AlertSink(Protocol):
+    """Protocol for alert delivery sinks. Implementations must be async-safe."""
+
+    async def send(self, event: AlertEvent) -> None:
+        """Deliver the alert event to the sink destination."""
+        ...
+
+
+class _LogAlertSink:
+    """Default no-op sink that logs events. No external delivery."""
+
+    async def send(self, event: AlertEvent) -> None:
+        logger.warning(
+            f"ALERT [{event.severity}] {event.signal}: {event.message}"
+        )
 
 
 class MetricsCollector:
     """Collects and tracks metrics for monitoring."""
 
-    def __init__(self, window_size_minutes: int = 60):
-        """Initialize metrics collector.
-
-        Args:
-            window_size_minutes: Size of the rolling window for metrics
-        """
+    def __init__(
+        self,
+        window_size_minutes: int = 60,
+        alert_sink: AlertSink | None = None,
+        alerts_enabled: bool = True,
+        alert_dedup_window_seconds: float = 300.0,
+        error_rate_degraded_threshold: float = 10.0,
+        error_rate_unhealthy_threshold: float = 25.0,
+        avg_response_time_degraded_ms: float = 5000.0,
+        avg_response_time_unhealthy_ms: float = 10000.0,
+    ):
+        """Initialize metrics collector."""
         self.window_size = timedelta(minutes=window_size_minutes)
 
         # Metrics storage
@@ -42,6 +78,23 @@ class MetricsCollector:
         self.cache_misses: dict[str, int] = defaultdict(int)
 
         self._lock = asyncio.Lock()
+
+        # Alerting
+        self._alert_sink: AlertSink = (
+            alert_sink if alert_sink is not None else _LogAlertSink()
+        )
+        self._alerts_enabled = alerts_enabled
+        self._alert_dedup_window = timedelta(seconds=alert_dedup_window_seconds)
+        self._error_rate_degraded_threshold = error_rate_degraded_threshold
+        self._error_rate_unhealthy_threshold = error_rate_unhealthy_threshold
+        self._avg_response_time_degraded_ms = avg_response_time_degraded_ms
+        self._avg_response_time_unhealthy_ms = avg_response_time_unhealthy_ms
+        # Maps signal -> timestamp of last emission (for dedup)
+        self._last_alert_at: dict[str, datetime] = {}
+        # Current active alerts keyed by signal name
+        self._active_alerts: dict[str, AlertEvent] = {}
+        # Counter for sink delivery failures
+        self.degraded_sink_total = 0
 
     async def record_api_call(
         self,
@@ -81,6 +134,14 @@ class MetricsCollector:
                 self.total_errors += 1
                 if error_type:
                     self.error_types[error_type] += 1
+
+        # Evaluate alert conditions after every recorded call so live traffic
+        # drives both `active_alerts` state and sink delivery. Runs outside the
+        # lock so `get_metrics()` (which acquires it) does not deadlock.
+        try:
+            await self.evaluate_alert_conditions()
+        except Exception as exc:  # pragma: no cover - defensive
+            logger.warning(f"Alert evaluation failed: {exc}")
 
     async def record_session_refresh(self) -> None:
         """Record a session refresh event."""
@@ -331,6 +392,16 @@ class MetricsCollector:
                 "cache_hit_rate_percent": cache_hit_rate,
                 "broker_health": broker_health_out,
                 "account_health": account_health_out,
+                "active_alerts": [
+                    {
+                        "signal": e.signal,
+                        "severity": e.severity,
+                        "message": e.message,
+                        "timestamp": e.timestamp,
+                    }
+                    for e in self._active_alerts.values()
+                ],
+                "degraded_sink_total": self.degraded_sink_total,
                 "timestamp": now.isoformat(),
             }
 
@@ -416,12 +487,93 @@ class MetricsCollector:
         return {
             "status": health,
             "issues": issues,
+            "active_alerts": metrics["active_alerts"],
             "metrics_summary": {
                 "error_rate_percent": error_rate,
                 "avg_response_time_ms": avg_response_time,
                 "calls_last_hour": metrics["calls_in_window"],
             },
         }
+
+    async def evaluate_alert_conditions(self) -> None:
+        """Evaluate current metrics against alert thresholds and emit events.
+
+        This method is idempotent and safe to call repeatedly; deduplication
+        prevents duplicate alerts within the configured window.  Sink failures
+        are caught and counted in `degraded_sink_total` — they never propagate.
+        """
+        metrics = await self.get_metrics()
+        error_rate = metrics["error_rate_percent"]
+        avg_rt_ms = metrics["avg_response_time_ms"]
+
+        now = datetime.now()
+
+        candidates: list[AlertEvent] = []
+
+        if error_rate > self._error_rate_unhealthy_threshold:
+            candidates.append(
+                AlertEvent(
+                    signal="high_error_rate",
+                    severity="unhealthy",
+                    message=f"Critical error rate: {error_rate}%",
+                    metadata={"error_rate_percent": error_rate},
+                )
+            )
+        elif error_rate > self._error_rate_degraded_threshold:
+            candidates.append(
+                AlertEvent(
+                    signal="high_error_rate",
+                    severity="degraded",
+                    message=f"High error rate: {error_rate}%",
+                    metadata={"error_rate_percent": error_rate},
+                )
+            )
+
+        if avg_rt_ms > self._avg_response_time_unhealthy_ms:
+            candidates.append(
+                AlertEvent(
+                    signal="high_avg_response_time",
+                    severity="unhealthy",
+                    message=f"Critical response time: {avg_rt_ms}ms",
+                    metadata={"avg_response_time_ms": avg_rt_ms},
+                )
+            )
+        elif avg_rt_ms > self._avg_response_time_degraded_ms:
+            candidates.append(
+                AlertEvent(
+                    signal="high_avg_response_time",
+                    severity="degraded",
+                    message=f"High response time: {avg_rt_ms}ms",
+                    metadata={"avg_response_time_ms": avg_rt_ms},
+                )
+            )
+
+        # Clear resolved signals from active_alerts
+        active_signals = {e.signal for e in candidates}
+        for signal in list(self._active_alerts.keys()):
+            if signal not in active_signals:
+                del self._active_alerts[signal]
+
+        if not self._alerts_enabled:
+            # Still update active alerts state, but skip sink delivery
+            for event in candidates:
+                self._active_alerts[event.signal] = event
+            return
+
+        for event in candidates:
+            self._active_alerts[event.signal] = event
+
+            last_sent = self._last_alert_at.get(event.signal)
+            if last_sent is not None and (now - last_sent) < self._alert_dedup_window:
+                continue
+
+            self._last_alert_at[event.signal] = now
+
+            try:
+                await self._alert_sink.send(event)
+            except Exception as exc:
+                self.degraded_sink_total += 1
+                logger.warning(f"Alert sink delivery failed for {event.signal}: {exc}")
 
 
 # Global metrics collector instance
@@ -436,7 +588,18 @@ def get_metrics_collector() -> MetricsCollector:
     """
     global _metrics_collector
     if _metrics_collector is None:
-        _metrics_collector = MetricsCollector()
+        # Local import to avoid circular dependency at module load.
+        from open_stocks_mcp.config import load_config
+
+        alerts = load_config().alerts
+        _metrics_collector = MetricsCollector(
+            alerts_enabled=alerts.enabled,
+            alert_dedup_window_seconds=alerts.dedup_window_seconds,
+            error_rate_degraded_threshold=alerts.error_rate_degraded_threshold,
+            error_rate_unhealthy_threshold=alerts.error_rate_unhealthy_threshold,
+            avg_response_time_degraded_ms=alerts.avg_response_time_degraded_ms,
+            avg_response_time_unhealthy_ms=alerts.avg_response_time_unhealthy_ms,
+        )
     return _metrics_collector
 
 
