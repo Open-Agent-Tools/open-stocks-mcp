@@ -251,6 +251,30 @@ def broker_auth_error_payload() -> dict[str, Any]:
     return broker_payloads.broker_auth_error_payload()
 
 
+@pytest.fixture
+def network_timeout_error() -> TimeoutError:
+    """Timeout exception fixture classified as a network error."""
+    return TimeoutError("request timeout")
+
+
+@pytest.fixture
+def connection_refused_error() -> ConnectionError:
+    """Connection exception fixture classified as a network error."""
+    return ConnectionError("connection refused")
+
+
+@pytest.fixture
+def expired_token_error() -> Exception:
+    """Authentication-like expired token exception fixture."""
+    return Exception("token expired")
+
+
+@pytest.fixture
+def invalid_credentials_error() -> Exception:
+    """Authentication-like invalid credentials exception fixture."""
+    return Exception("invalid credentials")
+
+
 # Journey-specific fixtures
 
 

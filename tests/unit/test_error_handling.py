@@ -690,12 +690,14 @@ def test_log_api_call_excludes_sensitive_kwargs(
 # --- Failure-mode regression tests ---
 
 
+@pytest.mark.exception_test
 def test_classify_timeout_error_as_network_error() -> None:
     """TimeoutError should classify as NetworkError."""
     error = classify_error(TimeoutError("request timed out"))
     assert isinstance(error, NetworkError)
 
 
+@pytest.mark.exception_test
 def test_classify_connection_refused_as_network_error() -> None:
     """ConnectionError 'connection refused' should classify as NetworkError."""
     error = classify_error(ConnectionError("connection refused"))
@@ -703,6 +705,7 @@ def test_classify_connection_refused_as_network_error() -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.exception_test
 async def test_execute_with_retry_succeeds_after_transient_network_failure(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -725,6 +728,7 @@ async def test_execute_with_retry_succeeds_after_transient_network_failure(
 
 
 @pytest.mark.asyncio
+@pytest.mark.exception_test
 async def test_execute_with_retry_raises_network_error_on_repeated_timeout(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

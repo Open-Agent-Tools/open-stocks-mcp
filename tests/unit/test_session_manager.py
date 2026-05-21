@@ -8,7 +8,10 @@ from unittest.mock import patch
 
 import pytest
 
-from open_stocks_mcp.tools.session_manager import SessionManager
+from open_stocks_mcp.tools.session_manager import (
+    SessionManager,
+    ensure_authenticated_session,
+)
 
 
 def test_logout_clears_session_state() -> None:
@@ -127,3 +130,68 @@ def test_interactive_mfa_prompt_uses_original_stderr_when_stderr_is_redirected()
     assert "ROBINHOOD MFA REQUIRED" in original_stderr.getvalue()
     assert "Enter verification code:" in original_stderr.getvalue()
     assert "ROBINHOOD MFA REQUIRED" not in redirected_stderr.getvalue()
+
+
+@pytest.mark.unit
+@pytest.mark.journey_account
+@pytest.mark.exception_test
+def test_ensure_authenticated_handles_expired_session_without_exception() -> None:
+    """Expired Robinhood session should fail cleanly without unhandled exception."""
+    manager = SessionManager(session_timeout_hours=0)
+    manager.set_credentials("test_user", "test_pass")
+    manager._is_authenticated = True
+    manager.login_time = datetime.now()
+
+    with patch.object(manager, "_authenticate", return_value=False):
+        result = asyncio.run(manager.ensure_authenticated())
+
+    assert result is False
+
+
+@pytest.mark.unit
+@pytest.mark.journey_account
+@pytest.mark.exception_test
+def test_ensure_authenticated_invalid_credentials_returns_false() -> None:
+    """Invalid credentials should return False and increment failed attempts."""
+    manager = SessionManager()
+    manager.set_credentials("test_user", "test_pass")
+
+    with (
+        patch(
+            "open_stocks_mcp.tools.session_manager.rh.login",
+            side_effect=Exception("invalid credentials"),
+        ),
+        patch(
+            "open_stocks_mcp.tools.session_manager.rh.load_user_profile",
+            return_value={"id": "123"},
+        ),
+    ):
+        result = asyncio.run(manager.ensure_authenticated())
+
+    assert result is False
+    assert manager._failed_login_attempts == 1
+    assert manager._is_authenticated is False
+
+
+@pytest.mark.unit
+@pytest.mark.journey_account
+@pytest.mark.exception_test
+def test_ensure_authenticated_session_catches_auth_exceptions() -> None:
+    """Public session helper should return tuple instead of propagating errors."""
+    manager = SessionManager()
+
+    with (
+        patch(
+            "open_stocks_mcp.tools.session_manager.get_session_manager",
+            return_value=manager,
+        ),
+        patch.object(
+            manager,
+            "ensure_authenticated",
+            side_effect=Exception("invalid credentials"),
+        ),
+    ):
+        success, error = asyncio.run(ensure_authenticated_session())
+
+    assert success is False
+    assert error == "invalid credentials"
