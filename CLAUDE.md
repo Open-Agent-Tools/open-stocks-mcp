@@ -52,6 +52,12 @@ RUN_RATE_LIMITED=1 pytest                                 # Include rate-limited
 
 # READ ONLY journeys (perfect for ADK evaluations)
 pytest -m "journey_account or journey_portfolio or journey_market_data or journey_research or journey_notifications or journey_system"
+
+# Failure-mode regression tests (network/auth failures, no live credentials needed)
+uv run pytest tests/unit/test_error_handling.py tests/unit/test_auth_coordinator.py -k 'retry or timeout or connection or auth_failed' -q
+
+# Performance/load smoke tests (mocked, CI-safe, no credentials needed)
+uv run pytest tests/performance -k smoke -q
 ```
 
 **Journey Categories:**

@@ -506,3 +506,50 @@ class TestAuthenticationIntegrationScenarios:
         assert successful == 0
         assert total == 0
         assert failed == []
+
+
+class TestAuthFailedStructuredResponse:
+    """Tests that auth failure produces structured broker_unavailable responses."""
+
+    @pytest.mark.asyncio
+    async def test_get_broker_or_error_returns_auth_failed_status(self, fresh_registry):
+        """Broker with AUTH_FAILED status returns structured response with auth_status='auth_failed'."""
+        broker = MockBroker("test", should_auth_succeed=False)
+        fresh_registry.register(broker)
+        await broker.authenticate()  # sets AUTH_FAILED
+
+        with patch(
+            "open_stocks_mcp.brokers.auth_coordinator.get_broker_registry",
+            return_value=fresh_registry,
+        ):
+            result_broker, error = await get_authenticated_broker_or_error(
+                "test", "get quote"
+            )
+
+        assert result_broker is None
+        assert error is not None
+        result = error["result"]
+        assert result["status"] == "broker_unavailable"
+        assert result["auth_status"] == "auth_failed"
+        assert result["broker"] == "test"
+
+    @pytest.mark.asyncio
+    async def test_invalid_credentials_produces_structured_error(self, fresh_registry):
+        """Broker whose authenticate() returns False gives a structured, non-raising error."""
+        broker = MockBroker("robinhood", should_auth_succeed=False)
+        fresh_registry.register(broker)
+        await broker.authenticate()
+
+        with patch(
+            "open_stocks_mcp.brokers.auth_coordinator.get_broker_registry",
+            return_value=fresh_registry,
+        ):
+            _, error = await get_authenticated_broker_or_error(
+                "robinhood", "get account info"
+            )
+
+        assert error is not None
+        result = error["result"]
+        assert "error" in result
+        assert "robinhood" in result["error"].lower()
+        assert result["auth_status"] == "auth_failed"
