@@ -168,15 +168,15 @@ async def _collect_schwab_comparison(
             for o in schwab_orders:
                 if len(data["orders"]) >= max_orders:
                     break
-                
+
                 # Schwab order structure is complex, extracting basic fields
                 # This depends on how get_schwab_orders formats them
                 # Based on schwab_trading_tools.py, it returns raw response.json()
-                
+
                 leg = o.get("orderLegCollection", [{}])[0]
                 instr = leg.get("instrument", {})
                 symbol = instr.get("symbol")
-                
+
                 if not symbols or symbol in symbols:
                     data["orders"].append({
                         "symbol": symbol,
@@ -236,7 +236,7 @@ async def get_broker_comparison(
             if not broker_data.get("available", True):
                 partial_failure = True
                 availability_notes[name] = broker_data.get("notes", "Unknown error")
-            
+
             brokers_out[name] = broker_data
 
         except Exception as exc:

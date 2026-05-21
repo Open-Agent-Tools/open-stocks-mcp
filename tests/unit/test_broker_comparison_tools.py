@@ -114,7 +114,7 @@ async def test_get_broker_comparison_success():
     data = result["result"]
     assert "brokers" in data
     assert "comparison" in data
-    
+
     # Check Robinhood data normalization
     rh_data = data["brokers"]["robinhood"]
     assert rh_data["available"] is True
