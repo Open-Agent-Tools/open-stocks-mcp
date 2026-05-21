@@ -22,6 +22,7 @@ from open_stocks_mcp.server.tool_helpers import (
 )
 
 # Cross-Broker Tools
+from open_stocks_mcp.tools.broker_comparison_tools import get_broker_comparison
 from open_stocks_mcp.tools.cross_broker_tools import get_aggregated_portfolio
 from open_stocks_mcp.tools.robinhood_account_features_tools import (
     get_account_features,
@@ -1113,6 +1114,20 @@ async def aggregated_portfolio() -> dict[str, Any]:
         partial_failure flag, and unavailable_brokers list.
     """
     return await get_aggregated_portfolio()
+
+
+@mcp.tool()
+async def broker_comparison(
+    symbols: list[str] | None = None, include_orders: bool = True, max_orders: int = 5
+) -> dict[str, Any]:
+    """Get side-by-side broker comparison for pricing, holdings, and orders.
+
+    Args:
+        symbols: Optional list of symbols to filter by.
+        include_orders: Whether to include recent orders.
+        max_orders: Maximum number of orders to return per broker.
+    """
+    return await get_broker_comparison(symbols, include_orders, max_orders)
 
 
 # Schwab Market Data Tools

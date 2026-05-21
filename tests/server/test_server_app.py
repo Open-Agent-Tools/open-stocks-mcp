@@ -150,6 +150,7 @@ class TestToolRegistration:
             "unified_watchlist_by_name",
             "unified_add_to_watchlist",
             "unified_remove_from_watchlist",
+            "broker_comparison",
         ]
 
         for tool_name in expected_tools:
