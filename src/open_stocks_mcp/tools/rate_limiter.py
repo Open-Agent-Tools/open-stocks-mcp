@@ -201,6 +201,7 @@ class RequestCoordinator:
                 waiter.cancel()
             else:
                 waiter.set_exception(exc)
+                waiter.exception()
             raise
         finally:
             async with self._lock:
