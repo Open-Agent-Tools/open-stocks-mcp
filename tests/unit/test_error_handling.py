@@ -685,3 +685,54 @@ def test_log_api_call_excludes_sensitive_kwargs(
     assert "AAPL" in message
     assert "token" not in message
     assert "include_extended_hours" in message
+
+
+# --- Failure-mode regression tests ---
+
+
+def test_classify_timeout_error_as_network_error() -> None:
+    """TimeoutError should classify as NetworkError."""
+    error = classify_error(TimeoutError("request timed out"))
+    assert isinstance(error, NetworkError)
+
+
+def test_classify_connection_refused_as_network_error() -> None:
+    """ConnectionError 'connection refused' should classify as NetworkError."""
+    error = classify_error(ConnectionError("connection refused"))
+    assert isinstance(error, NetworkError)
+
+
+@pytest.mark.asyncio
+async def test_execute_with_retry_succeeds_after_transient_network_failure(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A single transient network failure should be retried and succeed."""
+    _patch_retry_dependencies(monkeypatch)
+
+    call_count = 0
+
+    def flaky_fn() -> str:
+        nonlocal call_count
+        call_count += 1
+        if call_count == 1:
+            raise ConnectionError("connection refused")
+        return "ok"
+
+    result = await execute_with_retry(flaky_fn, max_retries=1, delay=0)
+
+    assert result == "ok"
+    assert call_count == 2
+
+
+@pytest.mark.asyncio
+async def test_execute_with_retry_raises_network_error_on_repeated_timeout(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Repeated TimeoutError should exhaust retries and raise NetworkError."""
+    _patch_retry_dependencies(monkeypatch)
+
+    def always_timeout() -> None:
+        raise TimeoutError("connect timeout")
+
+    with pytest.raises(NetworkError):
+        await execute_with_retry(always_timeout, max_retries=1, delay=0)

@@ -78,6 +78,12 @@ class CircuitBreakerError(RobinStocksError):
 
 def classify_error(error: Exception) -> RobinStocksError:
     """Classify an exception into a specific Robin Stocks error type."""
+    # Check Python built-in network exception types first (before string matching)
+    if isinstance(error, TimeoutError):
+        return NetworkError("Network connectivity issue", error)
+    if isinstance(error, ConnectionError):
+        return NetworkError("Network connectivity issue", error)
+
     error_str = str(error).lower()
 
     if any(
