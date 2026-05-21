@@ -67,6 +67,53 @@ async def test_order_buy_market_api_error(mock_order):
     assert result["result"]["status"] == "error"
 ```
 
+## Live Market Integration Harness
+
+### Opt-In Invocation
+Live market tests are **skipped by default** in all local and CI runs.  To execute them:
+
+```bash
+OPEN_STOCKS_RUN_LIVE_MARKET=1 uv run pytest tests/integration -m live_market \
+    --run-live-market --maxfail=1
+```
+
+Both the `--run-live-market` CLI flag **and** the `OPEN_STOCKS_RUN_LIVE_MARKET=1`
+environment variable must be set simultaneously.  Either alone is insufficient.
+
+### Required Environment Variables
+| Variable | Purpose |
+|---|---|
+| `OPEN_STOCKS_RUN_LIVE_MARKET` | Set to `1` to allow live network calls |
+| `ROBINHOOD_USERNAME` | Robinhood account email |
+| `ROBINHOOD_PASSWORD` | Robinhood account password |
+
+### Read-Only Rule
+Live market tests **must only call read-only operations**.  The harness enforces this
+via `assert_live_market_read_only(tool_name)`, which raises `ValueError` for any tool
+name beginning with `order_` or `cancel_`.
+
+```python
+from tests.integration.live_market_harness import assert_live_market_read_only
+
+assert_live_market_read_only("get_stock_price")  # OK
+assert_live_market_read_only("order_buy_market")  # raises ValueError
+```
+
+### Expected Skip Behavior
+Without the opt-in flag and env var, running the validation command is safe:
+
+```bash
+uv run pytest tests/integration -m live_market --maxfail=1
+# All live_market tests are collected but skipped — no network or auth code runs
+```
+
+### Harness Helpers (`tests/integration/live_market_harness.py`)
+- `require_live_market_preflight(pytestconfig)` — call at the top of any live test to enforce opt-in + credential checks
+- `live_robinhood_session` — module-scoped pytest fixture that logs in and out of Robinhood
+- `assert_live_market_read_only(tool_name)` — guard that rejects `order_*` and `cancel_*` tool names
+
+---
+
 ## ✅ ALLOWED READ-ONLY TESTS
 
 These are safe because they only retrieve data:

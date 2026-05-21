@@ -18,6 +18,11 @@ except ImportError:
 
 import pytest
 
+from tests.integration.live_market_harness import (
+    LIVE_MARKET_ENV_VAR,
+    LIVE_MARKET_SKIP_REASON,
+)
+
 RATE_LIMITED_SKIP_REASON = (
     "rate_limited test; set RUN_RATE_LIMITED=1 or pass '-m rate_limited' to enable"
 )
@@ -76,16 +81,36 @@ def pytest_configure(config: Any) -> None:
     )
 
 
-def pytest_collection_modifyitems(config: Any, items: list[Any]) -> None:
-    """Skip rate-limited tests unless the run explicitly opts into them."""
-    markexpr = config.option.markexpr or ""
-    if "rate_limited" in markexpr or os.environ.get("RUN_RATE_LIMITED"):
-        return
+def pytest_addoption(parser: Any) -> None:
+    """Register the --run-live-market CLI option."""
+    parser.addoption(
+        "--run-live-market",
+        action="store_true",
+        default=False,
+        help=(
+            "Enable live-market tests. Also requires "
+            "OPEN_STOCKS_RUN_LIVE_MARKET=1 and valid Robinhood credentials."
+        ),
+    )
 
-    skip_rate_limited = pytest.mark.skip(reason=RATE_LIMITED_SKIP_REASON)
-    for item in items:
-        if list(item.iter_markers(name="rate_limited")):
-            item.add_marker(skip_rate_limited)
+
+def pytest_collection_modifyitems(config: Any, items: list[Any]) -> None:
+    """Skip rate-limited and live-market tests unless explicitly opted in."""
+    markexpr = config.option.markexpr or ""
+
+    if "rate_limited" not in markexpr and not os.environ.get("RUN_RATE_LIMITED"):
+        skip_rate_limited = pytest.mark.skip(reason=RATE_LIMITED_SKIP_REASON)
+        for item in items:
+            if list(item.iter_markers(name="rate_limited")):
+                item.add_marker(skip_rate_limited)
+
+    run_live = config.getoption("--run-live-market", default=False)
+    env_live = bool(os.environ.get(LIVE_MARKET_ENV_VAR))
+    if not (run_live and env_live):
+        skip_live = pytest.mark.skip(reason=LIVE_MARKET_SKIP_REASON)
+        for item in items:
+            if list(item.iter_markers(name="live_market")):
+                item.add_marker(skip_live)
 
 
 @pytest.fixture
