@@ -176,7 +176,65 @@ adk eval examples/google_adk_agent tests/evals/8_opt_schwab_option_expirations_t
 adk eval examples/google_adk_agent tests/evals/5_ord_schwab_orders_test.json --config_file_path tests/evals/test_config.json
 ```
 
-### 4. Creating Custom Evaluation Tests
+### 4. Profiles Tests (`6_prf_*`)
+
+Read-only evals for Robinhood profile endpoints. These require `GOOGLE_API_KEY` and live Robinhood credentials (`ROBINHOOD_USERNAME` and `ROBINHOOD_PASSWORD`).
+
+- `tests/evals/6_prf_account_profile_test.json` — exercises `account_profile` to retrieve account profile details.
+- `tests/evals/6_prf_basic_profile_test.json` — exercises `basic_profile` for basic user profile data.
+- `tests/evals/6_prf_investment_profile_test.json` — exercises `investment_profile` for risk and investing preferences.
+- `tests/evals/6_prf_security_profile_test.json` — exercises `security_profile` for security settings/profile context.
+- `tests/evals/6_prf_user_profile_test.json` — exercises `user_profile` for user-level profile metadata.
+- `tests/evals/6_prf_complete_profile_test.json` — exercises `complete_profile` for combined profile information.
+
+Run with:
+
+```bash
+adk eval examples/google_adk_agent tests/evals/6_prf_account_profile_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/6_prf_basic_profile_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/6_prf_investment_profile_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/6_prf_security_profile_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/6_prf_user_profile_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/6_prf_complete_profile_test.json --config_file_path tests/evals/test_config.json
+```
+
+### 5. Advanced Tests (`9_adv_*`)
+
+Read-only evals for advanced account/broker tooling. `build_user_profile`, `account_settings`, and `account_features` require Robinhood credentials; `broker_status` does not.
+
+- `tests/evals/9_adv_build_user_profile_test.json` — exercises `build_user_profile` for aggregated financial profile totals.
+- `tests/evals/9_adv_account_settings_test.json` — exercises `account_settings` for account configuration values.
+- `tests/evals/9_adv_account_features_test.json` — exercises `account_features` for feature/permission availability.
+- `tests/evals/9_adv_broker_status_test.json` — exercises `broker_status` to inspect connected broker status.
+
+Run with:
+
+```bash
+adk eval examples/google_adk_agent tests/evals/9_adv_build_user_profile_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/9_adv_account_settings_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/9_adv_account_features_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/9_adv_broker_status_test.json --config_file_path tests/evals/test_config.json
+```
+
+### 6. Options Data Tests (`8_opt_*`)
+
+Read-only evals for options data tools. `option_market_data` and `option_historicals` use `options_chains` first to identify a contract; account-scoped position tools require Robinhood credentials.
+
+- `tests/evals/8_opt_option_market_data_test.json` — exercises `options_chains` then `option_market_data` using a resolved option contract id.
+- `tests/evals/8_opt_option_historicals_test.json` — exercises `options_chains` then `option_historicals` for historical option pricing.
+- `tests/evals/8_opt_aggregate_option_positions_test.json` — exercises `aggregate_option_positions` for grouped options exposure.
+- `tests/evals/8_opt_open_option_positions_with_details_test.json` — exercises `open_option_positions_with_details` for enriched open-option details.
+
+Run with:
+
+```bash
+adk eval examples/google_adk_agent tests/evals/8_opt_option_market_data_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/8_opt_option_historicals_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/8_opt_aggregate_option_positions_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/8_opt_open_option_positions_with_details_test.json --config_file_path tests/evals/test_config.json
+```
+
+### 7. Creating Custom Evaluation Tests
 
 #### Test File Structure
 ```json

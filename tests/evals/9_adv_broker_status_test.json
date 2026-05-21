@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "broker_status_test_set",
+  "name": "Broker Status Test",
+  "description": "Retrieve status of connected broker integrations.",
+  "eval_cases": [
+    {
+      "eval_id": "broker_status_test",
+      "conversation": [
+        {
+          "invocation_id": "broker-status-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "List connected brokers and show their current status."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here is the information you requested in a concise summary."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "broker_status"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "basic_profile_test_set",
+  "name": "Basic Profile Test",
+  "description": "Retrieve basic profile information.",
+  "eval_cases": [
+    {
+      "eval_id": "basic_profile_test",
+      "conversation": [
+        {
+          "invocation_id": "basic-profile-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show my basic user profile information."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here is the information you requested in a concise summary."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "basic_profile"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

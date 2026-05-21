@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "account_settings_test_set",
+  "name": "Account Settings Test",
+  "description": "Retrieve current account configuration settings.",
+  "eval_cases": [
+    {
+      "eval_id": "account_settings_test",
+      "conversation": [
+        {
+          "invocation_id": "account-settings-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show my current account settings and configuration."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here is the information you requested in a concise summary."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "account_settings"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

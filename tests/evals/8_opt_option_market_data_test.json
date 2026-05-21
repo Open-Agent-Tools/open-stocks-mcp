@@ -1,0 +1,55 @@
+{
+  "eval_set_id": "option_market_data_test_set",
+  "name": "Option Market Data Test",
+  "description": "Retrieve market data for a specific option contract via options chain discovery.",
+  "eval_cases": [
+    {
+      "eval_id": "option_market_data_test",
+      "conversation": [
+        {
+          "invocation_id": "option-market-data-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Find a tradable AAPL call option and show me its latest market data."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here is the option market data for a tradable AAPL call contract identified from the options chain."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "symbol": "AAPL"
+                },
+                "name": "options_chains"
+              },
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "option_id": "REPLACE_WITH_OPTION_ID"
+                },
+                "name": "option_market_data"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

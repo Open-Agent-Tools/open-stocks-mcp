@@ -1,0 +1,59 @@
+{
+  "eval_set_id": "option_historicals_test_set",
+  "name": "Option Historicals Test",
+  "description": "Retrieve historical data for a specific option contract via options chain discovery.",
+  "eval_cases": [
+    {
+      "eval_id": "option_historicals_test",
+      "conversation": [
+        {
+          "invocation_id": "option-historicals-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Use AAPL options chain data and show me historical pricing for a call option contract."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here is the historical option pricing summary for the selected AAPL call contract."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "symbol": "AAPL"
+                },
+                "name": "options_chains"
+              },
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "symbol": "AAPL",
+                  "expiration_date": "2025-08-08",
+                  "strike_price": "225.00",
+                  "option_type": "call",
+                  "interval": "day"
+                },
+                "name": "option_historicals"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}
