@@ -306,6 +306,27 @@
 
 ---
 
+## Roadmap Reconciliation
+
+Issue #187 is the parent roadmap record for the broader 67-tool Schwab parity target plus 9 Schwab bonus capabilities. The current shipped Schwab surface is intentionally smaller; remaining work is routed to child issues rather than implemented in this parent documentation pass.
+
+| Roadmap category | Current decision | Tracking issue |
+|------------------|------------------|----------------|
+| Account/profile consolidation | Implement the missing Schwab user-preference and all-account aggregation tools as task-shaped work. | #192 |
+| Portfolio computed tools | Implement computed holdings, day-trade, aggregate-position, and option-position helpers. | #193 |
+| Expanded market data | Implement market-hours, movers, and CUSIP instrument lookup; defer Schwab-missing research feeds to explicit third-party integration. | #194, #201 |
+| Options expansion | Implement tradable-option filtering, enriched option positions, option quotes, and option-order helpers; keep historical option pricing documented as unavailable in Schwab. | #195, #201 |
+| Trading and order replacement | Implement stop orders, option orders, spread orders, bulk cancellation, open-order helpers, and Schwab order replacement. | #196 |
+| Dividends and payment extraction | Build dividend, interest, and stock-loan payment tools from Schwab transaction history. | #197 |
+| Margin and notifications | Implement Schwab margin-status derivation and margin-interest extraction; keep Robinhood referrals, subscriptions, Gold, and push notifications not applicable. | #198, #201 |
+| Transaction history bonus tools | Track Schwab transaction lookup and filtered transaction history as the data source for downstream dividend/payment work. | #127 |
+| Streaming bonus tools | Extend the broker capability baseline with Schwab level 2, option quote, and account-activity streaming. | #199 |
+| Watchlists, crypto, and other non-parity items | Record explicit defer/not-applicable decisions instead of treating them as open roadmap questions. | #201 |
+
+Backward compatibility remains unchanged: existing Robinhood tools keep their current names, and existing registered `schwab_*` tool names remain the public Schwab surface while child issues add new tools.
+
+---
+
 ## Implementation Priority
 
 ### Phase 1: Core Trading (80% user value)
@@ -432,22 +453,14 @@
 
 ---
 
-## Open Questions
+## Decisions
 
-1. **Watchlist Replacement**: Should we build a persistent watchlist storage layer?
-   - **Option A**: SQLite database for MCP server
-   - **Option B**: JSON file storage
-   - **Option C**: Let users manage externally
-
-2. **Missing Data Sources**: Should we integrate 3rd party APIs for news/earnings?
-   - **Option A**: Add as separate tools (e.g., `alpha_vantage_get_earnings`)
-   - **Option B**: Transparent fallback from Schwab tools
-   - **Option C**: Document as limitation
-
-3. **Streaming Architecture**: How to expose Schwab streaming in MCP?
-   - **Option A**: Use SSE endpoint for streaming quotes
-   - **Option B**: Polling with cached data
-   - **Option C**: WebSocket support (Phase 6+)
+1. **Watchlists**: Deferred to client-side storage. Schwab does not expose a watchlist API, so server-owned persistence would be a separate product feature rather than Schwab parity. Issue #201 tracks the documented limitation.
+2. **Missing research data**: Deferred to future third-party integration. Earnings, ratings, news, events, and splits should not silently fall back inside Schwab tools because that would mix broker data with unrelated provider data without an explicit contract. Issue #201 records the limitation; #194 covers Schwab-native market data expansion.
+3. **Historical options pricing**: Not available from Schwab for this roadmap. Current options parity work should focus on Schwab option chains, positions, quotes, and order helpers in #195.
+4. **Cryptocurrency**: Not applicable to Schwab parity because Schwab does not support crypto trading through the broker API. Issue #201 records this as a non-portable Robinhood category.
+5. **Robinhood-specific features**: Referrals, subscriptions, Robinhood Gold features, and Robinhood push notifications are not applicable to Schwab. Margin-related replacements remain tracked in #198.
+6. **Streaming exposure**: Track Schwab streaming through the broker capability baseline and #199. The roadmap should not choose a separate transport here until the capability contract is implemented.
 
 ---
 

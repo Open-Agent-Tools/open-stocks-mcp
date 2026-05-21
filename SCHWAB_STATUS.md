@@ -15,6 +15,26 @@ The Schwab integration is **fully implemented and merged to main**. All code is 
 
 ---
 
+## Roadmap Reconciliation
+
+This status page describes the current Schwab core that was delivered with the multi-broker integration. The broader roadmap remains tracked separately: parent #187 owns reconciliation of the 67 parity plus 9 bonus target, while child issues route the remaining Schwab categories into task-shaped work.
+
+| Remaining category | Routing |
+|--------------------|---------|
+| Account/profile consolidation | #192 |
+| Portfolio computed helpers | #193 |
+| Expanded market data | #194 |
+| Options expansion | #195 |
+| Trading and order replacement | #196 |
+| Dividends and payment extraction | #197 |
+| Margin and notifications | #198 |
+| Streaming expansion | #199 |
+| Explicit deferral and not-applicable decisions | #201 |
+
+The existing Robinhood tool names and currently registered `schwab_*` names are backward-compatible surfaces. New parity tools should be added by the child issues above instead of renaming the current core.
+
+---
+
 ## What's Complete ✅
 
 ### Phase 1-4: Core Implementation (100% Complete)
@@ -116,12 +136,12 @@ docs/
 
 ---
 
-## Schwab Tools (24 Total)
+## Schwab Tools
 
 ### Account Tools (5)
 1. `schwab_account_numbers()` - Get account numbers and hashes
-2. `schwab_account_info(account_hash)` - Get account details
-3. `schwab_all_accounts()` - Get all accounts with positions
+2. `schwab_account(account_hash)` - Get account details
+3. `schwab_accounts()` - Get all accounts with positions
 4. `schwab_portfolio(account_hash)` - Get portfolio positions
 5. `schwab_account_balances(account_hash)` - Get account balances
 
@@ -139,16 +159,17 @@ docs/
 14. `schwab_sell_stock_limit(account_hash, symbol, quantity, price)` - Limit sell
 15. `schwab_orders(account_hash)` - Get orders
 16. `schwab_cancel_order(account_hash, order_id)` - Cancel order
-17. `schwab_order_details(account_hash, order_id)` - Get order details
-18. `schwab_place_order(account_hash, order_spec)` - Generic order placement
+17. `schwab_get_order(account_hash, order_id)` - Get order details
+18. `schwab_transactions_by_date(account_hash, start_date, end_date, ...)` - Get filtered transaction history by date
+19. `schwab_get_transaction(account_hash, transaction_id)` - Get transaction details
 
-### Options Tools (6)
-19. `schwab_option_chain(symbol, ...)` - Get options chain
-20. `schwab_option_chain_by_dates(symbol, from_date, to_date, ...)` - Filter by expiration
-21. `schwab_option_expirations(symbol)` - Get expiration dates
-22. `schwab_option_positions(account_hash)` - Get options positions
-23. `schwab_option_buy_to_open(account_hash, symbol, quantity, ...)` - Buy option
-24. `schwab_option_sell_to_close(account_hash, symbol, quantity, ...)` - Sell option
+### Options Tools (4)
+20. `schwab_option_chain(symbol, ...)` - Get options chain
+21. `schwab_option_chain_by_expiration(symbol, from_date, to_date, ...)` - Filter by expiration
+22. `schwab_option_expirations(symbol)` - Get expiration dates
+23. `schwab_options_positions(account_hash)` - Get options positions
+
+Additional roadmap tools, including generic order placement, option order helpers, richer transaction history, and computed portfolio helpers, are tracked by #127 and #192 through #199.
 
 ---
 
