@@ -536,6 +536,117 @@ class TestLiveHTTPServer:
 
 @pytest.mark.integration
 @pytest.mark.journey_system
+class TestMCPDebugLogging:
+    """DEBUG-level logs emitted by the /mcp endpoint are safe and useful."""
+
+    @pytest.mark.anyio
+    async def test_mcp_debug_logging_emits_method_and_request_id(
+        self, mcp_server: FastMCP, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        """A successful /mcp request emits DEBUG records with method and request_id."""
+        import logging
+
+        from httpx import ASGITransport
+
+        with patch("open_stocks_mcp.monitoring._metrics_collector", None):
+            app = create_http_server(mcp_server)
+            transport = ASGITransport(app=app)
+            async with httpx.AsyncClient(
+                transport=transport, base_url="http://test"
+            ) as client:
+                with caplog.at_level(logging.DEBUG, logger="open_stocks_mcp"):
+                    response = await client.post(
+                        "/mcp",
+                        json={
+                            "jsonrpc": "2.0",
+                            "id": 99,
+                            "method": "initialize",
+                            "params": {},
+                        },
+                    )
+
+        assert response.status_code == 200
+        log_text = " ".join(caplog.messages)
+        assert "initialize" in log_text
+        assert "99" in log_text
+
+    @pytest.mark.anyio
+    async def test_mcp_debug_logging_emits_error_class_on_unknown_method(
+        self, mcp_server: FastMCP, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        """An unknown method emits a DEBUG record that includes error status."""
+        import logging
+
+        from httpx import ASGITransport
+
+        with patch("open_stocks_mcp.monitoring._metrics_collector", None):
+            app = create_http_server(mcp_server)
+            transport = ASGITransport(app=app)
+            async with httpx.AsyncClient(
+                transport=transport, base_url="http://test"
+            ) as client:
+                with caplog.at_level(logging.DEBUG, logger="open_stocks_mcp"):
+                    response = await client.post(
+                        "/mcp",
+                        json={
+                            "jsonrpc": "2.0",
+                            "id": 42,
+                            "method": "unknown/method",
+                            "params": {},
+                        },
+                    )
+
+        # unknown/method returns a JSON-RPC error inside a 200 response
+        assert response.status_code == 200
+        data = response.json()
+        assert "error" in data
+        log_text = " ".join(caplog.messages)
+        assert "unknown/method" in log_text
+
+    @pytest.mark.anyio
+    async def test_mcp_debug_logging_does_not_leak_sensitive_values(
+        self, mcp_server: FastMCP, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        """DEBUG log messages must not contain literal credential values."""
+        import logging
+
+        from httpx import ASGITransport
+
+        sensitive_password = "s3cr3t_p@ssw0rd!"
+        sensitive_token = "tok_abc123secrettoken"
+        sensitive_account = "acct_9876543210"
+
+        payload = {
+            "jsonrpc": "2.0",
+            "id": 7,
+            "method": "tools/call",
+            "params": {
+                "name": "account_info",
+                "arguments": {
+                    "password": sensitive_password,
+                    "token": sensitive_token,
+                    "account_number": sensitive_account,
+                },
+            },
+        }
+
+        with patch("open_stocks_mcp.monitoring._metrics_collector", None):
+            app = create_http_server(mcp_server)
+            transport = ASGITransport(app=app)
+            async with httpx.AsyncClient(
+                transport=transport, base_url="http://test"
+            ) as client:
+                with caplog.at_level(logging.DEBUG, logger="open_stocks_mcp"):
+                    await client.post("/mcp", json=payload)
+
+        all_logs = " ".join(caplog.messages)
+        assert sensitive_password not in all_logs, "Password leaked into debug logs"
+        assert sensitive_token not in all_logs, "Token leaked into debug logs"
+        assert sensitive_account not in all_logs, "Account number leaked into debug logs"
+
+
+@pytest.mark.integration
+@pytest.mark.journey_system
 class TestSessionManagement:
     """Test session management features"""
 

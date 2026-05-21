@@ -80,10 +80,43 @@ mypy .                          # Type check
 # Test server locally (HTTP transport)
 uv run open-stocks-mcp-server --transport http --port 3001
 
+# Run with verbose DEBUG logging
+uv run open-stocks-mcp-server --transport http --port 3001 --debug
+DEBUG=true uv run open-stocks-mcp-server --transport http --port 3001
+
+# Verify the server is running
+curl -sf http://127.0.0.1:3001/health
+
 # Docker development
 cd examples/open-stocks-mcp-docker && docker-compose up -d
 curl http://localhost:3001/health  # Test health endpoint
 ```
+
+### VS Code Debugging (F5)
+
+The repository ships `.vscode/launch.json`, `.vscode/settings.json`, and `.vscode/extensions.json`
+so contributors can step through tool calls without Docker.
+
+**Prerequisites**: `uv sync` (creates `.venv/` in the project root).
+
+1. Open the repository folder in VS Code.
+2. Select the **"Open Stocks MCP (HTTP Debug)"** configuration in the Run & Debug panel.
+3. Press **F5** — the server starts on `http://127.0.0.1:3001` with `--debug` logging.
+4. Verify it's alive: `curl -sf http://127.0.0.1:3001/health`.
+
+**Debug logging precedence** (highest wins):
+- `--debug` flag on the CLI → always DEBUG for that invocation
+- `LOG_LEVEL=DEBUG` env var → sets the level for the process
+- `DEBUG=true` env var → escalates to DEBUG when `LOG_LEVEL` is not set
+- Default: `INFO`
+
+All log output goes to **stderr** and the rotating log file (`~/Library/Logs/mcp-servers/` on macOS).
+Stdio transport is safe: no log handler ever targets `sys.stdout`.
+
+**Recommended VS Code extensions** (installed automatically via `extensions.json`):
+- `ms-python.python` + `ms-python.vscode-pylance` — Python language support
+- `charliermarsh.ruff` — linting and formatting
+- `ms-python.mypy-type-checker` — inline type errors
 
 ## MCP Architecture
 

@@ -176,6 +176,8 @@ cython_debug/
 # Visual Studio Code
 .vscode/*
 !.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/settings.json
 *.code-workspace
 
 # Sublime Text

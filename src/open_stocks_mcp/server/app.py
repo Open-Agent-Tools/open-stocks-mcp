@@ -1520,6 +1520,12 @@ def attempt_login(username: str, password: str) -> None:
     default=False,
     help="Allow mutating trading tools over HTTP /mcp (default is read-only only)",
 )
+@click.option(
+    "--debug",
+    is_flag=True,
+    default=False,
+    help="Enable DEBUG-level logging for this server invocation.",
+)
 def main(
     port: int,
     host: str,
@@ -1528,6 +1534,7 @@ def main(
     password: str | None,
     api_key: str | None,
     allow_trading: bool,
+    debug: bool,
 ) -> int:
     """Run the server with specified transport and handle authentication.
 
@@ -1553,8 +1560,13 @@ def main(
             username = None
             password = None
 
+    # Load config; --debug flag wins for log level for this invocation.
+    config = load_config()
+    if debug:
+        config.log_level = "DEBUG"
+
     # Create MCP server
-    server = create_mcp_server()
+    server = create_mcp_server(config)
 
     # Setup broker authentication (non-blocking)
     logger.info("Initializing broker authentication...")

@@ -493,6 +493,13 @@ def create_http_server(
             request_id = json_request.get("id")
             params = json_request.get("params", {})
 
+            logger.debug(
+                "MCP request: method=%s request_id=%s body_bytes=%d",
+                method,
+                request_id,
+                len(body),
+            )
+
             try:
                 result: dict[str, Any]
                 if method == "initialize":
@@ -659,9 +666,16 @@ def create_http_server(
 
                 # Return successful response
                 response_data = {"jsonrpc": "2.0", "result": result, "id": request_id}
+                response_bytes = json.dumps(response_data).encode()
+                logger.debug(
+                    "MCP response: method=%s request_id=%s status=ok response_bytes=%d",
+                    method,
+                    request_id,
+                    len(response_bytes),
+                )
 
                 return Response(
-                    content=json.dumps(response_data).encode(),
+                    content=response_bytes,
                     status_code=200,
                     headers={"content-type": "application/json"},
                 )
@@ -673,6 +687,12 @@ def create_http_server(
                     "error": {"code": -32603, "message": str(e)},
                     "id": request_id,
                 }
+                logger.debug(
+                    "MCP response: method=%s request_id=%s status=error error_class=%s",
+                    method,
+                    request_id,
+                    type(e).__name__,
+                )
                 return Response(
                     content=json.dumps(error_response).encode(),
                     status_code=500,

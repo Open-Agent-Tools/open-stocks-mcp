@@ -188,9 +188,15 @@ def load_config() -> ServerConfig:
     )
     enabled_str = os.getenv("OTEL_ENABLED", "false").strip().lower()
     otel_enabled = enabled_str in ("1", "true", "yes")
+    # LOG_LEVEL wins; if absent, DEBUG=true escalates to DEBUG level.
+    _explicit_log_level = os.getenv("LOG_LEVEL")
+    log_level = _explicit_log_level if _explicit_log_level else (
+        "DEBUG" if _env_bool("DEBUG", False) else "INFO"
+    )
+
     return ServerConfig(
         name=os.getenv("MCP_SERVER_NAME", "Open Stocks MCP"),
-        log_level=os.getenv("LOG_LEVEL", "INFO"),
+        log_level=log_level,
         monitoring_enabled=os.getenv("MONITORING_ENABLED", "true").lower() == "true",
         cache=cache,
         retry=RetryConfig(

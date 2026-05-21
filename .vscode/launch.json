@@ -2,6 +2,26 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Open Stocks MCP (HTTP Debug)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "open_stocks_mcp.server.app",
+      "args": [
+        "--transport",
+        "http",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "3001",
+        "--debug"
+      ],
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+      },
+      "console": "integratedTerminal",
+      "justMyCode": false
+    },
+    {
       "name": "Run MCP server (HTTP)",
       "type": "python",
       "request": "launch",

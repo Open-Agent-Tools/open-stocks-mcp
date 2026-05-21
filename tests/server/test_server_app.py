@@ -3,11 +3,13 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from click.testing import CliRunner
 
 from open_stocks_mcp.server.app import (
     attempt_login,
     create_mcp_server,
     health_check,
+    main,
     mcp,
 )
 
@@ -207,3 +209,45 @@ class TestToolRegistration:
         assert "broker_health" in metrics["result"]
         assert "account_health" in metrics["result"]
         assert "endpoint_usage" in rate["result"]
+
+
+@pytest.mark.journey_system
+class TestDebugFlag:
+    """Tests that --debug wires log_level=DEBUG into create_mcp_server."""
+
+    def _run_main_with_debug(self, extra_args: list[str]) -> "MagicMock":
+        """Invoke main via CliRunner, patching out server startup."""
+        captured: dict[str, object] = {}
+
+        def fake_create_mcp_server(config: object = None) -> MagicMock:
+            captured["config"] = config
+            return MagicMock()
+
+        runner = CliRunner()
+        with (
+            patch("open_stocks_mcp.server.app.load_config") as mock_load_config,
+            patch(
+                "open_stocks_mcp.server.app.create_mcp_server",
+                side_effect=fake_create_mcp_server,
+            ),
+            patch("open_stocks_mcp.server.app.setup_brokers", new=AsyncMock()),
+            patch("open_stocks_mcp.server.app.asyncio.run"),
+        ):
+            from open_stocks_mcp.config import load_config as real_load_config
+
+            mock_load_config.side_effect = real_load_config
+            runner.invoke(main, extra_args, catch_exceptions=False)
+
+        return captured.get("config")  # type: ignore[return-value]
+
+    def test_debug_flag_sets_log_level_debug(self) -> None:
+        """--debug causes create_mcp_server to receive config with log_level=DEBUG."""
+        config = self._run_main_with_debug(["--transport", "stdio", "--debug"])
+        assert config is not None
+        assert config.log_level == "DEBUG"
+
+    def test_no_debug_flag_keeps_default_log_level(self) -> None:
+        """Without --debug, log_level remains at the default (INFO)."""
+        config = self._run_main_with_debug(["--transport", "stdio"])
+        assert config is not None
+        assert config.log_level == "INFO"
