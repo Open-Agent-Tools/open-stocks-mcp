@@ -484,3 +484,35 @@ async def schwab_get_transactions_by_date(
         transaction_types=transaction_types,
         symbol=symbol,
     )
+
+
+@handle_schwab_errors
+async def get_schwab_transaction(account_hash: str, transaction_id: str) -> dict[str, Any]:
+    """Get details for a specific transaction.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers()
+        transaction_id: Transaction ID to retrieve
+
+    Returns:
+        Dict with transaction details
+    """
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", f"get transaction {transaction_id}"
+    )
+    if error:
+        return error
+
+    try:
+
+        def _get_transaction() -> Any:
+            response = broker.client.get_transaction(account_hash, transaction_id)
+            return response.json()
+
+        transaction_data = await asyncio.to_thread(_get_transaction)
+
+        return create_success_response(transaction_data)
+
+    except Exception as e:
+        logger.error(f"Error getting Schwab transaction {transaction_id}: {e}")
+        return create_error_response(e)
