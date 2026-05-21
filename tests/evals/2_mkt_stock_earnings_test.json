@@ -1,0 +1,48 @@
+{
+  "eval_set_id": "stock_earnings_test_set",
+  "name": "Stock Earnings Test",
+  "description": "Test case for retrieving earnings report data for a stock through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "stock_earnings_test",
+      "conversation": [
+        {
+          "invocation_id": "stock-earnings-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me Microsoft's (MSFT) recent earnings reports."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here are Microsoft's (MSFT) recent earnings reports:\n\nThe data includes quarterly earnings per share (EPS) results, with both actual reported EPS and the analyst consensus estimate for each period. Recent quarters show Microsoft's revenue and profit trends across its Productivity and Business Processes, Intelligent Cloud, and More Personal Computing segments.\n\nKey figures from recent quarters:\n- EPS actual vs. estimate comparisons\n- Report dates for each fiscal quarter\n- Year-over-year growth indicators\n\n**Note:** This is read-only fundamental research data. No orders were placed."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "symbol": "MSFT"
+                },
+                "name": "stock_earnings"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

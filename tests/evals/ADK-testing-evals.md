@@ -150,7 +150,44 @@ adk eval examples/google_adk_agent tests/evals/0_sys_metrics_summary_test.json -
 adk eval examples/google_adk_agent tests/evals/0_sys_rate_limit_status_test.json --config_file_path tests/evals/test_config.json
 ```
 
-### 3. Schwab Market & Account Evals (`schwab_*`)
+### 3. Market & Research Read-Only Evaluations (`2_mkt_*`)
+
+Read-only evaluations covering Robinhood market-data and research tools. These evals exercise price, discovery, and fundamental research paths without invoking any order-placement, watchlist-mutation, or trading tools.
+
+> **Credential assumption**: Requires `GOOGLE_API_KEY` and read-only `ROBINHOOD_USERNAME`/`ROBINHOOD_PASSWORD`. No order placement occurs.
+
+#### Price History & Discovery Evals
+
+- `tests/evals/2_mkt_stock_price_test.json` — exercises `stock_price` to retrieve the current price for a given ticker.
+- `tests/evals/2_mkt_price_history_test.json` — exercises `price_history` with `{"symbol": "AAPL", "period": "week"}` to retrieve weekly OHLC data.
+- `tests/evals/2_mkt_top_movers_sp500_test.json` — exercises `top_movers_sp500` with `{"direction": "up"}` to list the top S&P 500 gainers.
+- `tests/evals/2_mkt_top_100_stocks_test.json` — exercises `top_100_stocks` to retrieve the 100 most popular Robinhood equities.
+- `tests/evals/2_mkt_top_movers_test.json` — exercises `top_movers` to list today's top 20 movers across all Robinhood-listed stocks.
+- `tests/evals/2_mkt_market_hours_test.json` — exercises `market_hours` to check current market open/close status.
+- `tests/evals/2_mkt_search_stocks_test.json` — exercises `search_stocks` to find instruments by keyword.
+- `tests/evals/2_mkt_stock_info_test.json` — exercises `stock_info` to retrieve detailed fundamental company data.
+
+#### Research & Fundamentals Evals
+
+- `tests/evals/2_mkt_stock_ratings_test.json` — exercises `stock_ratings` with `{"symbol": "AAPL"}` to retrieve analyst buy/hold/sell breakdown.
+- `tests/evals/2_mkt_stock_earnings_test.json` — exercises `stock_earnings` with `{"symbol": "MSFT"}` to retrieve quarterly EPS actuals vs. estimates.
+- `tests/evals/2_mkt_stock_news_test.json` — exercises `stock_news` with `{"symbol": "TSLA"}` to retrieve recent news headlines.
+- `tests/evals/2_mkt_stock_splits_test.json` — exercises `stock_splits` with `{"symbol": "AAPL"}` to retrieve historical split ratios and ex-dates.
+
+Run individual evals with:
+
+```bash
+adk eval examples/google_adk_agent tests/evals/2_mkt_price_history_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/2_mkt_top_movers_sp500_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/2_mkt_top_100_stocks_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/2_mkt_top_movers_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/2_mkt_stock_ratings_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/2_mkt_stock_earnings_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/2_mkt_stock_news_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/2_mkt_stock_splits_test.json --config_file_path tests/evals/test_config.json
+```
+
+### 5. Schwab Market & Account Evals (`schwab_*`)
 
 Evaluations for Schwab-specific tools. These typically require live Schwab OAuth credentials and a running MCP server.
 
@@ -176,7 +213,7 @@ adk eval examples/google_adk_agent tests/evals/8_opt_schwab_option_expirations_t
 adk eval examples/google_adk_agent tests/evals/5_ord_schwab_orders_test.json --config_file_path tests/evals/test_config.json
 ```
 
-### 4. Creating Custom Evaluation Tests
+### 6. Creating Custom Evaluation Tests
 
 #### Test File Structure
 ```json

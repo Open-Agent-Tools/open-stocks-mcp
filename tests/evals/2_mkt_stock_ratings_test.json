@@ -1,0 +1,48 @@
+{
+  "eval_set_id": "stock_ratings_test_set",
+  "name": "Stock Ratings Test",
+  "description": "Test case for retrieving analyst ratings for a stock through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "stock_ratings_test",
+      "conversation": [
+        {
+          "invocation_id": "stock-ratings-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "What do analysts say about Apple (AAPL)?"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here is the analyst rating summary for Apple (AAPL):\n\n**Analyst Consensus:** Buy\n\nThe breakdown of analyst ratings shows:\n- **Buy** ratings: majority of covering analysts\n- **Hold** ratings: some analysts\n- **Sell** ratings: few analysts\n\nAnalysts generally cite Apple's strong ecosystem lock-in, services revenue growth, and iPhone upgrade cycle as key bullish factors. Price targets vary by firm, but the consensus reflects a positive outlook on AAPL's near-term performance.\n\n**Note:** This is read-only research data. No orders were placed."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "symbol": "AAPL"
+                },
+                "name": "stock_ratings"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

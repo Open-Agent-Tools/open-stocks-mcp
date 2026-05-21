@@ -1,0 +1,48 @@
+{
+  "eval_set_id": "stock_news_test_set",
+  "name": "Stock News Test",
+  "description": "Test case for retrieving recent news articles for a stock through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "stock_news_test",
+      "conversation": [
+        {
+          "invocation_id": "stock-news-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Get the latest news for Tesla (TSLA)."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here are the latest news articles for Tesla (TSLA):\n\nRecent headlines cover Tesla's production updates, delivery numbers, new product announcements, and any regulatory or competitive developments. Each article includes the headline, publication source, publish date, and a brief summary.\n\nThis news feed is sourced from Robinhood's aggregated financial news and provides timely context for monitoring TSLA's market-moving events.\n\n**Note:** This is read-only news data. No orders were placed."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "symbol": "TSLA"
+                },
+                "name": "stock_news"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

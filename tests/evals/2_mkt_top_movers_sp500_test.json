@@ -1,0 +1,48 @@
+{
+  "eval_set_id": "top_movers_sp500_test_set",
+  "name": "Top Movers S&P 500 Test",
+  "description": "Test case for retrieving the top gaining or losing S&P 500 stocks through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "top_movers_sp500_test",
+      "conversation": [
+        {
+          "invocation_id": "top-movers-sp500-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "What are today's top S&P 500 gainers?"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here are today's top S&P 500 gainers:\n\nThe list shows S&P 500 stocks with the largest percentage gains today. Each entry includes the ticker symbol, company name, current price, and percentage change. These are the strongest upward movers among S&P 500 components as of the latest market data.\n\n**Note:** This is read-only market data. No orders were placed."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "direction": "up"
+                },
+                "name": "top_movers_sp500"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "top_movers_test_set",
+  "name": "Top Movers Test",
+  "description": "Test case for retrieving today's top 20 movers on Robinhood through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "top_movers_test",
+      "conversation": [
+        {
+          "invocation_id": "top-movers-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me today's top 20 movers on Robinhood."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here are today's top 20 movers on Robinhood:\n\nThe list shows up to 20 stocks with the largest price movements today across all Robinhood-listed equities. Each entry includes the ticker symbol, company name, current price, and percentage change. These represent the most active and volatile names of the trading session.\n\n**Note:** This is read-only market data. No orders were placed."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "top_movers"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

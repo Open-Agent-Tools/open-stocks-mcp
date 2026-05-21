@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "top_100_stocks_test_set",
+  "name": "Top 100 Stocks Test",
+  "description": "Test case for retrieving the 100 most popular stocks on Robinhood through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "top_100_stocks_test",
+      "conversation": [
+        {
+          "invocation_id": "top-100-stocks-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "List the 100 most popular stocks on Robinhood."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here are the 100 most popular stocks on Robinhood:\n\nThe list shows 100 stocks ranked by popularity among Robinhood users. Each entry includes the ticker symbol, company name, and current price. Popular names typically include large-cap technology and consumer companies. The full list of 100 tickers is returned in popularity order.\n\n**Note:** This is read-only discovery data reflecting current user popularity rankings. No orders were placed."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "top_100_stocks"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

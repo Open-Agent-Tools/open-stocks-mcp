@@ -1,0 +1,48 @@
+{
+  "eval_set_id": "stock_splits_test_set",
+  "name": "Stock Splits Test",
+  "description": "Test case for retrieving stock split history for a company through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "stock_splits_test",
+      "conversation": [
+        {
+          "invocation_id": "stock-splits-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Has Apple (AAPL) had any stock splits?"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here is the stock split history for Apple (AAPL):\n\nApple has had several stock splits over the years. Each split entry includes the ex-date (the date shareholders of record receive additional shares), the split ratio (e.g., 4-for-1 means each existing share became 4 shares), and the execution date.\n\nNotable splits include Apple's most recent 4-for-1 split and earlier 7-for-1 and 2-for-1 splits. These splits increase the number of outstanding shares while proportionally reducing the per-share price, making shares more accessible to retail investors.\n\n**Note:** This is read-only corporate action data. No orders were placed."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "symbol": "AAPL"
+                },
+                "name": "stock_splits"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}
