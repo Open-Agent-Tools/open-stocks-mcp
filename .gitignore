@@ -345,6 +345,8 @@ config.local.*
 *password*
 .secrets/
 secrets/
+# Allow committed Kubernetes Secret template (placeholders only, no real values)
+!examples/kubernetes/secret.yaml.example
 
 # Development Database Files
 *.sqlite

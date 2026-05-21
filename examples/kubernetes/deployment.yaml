@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: open-stocks-mcp
+  labels:
+    app: open-stocks-mcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: open-stocks-mcp
+  template:
+    metadata:
+      labels:
+        app: open-stocks-mcp
+    spec:
+      securityContext:
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+        runAsNonRoot: true
+      containers:
+        - name: open-stocks-mcp
+          image: open-stocks-mcp:latest
+          imagePullPolicy: IfNotPresent
+          args:
+            - open-stocks-mcp-server
+            - --transport
+            - http
+            - --host
+            - 0.0.0.0
+            - --port
+            - "3001"
+          ports:
+            - name: http
+              containerPort: 3001
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: open-stocks-mcp-config
+            - secretRef:
+                name: open-stocks-mcp-secrets
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3001
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3001
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+          volumeMounts:
+            - name: mcp-data
+              mountPath: /home/mcp/.tokens
+              subPath: tokens
+            - name: mcp-data
+              mountPath: /home/mcp/.local/state/mcp-servers/logs
+              subPath: logs
+      volumes:
+        - name: mcp-data
+          persistentVolumeClaim:
+            claimName: open-stocks-mcp-data
