@@ -1,0 +1,179 @@
+"""Stream manager for Schwab real-time data ingestion."""
+
+import asyncio
+import contextlib
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
+
+from open_stocks_mcp.logging_config import logger
+
+if TYPE_CHECKING:
+    from schwab.streaming import StreamClient
+
+
+class SchwabStreamManager:
+    """Manages Schwab streaming WebSocket connection and data ingestion.
+
+    This manager handles:
+    - WebSocket connection lifecycle
+    - Service subscriptions (Level One Equities, Options, etc.)
+    - Message handling and data distribution
+    - Reconnection logic
+    """
+
+    def __init__(self, broker: Any):
+        """Initialize stream manager.
+
+        Args:
+            broker: SchwabBroker instance
+        """
+        self.broker = broker
+        self.stream_client: StreamClient | None = None
+        self._is_running = False
+        self._task: asyncio.Task[None] | None = None
+        self._handlers: list[Callable[[dict[str, Any]], None]] = []
+        self._latest_quotes: dict[str, dict[str, Any]] = {}
+
+    @property
+    def is_running(self) -> bool:
+        """Check if streamer is running."""
+        return self._is_running
+
+    def add_handler(self, handler: Callable[[dict[str, Any]], None]) -> None:
+        """Add a custom message handler."""
+        self._handlers.append(handler)
+
+    async def start(self) -> bool:
+        """Start the streaming client.
+
+        Returns:
+            True if started successfully, False otherwise
+        """
+        if self._is_running:
+            return True
+
+        if not self.broker.is_available():
+            logger.error("Cannot start Schwab streamer: broker not authenticated")
+            return False
+
+        try:
+            from schwab.streaming import StreamClient
+
+            self.stream_client = StreamClient(self.broker.client)
+
+            # Define core handler
+            def _core_handler(message: dict[str, Any]) -> None:
+                self._handle_message(message)
+                for handler in self._handlers:
+                    try:
+                        handler(message)
+                    except Exception as e:
+                        logger.error(f"Error in Schwab stream custom handler: {e}")
+
+            # Register handlers for Level One data
+            assert self.stream_client is not None
+            self.stream_client.add_level_one_equity_handler(_core_handler)
+            self.stream_client.add_level_one_option_handler(_core_handler)
+
+            await self.stream_client.login()
+            self._is_running = True
+            logger.info("Schwab streaming client logged in and started")
+
+            # Start background task to handle responses
+            self._task = asyncio.create_task(self._run_loop())
+
+            return True
+
+        except ImportError:
+            logger.error("schwab-py not installed, cannot start streamer")
+            return False
+        except Exception as e:
+            logger.error(f"Failed to start Schwab streamer: {e}")
+            self._is_running = False
+            return False
+
+    async def stop(self) -> None:
+        """Stop the streaming client."""
+        self._is_running = False
+        if self._task:
+            self._task.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await self._task
+            self._task = None
+
+        if self.stream_client:
+            # schwab-py StreamClient doesn't have an explicit logout/close,
+            # it closes when the connection drops.
+            self.stream_client = None
+
+        logger.info("Schwab streaming client stopped")
+
+    async def _run_loop(self) -> None:
+        """Background loop to handle WebSocket responses."""
+        while self._is_running:
+            try:
+                if self.stream_client:
+                    await self.stream_client.handle_responses()
+                else:
+                    break
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                logger.error(f"Error in Schwab stream loop: {e}")
+                await asyncio.sleep(5)  # Wait before retry
+                if self._is_running:
+                    # Attempt re-login
+                    try:
+                        assert self.stream_client is not None
+                        await self.stream_client.login()
+                    except Exception as re_login_err:
+                        logger.error(
+                            f"Failed to re-login Schwab stream: {re_login_err}"
+                        )
+
+    def _handle_message(self, message: dict[str, Any]) -> None:
+        """Process incoming stream messages."""
+        service = message.get("service")
+        content = message.get("content", [])
+
+        if service in ["LEVELONE_EQUITIES", "LEVELONE_OPTIONS"]:
+            for item in content:
+                symbol = item.get("key")
+                if symbol:
+                    # Merge update into cache
+                    if symbol not in self._latest_quotes:
+                        self._latest_quotes[symbol] = {}
+                    self._latest_quotes[symbol].update(item)
+
+    async def subscribe_quotes(self, symbols: list[str]) -> bool:
+        """Subscribe to Level One quotes for symbols."""
+        if not self._is_running or not self.stream_client:
+            return False
+
+        try:
+            # Split into equities and options based on symbol format
+            # Schwab option symbols typically contain spaces or follow a specific pattern
+            equities = []
+            options = []
+            for s in symbols:
+                if (
+                    " " in s or len(s) > 10
+                ):  # Simple heuristic for Schwab option symbols
+                    options.append(s.upper())
+                else:
+                    equities.append(s.upper())
+
+            if equities:
+                await self.stream_client.level_one_equity_subs(equities)
+            if options:
+                await self.stream_client.level_one_option_subs(options)
+
+            logger.info(f"Subscribed to Schwab quotes: {symbols}")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to subscribe to Schwab quotes: {e}")
+            return False
+
+    def get_latest_quote(self, symbol: str) -> dict[str, Any] | None:
+        """Get latest cached quote for symbol."""
+        return self._latest_quotes.get(symbol.upper())
