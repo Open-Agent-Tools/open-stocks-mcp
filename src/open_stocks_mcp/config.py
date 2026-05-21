@@ -193,6 +193,7 @@ def _env_optional_int(name: str) -> int | None:
         raise ValueError(f"{name} must be an integer") from exc
 
 
+def load_config() -> ServerConfig:
     """Load server configuration from YAML, environment, or defaults.
 
     Precedence is Environment > YAML > Defaults.
