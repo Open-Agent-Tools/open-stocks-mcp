@@ -17,7 +17,12 @@ class CircuitBreakerConfig:
 
     enabled: bool = True
     failure_threshold: int = 5
-    cooldown_seconds: float = 60.0
+    recovery_timeout_seconds: float = 60.0
+
+    @property
+    def cooldown_seconds(self) -> float:
+        """Backward-compatible alias for recovery timeout."""
+        return self.recovery_timeout_seconds
 
 
 class BrokerCircuitBreaker:
@@ -99,6 +104,7 @@ class BrokerCircuitBreaker:
             "state": self._state,
             "failure_count": self._failure_count,
             "failure_threshold": self._config.failure_threshold,
+            "recovery_timeout_seconds": self._config.recovery_timeout_seconds,
             "cooldown_seconds": self._config.cooldown_seconds,
             "opened_at": self._opened_at,
             "next_retry_at": self._next_retry_at,
@@ -127,7 +133,7 @@ def get_broker_circuit_breaker() -> BrokerCircuitBreaker:
             CircuitBreakerConfig(
                 enabled=cfg.enabled,
                 failure_threshold=cfg.failure_threshold,
-                cooldown_seconds=cfg.cooldown_seconds,
+                recovery_timeout_seconds=cfg.recovery_timeout_seconds,
             )
         )
     return _breaker

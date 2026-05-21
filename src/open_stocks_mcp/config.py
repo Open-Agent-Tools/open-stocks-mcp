@@ -128,7 +128,12 @@ class CircuitBreakerConfig:
 
     enabled: bool = True
     failure_threshold: int = 5
-    cooldown_seconds: float = 60.0
+    recovery_timeout_seconds: float = 60.0
+
+    @property
+    def cooldown_seconds(self) -> float:
+        """Backward-compatible alias for recovery timeout."""
+        return self.recovery_timeout_seconds
 
 
 @dataclass
@@ -222,8 +227,12 @@ def load_config() -> ServerConfig:
             failure_threshold=_env_int(
                 "OPEN_STOCKS_MCP_CIRCUIT_BREAKER_FAILURE_THRESHOLD", 5
             ),
-            cooldown_seconds=_env_float(
-                "OPEN_STOCKS_MCP_CIRCUIT_BREAKER_COOLDOWN_SECONDS", 60.0
+            recovery_timeout_seconds=_env_float_from(
+                (
+                    "OPEN_STOCKS_MCP_CIRCUIT_BREAKER_RECOVERY_TIMEOUT_SECONDS",
+                    "OPEN_STOCKS_MCP_CIRCUIT_BREAKER_COOLDOWN_SECONDS",
+                ),
+                60.0,
             ),
         ),
         broker_requests=BrokerRequestConfig(
@@ -235,7 +244,9 @@ def load_config() -> ServerConfig:
             ),
             retry_max_retries=_env_int("OPEN_STOCKS_MCP_RETRY_MAX_RETRIES", 3),
             retry_initial_delay=_env_float("OPEN_STOCKS_MCP_RETRY_INITIAL_DELAY", 1.0),
-            retry_backoff_factor=_env_float("OPEN_STOCKS_MCP_RETRY_BACKOFF_FACTOR", 2.0),
+            retry_backoff_factor=_env_float(
+                "OPEN_STOCKS_MCP_RETRY_BACKOFF_FACTOR", 2.0
+            ),
             total_deadline_seconds=_env_float(
                 "OPEN_STOCKS_MCP_BROKER_REQUEST_TOTAL_DEADLINE_SECONDS", 45.0
             )
