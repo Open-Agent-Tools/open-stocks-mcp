@@ -170,7 +170,11 @@ from open_stocks_mcp.tools.unified_watchlist_tools import (
     get_unified_watchlists,
     remove_symbols_from_unified_watchlist,
 )
-from open_stocks_mcp.tracing import setup_tracing, trace_tool_call
+from open_stocks_mcp.tracing import (
+    instrument_mcp_tool_calls,
+    setup_tracing,
+    trace_tool_call,
+)
 
 # Load environment variables from .env file
 load_dotenv()
@@ -1315,7 +1319,9 @@ async def schwab_transactions_by_date(
 
 
 @mcp.tool()
-async def schwab_get_transaction(account_hash: str, transaction_id: str) -> dict[str, Any]:
+async def schwab_get_transaction(
+    account_hash: str, transaction_id: str
+) -> dict[str, Any]:
     """Get details for a specific Schwab transaction.
 
     Args:
@@ -1393,6 +1399,7 @@ def create_mcp_server(config: ServerConfig | None = None) -> FastMCP:
 
     setup_logging(config)
     setup_tracing(config)
+    instrument_mcp_tool_calls(mcp)
     return mcp
 
 

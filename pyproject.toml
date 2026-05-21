@@ -43,6 +43,8 @@ dependencies = [
     "uvicorn>=0.40.0",
     "sse-starlette>=3.1.0",
     "jsonrpclib-pelix>=1.0.0",
+    "opentelemetry-sdk>=1.20.0",
+    "opentelemetry-exporter-otlp>=1.20.0",
 ]
 
 [project.optional-dependencies]
@@ -62,8 +64,6 @@ docs = [
 ]
 tracing = [
     "opentelemetry-api>=1.20.0",
-    "opentelemetry-sdk>=1.20.0",
-    "opentelemetry-exporter-otlp>=1.20.0",
 ]
 
 [project.urls]

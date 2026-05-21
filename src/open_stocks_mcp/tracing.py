@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from functools import wraps
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -17,6 +18,7 @@ if TYPE_CHECKING:
 from open_stocks_mcp.config import ServerConfig
 
 _tracer_provider: TracerProvider | None = None
+_instrumented_servers: set[int] = set()
 
 
 def setup_tracing(config: ServerConfig) -> TracerProvider | None:
@@ -87,3 +89,22 @@ async def trace_tool_call(tool_name: str) -> AsyncIterator[None]:
             span.record_exception(exc)
             span.set_status(Status(StatusCode.ERROR))
             raise
+
+
+def instrument_mcp_tool_calls(mcp_server: object) -> None:
+    """Wrap FastMCP.call_tool once so each tool call emits a tracing span."""
+    server_id = id(mcp_server)
+    if server_id in _instrumented_servers:
+        return
+
+    call_tool = getattr(mcp_server, "call_tool", None)
+    if call_tool is None:
+        return
+
+    @wraps(call_tool)
+    async def _wrapped_call_tool(name: str, arguments: dict[str, object]) -> object:
+        async with trace_tool_call(name):
+            return await call_tool(name, arguments)
+
+    mcp_server.call_tool = _wrapped_call_tool  # type: ignore[attr-defined]
+    _instrumented_servers.add(server_id)
