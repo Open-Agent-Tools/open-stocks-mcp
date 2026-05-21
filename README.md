@@ -81,6 +81,9 @@ The `/metrics` endpoint exposes:
 - `open_stocks_mcp_tool_calls_per_minute` (gauge by tool)
 - `open_stocks_mcp_tool_latency_ms` (gauge by tool and quantile: `0.50`, `0.95`, `0.99`)
 
+Distributed tracing setup (OpenTelemetry, Jaeger, Tempo):
+- [docs/OPENTELEMETRY_TRACING.md](docs/OPENTELEMETRY_TRACING.md)
+
 ### Operational Circuit Breaker Defaults
 
 Broker call protection is enabled by default and reports state in MCP `health_check`,

@@ -1741,6 +1741,8 @@ dependencies = [
     { name = "fastapi" },
     { name = "jsonrpclib-pelix" },
     { name = "mcp" },
+    { name = "opentelemetry-exporter-otlp" },
+    { name = "opentelemetry-sdk" },
     { name = "pydantic" },
     { name = "python-dotenv" },
     { name = "requests" },
@@ -1767,8 +1769,6 @@ docs = [
 ]
 tracing = [
     { name = "opentelemetry-api" },
-    { name = "opentelemetry-exporter-otlp" },
-    { name = "opentelemetry-sdk" },
 ]
 
 [package.dev-dependencies]
@@ -1801,8 +1801,8 @@ requires-dist = [
     { name = "nbformat", marker = "extra == 'dev'", specifier = ">=5.10" },
     { name = "nbformat", marker = "extra == 'docs'", specifier = ">=5.10" },
     { name = "opentelemetry-api", marker = "extra == 'tracing'", specifier = ">=1.20.0" },
-    { name = "opentelemetry-exporter-otlp", marker = "extra == 'tracing'", specifier = ">=1.20.0" },
-    { name = "opentelemetry-sdk", marker = "extra == 'tracing'", specifier = ">=1.20.0" },
+    { name = "opentelemetry-exporter-otlp", specifier = ">=1.20.0" },
+    { name = "opentelemetry-sdk", specifier = ">=1.20.0" },
     { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=4.5.0" },
     { name = "pydantic", specifier = ">=2.12.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=9.0.0" },

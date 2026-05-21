@@ -9,12 +9,15 @@ import httpx
 import pytest
 from mcp.server.fastmcp import FastMCP
 
+import open_stocks_mcp.tracing as tracing_module
 from open_stocks_mcp import __version__
+from open_stocks_mcp.config import load_config
 from open_stocks_mcp.server.http_transport import (
     READ_ONLY_HTTP_TOOL_NAMES,
     TimeoutMiddleware,
     create_http_server,
 )
+from open_stocks_mcp.tracing import instrument_mcp_tool_calls, setup_tracing
 
 
 @pytest.fixture
@@ -493,6 +496,96 @@ class TestMCPIntegration:
             assert data["jsonrpc"] == "2.0"
             assert data["id"] == 3
             assert "result" in data
+
+    @pytest.mark.anyio
+    async def test_tools_call_emits_tracing_span_on_success(
+        self, monkeypatch: pytest.MonkeyPatch, mcp_server: FastMCP
+    ) -> None:
+        """tools/call emits a span with success outcome when tracing is enabled."""
+        from httpx import ASGITransport
+        from opentelemetry.sdk.trace.export import SimpleSpanProcessor
+        from opentelemetry.sdk.trace.export.in_memory_span_exporter import (
+            InMemorySpanExporter,
+        )
+
+        monkeypatch.setenv("OTEL_ENABLED", "true")
+        monkeypatch.setattr(tracing_module, "_tracer_provider", None)
+        monkeypatch.setattr(tracing_module, "_instrumented_servers", set())
+
+        provider = setup_tracing(load_config())
+        assert provider is not None
+        exporter = InMemorySpanExporter()
+        provider.add_span_processor(SimpleSpanProcessor(exporter))
+
+        instrument_mcp_tool_calls(mcp_server)
+        app = create_http_server(mcp_server)
+        transport = ASGITransport(app=app)
+        async with httpx.AsyncClient(
+            transport=transport, base_url="http://test"
+        ) as client:
+            payload = {
+                "jsonrpc": "2.0",
+                "id": 4,
+                "method": "tools/call",
+                "params": {"name": "account_info", "arguments": {}},
+            }
+            response = await client.post("/mcp", json=payload)
+            assert response.status_code == 200
+
+        spans = exporter.get_finished_spans()
+        assert len(spans) == 1
+        span = spans[0]
+        assert span.name == "account_info"
+        assert span.attributes["tool.name"] == "account_info"
+        assert span.attributes["tool.outcome"] == "success"
+
+    @pytest.mark.anyio
+    async def test_tools_call_emits_tracing_span_on_error(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """tools/call emits error outcome and error type for failing tool calls."""
+        from httpx import ASGITransport
+        from opentelemetry.sdk.trace.export import SimpleSpanProcessor
+        from opentelemetry.sdk.trace.export.in_memory_span_exporter import (
+            InMemorySpanExporter,
+        )
+
+        failing_server = FastMCP("Failing Open Stocks MCP")
+
+        @failing_server.tool()
+        async def account_info() -> dict[str, Any]:
+            raise RuntimeError("tool failed")
+
+        monkeypatch.setenv("OTEL_ENABLED", "true")
+        monkeypatch.setattr(tracing_module, "_tracer_provider", None)
+        monkeypatch.setattr(tracing_module, "_instrumented_servers", set())
+
+        provider = setup_tracing(load_config())
+        assert provider is not None
+        exporter = InMemorySpanExporter()
+        provider.add_span_processor(SimpleSpanProcessor(exporter))
+
+        instrument_mcp_tool_calls(failing_server)
+        app = create_http_server(failing_server)
+        transport = ASGITransport(app=app)
+        async with httpx.AsyncClient(
+            transport=transport, base_url="http://test"
+        ) as client:
+            payload = {
+                "jsonrpc": "2.0",
+                "id": 5,
+                "method": "tools/call",
+                "params": {"name": "account_info", "arguments": {}},
+            }
+            response = await client.post("/mcp", json=payload)
+            assert response.status_code == 500
+
+        spans = exporter.get_finished_spans()
+        assert len(spans) == 1
+        span = spans[0]
+        assert span.name == "account_info"
+        assert span.attributes["tool.outcome"] == "error"
+        assert span.attributes["tool.error_type"] == "ToolError"
 
 
 @pytest.mark.integration
