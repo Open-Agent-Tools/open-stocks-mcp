@@ -54,6 +54,7 @@ dev = [
     "mypy>=1.19.0",
     "pre-commit>=4.5.0",
     "httpx>=0.28.0",
+    "nbformat>=5.10",
 ]
 docs = [
     "nbformat>=5.10",
@@ -188,6 +189,7 @@ dev = [
     "mypy>=1.19.0",
     "black>=25.0.0",
     "pre-commit>=4.5.0",
+    "nbformat>=5.10",
 ]
 
 [tool.hatch.build]
