@@ -13,6 +13,7 @@ from open_stocks_mcp.brokers.registry import get_broker_registry
 from open_stocks_mcp.health import get_health_service
 from open_stocks_mcp.logging_config import logger
 from open_stocks_mcp.monitoring import get_metrics_collector
+from open_stocks_mcp.tools.circuit_breaker import get_broker_circuit_breaker
 from open_stocks_mcp.tools.rate_limiter import get_rate_limiter
 from open_stocks_mcp.tools.robinhood_tools import list_available_tools
 from open_stocks_mcp.tools.session_manager import get_session_manager
@@ -28,7 +29,13 @@ async def get_session_status_data() -> dict[str, Any]:
     session_manager = get_session_manager()
     session_info = session_manager.get_session_info()
 
-    return {"result": {**session_info, "status": "success"}}
+    return {
+        "result": {
+            **session_info,
+            "circuit_breaker": get_broker_circuit_breaker().snapshot(),
+            "status": "success",
+        }
+    }
 
 
 async def get_broker_status_data() -> dict[str, Any]:
@@ -99,7 +106,13 @@ async def get_rate_limit_status_data() -> dict[str, Any]:
     rate_limiter = get_rate_limiter()
     stats = rate_limiter.get_stats()
 
-    return {"result": {**stats, "status": "success"}}
+    return {
+        "result": {
+            **stats,
+            "circuit_breaker": get_broker_circuit_breaker().snapshot(),
+            "status": "success",
+        }
+    }
 
 
 async def get_metrics_summary_data() -> dict[str, Any]:
@@ -113,4 +126,11 @@ async def get_metrics_summary_data() -> dict[str, Any]:
 async def get_health_check_data() -> dict[str, Any]:
     """Return health status of the MCP server."""
     health_status = await get_health_service().get_status()
-    return {"result": {**health_status, "health_status": health_status["status"], "status": "success"}}
+    return {
+        "result": {
+            **health_status,
+            "circuit_breaker": get_broker_circuit_breaker().snapshot(),
+            "health_status": health_status["status"],
+            "status": "success",
+        }
+    }

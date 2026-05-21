@@ -10,10 +10,10 @@ from dotenv import load_dotenv
 from mcp.server.fastmcp import FastMCP
 
 from open_stocks_mcp.config import ServerConfig, load_config
-from open_stocks_mcp.health import get_health_service
 from open_stocks_mcp.logging_config import logger, setup_logging
 from open_stocks_mcp.server.tool_helpers import (
     get_broker_status_data,
+    get_health_check_data,
     get_list_brokers_data,
     get_list_tools_data,
     get_metrics_summary_data,
@@ -296,8 +296,7 @@ async def metrics_summary() -> dict[str, Any]:
 @mcp.tool()
 async def health_check() -> dict[str, Any]:
     """Gets health status of the MCP server."""
-    health_status = await get_health_service().get_status()
-    return {"result": health_status}
+    return await get_health_check_data()
 
 
 # Market Data Tools

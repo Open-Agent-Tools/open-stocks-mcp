@@ -65,6 +65,17 @@ class APIError(RobinStocksError):
         super().__init__(message, "api", original_error)
 
 
+class CircuitBreakerError(RobinStocksError):
+    """Raised when circuit breaker blocks broker calls."""
+
+    def __init__(
+        self,
+        message: str = "Circuit breaker open",
+        original_error: Exception | None = None,
+    ):
+        super().__init__(message, "circuit_breaker", original_error)
+
+
 def classify_error(error: Exception) -> RobinStocksError:
     """Classify an exception into a specific Robin Stocks error type."""
     error_str = str(error).lower()

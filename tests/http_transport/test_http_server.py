@@ -293,6 +293,8 @@ class TestHTTPEndpoints:
         assert data["status"] == "healthy"
         assert data["components"]["metrics"]["status"] == "healthy"
         assert data["components"]["metrics"]["detail"] == "monitoring disabled"
+        assert "circuit_breaker" in data
+        assert "state" in data["circuit_breaker"]
         assert data["version"] == __version__
         assert data["transport"] == "http"
         assert "timestamp" in data
@@ -306,6 +308,8 @@ class TestHTTPEndpoints:
         assert "server" in data
         assert "session" in data
         assert "rate_limiting" in data
+        assert "circuit_breaker" in data
+        assert "state" in data["circuit_breaker"]
         assert data["server"]["status"] == "running"
 
     async def test_list_tools_endpoint(self, http_client: httpx.AsyncClient) -> None:
