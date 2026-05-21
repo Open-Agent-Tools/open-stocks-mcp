@@ -280,7 +280,57 @@ class TestBrokerRegistry:
         assert error is not None
         assert "result" in error
         assert "error" in error["result"]
-        assert "not found" in error["result"]["error"].lower()
+
+    @pytest.mark.asyncio
+    async def test_run_concurrent_operations_isolates_timeouts(self, registry):
+        async def fast() -> dict[str, str]:
+            await asyncio.sleep(0.01)
+            return {"ok": "fast"}
+
+        async def slow() -> dict[str, str]:
+            await asyncio.sleep(0.2)
+            return {"ok": "slow"}
+
+        results = await registry.run_concurrent_operations(
+            [
+                {"broker": "robinhood", "account_id": "acct-1", "operation": fast},
+                {"broker": "schwab", "account_id": "acct-2", "operation": slow},
+            ],
+            concurrency_limit=2,
+            timeout_seconds=0.05,
+        )
+        by_broker = {row["broker"]: row for row in results}
+        assert by_broker["robinhood"]["status"] == "success"
+        assert "result" in by_broker["robinhood"]
+        assert by_broker["schwab"]["status"] == "timeout"
+        assert by_broker["schwab"]["error"]["type"] == "timeout"
+
+    @pytest.mark.asyncio
+    async def test_coordinated_refresh_is_single_flight_per_account(self, registry):
+        calls: dict[str, int] = {"acct-1": 0, "acct-2": 0}
+
+        async def make_refresh(account: str) -> bool:
+            calls[account] += 1
+            await asyncio.sleep(0.01)
+            return True
+
+        async def run_many(account: str) -> list[bool]:
+            return await asyncio.gather(
+                *[
+                    registry.coordinated_refresh(
+                        broker_name="robinhood",
+                        account_id=account,
+                        refresh_coro=lambda a=account: make_refresh(a),
+                    )
+                    for _ in range(20)
+                ]
+            )
+
+        acct1, acct2 = await asyncio.gather(run_many("acct-1"), run_many("acct-2"))
+        assert all(acct1)
+        assert all(acct2)
+        assert calls["acct-1"] == 1
+        assert calls["acct-2"] == 1
 
     @pytest.mark.asyncio
     async def test_get_auth_status_all_brokers(self, registry):

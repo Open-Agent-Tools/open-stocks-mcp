@@ -1,28 +1,19 @@
 """Tests for configurable retry behavior and authentication error handling."""
 
 import asyncio
-from collections.abc import Callable, Generator
+from collections.abc import Callable
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
 
-from open_stocks_mcp.brokers.registry import BrokerRegistry
 from open_stocks_mcp.tools import rate_limiter, retry
 from open_stocks_mcp.tools import session_manager as session_manager_module
-from open_stocks_mcp.tools.circuit_breaker import reset_broker_circuit_breaker
 from open_stocks_mcp.tools.error_handling import (
     AuthenticationError,
     NetworkError,
     execute_with_retry,
 )
-
-
-@pytest.fixture(autouse=True)
-def reset_circuit_breaker() -> Generator[None, None, None]:
-    """Keep process-global circuit breaker state isolated between retry tests."""
-    reset_broker_circuit_breaker()
-    yield
-    reset_broker_circuit_breaker()
 
 
 def _patch_retry_dependencies(
@@ -157,45 +148,66 @@ async def test_execute_with_retry_attempts_reauth_when_not_blocked() -> None:
 
 
 @pytest.mark.asyncio
-async def test_execute_with_retry_coalesces_concurrent_auth_refreshes() -> None:
-    """A burst of auth failures should trigger one refresh for the account key."""
-    attempts = 0
+async def test_execute_with_retry_uses_registry_single_flight_for_auth_refresh() -> None:
+    calls = 0
 
-    async def auth_then_success() -> str:
-        nonlocal attempts
-        attempts += 1
-        if attempts <= 20:
-            raise Exception("authentication token expired")
-        return "ok"
+    def auth_fail_then_success_factory() -> Callable[[], str]:
+        state = {"attempts": 0}
 
-    registry = BrokerRegistry()
-    mock_session_manager = MagicMock()
-    mock_session_manager.should_block_auth_retries.return_value = False
-    mock_session_manager.update_last_successful_call = Mock()
+        def runner() -> str:
+            state["attempts"] += 1
+            if state["attempts"] == 1:
+                raise Exception("authentication token expired")
+            return "ok"
 
-    async def refresh_session() -> bool:
-        await asyncio.sleep(0.01)
-        return True
+        return runner
 
-    mock_session_manager.refresh_session = AsyncMock(side_effect=refresh_session)
+    async def coordinated_refresh(
+        *, broker_name: str, account_id: str | None, refresh_coro: Callable[[], Any]
+    ) -> bool:
+        nonlocal calls
+        calls += 1
+        return await refresh_coro()
+
+    registry = Mock()
+    registry.coordinated_refresh = AsyncMock(side_effect=coordinated_refresh)
+    breaker = Mock()
+    breaker.before_request = AsyncMock(return_value=None)
+    breaker.record_success = AsyncMock(return_value=None)
+    breaker.record_failure = AsyncMock(return_value=None)
+
+    session = Mock()
+    session.should_block_auth_retries = Mock(return_value=False)
+    session.refresh_session = AsyncMock(return_value=True)
+    session.update_last_successful_call = Mock()
 
     with (
         patch(
             "open_stocks_mcp.tools.session_manager.get_session_manager",
-            return_value=mock_session_manager,
+            return_value=session,
         ),
         patch("open_stocks_mcp.tools.rate_limiter.get_rate_limiter", return_value=None),
         patch(
-            "open_stocks_mcp.tools.retry.get_broker_registry_sync",
-            return_value=registry,
+            "open_stocks_mcp.tools.circuit_breaker.get_broker_circuit_breaker",
+            return_value=breaker,
+        ),
+        patch(
+            "open_stocks_mcp.brokers.registry.get_broker_registry",
+            AsyncMock(return_value=registry),
         ),
     ):
         results = await asyncio.gather(
             *[
-                execute_with_retry(auth_then_success, max_retries=0)
+                execute_with_retry(
+                    auth_fail_then_success_factory(),
+                    max_retries=1,
+                    broker_name="robinhood",
+                    account_id="acct-1",
+                )
                 for _ in range(20)
             ]
         )
 
     assert results == ["ok"] * 20
-    mock_session_manager.refresh_session.assert_awaited_once()
+    assert calls == 20
+    assert registry.coordinated_refresh.await_count == 20

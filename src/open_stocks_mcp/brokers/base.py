@@ -94,40 +94,25 @@ class BaseBroker(ABC):
         """
         return self._auth_info.status != BrokerAuthStatus.NOT_CONFIGURED
 
-    @property
-    def account_id(self) -> str:
-        """Default account key used for account-scoped health and auth guards."""
-        return "default"
-
-    def get_account_metadata(self) -> dict[str, Any]:
-        """Return broker account metadata for health surfaces.
-
-        Broker subclasses can override this when they manage multiple accounts.
-        """
-        return {"account_id": self.account_id}
-
-    def get_health_metadata(self) -> dict[str, Any]:
-        """Return additive broker health metadata for monitoring surfaces."""
-        return {
-            "broker": self.name,
-            "account_id": self.account_id,
-            "auth_status": self._auth_info.status.value,
-            "is_available": self.is_available(),
-            "is_configured": self.is_configured(),
-        }
-
     def get_health_status(self) -> dict[str, Any]:
         """Return broker health and capability summary.
 
         Returns:
-            Dict with broker, account, auth, capability, and streaming health data.
+            Dict with broker, is_available, auth_status, capabilities, streaming_ready
         """
         available = self.is_available()
         return {
-            **self.get_health_metadata(),
+            "broker": self._name,
+            "account_id": self.get_default_account_id(),
+            "is_available": available,
+            "auth_status": self._auth_info.status.value,
             "capabilities": asdict(self._capabilities),
             "streaming_ready": available and self._capabilities.streaming_quotes,
         }
+
+    def get_default_account_id(self) -> str:
+        """Return a stable default account key for account-scoped metrics."""
+        return "default"
 
     @abstractmethod
     async def authenticate(self) -> bool:

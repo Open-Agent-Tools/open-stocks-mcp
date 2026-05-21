@@ -51,7 +51,6 @@ class RateLimiter:
         Args:
             endpoint: Optional endpoint identifier for per-endpoint limiting
             weight: Weight of this call (some calls may count more)
-            broker: Optional broker identifier for per-broker telemetry
         """
         async with self._lock:
             now = time.time()
@@ -115,17 +114,6 @@ class RateLimiter:
             if broker:
                 self.broker_buckets[broker].append(now)
 
-    @staticmethod
-    def _bucket_stats(bucket: deque[float], now: float) -> dict[str, Any]:
-        cutoff_minute = now - 60
-        cutoff_hour = now - 3600
-        calls_last_minute = sum(1 for t in bucket if t > cutoff_minute)
-        calls_last_hour = sum(1 for t in bucket if t > cutoff_hour)
-        return {
-            "calls_last_minute": calls_last_minute,
-            "calls_last_hour": calls_last_hour,
-        }
-
     def get_stats(self) -> dict[str, Any]:
         """Get current rate limiter statistics.
 
@@ -139,14 +127,6 @@ class RateLimiter:
 
         calls_last_minute = sum(1 for t in self.call_times if t > cutoff_minute)
         calls_last_hour = len(self.call_times)
-        endpoint_usage = {
-            endpoint: self._bucket_stats(bucket, now)
-            for endpoint, bucket in self.endpoint_buckets.items()
-        }
-        broker_usage = {
-            broker: self._bucket_stats(bucket, now)
-            for broker, bucket in self.broker_buckets.items()
-        }
 
         return {
             "calls_last_minute": calls_last_minute,
@@ -156,8 +136,20 @@ class RateLimiter:
             "burst_size": self.burst_size,
             "minute_usage_percent": (calls_last_minute / self.calls_per_minute) * 100,
             "hour_usage_percent": (calls_last_hour / self.calls_per_hour) * 100,
-            "endpoint_usage": endpoint_usage,
-            "broker_usage": broker_usage,
+            "endpoint_usage": {
+                endpoint: {
+                    "calls_last_minute": sum(1 for t in bucket if t > cutoff_minute),
+                    "calls_last_hour": sum(1 for t in bucket if t > now - 3600),
+                }
+                for endpoint, bucket in self.endpoint_buckets.items()
+            },
+            "broker_usage": {
+                broker: {
+                    "calls_last_minute": sum(1 for t in bucket if t > cutoff_minute),
+                    "calls_last_hour": sum(1 for t in bucket if t > now - 3600),
+                }
+                for broker, bucket in self.broker_buckets.items()
+            },
         }
 
 

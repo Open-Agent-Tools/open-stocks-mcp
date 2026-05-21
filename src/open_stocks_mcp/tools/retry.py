@@ -2,14 +2,9 @@
 
 import asyncio
 import functools
-import inspect
 from collections.abc import Callable
 from typing import Any
 
-from open_stocks_mcp.brokers.registry import (
-    RegistryNotInitializedError,
-    get_broker_registry_sync,
-)
 from open_stocks_mcp.config import load_config
 from open_stocks_mcp.logging_config import logger
 from open_stocks_mcp.tools.exceptions import (
@@ -18,30 +13,6 @@ from open_stocks_mcp.tools.exceptions import (
     DataError,
     classify_error,
 )
-
-
-async def _refresh_session_with_registry_guard(
-    session_manager: Any,
-    broker_name: str | None,
-    account_id: str | None,
-) -> bool:
-    """Refresh auth through the broker registry single-flight guard when present."""
-    async def refresh_call() -> Any:
-        result = session_manager.refresh_session()
-        if inspect.isawaitable(result):
-            return await result
-        return result
-
-    try:
-        registry = get_broker_registry_sync()
-    except RegistryNotInitializedError:
-        return bool(await refresh_call())
-
-    return bool(
-        await registry.coordinate_auth_refresh(
-            broker_name or "robinhood", account_id or "default", refresh_call
-        )
-    )
 
 
 async def execute_with_retry(
@@ -53,11 +24,12 @@ async def execute_with_retry(
     handle_auth_errors: bool = True,
     rate_limit: bool = True,
     endpoint: str | None = None,
-    broker_name: str | None = "robinhood",
+    broker_name: str = "robinhood",
     account_id: str | None = None,
     **kwargs: Any,
 ) -> Any:
     """Execute a function with retry logic for transient errors."""
+    from open_stocks_mcp.brokers.registry import get_broker_registry
     from open_stocks_mcp.tools.circuit_breaker import get_broker_circuit_breaker
     from open_stocks_mcp.tools.rate_limiter import get_rate_limiter
     from open_stocks_mcp.tools.session_manager import get_session_manager
@@ -122,10 +94,10 @@ async def execute_with_retry(
                     auth_retry_count += 1
 
                     try:
-                        success = await _refresh_session_with_registry_guard(
-                            session_manager,
-                            broker_name,
-                            account_id,
+                        success = await (await get_broker_registry()).coordinated_refresh(
+                            broker_name=broker_name,
+                            account_id=account_id,
+                            refresh_coro=session_manager.refresh_session,
                         )
                         if success:
                             logger.info(

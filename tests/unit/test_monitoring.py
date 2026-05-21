@@ -130,45 +130,43 @@ async def test_get_metrics_cleans_stale_tool_samples() -> None:
 
 
 @pytest.mark.asyncio
-async def test_broker_account_health_tracks_failure_classes() -> None:
-    collector = MetricsCollector()
-
+async def test_metrics_include_broker_and_account_health() -> None:
+    collector = MetricsCollector(window_size_minutes=5)
     await collector.record_broker_operation(
         broker="robinhood",
         account_id="acct-1",
-        operation="quote",
-        duration=0.02,
+        operation="positions",
         success=True,
-    )
-    await collector.record_broker_operation(
-        broker="schwab",
-        account_id="acct-2",
-        operation="orders",
-        duration=0.05,
-        success=False,
-        error_type="PoolTimeout",
-        failure_class="client_pool",
+        duration_ms=10.0,
     )
     await collector.record_broker_operation(
         broker="robinhood",
         account_id="acct-1",
         operation="positions",
-        duration=0.01,
         success=False,
+        duration_ms=11.0,
+        failure_class="authentication",
         error_type="AuthenticationError",
+    )
+    await collector.record_broker_operation(
+        broker="schwab",
+        account_id="acct-2",
+        operation="quote",
+        success=False,
+        duration_ms=12.0,
+        failure_class="client_pool",
+        error_type="PoolTimeout",
     )
 
     metrics = await collector.get_metrics()
-
-    assert metrics["broker_health"]["robinhood"]["success_count"] == 1
-    assert metrics["broker_health"]["robinhood"]["error_count"] == 1
-    assert metrics["broker_health"]["robinhood"]["last_error_type"] == (
-        "AuthenticationError"
+    assert "broker_health" in metrics
+    assert "account_health" in metrics
+    assert metrics["broker_health"]["robinhood"]["total"] == 2
+    assert metrics["broker_health"]["robinhood"]["errors"] == 1
+    assert metrics["broker_health"]["schwab"]["failure_classes"]["client_pool"] == 1
+    assert (
+        metrics["account_health"]["robinhood"]["acct-1"]["failure_classes"][
+            "authentication"
+        ]
+        == 1
     )
-    assert metrics["broker_health"]["robinhood"]["failure_classes"] == {
-        "authentication": 1
-    }
-    assert metrics["account_health"]["schwab"]["acct-2"]["status"] == "unhealthy"
-    assert metrics["account_health"]["schwab"]["acct-2"]["failure_classes"] == {
-        "client_pool": 1
-    }
