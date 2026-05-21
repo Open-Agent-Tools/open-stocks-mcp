@@ -348,3 +348,24 @@ class SchwabBroker(BaseBroker):
                 "count": len(transactions) if isinstance(transactions, list) else 1,
             }
         }
+
+    async def get_transaction(self, account_hash: str, transaction_id: str) -> dict[str, Any]:
+        """Get details for a specific transaction.
+
+        Args:
+            account_hash: Schwab account hash
+            transaction_id: Transaction ID
+        """
+        if not self.is_available():
+            return self.create_unavailable_response(f"get transaction {transaction_id}")
+        if self.client is None:
+            return self.create_unavailable_response(f"get transaction {transaction_id}")
+
+        try:
+            def _get() -> Any:
+                return self.client.get_transaction(account_hash, transaction_id).json()
+
+            return {"result": await asyncio.to_thread(_get)}
+        except Exception as e:
+            logger.error(f"Error getting Schwab transaction {transaction_id}: {e}")
+            return {"result": {"error": str(e), "status": "error"}}

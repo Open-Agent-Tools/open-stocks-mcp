@@ -9,6 +9,7 @@ from open_stocks_mcp.tools.schwab_trading_tools import (
     cancel_schwab_order,
     get_schwab_order_by_id,
     get_schwab_orders,
+    get_schwab_transaction,
     place_schwab_order,
     schwab_buy_limit,
     schwab_buy_market,
@@ -582,3 +583,65 @@ class TestSchwabTradingTools:
             place_schwab_order,
         }:
             _assert_retry_safe(mock_to_thread, False)
+
+    @pytest.mark.journey_trading
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    @patch(
+        "open_stocks_mcp.tools.schwab_trading_tools.get_authenticated_broker_or_error"
+    )
+    @patch("open_stocks_mcp.tools.schwab_trading_tools.asyncio.to_thread")
+    async def test_get_transaction_success(
+        self, mock_to_thread: AsyncMock, mock_get_broker: AsyncMock
+    ) -> None:
+        """Test successful transaction retrieval by ID."""
+        mock_broker = MagicMock()
+        mock_get_broker.return_value = (mock_broker, None)
+
+        mock_to_thread.return_value = {
+            "transactionId": "abc",
+            "type": "TRADE",
+            "netAmount": 100.0,
+        }
+
+        result = await get_schwab_transaction("abc123", "abc")
+
+        assert "result" in result
+        assert result["result"]["transactionId"] == "abc"
+
+    @pytest.mark.journey_trading
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    @patch(
+        "open_stocks_mcp.tools.schwab_trading_tools.get_authenticated_broker_or_error"
+    )
+    async def test_get_transaction_auth_error(self, mock_get_broker: AsyncMock) -> None:
+        """Test transaction retrieval when authentication fails."""
+        error_response = {"result": {"error": "Not authenticated", "status": "error"}}
+        mock_get_broker.return_value = (None, error_response)
+
+        result = await get_schwab_transaction("abc123", "abc")
+
+        assert result == error_response
+
+    @pytest.mark.journey_trading
+    @pytest.mark.unit
+    @pytest.mark.exception_test
+    @pytest.mark.asyncio
+    @patch(
+        "open_stocks_mcp.tools.schwab_trading_tools.get_authenticated_broker_or_error"
+    )
+    @patch("open_stocks_mcp.tools.schwab_trading_tools.asyncio.to_thread")
+    async def test_get_transaction_api_error(
+        self, mock_to_thread: AsyncMock, mock_get_broker: AsyncMock
+    ) -> None:
+        """Test transaction retrieval error handling."""
+        mock_broker = MagicMock()
+        mock_get_broker.return_value = (mock_broker, None)
+
+        mock_to_thread.side_effect = Exception("API Error")
+
+        result = await get_schwab_transaction("abc123", "abc")
+
+        assert "result" in result
+        assert "error" in result["result"]
