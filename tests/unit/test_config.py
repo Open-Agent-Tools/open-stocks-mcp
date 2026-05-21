@@ -1,0 +1,163 @@
+"""Tests for YAML-backed server configuration."""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+import pytest
+
+from open_stocks_mcp.config import ConfigError, load_config
+
+
+@pytest.mark.unit
+@pytest.mark.journey_system
+def test_loads_yaml_config_values(tmp_path: Path) -> None:
+    path = tmp_path / "open-stocks-mcp.yaml"
+    path.write_text(
+        """
+server:
+  name: YAML Server
+  log_level: DEBUG
+rate_limits:
+  calls_per_minute: 42
+  calls_per_hour: 1200
+  burst_size: 9
+cache:
+  ttl_market_seconds: 12
+  ttl_account_seconds: 33
+  max_size: 2048
+feature_flags:
+  enable_cache: false
+  enable_circuit_breaker: true
+""".strip()
+    )
+
+    cfg = load_config(config_path=path)
+
+    assert cfg.name == "YAML Server"
+    assert cfg.log_level == "DEBUG"
+    assert cfg.rate_limits.calls_per_minute == 42
+    assert cfg.rate_limits.calls_per_hour == 1200
+    assert cfg.rate_limits.burst_size == 9
+    assert cfg.cache.ttl_market_seconds == 12
+    assert cfg.cache.ttl_account_seconds == 33
+    assert cfg.cache.max_size == 2048
+    assert cfg.feature_flags.enable_cache is False
+    assert cfg.feature_flags.enable_circuit_breaker is True
+
+
+@pytest.mark.unit
+@pytest.mark.journey_system
+def test_env_overrides_yaml_values(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    path = tmp_path / "config.yaml"
+    path.write_text(
+        """
+server:
+  name: YAML Name
+  log_level: WARNING
+rate_limits:
+  calls_per_minute: 10
+  calls_per_hour: 200
+  burst_size: 2
+cache:
+  ttl_market_seconds: 5
+  ttl_account_seconds: 6
+  max_size: 7
+feature_flags:
+  enable_cache: true
+  enable_circuit_breaker: false
+""".strip()
+    )
+
+    monkeypatch.setenv("MCP_SERVER_NAME", "Env Name")
+    monkeypatch.setenv("LOG_LEVEL", "ERROR")
+    monkeypatch.setenv("RATE_LIMIT_CALLS_PER_MINUTE", "55")
+    monkeypatch.setenv("RATE_LIMIT_CALLS_PER_HOUR", "1550")
+    monkeypatch.setenv("RATE_LIMIT_BURST_SIZE", "8")
+    monkeypatch.setenv("CACHE_TTL_MARKET_SECONDS", "25")
+    monkeypatch.setenv("CACHE_TTL_ACCOUNT_SECONDS", "35")
+    monkeypatch.setenv("CACHE_MAX_SIZE", "300")
+    monkeypatch.setenv("ENABLE_CACHE", "false")
+    monkeypatch.setenv("ENABLE_CIRCUIT_BREAKER", "true")
+
+    cfg = load_config(config_path=path)
+
+    assert cfg.name == "Env Name"
+    assert cfg.log_level == "ERROR"
+    assert cfg.rate_limits.calls_per_minute == 55
+    assert cfg.rate_limits.calls_per_hour == 1550
+    assert cfg.rate_limits.burst_size == 8
+    assert cfg.cache.ttl_market_seconds == 25
+    assert cfg.cache.ttl_account_seconds == 35
+    assert cfg.cache.max_size == 300
+    assert cfg.feature_flags.enable_cache is False
+    assert cfg.feature_flags.enable_circuit_breaker is True
+
+
+@pytest.mark.unit
+@pytest.mark.journey_system
+def test_missing_file_uses_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
+    for var in (
+        "MCP_SERVER_NAME",
+        "LOG_LEVEL",
+        "RATE_LIMIT_CALLS_PER_MINUTE",
+        "RATE_LIMIT_CALLS_PER_HOUR",
+        "RATE_LIMIT_BURST_SIZE",
+        "CACHE_TTL_MARKET_SECONDS",
+        "CACHE_TTL_ACCOUNT_SECONDS",
+        "CACHE_MAX_SIZE",
+        "ENABLE_CACHE",
+        "ENABLE_CIRCUIT_BREAKER",
+    ):
+        monkeypatch.delenv(var, raising=False)
+
+    cfg = load_config(config_path=Path("/tmp/definitely-missing-config.yaml"))
+
+    assert cfg.name == "Open Stocks MCP"
+    assert cfg.log_level == "INFO"
+    assert cfg.rate_limits.calls_per_minute == 30
+    assert cfg.rate_limits.calls_per_hour == 1000
+    assert cfg.rate_limits.burst_size == 5
+    assert cfg.cache.ttl_market_seconds > 0
+    assert cfg.cache.ttl_account_seconds > 0
+    assert cfg.cache.max_size > 0
+    assert cfg.feature_flags.enable_cache is True
+    assert cfg.feature_flags.enable_circuit_breaker is False
+
+
+@pytest.mark.unit
+@pytest.mark.journey_system
+@pytest.mark.parametrize(
+    "content,expected",
+    [
+        ("- item", "mapping"),
+        ("[]", "mapping"),
+        ("server: [", "YAML"),
+        ("unknown: 1", "unknown"),
+        ("server:\n  log_level: VERBOSE", "log_level"),
+        ("rate_limits:\n  calls_per_minute: 0", "calls_per_minute"),
+    ],
+)
+def test_invalid_yaml_and_values_raise_config_error(
+    tmp_path: Path, content: str, expected: str
+) -> None:
+    path = tmp_path / "open-stocks-mcp.yaml"
+    path.write_text(content)
+
+    with pytest.raises(ConfigError, match=expected):
+        load_config(config_path=path)
+
+
+@pytest.mark.unit
+@pytest.mark.journey_system
+def test_invalid_boolean_env_value_raises(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    path = tmp_path / "open-stocks-mcp.yaml"
+    path.write_text("feature_flags:\n  enable_cache: true")
+    monkeypatch.setenv("ENABLE_CACHE", "definitely")
+
+    with pytest.raises(ConfigError, match="ENABLE_CACHE"):
+        load_config(config_path=path)

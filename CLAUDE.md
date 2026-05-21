@@ -81,6 +81,14 @@ ruff format .                   # Format code
 mypy .                          # Type check
 ```
 
+### Config Validation Workflow
+For YAML + env config changes, run focused validation first:
+```bash
+uv run pytest tests/unit/test_config.py tests/unit/test_simple_rate_limiter.py tests/server/test_server_app.py -q
+uv run ruff check src/open_stocks_mcp/config.py src/open_stocks_mcp/tools/rate_limiter.py src/open_stocks_mcp/server/app.py tests/unit/test_config.py tests/unit/test_simple_rate_limiter.py tests/server/test_server_app.py
+uv run mypy src/open_stocks_mcp/config.py src/open_stocks_mcp/tools/rate_limiter.py src/open_stocks_mcp/server/app.py
+```
+
 ### MCP Development
 ```bash
 # Test server locally (HTTP transport)

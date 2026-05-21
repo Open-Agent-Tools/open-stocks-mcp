@@ -100,3 +100,20 @@ class TestSimpleRateLimiter:
         assert stats["endpoint_usage"]["/orders"]["calls_last_minute"] == 1
         assert stats["broker_usage"]["robinhood"]["calls_last_minute"] == 2
         assert stats["broker_usage"]["schwab"]["calls_last_minute"] == 1
+
+
+@pytest.mark.journey_system
+@pytest.mark.unit
+def test_configure_global_rate_limiter_updates_singleton() -> None:
+    from open_stocks_mcp.tools.rate_limiter import (
+        configure_global_rate_limiter,
+        reset_global_rate_limiter,
+    )
+
+    reset_global_rate_limiter()
+    limiter = configure_global_rate_limiter(11, 222, 3)
+
+    assert limiter.calls_per_minute == 11
+    assert limiter.calls_per_hour == 222
+    assert limiter.burst_size == 3
+    assert get_rate_limiter() is limiter

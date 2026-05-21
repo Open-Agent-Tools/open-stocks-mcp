@@ -1,68 +1,112 @@
-"""Server configuration for Open Stocks MCP MCP server"""
+"""Server configuration for Open Stocks MCP MCP server."""
+
+from __future__ import annotations
 
 import os
 from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any
+
+import yaml  # type: ignore[import-untyped]
 
 
-def _env_int(name: str, default: int) -> int:
-    raw_value = os.getenv(name)
-    if raw_value is None:
-        return default
+class ConfigError(ValueError):
+    """Raised when configuration cannot be parsed or validated."""
+
+
+_ALLOWED_TOP_LEVEL_KEYS = {
+    "server",
+    "rate_limits",
+    "cache",
+    "feature_flags",
+    "retry",
+    "timeout",
+    "circuit_breaker",
+    "broker_requests",
+    "otel",
+}
+
+
+def _parse_int(value: Any, field_name: str) -> int:
     try:
-        return int(raw_value)
-    except ValueError as exc:
-        raise ValueError(f"{name} must be an integer") from exc
+        return int(value)
+    except (TypeError, ValueError) as exc:
+        raise ConfigError(f"{field_name} must be an integer") from exc
 
 
-def _env_bool(name: str, default: bool) -> bool:
-    raw_value = os.getenv(name)
-    if raw_value is None:
-        return default
-    return raw_value.lower() in {"1", "true", "yes", "on"}
+def _parse_float(value: Any, field_name: str) -> float:
+    try:
+        return float(value)
+    except (TypeError, ValueError) as exc:
+        raise ConfigError(f"{field_name} must be a number") from exc
 
 
-def _env_float_from(names: tuple[str, ...], default: float) -> float:
-    for name in names:
-        raw_value = os.getenv(name)
-        if raw_value is None:
-            continue
-        try:
-            return float(raw_value)
-        except ValueError as exc:
-            raise ValueError(f"{name} must be a number") from exc
-    return default
-
-
-def _env_int_from(names: tuple[str, ...], default: int) -> int:
-    for name in names:
-        raw_value = os.getenv(name)
-        if raw_value is None:
-            continue
-        try:
-            return int(raw_value)
-        except ValueError as exc:
-            raise ValueError(f"{name} must be an integer") from exc
-    return default
+def _parse_bool(value: Any, field_name: str) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in {"1", "true", "yes", "on"}:
+            return True
+        if normalized in {"0", "false", "no", "off"}:
+            return False
+    raise ConfigError(f"{field_name} must be a boolean")
 
 
 def _env_optional_int(name: str) -> int | None:
     raw_value = os.getenv(name)
     if raw_value is None or raw_value == "":
         return None
-    try:
-        return int(raw_value)
-    except ValueError as exc:
-        raise ValueError(f"{name} must be an integer") from exc
+    return _parse_int(raw_value, name)
 
 
-def _env_float(name: str, default: float) -> float:
-    raw_value = os.getenv(name)
-    if raw_value is None:
-        return default
+def _validate_positive_int(value: int, field_name: str) -> int:
+    if value <= 0:
+        raise ConfigError(f"{field_name} must be > 0")
+    return value
+
+
+def _validate_log_level(value: str) -> str:
+    valid = {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}
+    normalized = value.upper()
+    if normalized not in valid:
+        raise ConfigError(
+            "server.log_level must be one of DEBUG/INFO/WARNING/ERROR/CRITICAL"
+        )
+    return normalized
+
+
+def _load_yaml_mapping(path: Path) -> dict[str, Any]:
     try:
-        return float(raw_value)
-    except ValueError as exc:
-        raise ValueError(f"{name} must be a number") from exc
+        raw = yaml.safe_load(path.read_text())
+    except yaml.YAMLError as exc:
+        raise ConfigError(f"YAML parse error in {path}: {exc}") from exc
+
+    if raw is None:
+        return {}
+    if not isinstance(raw, dict):
+        raise ConfigError(f"Config in {path} must be a mapping")
+
+    unknown = set(raw.keys()) - _ALLOWED_TOP_LEVEL_KEYS
+    if unknown:
+        names = ", ".join(sorted(unknown))
+        raise ConfigError(f"Config contains unknown top-level sections: {names}")
+
+    return raw
+
+
+def _discover_config_path(explicit_path: Path | None) -> Path | None:
+    if explicit_path is not None:
+        return explicit_path
+
+    env_path = os.getenv("OPEN_STOCKS_MCP_CONFIG")
+    if env_path:
+        return Path(env_path)
+
+    for candidate in (Path("open-stocks-mcp.yaml"), Path("config.yaml")):
+        if candidate.exists():
+            return candidate
+    return None
 
 
 @dataclass
@@ -77,19 +121,32 @@ class CacheConfig:
 
     @property
     def ttl_market_seconds(self) -> float:
-        """Compatibility alias for the market-data cache TTL."""
         return self.quotes_ttl_seconds
 
     @property
     def ttl_account_seconds(self) -> float:
-        """Compatibility alias for the account-data cache TTL."""
         return self.account_ttl_seconds
 
 
 @dataclass
-class RetryConfig:
-    """Configuration for transient API retry behavior."""
+class RateLimitConfig:
+    """Configuration for runtime API call limits."""
 
+    calls_per_minute: int = 30
+    calls_per_hour: int = 1000
+    burst_size: int = 5
+
+
+@dataclass
+class FeatureFlagConfig:
+    """Feature flags for optional behavior."""
+
+    enable_cache: bool = True
+    enable_circuit_breaker: bool = False
+
+
+@dataclass
+class RetryConfig:
     max_retries: int = 3
     initial_delay: float = 1.0
     backoff_factor: float = 2.0
@@ -101,7 +158,6 @@ class RetryConfig:
     data_max_retries: int | None = None
 
     def max_retries_for(self, error_type: str) -> int:
-        """Return retry attempts for a classified error type."""
         overrides = {
             "authentication": self.authentication_max_retries,
             "network": self.network_max_retries,
@@ -117,15 +173,11 @@ class RetryConfig:
 
 @dataclass
 class TimeoutConfig:
-    """Configuration for HTTP request timeout behavior."""
-
     request_timeout_seconds: float = 120.0
 
 
 @dataclass
 class CircuitBreakerConfig:
-    """Configuration for broker-call circuit breaker behavior."""
-
     enabled: bool = True
     failure_threshold: int = 5
     recovery_timeout_seconds: float = 60.0
@@ -138,8 +190,6 @@ class CircuitBreakerConfig:
 
 @dataclass
 class BrokerRequestConfig:
-    """Configuration for broker-specific request policies."""
-
     robinhood_timeout_seconds: float = 16.0
     schwab_timeout_seconds: float = 30.0
     retry_max_retries: int = 3
@@ -150,8 +200,6 @@ class BrokerRequestConfig:
 
 @dataclass
 class OtelConfig:
-    """OpenTelemetry tracing configuration"""
-
     enabled: bool = False
     service_name: str = "open-stocks-mcp"
     exporter_endpoint: str | None = None
@@ -159,11 +207,11 @@ class OtelConfig:
 
 @dataclass
 class ServerConfig:
-    """Configuration for the MCP server"""
-
     name: str = "Open Stocks MCP"
-    log_level: str = os.getenv("LOG_LEVEL", "INFO")
+    log_level: str = "INFO"
     monitoring_enabled: bool = True
+    rate_limits: RateLimitConfig = field(default_factory=RateLimitConfig)
+    feature_flags: FeatureFlagConfig = field(default_factory=FeatureFlagConfig)
     cache: CacheConfig = field(default_factory=CacheConfig)
     retry: RetryConfig | None = None
     timeout: TimeoutConfig | None = None
@@ -178,31 +226,154 @@ class ServerConfig:
             self.timeout = TimeoutConfig()
 
 
-def load_config() -> ServerConfig:
-    """Load server configuration from environment or defaults"""
-    cache = CacheConfig(
-        enabled=_env_bool("CACHE_ENABLED", True),
-        quotes_ttl_seconds=_env_float_from(
-            ("CACHE_TTL_MARKET_SECONDS", "CACHE_QUOTES_TTL"), 15.0
-        ),
-        account_ttl_seconds=_env_float_from(
-            ("CACHE_TTL_ACCOUNT_SECONDS", "CACHE_ACCOUNT_TTL"), 60.0
-        ),
-        max_size=_env_int_from(("CACHE_MAX_SIZE",), 1024),
-        strategy=os.getenv("CACHE_STRATEGY", "ttl"),
+def load_config(config_path: Path | str | None = None) -> ServerConfig:
+    """Load server configuration from YAML + environment with env precedence."""
+    explicit = Path(config_path) if config_path is not None else None
+    selected = _discover_config_path(explicit)
+    raw: dict[str, Any] = {}
+    if selected is not None:
+        if selected.exists():
+            raw = _load_yaml_mapping(selected)
+        elif explicit is not None:
+            raw = {}
+
+    server = raw.get("server", {}) if isinstance(raw.get("server", {}), dict) else {}
+    rate_limits = (
+        raw.get("rate_limits", {})
+        if isinstance(raw.get("rate_limits", {}), dict)
+        else {}
     )
-    enabled_str = os.getenv("OTEL_ENABLED", "false").strip().lower()
-    otel_enabled = enabled_str in ("1", "true", "yes")
-    return ServerConfig(
-        name=os.getenv("MCP_SERVER_NAME", "Open Stocks MCP"),
-        log_level=os.getenv("LOG_LEVEL", "INFO"),
-        monitoring_enabled=os.getenv("MONITORING_ENABLED", "true").lower() == "true",
-        cache=cache,
+    cache = raw.get("cache", {}) if isinstance(raw.get("cache", {}), dict) else {}
+    feature_flags = (
+        raw.get("feature_flags", {})
+        if isinstance(raw.get("feature_flags", {}), dict)
+        else {}
+    )
+
+    for section_name, section_value in (
+        ("server", raw.get("server", {})),
+        ("rate_limits", raw.get("rate_limits", {})),
+        ("cache", raw.get("cache", {})),
+        ("feature_flags", raw.get("feature_flags", {})),
+    ):
+        if section_value is not None and not isinstance(section_value, dict):
+            raise ConfigError(f"{section_name} must be a mapping")
+
+    name = os.getenv("MCP_SERVER_NAME", str(server.get("name", "Open Stocks MCP")))
+    log_level = _validate_log_level(
+        os.getenv("LOG_LEVEL", str(server.get("log_level", "INFO")))
+    )
+
+    calls_per_minute = _validate_positive_int(
+        _parse_int(
+            os.getenv(
+                "RATE_LIMIT_CALLS_PER_MINUTE",
+                str(rate_limits.get("calls_per_minute", 30)),
+            ),
+            "rate_limits.calls_per_minute",
+        ),
+        "rate_limits.calls_per_minute",
+    )
+    calls_per_hour = _validate_positive_int(
+        _parse_int(
+            os.getenv(
+                "RATE_LIMIT_CALLS_PER_HOUR",
+                str(rate_limits.get("calls_per_hour", 1000)),
+            ),
+            "rate_limits.calls_per_hour",
+        ),
+        "rate_limits.calls_per_hour",
+    )
+    burst_size = _validate_positive_int(
+        _parse_int(
+            os.getenv("RATE_LIMIT_BURST_SIZE", str(rate_limits.get("burst_size", 5))),
+            "rate_limits.burst_size",
+        ),
+        "rate_limits.burst_size",
+    )
+
+    ttl_market_seconds = _parse_float(
+        os.getenv(
+            "CACHE_TTL_MARKET_SECONDS",
+            os.getenv("CACHE_QUOTES_TTL", str(cache.get("ttl_market_seconds", 15.0))),
+        ),
+        "cache.ttl_market_seconds",
+    )
+    ttl_account_seconds = _parse_float(
+        os.getenv(
+            "CACHE_TTL_ACCOUNT_SECONDS",
+            os.getenv("CACHE_ACCOUNT_TTL", str(cache.get("ttl_account_seconds", 60.0))),
+        ),
+        "cache.ttl_account_seconds",
+    )
+    cache_max_size = _validate_positive_int(
+        _parse_int(
+            os.getenv("CACHE_MAX_SIZE", str(cache.get("max_size", 1024))),
+            "cache.max_size",
+        ),
+        "cache.max_size",
+    )
+
+    cache_enabled = _parse_bool(
+        os.getenv("CACHE_ENABLED", str(feature_flags.get("enable_cache", True))),
+        "CACHE_ENABLED",
+    )
+    enable_cache = _parse_bool(
+        os.getenv("ENABLE_CACHE", str(feature_flags.get("enable_cache", True))),
+        "ENABLE_CACHE",
+    )
+    enable_circuit_breaker = _parse_bool(
+        os.getenv(
+            "ENABLE_CIRCUIT_BREAKER",
+            str(feature_flags.get("enable_circuit_breaker", False)),
+        ),
+        "ENABLE_CIRCUIT_BREAKER",
+    )
+
+    monitoring_enabled = _parse_bool(
+        os.getenv("MONITORING_ENABLED", "true"),
+        "MONITORING_ENABLED",
+    )
+
+    otel_enabled = _parse_bool(os.getenv("OTEL_ENABLED", "false"), "OTEL_ENABLED")
+
+    cfg = ServerConfig(
+        name=name,
+        log_level=log_level,
+        monitoring_enabled=monitoring_enabled,
+        rate_limits=RateLimitConfig(
+            calls_per_minute=calls_per_minute,
+            calls_per_hour=calls_per_hour,
+            burst_size=burst_size,
+        ),
+        feature_flags=FeatureFlagConfig(
+            enable_cache=enable_cache,
+            enable_circuit_breaker=enable_circuit_breaker,
+        ),
+        cache=CacheConfig(
+            enabled=cache_enabled,
+            quotes_ttl_seconds=ttl_market_seconds,
+            account_ttl_seconds=ttl_account_seconds,
+            max_size=cache_max_size,
+            strategy=os.getenv("CACHE_STRATEGY", str(cache.get("strategy", "ttl"))),
+        ),
         retry=RetryConfig(
-            max_retries=_env_int("OPEN_STOCKS_MCP_RETRY_MAX_RETRIES", 3),
-            initial_delay=_env_float("OPEN_STOCKS_MCP_RETRY_INITIAL_DELAY", 1.0),
-            backoff_factor=_env_float("OPEN_STOCKS_MCP_RETRY_BACKOFF_FACTOR", 2.0),
-            auth_max_retries=_env_int("OPEN_STOCKS_MCP_RETRY_AUTH_MAX_RETRIES", 1),
+            max_retries=_parse_int(
+                os.getenv("OPEN_STOCKS_MCP_RETRY_MAX_RETRIES", "3"),
+                "OPEN_STOCKS_MCP_RETRY_MAX_RETRIES",
+            ),
+            initial_delay=_parse_float(
+                os.getenv("OPEN_STOCKS_MCP_RETRY_INITIAL_DELAY", "1.0"),
+                "OPEN_STOCKS_MCP_RETRY_INITIAL_DELAY",
+            ),
+            backoff_factor=_parse_float(
+                os.getenv("OPEN_STOCKS_MCP_RETRY_BACKOFF_FACTOR", "2.0"),
+                "OPEN_STOCKS_MCP_RETRY_BACKOFF_FACTOR",
+            ),
+            auth_max_retries=_parse_int(
+                os.getenv("OPEN_STOCKS_MCP_RETRY_AUTH_MAX_RETRIES", "1"),
+                "OPEN_STOCKS_MCP_RETRY_AUTH_MAX_RETRIES",
+            ),
             authentication_max_retries=_env_optional_int(
                 "OPEN_STOCKS_MCP_RETRY_AUTHENTICATION_MAX_RETRIES"
             ),
@@ -218,40 +389,61 @@ def load_config() -> ServerConfig:
             ),
         ),
         timeout=TimeoutConfig(
-            request_timeout_seconds=_env_float(
-                "OPEN_STOCKS_MCP_HTTP_REQUEST_TIMEOUT_SECONDS", 120.0
+            request_timeout_seconds=_parse_float(
+                os.getenv("OPEN_STOCKS_MCP_HTTP_REQUEST_TIMEOUT_SECONDS", "120.0"),
+                "OPEN_STOCKS_MCP_HTTP_REQUEST_TIMEOUT_SECONDS",
             )
         ),
         circuit_breaker=CircuitBreakerConfig(
-            enabled=_env_bool("OPEN_STOCKS_MCP_CIRCUIT_BREAKER_ENABLED", True),
-            failure_threshold=_env_int(
-                "OPEN_STOCKS_MCP_CIRCUIT_BREAKER_FAILURE_THRESHOLD", 5
+            enabled=_parse_bool(
+                os.getenv("OPEN_STOCKS_MCP_CIRCUIT_BREAKER_ENABLED", "true"),
+                "OPEN_STOCKS_MCP_CIRCUIT_BREAKER_ENABLED",
             ),
-            recovery_timeout_seconds=_env_float_from(
-                (
+            failure_threshold=_parse_int(
+                os.getenv("OPEN_STOCKS_MCP_CIRCUIT_BREAKER_FAILURE_THRESHOLD", "5"),
+                "OPEN_STOCKS_MCP_CIRCUIT_BREAKER_FAILURE_THRESHOLD",
+            ),
+            recovery_timeout_seconds=_parse_float(
+                os.getenv(
                     "OPEN_STOCKS_MCP_CIRCUIT_BREAKER_RECOVERY_TIMEOUT_SECONDS",
-                    "OPEN_STOCKS_MCP_CIRCUIT_BREAKER_COOLDOWN_SECONDS",
+                    os.getenv(
+                        "OPEN_STOCKS_MCP_CIRCUIT_BREAKER_COOLDOWN_SECONDS", "60.0"
+                    ),
                 ),
-                60.0,
+                "OPEN_STOCKS_MCP_CIRCUIT_BREAKER_RECOVERY_TIMEOUT_SECONDS",
             ),
         ),
         broker_requests=BrokerRequestConfig(
-            robinhood_timeout_seconds=_env_float(
-                "OPEN_STOCKS_MCP_ROBINHOOD_REQUEST_TIMEOUT_SECONDS", 16.0
+            robinhood_timeout_seconds=_parse_float(
+                os.getenv("OPEN_STOCKS_MCP_ROBINHOOD_REQUEST_TIMEOUT_SECONDS", "16.0"),
+                "OPEN_STOCKS_MCP_ROBINHOOD_REQUEST_TIMEOUT_SECONDS",
             ),
-            schwab_timeout_seconds=_env_float(
-                "OPEN_STOCKS_MCP_SCHWAB_REQUEST_TIMEOUT_SECONDS", 30.0
+            schwab_timeout_seconds=_parse_float(
+                os.getenv("OPEN_STOCKS_MCP_SCHWAB_REQUEST_TIMEOUT_SECONDS", "30.0"),
+                "OPEN_STOCKS_MCP_SCHWAB_REQUEST_TIMEOUT_SECONDS",
             ),
-            retry_max_retries=_env_int("OPEN_STOCKS_MCP_RETRY_MAX_RETRIES", 3),
-            retry_initial_delay=_env_float("OPEN_STOCKS_MCP_RETRY_INITIAL_DELAY", 1.0),
-            retry_backoff_factor=_env_float(
-                "OPEN_STOCKS_MCP_RETRY_BACKOFF_FACTOR", 2.0
+            retry_max_retries=_parse_int(
+                os.getenv("OPEN_STOCKS_MCP_RETRY_MAX_RETRIES", "3"),
+                "OPEN_STOCKS_MCP_RETRY_MAX_RETRIES",
             ),
-            total_deadline_seconds=_env_float(
-                "OPEN_STOCKS_MCP_BROKER_REQUEST_TOTAL_DEADLINE_SECONDS", 45.0
-            )
-            if os.getenv("OPEN_STOCKS_MCP_BROKER_REQUEST_TOTAL_DEADLINE_SECONDS")
-            else None,
+            retry_initial_delay=_parse_float(
+                os.getenv("OPEN_STOCKS_MCP_RETRY_INITIAL_DELAY", "1.0"),
+                "OPEN_STOCKS_MCP_RETRY_INITIAL_DELAY",
+            ),
+            retry_backoff_factor=_parse_float(
+                os.getenv("OPEN_STOCKS_MCP_RETRY_BACKOFF_FACTOR", "2.0"),
+                "OPEN_STOCKS_MCP_RETRY_BACKOFF_FACTOR",
+            ),
+            total_deadline_seconds=(
+                _parse_float(
+                    os.getenv(
+                        "OPEN_STOCKS_MCP_BROKER_REQUEST_TOTAL_DEADLINE_SECONDS", "0"
+                    ),
+                    "OPEN_STOCKS_MCP_BROKER_REQUEST_TOTAL_DEADLINE_SECONDS",
+                )
+                if os.getenv("OPEN_STOCKS_MCP_BROKER_REQUEST_TOTAL_DEADLINE_SECONDS")
+                else None
+            ),
         ),
         otel=OtelConfig(
             enabled=otel_enabled,
@@ -260,13 +452,16 @@ def load_config() -> ServerConfig:
         ),
     )
 
+    if not cfg.feature_flags.enable_cache:
+        cfg.cache.enabled = False
 
-# Global config instance for process-level access.
+    return cfg
+
+
 _global_config: ServerConfig | None = None
 
 
 def get_config() -> ServerConfig:
-    """Get the global server configuration instance."""
     global _global_config
     if _global_config is None:
         _global_config = load_config()
@@ -274,11 +469,9 @@ def get_config() -> ServerConfig:
 
 
 def get_cache_config() -> CacheConfig:
-    """Get the global cache configuration."""
     return get_config().cache
 
 
 def reset_cache_config() -> None:
-    """Reset the global configuration instance, primarily for tests."""
     global _global_config
     _global_config = None

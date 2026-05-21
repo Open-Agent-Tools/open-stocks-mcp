@@ -1,0 +1,20 @@
+# Open Stocks MCP configuration
+# Environment variables override every value below.
+
+server:
+  name: Open Stocks MCP
+  log_level: INFO
+
+rate_limits:
+  calls_per_minute: 30
+  calls_per_hour: 1000
+  burst_size: 5
+
+cache:
+  ttl_market_seconds: 15
+  ttl_account_seconds: 60
+  max_size: 1024
+
+feature_flags:
+  enable_cache: true
+  enable_circuit_breaker: false
