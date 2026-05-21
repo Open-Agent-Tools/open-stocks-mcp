@@ -1,0 +1,23 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run MCP server (HTTP)",
+      "type": "python",
+      "request": "launch",
+      "module": "open_stocks_mcp.server.app",
+      "args": ["--transport", "http", "--port", "3001"],
+      "console": "integratedTerminal",
+      "justMyCode": false
+    },
+    {
+      "name": "Pytest: current file",
+      "type": "python",
+      "request": "launch",
+      "module": "pytest",
+      "args": ["${file}", "-v"],
+      "console": "integratedTerminal",
+      "justMyCode": false
+    }
+  ]
+}
