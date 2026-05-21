@@ -1,5 +1,6 @@
 """Unit tests for Schwab account tools."""
 
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -24,30 +25,20 @@ class TestSchwabAccountTools:
     )
     @patch("open_stocks_mcp.tools.schwab_account_tools.execute_broker_request")
     async def test_get_account_numbers_success(
-        self, mock_to_thread: AsyncMock, mock_get_broker: AsyncMock
+        self,
+        mock_to_thread: AsyncMock,
+        mock_get_broker: AsyncMock,
+        schwab_account_numbers_payload: list[dict[str, Any]],
     ) -> None:
         """Test successful account numbers retrieval."""
         # Mock broker
         mock_broker = MagicMock()
         mock_response = MagicMock()
-        mock_response.json.return_value = [
-            {
-                "accountNumber": "12345678",
-                "hashValue": "abc123def456",
-            },
-            {
-                "accountNumber": "87654321",
-                "hashValue": "xyz789uvw012",
-            },
-        ]
+        mock_response.json.return_value = schwab_account_numbers_payload
         mock_broker.client.get_account_numbers.return_value = mock_response
         mock_get_broker.return_value = (mock_broker, None)
 
-        # Mock asyncio.to_thread
-        mock_to_thread.return_value = [
-            {"accountNumber": "12345678", "hashValue": "abc123def456"},
-            {"accountNumber": "87654321", "hashValue": "xyz789uvw012"},
-        ]
+        mock_to_thread.return_value = schwab_account_numbers_payload
 
         result = await get_schwab_account_numbers()
 
@@ -64,16 +55,16 @@ class TestSchwabAccountTools:
         "open_stocks_mcp.tools.schwab_account_tools.get_authenticated_broker_or_error"
     )
     async def test_get_account_numbers_auth_error(
-        self, mock_get_broker: AsyncMock
+        self,
+        mock_get_broker: AsyncMock,
+        broker_auth_error_payload: dict[str, Any],
     ) -> None:
         """Test account numbers when authentication fails."""
-        # Mock authentication error
-        error_response = {"result": {"error": "Not authenticated", "status": "error"}}
-        mock_get_broker.return_value = (None, error_response)
+        mock_get_broker.return_value = (None, broker_auth_error_payload)
 
         result = await get_schwab_account_numbers()
 
-        assert result == error_response
+        assert result == broker_auth_error_payload
 
     @pytest.mark.journey_account
     @pytest.mark.unit
@@ -88,6 +79,7 @@ class TestSchwabAccountTools:
         mock_client: MagicMock,
         mock_to_thread: AsyncMock,
         mock_get_broker: AsyncMock,
+        schwab_account_payload: dict[str, Any],
     ) -> None:
         """Test successful account retrieval."""
         # Mock broker
@@ -97,17 +89,7 @@ class TestSchwabAccountTools:
         # Mock Client.Account.Fields
         mock_client.Account.Fields.POSITIONS = "positions"
 
-        # Mock response
-        mock_to_thread.return_value = {
-            "securitiesAccount": {
-                "accountNumber": "12345678",
-                "type": "MARGIN",
-                "roundTrips": 0,
-                "isDayTrader": False,
-                "isClosingOnlyRestricted": False,
-                "positions": [],
-            }
-        }
+        mock_to_thread.return_value = schwab_account_payload
 
         result = await get_schwab_account("abc123")
 
@@ -123,28 +105,17 @@ class TestSchwabAccountTools:
     )
     @patch("open_stocks_mcp.tools.schwab_account_tools.execute_broker_request")
     async def test_get_accounts_success(
-        self, mock_to_thread: AsyncMock, mock_get_broker: AsyncMock
+        self,
+        mock_to_thread: AsyncMock,
+        mock_get_broker: AsyncMock,
+        schwab_accounts_payload: list[dict[str, Any]],
     ) -> None:
         """Test successful accounts retrieval."""
         # Mock broker
         mock_broker = MagicMock()
         mock_get_broker.return_value = (mock_broker, None)
 
-        # Mock response
-        mock_to_thread.return_value = [
-            {
-                "securitiesAccount": {
-                    "accountNumber": "12345678",
-                    "type": "MARGIN",
-                }
-            },
-            {
-                "securitiesAccount": {
-                    "accountNumber": "87654321",
-                    "type": "CASH",
-                }
-            },
-        ]
+        mock_to_thread.return_value = schwab_accounts_payload
 
         result = await get_schwab_accounts()
 
@@ -166,6 +137,7 @@ class TestSchwabAccountTools:
         mock_client: MagicMock,
         mock_to_thread: AsyncMock,
         mock_get_broker: AsyncMock,
+        schwab_account_payload: dict[str, Any],
     ) -> None:
         """Test successful portfolio retrieval."""
         # Mock broker
@@ -175,28 +147,7 @@ class TestSchwabAccountTools:
         # Mock Client.Account.Fields
         mock_client.Account.Fields.POSITIONS = "positions"
 
-        # Mock response with positions
-        mock_to_thread.return_value = {
-            "securitiesAccount": {
-                "positions": [
-                    {
-                        "shortQuantity": 0.0,
-                        "averagePrice": 150.0,
-                        "currentDayProfitLoss": 50.0,
-                        "currentDayProfitLossPercentage": 2.5,
-                        "longQuantity": 10.0,
-                        "settledLongQuantity": 10.0,
-                        "settledShortQuantity": 0.0,
-                        "instrument": {
-                            "assetType": "EQUITY",
-                            "cusip": "037833100",
-                            "symbol": "AAPL",
-                        },
-                        "marketValue": 1500.0,
-                    }
-                ]
-            }
-        }
+        mock_to_thread.return_value = schwab_account_payload
 
         result = await get_schwab_portfolio("abc123")
 
@@ -219,26 +170,14 @@ class TestSchwabAccountTools:
         mock_client: MagicMock,
         mock_to_thread: AsyncMock,
         mock_get_broker: AsyncMock,
+        schwab_balances_payload: dict[str, Any],
     ) -> None:
         """Test successful account balances retrieval."""
         # Mock broker
         mock_broker = MagicMock()
         mock_get_broker.return_value = (mock_broker, None)
 
-        # Mock response with balances
-        mock_to_thread.return_value = {
-            "securitiesAccount": {
-                "currentBalances": {
-                    "liquidationValue": 50000.0,
-                    "cashBalance": 10000.0,
-                    "longMarketValue": 40000.0,
-                    "shortMarketValue": 0.0,
-                },
-                "initialBalances": {
-                    "accountValue": 48000.0,
-                },
-            }
-        }
+        mock_to_thread.return_value = schwab_balances_payload
 
         result = await get_schwab_account_balances("abc123")
 
