@@ -166,6 +166,8 @@ class TestHTTPEndpoints:
         assert data["transport"] == "http"
         assert "timestamp" in data
         assert "components" in data
+        assert "broker_health" in data
+        assert "account_health" in data
         assert "metrics" in data["components"]
         assert "session" in data["components"]
 
@@ -308,6 +310,8 @@ class TestHTTPEndpoints:
         assert "server" in data
         assert "session" in data
         assert "rate_limiting" in data
+        assert "broker_health" in data
+        assert "account_health" in data
         assert "circuit_breaker" in data
         assert "state" in data["circuit_breaker"]
         assert data["server"]["status"] == "running"

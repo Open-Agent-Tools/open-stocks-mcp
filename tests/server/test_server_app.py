@@ -26,7 +26,6 @@ class TestServerApp:
         with (
             patch("open_stocks_mcp.server.app.load_config") as mock_config,
             patch("open_stocks_mcp.server.app.setup_logging") as mock_logging,
-            patch("open_stocks_mcp.server.app.setup_tracing"),
         ):
             mock_cfg = MagicMock()
             mock_cfg.otel.enabled = False
@@ -42,10 +41,7 @@ class TestServerApp:
         mock_config = MagicMock()
         mock_config.otel.enabled = False
 
-        with (
-            patch("open_stocks_mcp.server.app.setup_logging") as mock_logging,
-            patch("open_stocks_mcp.server.app.setup_tracing"),
-        ):
+        with patch("open_stocks_mcp.server.app.setup_logging") as mock_logging:
             result = create_mcp_server(mock_config)
 
             assert result is mcp
@@ -187,41 +183,27 @@ class TestToolRegistration:
             },
             "timestamp": "2026-01-01T00:00:00+00:00",
         }
-        health_service = MagicMock()
-        health_service.get_status = AsyncMock(return_value=expected_health)
-        metrics_collector = MagicMock()
-        metrics_collector.get_metrics = AsyncMock(
-            return_value={
-                "broker_health": {"robinhood": {"status": "healthy"}},
-                "account_health": {"robinhood:primary": {"status": "healthy"}},
-            }
-        )
-        circuit_breaker = MagicMock()
-        circuit_breaker.snapshot.return_value = {"state": "closed"}
-
-        with (
-            patch(
-                "open_stocks_mcp.server.tool_helpers.get_health_service",
-                return_value=health_service,
-            ),
-            patch(
-                "open_stocks_mcp.server.tool_helpers.get_metrics_collector",
-                return_value=metrics_collector,
-            ),
-            patch(
-                "open_stocks_mcp.server.tool_helpers.get_broker_circuit_breaker",
-                return_value=circuit_breaker,
-            ),
+        with patch(
+            "open_stocks_mcp.server.app.get_health_check_data",
+            AsyncMock(return_value={"result": expected_health}),
         ):
             result = await health_check()
 
-        assert result == {
-            "result": {
-                **expected_health,
-                "circuit_breaker": {"state": "closed"},
-                "broker_health": {"robinhood": {"status": "healthy"}},
-                "account_health": {"robinhood:primary": {"status": "healthy"}},
-                "health_status": "healthy",
-                "status": "success",
-            }
-        }
+        assert result == {"result": expected_health}
+
+    @pytest.mark.asyncio
+    async def test_system_tools_include_additive_broker_account_health(self) -> None:
+        from open_stocks_mcp.server.app import (
+            broker_status,
+            metrics_summary,
+            rate_limit_status,
+        )
+
+        broker = await broker_status()
+        metrics = await metrics_summary()
+        rate = await rate_limit_status()
+
+        assert "broker_health" in broker["result"]
+        assert "broker_health" in metrics["result"]
+        assert "account_health" in metrics["result"]
+        assert "endpoint_usage" in rate["result"]

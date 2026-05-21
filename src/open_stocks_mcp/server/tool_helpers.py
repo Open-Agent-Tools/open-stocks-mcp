@@ -57,6 +57,11 @@ async def get_broker_status_data() -> dict[str, Any]:
             "result": {
                 "brokers": auth_status,
                 "available_brokers": available_brokers,
+                "broker_health": {
+                    name: broker.get_health_status()
+                    for name in registry.list_brokers()
+                    if (broker := registry.get_broker(name)) is not None
+                },
                 "total_configured": len(registry.list_brokers()),
                 "total_authenticated": len(available_brokers),
                 "broker_health": broker_health,
@@ -119,6 +124,7 @@ async def get_rate_limit_status_data() -> dict[str, Any]:
     return {
         "result": {
             **stats,
+            "endpoint_usage": stats.get("endpoint_usage", {}),
             "circuit_breaker": get_broker_circuit_breaker().snapshot(),
             "status": "success",
         }
@@ -130,7 +136,14 @@ async def get_metrics_summary_data() -> dict[str, Any]:
     metrics_collector = get_metrics_collector()
     metrics = await metrics_collector.get_metrics()
 
-    return {"result": {**metrics, "status": "success"}}
+    return {
+        "result": {
+            **metrics,
+            "broker_health": metrics.get("broker_health", {}),
+            "account_health": metrics.get("account_health", {}),
+            "status": "success",
+        }
+    }
 
 
 async def get_health_check_data() -> dict[str, Any]:
@@ -140,6 +153,8 @@ async def get_health_check_data() -> dict[str, Any]:
     return {
         "result": {
             **health_status,
+            "broker_health": metrics.get("broker_health", {}),
+            "account_health": metrics.get("account_health", {}),
             "circuit_breaker": get_broker_circuit_breaker().snapshot(),
             "broker_health": metrics.get("broker_health", {}),
             "account_health": metrics.get("account_health", {}),

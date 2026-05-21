@@ -29,8 +29,8 @@ class MetricsCollector:
         self.tool_response_times: dict[str, deque[tuple[datetime, float]]] = (
             defaultdict(deque)
         )
-        self.broker_operations: deque[dict[str, Any]] = deque()
         self.error_types: dict[str, int] = defaultdict(int)
+        self.broker_operations: deque[dict[str, Any]] = deque()
 
         # Counters
         self.total_calls = 0
@@ -88,6 +88,34 @@ class MetricsCollector:
             self.session_refreshes += 1
             logger.info(f"Session refresh recorded. Total: {self.session_refreshes}")
 
+    async def record_broker_operation(
+        self,
+        *,
+        broker: str,
+        account_id: str | None,
+        operation: str,
+        success: bool,
+        duration_ms: float,
+        failure_class: str | None = None,
+        error_type: str | None = None,
+    ) -> None:
+        """Record broker/account operation telemetry."""
+        async with self._lock:
+            now = datetime.now()
+            self._clean_old_entries(now)
+            self.broker_operations.append(
+                {
+                    "timestamp": now,
+                    "broker": broker,
+                    "account_id": account_id or "default",
+                    "operation": operation,
+                    "success": success,
+                    "duration_ms": duration_ms,
+                    "failure_class": failure_class,
+                    "error_type": error_type,
+                }
+            )
+
     async def record_cache_hit(self, name: str) -> None:
         """Record a cache hit for the named cache."""
         async with self._lock:
@@ -97,57 +125,6 @@ class MetricsCollector:
         """Record a cache miss for the named cache."""
         async with self._lock:
             self.cache_misses[name] += 1
-
-    @staticmethod
-    def classify_broker_failure(
-        error_type: str | None, failure_class: str | None = None
-    ) -> str | None:
-        """Classify broker operation failures for health summaries."""
-        if failure_class:
-            return failure_class
-        if not error_type:
-            return None
-
-        normalized = error_type.lower()
-        if "pool" in normalized:
-            return "client_pool"
-        if "timeout" in normalized:
-            return "timeout"
-        if "auth" in normalized or "401" in normalized or "token" in normalized:
-            return "authentication"
-        if "account" in normalized:
-            return "account"
-        return "broker_api"
-
-    async def record_broker_operation(
-        self,
-        broker: str,
-        account_id: str | None,
-        operation: str,
-        duration: float,
-        success: bool,
-        error_type: str | None = None,
-        failure_class: str | None = None,
-    ) -> None:
-        """Record a broker/account scoped operation outcome."""
-        async with self._lock:
-            now = datetime.now()
-            self._clean_old_entries(now)
-            classified_failure = self.classify_broker_failure(
-                error_type, failure_class
-            )
-            self.broker_operations.append(
-                {
-                    "timestamp": now,
-                    "broker": broker,
-                    "account_id": account_id or "default",
-                    "operation": operation,
-                    "duration": duration,
-                    "success": success,
-                    "error_type": error_type,
-                    "failure_class": classified_failure,
-                }
-            )
 
     def _clean_old_entries(self, now: datetime) -> None:
         """Remove entries older than the window size."""
@@ -175,82 +152,8 @@ class MetricsCollector:
             while tool_durations and tool_durations[0][0] < cutoff:
                 tool_durations.popleft()
 
-        while (
-            self.broker_operations
-            and self.broker_operations[0]["timestamp"] < cutoff
-        ):
+        while self.broker_operations and self.broker_operations[0]["timestamp"] < cutoff:
             self.broker_operations.popleft()
-
-    @staticmethod
-    def _empty_health_bucket() -> dict[str, Any]:
-        return {
-            "status": "healthy",
-            "success_count": 0,
-            "error_count": 0,
-            "operations": {},
-            "failure_classes": {},
-            "last_error_type": None,
-            "last_error_at": None,
-        }
-
-    @staticmethod
-    def _update_health_bucket(bucket: dict[str, Any], sample: dict[str, Any]) -> None:
-        operation = str(sample["operation"])
-        bucket["operations"][operation] = bucket["operations"].get(operation, 0) + 1
-
-        if sample["success"]:
-            bucket["success_count"] += 1
-        else:
-            bucket["error_count"] += 1
-            bucket["last_error_type"] = sample["error_type"]
-            bucket["last_error_at"] = sample["timestamp"].isoformat()
-            failure_class = sample["failure_class"] or "broker_api"
-            bucket["failure_classes"][failure_class] = (
-                bucket["failure_classes"].get(failure_class, 0) + 1
-            )
-
-    @staticmethod
-    def _finalize_health_bucket(bucket: dict[str, Any]) -> None:
-        if bucket["error_count"] == 0:
-            bucket["status"] = "healthy"
-        elif bucket["success_count"] > 0:
-            bucket["status"] = "degraded"
-        else:
-            bucket["status"] = "unhealthy"
-
-    def get_broker_health_summary(self) -> dict[str, Any]:
-        """Return broker and account health summaries for recent operations."""
-        now = datetime.now()
-        self._clean_old_entries(now)
-
-        broker_health: dict[str, dict[str, Any]] = {}
-        account_health: dict[str, dict[str, dict[str, Any]]] = {}
-
-        for sample in self.broker_operations:
-            broker = str(sample["broker"])
-            account_id = str(sample["account_id"] or "default")
-
-            broker_bucket = broker_health.setdefault(
-                broker, self._empty_health_bucket()
-            )
-            account_bucket = account_health.setdefault(broker, {}).setdefault(
-                account_id, self._empty_health_bucket()
-            )
-
-            self._update_health_bucket(broker_bucket, sample)
-            self._update_health_bucket(account_bucket, sample)
-
-        for bucket in broker_health.values():
-            self._finalize_health_bucket(bucket)
-
-        for broker_accounts in account_health.values():
-            for bucket in broker_accounts.values():
-                self._finalize_health_bucket(bucket)
-
-        return {
-            "broker_health": broker_health,
-            "account_health": account_health,
-        }
 
     @staticmethod
     def _percentile(samples: list[float], quantile: float) -> float:
@@ -336,6 +239,50 @@ class MetricsCollector:
                     round(hits / total * 100.0, 2) if total > 0 else 0.0
                 )
 
+            broker_health: dict[str, dict[str, Any]] = {}
+            account_health: dict[str, dict[str, Any]] = {}
+            for item in self.broker_operations:
+                broker_key = item["broker"]
+                account_key = f"{broker_key}:{item['account_id']}"
+                for target, key in ((broker_health, broker_key), (account_health, account_key)):
+                    state = target.setdefault(
+                        key,
+                        {
+                            "total": 0,
+                            "success": 0,
+                            "errors": 0,
+                            "last_error_type": None,
+                            "failure_classes": defaultdict(int),
+                        },
+                    )
+                    state["total"] += 1
+                    if item["success"]:
+                        state["success"] += 1
+                    else:
+                        state["errors"] += 1
+                        state["last_error_type"] = item["error_type"]
+                        if item["failure_class"]:
+                            state["failure_classes"][item["failure_class"]] += 1
+
+            broker_health_out = {}
+            for key, state in broker_health.items():
+                broker_health_out[key] = {
+                    "total": state["total"],
+                    "success": state["success"],
+                    "errors": state["errors"],
+                    "last_error_type": state["last_error_type"],
+                    "failure_classes": dict(state["failure_classes"]),
+                }
+            account_health_out = {}
+            for key, state in account_health.items():
+                account_health_out[key] = {
+                    "total": state["total"],
+                    "success": state["success"],
+                    "errors": state["errors"],
+                    "last_error_type": state["last_error_type"],
+                    "failure_classes": dict(state["failure_classes"]),
+                }
+
             return {
                 "window_minutes": self.window_size.total_seconds() / 60,
                 "total_calls": self.total_calls,
@@ -353,7 +300,8 @@ class MetricsCollector:
                 "cache_hits": dict(self.cache_hits),
                 "cache_misses": dict(self.cache_misses),
                 "cache_hit_rate_percent": cache_hit_rate,
-                **self.get_broker_health_summary(),
+                "broker_health": broker_health_out,
+                "account_health": account_health_out,
                 "timestamp": now.isoformat(),
             }
 

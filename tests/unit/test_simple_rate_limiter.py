@@ -44,6 +44,7 @@ class TestSimpleRateLimiter:
         assert "burst_size" in stats
         assert "minute_usage_percent" in stats
         assert "hour_usage_percent" in stats
+        assert "endpoint_usage" in stats
 
     @pytest.mark.journey_system
     @pytest.mark.unit

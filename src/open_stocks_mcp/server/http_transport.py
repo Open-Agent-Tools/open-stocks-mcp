@@ -316,20 +316,18 @@ def create_http_server(
             health_service = get_health_service()
             health_status = await health_service.get_status()
             metrics = await metrics_collector.get_metrics()
-            broker_health = metrics.get("broker_health", {})
-            account_health = metrics.get("account_health", {})
 
             # The health service snapshot provides status, components, and timestamp.
             # We preserve HTTP metadata: version and transport.
             return {
                 "status": health_status["status"],
                 "components": health_status["components"],
+                "broker_health": metrics.get("broker_health", {}),
+                "account_health": metrics.get("account_health", {}),
                 "circuit_breaker": get_broker_circuit_breaker().snapshot(),
                 "timestamp": health_status.get("timestamp", time.time()),
                 "version": __version__,
                 "transport": "http",
-                "broker_health": broker_health,
-                "account_health": account_health,
             }
         except HTTPException:
             raise
@@ -361,6 +359,8 @@ def create_http_server(
                 "rate_limiting": rate_stats,
                 "circuit_breaker": get_broker_circuit_breaker().snapshot(),
                 "metrics": metrics,
+                "broker_health": metrics.get("broker_health", {}),
+                "account_health": metrics.get("account_health", {}),
             }
         except HTTPException:
             raise
