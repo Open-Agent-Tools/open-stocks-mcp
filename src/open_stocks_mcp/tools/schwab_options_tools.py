@@ -1,6 +1,5 @@
 """Schwab options MCP tools using schwab-py library."""
 
-import asyncio
 from datetime import date
 from typing import Any
 
@@ -8,7 +7,10 @@ from schwab.client import Client
 from schwab.orders.options import option_buy_to_open_market, option_sell_to_close_market
 
 from open_stocks_mcp.logging_config import logger
-from open_stocks_mcp.tools.broker_utils import get_authenticated_broker_or_error
+from open_stocks_mcp.tools.broker_utils import (
+    execute_broker_request,
+    get_authenticated_broker_or_error,
+)
 from open_stocks_mcp.tools.error_handling import (
     create_error_response,
     create_success_response,
@@ -67,7 +69,7 @@ async def get_schwab_option_chain(
             )
             return response.json()
 
-        chain_data = await asyncio.to_thread(_get_option_chain)
+        chain_data = await execute_broker_request(_get_option_chain, retry_safe=True)
 
         return create_success_response(chain_data)
 
@@ -130,7 +132,7 @@ async def get_schwab_option_chain_by_expiration(
             )
             return response.json()
 
-        chain_data = await asyncio.to_thread(_get_option_chain)
+        chain_data = await execute_broker_request(_get_option_chain, retry_safe=True)
 
         return create_success_response(chain_data)
 
@@ -161,7 +163,7 @@ async def get_schwab_option_expirations(symbol: str) -> dict[str, Any]:
             response = broker.client.get_option_expiration_chain(symbol.upper())
             return response.json()
 
-        expiration_data = await asyncio.to_thread(_get_option_chain)
+        expiration_data = await execute_broker_request(_get_option_chain, retry_safe=True)
 
         # Extract expiration dates
         expirations = expiration_data.get("expirationList", [])
@@ -203,7 +205,7 @@ async def get_schwab_options_positions(account_hash: str) -> dict[str, Any]:
             )
             return response.json()
 
-        account_data = await asyncio.to_thread(_get_account)
+        account_data = await execute_broker_request(_get_account, retry_safe=True)
 
         # Extract options positions
         securities_account = account_data.get("securitiesAccount", {})
@@ -286,7 +288,7 @@ async def schwab_option_buy_to_open(
             response = broker.client.place_order(account_hash, order_spec)
             return response
 
-        response = await asyncio.to_thread(_place_order)
+        response = await execute_broker_request(_place_order, retry_safe=False)
 
         # Check response status
         if response.status_code in (200, 201):
@@ -358,7 +360,7 @@ async def schwab_option_sell_to_close(
             response = broker.client.place_order(account_hash, order_spec)
             return response
 
-        response = await asyncio.to_thread(_place_order)
+        response = await execute_broker_request(_place_order, retry_safe=False)
 
         # Check response status
         if response.status_code in (200, 201):

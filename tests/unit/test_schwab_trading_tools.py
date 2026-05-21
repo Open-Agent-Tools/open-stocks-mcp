@@ -19,6 +19,13 @@ from open_stocks_mcp.tools.schwab_trading_tools import (
 )
 
 
+def _assert_retry_safe(mock_execute_broker_request: AsyncMock, expected: bool) -> None:
+    call_args = mock_execute_broker_request.call_args
+    assert call_args is not None
+    _, kwargs = call_args
+    assert kwargs.get("retry_safe") is expected
+
+
 class TestSchwabTradingTools:
     """Test Schwab trading tools with mocked responses."""
 
@@ -28,7 +35,7 @@ class TestSchwabTradingTools:
     @patch(
         "open_stocks_mcp.tools.schwab_trading_tools.get_authenticated_broker_or_error"
     )
-    @patch("open_stocks_mcp.tools.schwab_trading_tools.asyncio.to_thread")
+    @patch("open_stocks_mcp.tools.schwab_trading_tools.execute_broker_request")
     @patch("open_stocks_mcp.tools.schwab_trading_tools.equity_buy_market")
     async def test_buy_market_success(
         self,
@@ -58,6 +65,7 @@ class TestSchwabTradingTools:
         assert result["result"]["symbol"] == "AAPL"
         assert result["result"]["quantity"] == 10
         assert result["result"]["order_id"] == "12345"
+        _assert_retry_safe(mock_to_thread, False)
 
     @pytest.mark.journey_trading
     @pytest.mark.unit
@@ -81,7 +89,7 @@ class TestSchwabTradingTools:
     @patch(
         "open_stocks_mcp.tools.schwab_trading_tools.get_authenticated_broker_or_error"
     )
-    @patch("open_stocks_mcp.tools.schwab_trading_tools.asyncio.to_thread")
+    @patch("open_stocks_mcp.tools.schwab_trading_tools.execute_broker_request")
     @patch("open_stocks_mcp.tools.schwab_trading_tools.equity_sell_market")
     async def test_sell_market_success(
         self,
@@ -110,6 +118,7 @@ class TestSchwabTradingTools:
         assert result["result"]["action"] == "sell"
         assert result["result"]["symbol"] == "AAPL"
         assert result["result"]["order_id"] == "67890"
+        _assert_retry_safe(mock_to_thread, False)
 
     @pytest.mark.journey_trading
     @pytest.mark.unit
@@ -117,7 +126,7 @@ class TestSchwabTradingTools:
     @patch(
         "open_stocks_mcp.tools.schwab_trading_tools.get_authenticated_broker_or_error"
     )
-    @patch("open_stocks_mcp.tools.schwab_trading_tools.asyncio.to_thread")
+    @patch("open_stocks_mcp.tools.schwab_trading_tools.execute_broker_request")
     @patch("open_stocks_mcp.tools.schwab_trading_tools.equity_buy_limit")
     async def test_buy_limit_success(
         self,
@@ -145,6 +154,7 @@ class TestSchwabTradingTools:
         assert result["result"]["status"] == "order_placed"
         assert result["result"]["order_type"] == "limit"
         assert result["result"]["limit_price"] == 175.00
+        _assert_retry_safe(mock_to_thread, False)
 
     @pytest.mark.journey_trading
     @pytest.mark.unit
@@ -152,7 +162,7 @@ class TestSchwabTradingTools:
     @patch(
         "open_stocks_mcp.tools.schwab_trading_tools.get_authenticated_broker_or_error"
     )
-    @patch("open_stocks_mcp.tools.schwab_trading_tools.asyncio.to_thread")
+    @patch("open_stocks_mcp.tools.schwab_trading_tools.execute_broker_request")
     @patch("open_stocks_mcp.tools.schwab_trading_tools.equity_sell_limit")
     async def test_sell_limit_success(
         self,
@@ -180,6 +190,7 @@ class TestSchwabTradingTools:
         assert result["result"]["status"] == "order_placed"
         assert result["result"]["order_type"] == "limit"
         assert result["result"]["limit_price"] == 180.00
+        _assert_retry_safe(mock_to_thread, False)
 
     @pytest.mark.journey_trading
     @pytest.mark.unit
@@ -187,7 +198,7 @@ class TestSchwabTradingTools:
     @patch(
         "open_stocks_mcp.tools.schwab_trading_tools.get_authenticated_broker_or_error"
     )
-    @patch("open_stocks_mcp.tools.schwab_trading_tools.asyncio.to_thread")
+    @patch("open_stocks_mcp.tools.schwab_trading_tools.execute_broker_request")
     async def test_get_orders_success(
         self, mock_to_thread: AsyncMock, mock_get_broker: AsyncMock
     ) -> None:
@@ -228,7 +239,7 @@ class TestSchwabTradingTools:
     @patch(
         "open_stocks_mcp.tools.schwab_trading_tools.get_authenticated_broker_or_error"
     )
-    @patch("open_stocks_mcp.tools.schwab_trading_tools.asyncio.to_thread")
+    @patch("open_stocks_mcp.tools.schwab_trading_tools.execute_broker_request")
     async def test_cancel_order_success(
         self, mock_to_thread: AsyncMock, mock_get_broker: AsyncMock
     ) -> None:
@@ -247,6 +258,7 @@ class TestSchwabTradingTools:
         assert "result" in result
         assert result["result"]["status"] == "order_cancelled"
         assert result["result"]["order_id"] == "12345"
+        _assert_retry_safe(mock_to_thread, False)
 
     @pytest.mark.journey_trading
     @pytest.mark.unit
@@ -254,7 +266,7 @@ class TestSchwabTradingTools:
     @patch(
         "open_stocks_mcp.tools.schwab_trading_tools.get_authenticated_broker_or_error"
     )
-    @patch("open_stocks_mcp.tools.schwab_trading_tools.asyncio.to_thread")
+    @patch("open_stocks_mcp.tools.schwab_trading_tools.execute_broker_request")
     async def test_get_order_by_id_success(
         self, mock_to_thread: AsyncMock, mock_get_broker: AsyncMock
     ) -> None:
@@ -411,7 +423,7 @@ class TestSchwabTradingTools:
     @patch(
         "open_stocks_mcp.tools.schwab_trading_tools.get_authenticated_broker_or_error"
     )
-    @patch("open_stocks_mcp.tools.schwab_trading_tools.asyncio.to_thread")
+    @patch("open_stocks_mcp.tools.schwab_trading_tools.execute_broker_request")
     async def test_place_order_success(
         self, mock_to_thread: AsyncMock, mock_get_broker: AsyncMock
     ) -> None:
@@ -432,6 +444,7 @@ class TestSchwabTradingTools:
         assert "result" in result
         assert result["result"]["status"] == "order_placed"
         assert result["result"]["order_id"] == "99999"
+        _assert_retry_safe(mock_to_thread, False)
 
     @pytest.mark.journey_trading
     @pytest.mark.unit
@@ -439,7 +452,7 @@ class TestSchwabTradingTools:
     @patch(
         "open_stocks_mcp.tools.schwab_trading_tools.get_authenticated_broker_or_error"
     )
-    @patch("open_stocks_mcp.tools.schwab_trading_tools.asyncio.to_thread")
+    @patch("open_stocks_mcp.tools.schwab_trading_tools.execute_broker_request")
     @patch("open_stocks_mcp.tools.schwab_trading_tools.equity_buy_market")
     async def test_buy_market_api_failure(
         self,
@@ -466,6 +479,7 @@ class TestSchwabTradingTools:
         assert "result" in result
         assert result["result"]["status"] == "error"
         assert "Invalid order" in result["result"]["error"]
+        _assert_retry_safe(mock_to_thread, False)
 
     @pytest.mark.journey_trading
     @pytest.mark.unit
@@ -473,7 +487,7 @@ class TestSchwabTradingTools:
     @patch(
         "open_stocks_mcp.tools.schwab_trading_tools.get_authenticated_broker_or_error"
     )
-    @patch("open_stocks_mcp.tools.schwab_trading_tools.asyncio.to_thread")
+    @patch("open_stocks_mcp.tools.schwab_trading_tools.execute_broker_request")
     async def test_cancel_order_api_failure(
         self, mock_to_thread: AsyncMock, mock_get_broker: AsyncMock
     ) -> None:
@@ -493,6 +507,7 @@ class TestSchwabTradingTools:
         assert "result" in result
         assert result["result"]["status"] == "error"
         assert "Order not found" in result["result"]["error"]
+        _assert_retry_safe(mock_to_thread, False)
 
     @pytest.mark.journey_trading
     @pytest.mark.unit
@@ -501,7 +516,7 @@ class TestSchwabTradingTools:
     @patch(
         "open_stocks_mcp.tools.schwab_trading_tools.get_authenticated_broker_or_error"
     )
-    @patch("open_stocks_mcp.tools.schwab_trading_tools.asyncio.to_thread")
+    @patch("open_stocks_mcp.tools.schwab_trading_tools.execute_broker_request")
     @patch("open_stocks_mcp.tools.schwab_trading_tools.equity_buy_market")
     async def test_buy_market_error(
         self,
@@ -524,6 +539,7 @@ class TestSchwabTradingTools:
 
         assert "result" in result
         assert "error" in result["result"]
+        _assert_retry_safe(mock_to_thread, False)
 
     @pytest.mark.journey_trading
     @pytest.mark.unit
@@ -531,7 +547,7 @@ class TestSchwabTradingTools:
     @patch(
         "open_stocks_mcp.tools.schwab_trading_tools.get_authenticated_broker_or_error"
     )
-    @patch("open_stocks_mcp.tools.schwab_trading_tools.asyncio.to_thread")
+    @patch("open_stocks_mcp.tools.schwab_trading_tools.execute_broker_request")
     @pytest.mark.parametrize(
         "function,args",
         [
@@ -559,3 +575,10 @@ class TestSchwabTradingTools:
         result = await function(*args)
         assert result["result"]["status"] == "error"
         assert "Internal Server Error" in result["result"]["error"]
+        if function in {
+            schwab_sell_market,
+            schwab_buy_limit,
+            schwab_sell_limit,
+            place_schwab_order,
+        }:
+            _assert_retry_safe(mock_to_thread, False)

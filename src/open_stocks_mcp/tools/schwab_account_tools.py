@@ -1,12 +1,14 @@
 """Schwab account-related MCP tools using schwab-py library."""
 
-import asyncio
 from typing import Any
 
 from schwab.client import Client
 
 from open_stocks_mcp.logging_config import logger
-from open_stocks_mcp.tools.broker_utils import get_authenticated_broker_or_error
+from open_stocks_mcp.tools.broker_utils import (
+    execute_broker_request,
+    get_authenticated_broker_or_error,
+)
 from open_stocks_mcp.tools.error_handling import (
     create_error_response,
     create_success_response,
@@ -35,7 +37,7 @@ async def get_schwab_account_numbers() -> dict[str, Any]:
             response = broker.client.get_account_numbers()
             return response.json()
 
-        result = await asyncio.to_thread(_get_account_numbers)
+        result = await execute_broker_request(_get_account_numbers, retry_safe=True)
 
         # Extract account hashes
         accounts = []
@@ -89,7 +91,7 @@ async def get_schwab_account(
             response = broker.client.get_account(account_hash, fields=fields)
             return response.json()
 
-        account_data = await asyncio.to_thread(_get_account)
+        account_data = await execute_broker_request(_get_account, retry_safe=True)
 
         return create_success_response(account_data)
 
@@ -125,7 +127,7 @@ async def get_schwab_accounts(include_positions: bool = True) -> dict[str, Any]:
             response = broker.client.get_accounts(fields=fields)
             return response.json()
 
-        accounts_data = await asyncio.to_thread(_get_accounts)
+        accounts_data = await execute_broker_request(_get_accounts, retry_safe=True)
 
         return create_success_response(
             {
@@ -167,7 +169,7 @@ async def get_schwab_portfolio(account_hash: str) -> dict[str, Any]:
             )
             return response.json()
 
-        account_data = await asyncio.to_thread(_get_account)
+        account_data = await execute_broker_request(_get_account, retry_safe=True)
 
         # Extract positions
         securities_account = account_data.get("securitiesAccount", {})
@@ -224,7 +226,7 @@ async def get_schwab_account_balances(account_hash: str) -> dict[str, Any]:
             response = broker.client.get_account(account_hash)
             return response.json()
 
-        account_data = await asyncio.to_thread(_get_account)
+        account_data = await execute_broker_request(_get_account, retry_safe=True)
 
         # Extract balances
         securities_account = account_data.get("securitiesAccount", {})

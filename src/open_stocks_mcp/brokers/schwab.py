@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from open_stocks_mcp.brokers.base import BaseBroker, BrokerAuthStatus
+from open_stocks_mcp.config import get_config
 from open_stocks_mcp.logging_config import logger
 
 if TYPE_CHECKING:
@@ -140,6 +141,9 @@ class SchwabBroker(BaseBroker):
                     self.client = auth.client_from_token_file(
                         self.token_path, self.api_key, self.app_secret
                     )
+                    # Apply configured timeout
+                    assert self.client is not None
+                    self.client.set_timeout(get_config().broker_requests.schwab_timeout_seconds)
                     logger.info("✓ Schwab authentication successful (existing token)")
                     self._auth_info.status = BrokerAuthStatus.AUTHENTICATED
                     self._auth_info.last_successful_auth = datetime.now()
@@ -173,6 +177,9 @@ class SchwabBroker(BaseBroker):
                 callback_url=self.callback_url,
                 token_path=self.token_path,
             )
+            # Apply configured timeout
+            assert self.client is not None
+            self.client.set_timeout(get_config().broker_requests.schwab_timeout_seconds)
 
             self._auth_info.status = BrokerAuthStatus.AUTHENTICATED
             self._auth_info.last_successful_auth = datetime.now()

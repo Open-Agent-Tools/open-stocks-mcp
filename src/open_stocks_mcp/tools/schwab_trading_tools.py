@@ -12,7 +12,10 @@ from schwab.orders.equities import (
 )
 
 from open_stocks_mcp.logging_config import logger
-from open_stocks_mcp.tools.broker_utils import get_authenticated_broker_or_error
+from open_stocks_mcp.tools.broker_utils import (
+    execute_broker_request,
+    get_authenticated_broker_or_error,
+)
 from open_stocks_mcp.tools.error_handling import (
     create_error_response,
     create_success_response,
@@ -45,7 +48,7 @@ async def place_schwab_order(
             response = broker.client.place_order(account_hash, order_spec)
             return response
 
-        response = await asyncio.to_thread(_place_order)
+        response = await execute_broker_request(_place_order, retry_safe=False)
 
         # Check response status
         if response.status_code in (200, 201):
@@ -100,7 +103,7 @@ async def schwab_buy_market(
             response = broker.client.place_order(account_hash, order_spec)
             return response
 
-        response = await asyncio.to_thread(_place_order)
+        response = await execute_broker_request(_place_order, retry_safe=False)
 
         # Check response status
         if response.status_code in (200, 201):
@@ -157,7 +160,7 @@ async def schwab_sell_market(
             response = broker.client.place_order(account_hash, order_spec)
             return response
 
-        response = await asyncio.to_thread(_place_order)
+        response = await execute_broker_request(_place_order, retry_safe=False)
 
         # Check response status
         if response.status_code in (200, 201):
@@ -215,7 +218,7 @@ async def schwab_buy_limit(
             response = broker.client.place_order(account_hash, order_spec)
             return response
 
-        response = await asyncio.to_thread(_place_order)
+        response = await execute_broker_request(_place_order, retry_safe=False)
 
         # Check response status
         if response.status_code in (200, 201):
@@ -274,7 +277,7 @@ async def schwab_sell_limit(
             response = broker.client.place_order(account_hash, order_spec)
             return response
 
-        response = await asyncio.to_thread(_place_order)
+        response = await execute_broker_request(_place_order, retry_safe=False)
 
         # Check response status
         if response.status_code in (200, 201):
@@ -329,7 +332,7 @@ async def get_schwab_orders(account_hash: str, max_results: int = 50) -> dict[st
             )
             return response.json()
 
-        orders_data = await asyncio.to_thread(_get_orders)
+        orders_data = await execute_broker_request(_get_orders, retry_safe=True)
 
         return create_success_response(
             {
@@ -366,7 +369,7 @@ async def cancel_schwab_order(account_hash: str, order_id: str) -> dict[str, Any
             response = broker.client.cancel_order(order_id, account_hash)
             return response
 
-        response = await asyncio.to_thread(_cancel_order)
+        response = await execute_broker_request(_cancel_order, retry_safe=False)
 
         # Check response status
         if response.status_code in (200, 204):
@@ -411,7 +414,7 @@ async def get_schwab_order_by_id(account_hash: str, order_id: str) -> dict[str, 
             response = broker.client.get_order(order_id, account_hash)
             return response.json()
 
-        order_data = await asyncio.to_thread(_get_order)
+        order_data = await execute_broker_request(_get_order, retry_safe=True)
 
         return create_success_response(order_data)
 

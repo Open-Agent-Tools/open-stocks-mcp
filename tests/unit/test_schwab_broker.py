@@ -57,6 +57,7 @@ class TestSchwabBroker:
                 assert schwab_broker._auth_info.status == BrokerAuthStatus.AUTHENTICATED
                 assert schwab_broker.client == mock_client
                 mock_client_from_token.assert_called_once()
+                mock_client.set_timeout.assert_called_once_with(30.0)
         finally:
             if token_file.exists():
                 token_file.unlink()
@@ -85,6 +86,7 @@ class TestSchwabBroker:
                 callback_url=schwab_broker.callback_url,
                 token_path=schwab_broker.token_path,
             )
+            mock_client.set_timeout.assert_called_once_with(30.0)
 
     @pytest.mark.asyncio
     async def test_authenticate_failure(self, schwab_broker: SchwabBroker) -> None:
@@ -99,6 +101,25 @@ class TestSchwabBroker:
             assert result is False
             assert schwab_broker._auth_info.status == BrokerAuthStatus.AUTH_FAILED
             assert schwab_broker.client is None
+
+    @pytest.mark.asyncio
+    async def test_authenticate_custom_timeout(
+        self, schwab_broker: SchwabBroker
+    ) -> None:
+        """Test authentication with custom timeout from environment."""
+        with (
+            patch("schwab.auth.easy_client") as mock_easy_client,
+            patch("os.isatty", return_value=True),
+            patch.dict("os.environ", {"OPEN_STOCKS_MCP_SCHWAB_REQUEST_TIMEOUT_SECONDS": "2.5"}),
+            patch("open_stocks_mcp.config._global_config", None), # Reset config
+        ):
+            mock_client = MagicMock()
+            mock_easy_client.return_value = mock_client
+
+            result = await schwab_broker.authenticate()
+
+            assert result is True
+            mock_client.set_timeout.assert_called_once_with(2.5)
 
     @pytest.mark.asyncio
     async def test_is_authenticated_true(self, schwab_broker: SchwabBroker) -> None:
