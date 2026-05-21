@@ -133,12 +133,14 @@ ROBINHOOD_PASSWORD="password"
 - ✅ **Type Safety**: Zero MyPy errors maintained across codebase
 - ✅ **Trading Validation**: All functions live-tested or API-corrected
 - ✅ **Account Details Fix**: Fixed load_phoenix_account response parsing for real financial data
+- ✅ **Phase 8 Monitoring**: Per-tool latency (p50/p95/p99), throughput metrics, and `/metrics` Prometheus endpoint
 
-### Next Phase Priority
-**Phase 8: Quality & Reliability (v0.6.4)** - Final phase:
-- Advanced error handling and recovery mechanisms
-- Performance optimization and caching strategies
-- Enhanced monitoring and observability features
+### Phase 8 Status
+**Phase 8: Quality & Reliability (v0.6.4)** — monitoring and alerting features complete:
+- ✅ Per-tool latency percentiles and throughput metrics (`MetricsCollector`)
+- ✅ Unauthenticated `GET /metrics` Prometheus-compatible endpoint
+- ✅ MCP `tools/call` instrumentation in HTTP transport
+- Remaining: Performance optimization and caching strategies
 
 ## Critical Development Patterns
 
