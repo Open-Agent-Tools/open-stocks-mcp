@@ -1,0 +1,40 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "uv sync",
+      "type": "shell",
+      "command": "uv sync",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "ruff: fix",
+      "type": "shell",
+      "command": "uv run ruff check . --fix",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "ruff: format",
+      "type": "shell",
+      "command": "uv run ruff format .",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "mypy",
+      "type": "shell",
+      "command": "uv run mypy .",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "pytest: fast",
+      "type": "shell",
+      "command": "uv run pytest -m \"not slow and not exception_test\"",
+      "group": "test",
+      "problemMatcher": []
+    }
+  ]
+}

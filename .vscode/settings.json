@@ -1,0 +1,18 @@
+{
+  "python.defaultInterpreterPath": ".venv/bin/python",
+  "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestArgs": ["tests"],
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.formatOnSave": true
+  },
+  "ruff.lint.run": "onSave",
+  "mypy-type-checker.args": ["--config-file=pyproject.toml"],
+  "files.exclude": {
+    ".mypy_cache": true,
+    ".ruff_cache": true,
+    ".pytest_cache": true,
+    "**/__pycache__": true
+  }
+}

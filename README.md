@@ -307,6 +307,7 @@ MCP_HTTP_URL="http://localhost:3001/mcp" adk eval examples/google_adk_agent test
 ## Contributing
 
 See [CONTRIBUTING.md](contributing/README.md) for development guidelines.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and debugging recipes.
 
 ## License
 
