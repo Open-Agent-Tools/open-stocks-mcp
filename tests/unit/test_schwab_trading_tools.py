@@ -645,3 +645,26 @@ class TestSchwabTradingTools:
 
         assert "result" in result
         assert "error" in result["result"]
+
+
+class TestSchwabPlaceOrderMCPWrapper:
+    """Test schwab_place_order MCP wrapper in server app."""
+
+    @pytest.mark.journey_trading
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    @patch("open_stocks_mcp.server.app._place_schwab_order_impl")
+    async def test_schwab_place_order_mcp_wrapper(
+        self, mock_impl: AsyncMock
+    ) -> None:
+        """Test schwab_place_order wrapper delegates to impl with exact args."""
+        from open_stocks_mcp.server.app import schwab_place_order
+
+        expected = {"result": {"status": "order_placed", "order_id": "1"}}
+        mock_impl.return_value = expected
+
+        order_spec: dict = {"orderType": "MARKET", "quantity": 1}
+        result = await schwab_place_order("hash123", order_spec)
+
+        mock_impl.assert_awaited_once_with("hash123", order_spec)
+        assert result == expected

@@ -5,12 +5,12 @@ An MCP (Model Context Protocol) server providing access to stock market data and
 ## Features
 
 **🚀 Current Status: v0.7.0-dev - Multi-Broker Support (Robinhood + Schwab)**
-- ✅ **104 MCP tools** total - 80 Robinhood + 24 Schwab (4 deprecated)
+- ✅ **107 MCP tools** total - 80 Robinhood + 27 Schwab (4 deprecated)
 - ✅ **Multi-broker architecture** - Support for Robinhood and Charles Schwab
 - ✅ **Complete trading functionality** - stocks, options, order management
 - ✅ **Live trading validated** - Robinhood stock and options trading tested with real orders
 - ✅ **Production-ready** - HTTP transport, Docker support, comprehensive testing
-- ✅ **Schwab integration complete** - OAuth authentication, 24 tools ready for testing
+- ✅ **Schwab integration complete** - OAuth authentication, 27 tools ready for testing
 - 🔧 **Account details fixed** - Real financial data instead of N/A values
 
 ## Installation
@@ -155,10 +155,10 @@ Reference docs and runnable examples:
 - All existing Robinhood functionality maintained
 - No breaking changes to existing API
 
-**Schwab Tools (24 tools)**:
+**Schwab Tools (27 tools)**:
 - Account & Portfolio (5 tools) - account numbers, balances, positions
 - Market Data (5 tools) - quotes, price history, instrument search
-- Trading (8 tools) - market/limit buy/sell, order management
+- Trading (11 tools) - market/limit buy/sell, order management, generic order placement, transactions
 - Options (6 tools) - chains, expirations, positions, buy/sell
 
 All Schwab tools use `schwab_` prefix (e.g., `schwab_get_portfolio`, `schwab_buy_stock_market`).
@@ -292,7 +292,7 @@ MCP_HTTP_URL="http://localhost:3001/mcp" adk eval examples/google_adk_agent test
 
 **Completed in v0.7.0-dev:**
 - ✅ **Multi-broker architecture** - Abstract broker layer supporting multiple brokers
-- ✅ **Schwab integration** - 24 tools across account, market data, trading, and options
+- ✅ **Schwab integration** - 27 tools across account, market data, trading, and options
 - ✅ **OAuth authentication** - Schwab OAuth 2.0 flow with automatic token refresh
 - ✅ **Graceful degradation** - Server starts even if broker authentication fails
 - ✅ **Backward compatibility** - All Robinhood tools unchanged, no breaking changes

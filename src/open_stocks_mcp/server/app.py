@@ -152,6 +152,12 @@ from open_stocks_mcp.tools.schwab_options_tools import (
     get_schwab_option_expirations,
     get_schwab_options_positions,
 )
+from open_stocks_mcp.tools.schwab_options_tools import (
+    schwab_option_buy_to_open as _schwab_option_buy_to_open_impl,
+)
+from open_stocks_mcp.tools.schwab_options_tools import (
+    schwab_option_sell_to_close as _schwab_option_sell_to_close_impl,
+)
 from open_stocks_mcp.tools.schwab_trading_tools import (
     cancel_schwab_order,
     get_schwab_order_by_id,
@@ -163,6 +169,9 @@ from open_stocks_mcp.tools.schwab_trading_tools import (
     schwab_get_transactions_by_date,
     schwab_sell_limit,
     schwab_sell_market,
+)
+from open_stocks_mcp.tools.schwab_trading_tools import (
+    place_schwab_order as _place_schwab_order_impl,
 )
 from open_stocks_mcp.tools.session_manager import get_session_manager
 from open_stocks_mcp.tools.unified_watchlist_tools import (
@@ -1292,6 +1301,19 @@ async def schwab_get_order(account_hash: str, order_id: str) -> dict[str, Any]:
     return await get_schwab_order_by_id(account_hash, order_id)
 
 
+@mcp.tool()
+async def schwab_place_order(
+    account_hash: str, order_spec: dict[str, Any]
+) -> dict[str, Any]:
+    """Place a generic order with Schwab.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+        order_spec: Order specification dict (use schwab-py order builder functions)
+    """
+    return await _place_schwab_order_impl(account_hash, order_spec)
+
+
 async def schwab_transactions(
     account_hash: str,
     start_date: str | None = None,
@@ -1391,6 +1413,54 @@ async def schwab_options_positions(account_hash: str) -> dict[str, Any]:
         account_hash: Account hash from schwab_account_numbers
     """
     return await get_schwab_options_positions(account_hash)
+
+
+@mcp.tool()
+async def schwab_option_buy_to_open(
+    account_hash: str,
+    symbol: str,
+    quantity: int,
+    option_type: str,
+    strike: float,
+    expiration: str,
+) -> dict[str, Any]:
+    """Buy to open an option position with Schwab (simplified).
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+        symbol: Underlying stock symbol (e.g., 'AAPL')
+        quantity: Number of contracts
+        option_type: 'CALL' or 'PUT'
+        strike: Strike price
+        expiration: Expiration date (YYYY-MM-DD)
+    """
+    return await _schwab_option_buy_to_open_impl(
+        account_hash, symbol, quantity, option_type, strike, expiration
+    )
+
+
+@mcp.tool()
+async def schwab_option_sell_to_close(
+    account_hash: str,
+    symbol: str,
+    quantity: int,
+    option_type: str,
+    strike: float,
+    expiration: str,
+) -> dict[str, Any]:
+    """Sell to close an option position with Schwab (simplified).
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+        symbol: Underlying stock symbol (e.g., 'AAPL')
+        quantity: Number of contracts
+        option_type: 'CALL' or 'PUT'
+        strike: Strike price
+        expiration: Expiration date (YYYY-MM-DD)
+    """
+    return await _schwab_option_sell_to_close_impl(
+        account_hash, symbol, quantity, option_type, strike, expiration
+    )
 
 
 def create_mcp_server(config: ServerConfig | None = None) -> FastMCP:

@@ -9,7 +9,7 @@
 
 ## Summary
 
-The Schwab integration is **fully implemented and merged to main**. All code is production-ready and tested. The integration adds **24 new Schwab MCP tools** alongside the existing **80 Robinhood tools** for a total of **104 tools**.
+The Schwab integration is **fully implemented and merged to main**. All code is production-ready and tested. The integration adds **27 Schwab MCP tools** alongside the existing **80 Robinhood tools** for a total of **107 tools**.
 
 **Next Step**: Apply for Schwab Developer API credentials at https://developer.schwab.com/
 
@@ -38,10 +38,10 @@ The Schwab integration is **fully implemented and merged to main**. All code is 
    - Interactive browser-based OAuth flow
 
 4. **Tool Registration** (Phase 4) ✅
-   - **24 Schwab MCP tools** registered:
+   - **27 Schwab MCP tools** registered:
      - 5 account tools (account_numbers, balances, portfolio, etc.)
      - 5 market data tools (quotes, price history, search)
-     - 8 trading tools (buy/sell market/limit, order management)
+     - 11 trading tools (buy/sell market/limit, order management, generic order, transactions)
      - 6 options tools (chains, expirations, positions, buy/sell)
    - All tools use `schwab_` prefix
    - Clear tool descriptions indicating broker
@@ -102,7 +102,7 @@ docs/
 ```
 
 ### Modified Files (6 files)
-- `src/open_stocks_mcp/server/app.py` - Added 24 Schwab tool registrations (+481 lines)
+- `src/open_stocks_mcp/server/app.py` - Added 27 Schwab tool registrations
 - `src/open_stocks_mcp/tools/error_handling.py` - Added `handle_schwab_errors` decorator
 - `pyproject.toml` - Added `schwab-py>=1.5.0` dependency
 - `README.md` - Updated for multi-broker support
@@ -240,7 +240,7 @@ open-stocks-mcp-server --transport http --port 3001
 ```python
 # List all tools (includes both brokers)
 await list_available_tools()
-# Returns: 104 tools (80 robinhood, 24 schwab)
+# Returns: 107 tools (80 robinhood, 27 schwab)
 
 # Schwab tools are prefixed with "schwab_"
 # Robinhood tools have no prefix (backward compatible)
@@ -306,7 +306,7 @@ if error:
 
 ### When API Approved
 5. Test OAuth authentication flow
-6. Live test all 24 Schwab tools
+6. Live test all 27 Schwab tools
 7. Create Schwab journey tests
 8. Validate multi-broker scenarios
 9. Performance testing with real data

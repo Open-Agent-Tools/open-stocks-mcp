@@ -394,3 +394,51 @@ class TestSchwabOptionsTools:
         assert "API Error" in result["result"]["error"]
         if function in {schwab_option_buy_to_open, schwab_option_sell_to_close}:
             _assert_retry_safe(mock_to_thread, False)
+
+
+class TestSchwabOptionMCPWrappers:
+    """Test schwab_option_buy_to_open and schwab_option_sell_to_close MCP wrappers."""
+
+    @pytest.mark.journey_options
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    @patch("open_stocks_mcp.server.app._schwab_option_buy_to_open_impl")
+    async def test_schwab_option_buy_to_open_mcp_wrapper(
+        self, mock_impl: AsyncMock
+    ) -> None:
+        """Test schwab_option_buy_to_open wrapper delegates to impl with exact args."""
+        from open_stocks_mcp.server.app import schwab_option_buy_to_open
+
+        expected = {"result": {"status": "order_placed", "action": "buy_to_open"}}
+        mock_impl.return_value = expected
+
+        result = await schwab_option_buy_to_open(
+            "hash123", "AAPL", 1, "CALL", 175.0, "2024-01-19"
+        )
+
+        mock_impl.assert_awaited_once_with(
+            "hash123", "AAPL", 1, "CALL", 175.0, "2024-01-19"
+        )
+        assert result == expected
+
+    @pytest.mark.journey_options
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    @patch("open_stocks_mcp.server.app._schwab_option_sell_to_close_impl")
+    async def test_schwab_option_sell_to_close_mcp_wrapper(
+        self, mock_impl: AsyncMock
+    ) -> None:
+        """Test schwab_option_sell_to_close wrapper delegates to impl with exact args."""
+        from open_stocks_mcp.server.app import schwab_option_sell_to_close
+
+        expected = {"result": {"status": "order_placed", "action": "sell_to_close"}}
+        mock_impl.return_value = expected
+
+        result = await schwab_option_sell_to_close(
+            "hash123", "AAPL", 1, "PUT", 170.0, "2024-01-19"
+        )
+
+        mock_impl.assert_awaited_once_with(
+            "hash123", "AAPL", 1, "PUT", 170.0, "2024-01-19"
+        )
+        assert result == expected
