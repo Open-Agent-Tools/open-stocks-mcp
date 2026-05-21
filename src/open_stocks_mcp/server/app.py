@@ -9,7 +9,7 @@ import click
 from dotenv import load_dotenv
 from mcp.server.fastmcp import FastMCP
 
-from open_stocks_mcp.config import ServerConfig, load_config
+from open_stocks_mcp.config import ServerConfig, get_config
 from open_stocks_mcp.logging_config import logger, setup_logging
 from open_stocks_mcp.server.tool_helpers import (
     get_broker_status_data,
@@ -21,8 +21,9 @@ from open_stocks_mcp.server.tool_helpers import (
     get_session_status_data,
 )
 
-# Cross-Broker Tools
 from open_stocks_mcp.tools.broker_comparison_tools import get_broker_comparison
+
+# Cross-Broker Tools
 from open_stocks_mcp.tools.cross_broker_tools import get_aggregated_portfolio
 from open_stocks_mcp.tools.robinhood_account_features_tools import (
     get_account_features,
@@ -1389,14 +1390,18 @@ async def schwab_options_positions(account_hash: str) -> dict[str, Any]:
 def create_mcp_server(config: ServerConfig | None = None) -> FastMCP:
     """Create and configure the MCP server instance"""
     if config is None:
-        config = load_config()
+        config = get_config()
 
     setup_logging(config)
     setup_tracing(config)
     return mcp
 
 
-async def setup_brokers(username: str | None, password: str | None) -> None:
+async def setup_brokers(
+    username: str | None = None,
+    password: str | None = None,
+    config: ServerConfig | None = None,
+) -> None:
     """
     Setup and register all configured brokers.
 
@@ -1404,36 +1409,65 @@ async def setup_brokers(username: str | None, password: str | None) -> None:
     authentication fails for all brokers.
 
     Args:
-        username: Robinhood username (optional)
-        password: Robinhood password (optional)
+        username: Robinhood username (optional override)
+        password: Robinhood password (optional override)
+        config: Server configuration (optional)
     """
     from open_stocks_mcp.brokers.auth_coordinator import attempt_broker_logins
     from open_stocks_mcp.brokers.registry import get_broker_registry
     from open_stocks_mcp.brokers.robinhood import RobinhoodBroker
+
+    if config is None:
+        config = get_config()
 
     logger.info("Setting up broker integrations...")
 
     # Get the global registry
     registry = await get_broker_registry()
 
-    # Setup Robinhood broker if credentials provided
-    if username and password:
-        logger.info("Configuring Robinhood broker...")
-        session_manager = get_session_manager()
-        robinhood_broker = RobinhoodBroker(
-            username=username,
-            password=password,
-            session_manager=session_manager,
-        )
-        registry.register(robinhood_broker)
-        logger.info("✓ Robinhood broker registered")
+    # 1. Setup Robinhood broker
+    if config.is_feature_enabled("robinhood"):
+        # Precedence: CLI/Env args > Config YAML > None
+        rh_config = config.brokers.get("robinhood")
+        final_user = username or (rh_config.username if rh_config else None)
+        final_pass = password or (rh_config.password if rh_config else None)
+
+        if final_user and final_pass:
+            logger.info("Configuring Robinhood broker...")
+            session_manager = get_session_manager()
+            robinhood_broker = RobinhoodBroker(
+                username=final_user,
+                password=final_pass,
+                session_manager=session_manager,
+            )
+            registry.register(robinhood_broker)
+            logger.info("✓ Robinhood broker registered")
+        else:
+            logger.warning(
+                "⚠️  Robinhood credentials not provided - skipping Robinhood integration"
+            )
     else:
-        logger.warning(
-            "⚠️  Robinhood credentials not provided - skipping Robinhood integration"
-        )
-        logger.info(
-            "   Set ROBINHOOD_USERNAME and ROBINHOOD_PASSWORD to enable Robinhood"
-        )
+        logger.info("Robinhood integration disabled via feature flag")
+
+    # 2. Setup Schwab broker
+    if config.is_feature_enabled("schwab"):
+        from open_stocks_mcp.brokers.schwab import SchwabBroker
+
+        schwab_config = config.brokers.get("schwab")
+        if schwab_config and schwab_config.api_key and schwab_config.app_secret:
+            logger.info("Configuring Schwab broker...")
+            schwab_broker = SchwabBroker(
+                api_key=schwab_config.api_key,
+                app_secret=schwab_config.app_secret,
+            )
+            registry.register(schwab_broker)
+            logger.info("✓ Schwab broker registered")
+        else:
+            logger.warning(
+                "⚠️  Schwab credentials not provided in config - skipping Schwab integration"
+            )
+    else:
+        logger.debug("Schwab integration disabled via feature flag")
 
     # Attempt to authenticate all registered brokers
     await attempt_broker_logins(require_at_least_one=False)
@@ -1535,6 +1569,9 @@ def main(
     broker authentication fails. Tools will return appropriate errors
     when accessed without authentication.
     """
+    # Load configuration once
+    config = get_config()
+
     # Prompt for credentials if not provided (interactive mode)
     # In non-interactive mode (Docker, systemd), credentials come from env vars
     if not username and not password and sys.stdin.isatty():
@@ -1554,11 +1591,11 @@ def main(
             password = None
 
     # Create MCP server
-    server = create_mcp_server()
+    server = create_mcp_server(config)
 
     # Setup broker authentication (non-blocking)
     logger.info("Initializing broker authentication...")
-    asyncio.run(setup_brokers(username, password))
+    asyncio.run(setup_brokers(username, password, config))
 
     # Start server regardless of authentication status
     try:

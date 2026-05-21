@@ -26,6 +26,55 @@ cd open-stocks-mcp
 uv sync   # installs all deps including dev group
 ```
 
+## Configuration
+
+Open Stocks MCP supports environment variables and YAML configuration files.
+
+### 1. Environment Variables (Standard Precedence)
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `OPEN_STOCKS_CONFIG` | Path to YAML configuration file | None |
+| `OPEN_STOCKS_ENV` | Active environment (e.g. `production`, `development`) | `production` |
+| `MCP_SERVER_NAME` | Name shown in MCP clients | `Open Stocks MCP` |
+| `LOG_LEVEL` | Logging level (`DEBUG`, `INFO`, `WARNING`, `ERROR`) | `INFO` |
+| `ROBINHOOD_USERNAME` | Robinhood login email | None |
+| `ROBINHOOD_PASSWORD` | Robinhood login password | None |
+
+### 2. YAML Configuration
+
+You can use a YAML file for more complex setups and feature flag control. Set `OPEN_STOCKS_CONFIG` to point to your file.
+
+```yaml
+name: "My Trading Server"
+log_level: "INFO"
+environment: "production"
+
+brokers:
+  robinhood:
+    username: "user@example.com"
+    password: "secret_password"
+  schwab:
+    api_key: "your_api_key"
+    app_secret: "your_app_secret"
+
+feature_flags:
+  robinhood: true
+  schwab: false
+  environments:
+    development:
+      schwab: true
+```
+
+### 3. Feature Flags
+
+Feature flags allow you to safely enable or disable specific broker integrations or features:
+
+- `robinhood`: Controls Robinhood registration (default: `true`)
+- `schwab`: Controls Schwab registration (default: `false`)
+
+Flags can be overridden per environment using the `feature_flags.environments` map in YAML.
+
 ## Quick Start
 
 ### 1. Set Up Credentials
@@ -80,20 +129,6 @@ The `/metrics` endpoint exposes:
 - `open_stocks_mcp_tool_calls_total` (counter by tool)
 - `open_stocks_mcp_tool_calls_per_minute` (gauge by tool)
 - `open_stocks_mcp_tool_latency_ms` (gauge by tool and quantile: `0.50`, `0.95`, `0.99`)
-
-### Operational Circuit Breaker Defaults
-
-Broker call protection is enabled by default and reports state in MCP `health_check`,
-MCP `rate_limit_status`, HTTP `/health`, and HTTP `/status`.
-
-- `OPEN_STOCKS_MCP_CIRCUIT_BREAKER_ENABLED` (default: `true`)
-- `OPEN_STOCKS_MCP_CIRCUIT_BREAKER_FAILURE_THRESHOLD` (default: `5`)
-- `OPEN_STOCKS_MCP_CIRCUIT_BREAKER_COOLDOWN_SECONDS` (default: `60`)
-
-State meanings:
-- `closed`: requests flow normally.
-- `open`: broker calls fail fast until cooldown expires.
-- `half_open`: one probe call is allowed; success resets to `closed`, failure returns to `open`.
 
 ## Docker Deployment
 

@@ -79,6 +79,8 @@ uv run pytest tests/performance -k smoke -q
 ruff check . --fix              # Lint and fix
 ruff format .                   # Format code  
 mypy .                          # Type check
+# Config validation
+OPEN_STOCKS_CONFIG=config.yaml uv run pytest tests/unit/test_config.py
 ```
 
 ### MCP Development
@@ -86,12 +88,21 @@ mypy .                          # Type check
 # Test server locally (HTTP transport)
 uv run open-stocks-mcp-server --transport http --port 3001
 
+# Test with specific config
+OPEN_STOCKS_CONFIG=config.yaml uv run open-stocks-mcp-server --transport stdio
+
 # Docker development
 cd examples/open-stocks-mcp-docker && docker-compose up -d
 curl http://localhost:3001/health  # Test health endpoint
 ```
 
 ## MCP Architecture
+
+### Configuration (Phase 8)
+- **YAML Config**: Load via `OPEN_STOCKS_CONFIG` or `OPEN_STOCKS_CONFIG_FILE`.
+- **Validation**: Pydantic v2 models in `src/open_stocks_mcp/config.py`.
+- **Feature Flags**: Gate broker registration and tools via `config.is_feature_enabled("flag_name")`.
+- **Norway Problem**: Use `StrictBool` for flags to avoid YAML 1.1 coercion of `no` to `False`.
 
 ### Tool Structure
 All tools return JSON with `result` field:
@@ -120,6 +131,12 @@ ROBINHOOD_USERNAME="email@example.com"
 ROBINHOOD_PASSWORD="password"
 ```
 
+### Configuration
+```bash
+OPEN_STOCKS_CONFIG="config.yaml"  # Path to YAML config
+OPEN_STOCKS_ENV="production"      # environment name for flag overrides
+```
+
 ### Required for ADK Evaluation  
 ```bash
 GOOGLE_API_KEY="your-google-api-key"
@@ -129,24 +146,20 @@ ROBINHOOD_PASSWORD="password"
 
 ## Current Development Status
 
-### Completed (v0.6.4)
-- ✅ **Phases 0-7**: 79 MCP tools with complete trading functionality (4 deprecated)
-- ✅ **Enhanced Options Tools**: New `get_open_option_positions_with_details()` with call/put enrichment
+### Completed (v0.7.0-dev)
+- ✅ **Phases 0-7**: 104 MCP tools (80 Robinhood + 24 Schwab)
+- ✅ **Phase 8: Configuration**: YAML config management and feature flags implemented
+- ✅ **Enhanced Authentication**: Multi-broker registration gating via flags
 - ✅ **Journey Testing**: 11 user journey categories for organized testing
 - ✅ **HTTP Transport**: Server-Sent Events (SSE) on port 3001
 - ✅ **Docker Infrastructure**: Persistent volumes for sessions and logs
-- ✅ **Test Coverage**: Comprehensive test suite with journey-based markers
 - ✅ **Type Safety**: Zero MyPy errors maintained across codebase
-- ✅ **Trading Validation**: All functions live-tested or API-corrected
-- ✅ **Account Details Fix**: Fixed load_phoenix_account response parsing for real financial data
-- ✅ **Phase 8 Monitoring**: Per-tool latency (p50/p95/p99), throughput metrics, and `/metrics` Prometheus endpoint
 
-### Phase 8 Status
-**Phase 8: Quality & Reliability (v0.6.4)** — monitoring and alerting features complete:
-- ✅ Per-tool latency percentiles and throughput metrics (`MetricsCollector`)
-- ✅ Unauthenticated `GET /metrics` Prometheus-compatible endpoint
-- ✅ MCP `tools/call` instrumentation in HTTP transport
-- Remaining: Performance optimization and caching strategies
+### Next Phase Priority
+**Phase 8: Quality & Reliability** - Final phase:
+- Advanced error handling and recovery mechanisms
+- Performance optimization and caching strategies
+- Enhanced monitoring and observability features
 
 ## Critical Development Patterns
 
