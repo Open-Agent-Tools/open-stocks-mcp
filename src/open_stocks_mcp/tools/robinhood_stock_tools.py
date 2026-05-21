@@ -1,6 +1,6 @@
 """MCP tools for Robin Stocks stock market data operations."""
 
-from typing import Any
+from typing import Any, cast
 
 import robin_stocks.robinhood as rh
 
@@ -17,8 +17,27 @@ from open_stocks_mcp.tools.error_handling import (
     validate_period,
     validate_symbol,
 )
+from open_stocks_mcp.tools.rate_limiter import batch_fetch_symbols
 
 _cache_cfg = load_config().cache
+_batch_cfg = load_config().batch
+
+
+async def _fetch_instruments_batched(
+    symbols: list[str],
+) -> list[dict[str, Any]]:
+    async def _fetch_many(batch_symbols: list[str]) -> list[dict[str, Any]] | None:
+        result = await execute_with_retry(rh.get_instruments_by_symbols, batch_symbols)
+        return cast(list[dict[str, Any]] | None, result)
+
+    batched_rows = await batch_fetch_symbols(
+        "robinhood_instruments_by_symbols",
+        symbols,
+        _fetch_many,
+        batch_size=_batch_cfg.batch_size,
+        queue_max_wait=_batch_cfg.queue_max_wait,
+    )
+    return [row for row in batched_rows if row is not None]
 
 
 @handle_robin_stocks_errors
@@ -102,7 +121,7 @@ async def get_stock_info(symbol: str) -> dict[str, Any]:
 
     # Get fundamentals and instrument data with retry logic
     fundamentals = await execute_with_retry(rh.get_fundamentals, symbol)
-    instruments = await execute_with_retry(rh.get_instruments_by_symbols, symbol)
+    instruments = await _fetch_instruments_batched([symbol])
 
     if not fundamentals or not instruments:
         return create_no_data_response(
@@ -329,9 +348,7 @@ async def get_instruments_by_symbols(symbols: list[str]) -> dict[str, Any]:
     log_api_call("get_instruments_by_symbols", symbols=clean_symbols)
 
     # Get instruments data with retry logic
-    instruments_data = await execute_with_retry(
-        rh.get_instruments_by_symbols, clean_symbols
-    )
+    instruments_data = await _fetch_instruments_batched(clean_symbols)
 
     if not instruments_data:
         return create_no_data_response(

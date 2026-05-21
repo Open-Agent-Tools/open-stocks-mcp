@@ -19,6 +19,7 @@ except ImportError:
 import pytest
 
 from tests.fixtures import broker_payloads
+from open_stocks_mcp.tools.rate_limiter import get_rate_limiter, reset_batch_state
 from tests.integration.live_market_harness import (
     LIVE_MARKET_ENV_VAR,
     LIVE_MARKET_SKIP_REASON,
@@ -27,6 +28,12 @@ from tests.integration.live_market_harness import (
 RATE_LIMITED_SKIP_REASON = (
     "rate_limited test; set RUN_RATE_LIMITED=1 or pass '-m rate_limited' to enable"
 )
+
+
+@pytest.fixture(autouse=True)
+def _reset_rate_limit_and_batch_state() -> None:
+    get_rate_limiter().reset()
+    reset_batch_state()
 
 
 def pytest_configure(config: Any) -> None:
@@ -105,7 +112,10 @@ def pytest_collection_modifyitems(config: Any, items: list[Any]) -> None:
             if list(item.iter_markers(name="rate_limited")):
                 item.add_marker(skip_rate_limited)
 
-    run_live = config.getoption("--run-live-market", default=False)
+    getoption = getattr(config, "getoption", None)
+    run_live = (
+        bool(getoption("--run-live-market", default=False)) if getoption else False
+    )
     env_live = bool(os.environ.get(LIVE_MARKET_ENV_VAR))
     if not (run_live and env_live):
         skip_live = pytest.mark.skip(reason=LIVE_MARKET_SKIP_REASON)

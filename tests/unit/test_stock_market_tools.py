@@ -1,5 +1,6 @@
 """Unit tests for stock market and core tools."""
 
+import asyncio
 from collections.abc import Iterator
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -639,6 +640,35 @@ class TestAdvancedInstrumentTools:
         assert result["result"]["instruments"][0]["name"] == "Apple Inc."
         assert result["result"]["instruments"][1]["symbol"] == "GOOGL"
         assert result["result"]["instruments"][1]["name"] == "Alphabet Inc. - Class A"
+        mock_get_instruments.assert_called_once()
+
+    @pytest.mark.journey_market_data
+    @pytest.mark.unit
+    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_name_by_symbol")
+    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_fundamentals")
+    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_instruments_by_symbols")
+    @pytest.mark.asyncio
+    async def test_get_instruments_batched_concurrent_single_symbol_calls(
+        self, mock_get_instruments: Any, mock_get_fundamentals: Any, mock_get_name: Any
+    ) -> None:
+        """Concurrent symbol lookups should coalesce to one Robinhood API call."""
+        mock_get_fundamentals.return_value = [{"sector": "Tech"}]
+        mock_get_name.side_effect = ["Apple", "Microsoft", "Alphabet"]
+        mock_get_instruments.return_value = [
+            {"symbol": "AAPL", "id": "id-aapl", "name": "Apple"},
+            {"symbol": "MSFT", "id": "id-msft", "name": "Microsoft"},
+            {"symbol": "GOOGL", "id": "id-googl", "name": "Alphabet"},
+        ]
+
+        results = await asyncio.gather(
+            get_stock_info("AAPL"),
+            get_stock_info("MSFT"),
+            get_stock_info("GOOGL"),
+        )
+
+        assert mock_get_instruments.call_count == 1
+        for result in results:
+            assert result["result"]["status"] == "success"
 
     @pytest.mark.journey_market_data
     @pytest.mark.unit

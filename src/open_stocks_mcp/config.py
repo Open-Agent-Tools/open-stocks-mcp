@@ -158,6 +158,14 @@ class OtelConfig:
 
 
 @dataclass
+class BatchConfig:
+    """Configuration for request batching and queue wait behavior."""
+
+    batch_size: int = 10
+    queue_max_wait: float = 0.5
+
+
+@dataclass
 class ServerConfig:
     """Configuration for the MCP server"""
 
@@ -170,6 +178,7 @@ class ServerConfig:
     circuit_breaker: CircuitBreakerConfig = field(default_factory=CircuitBreakerConfig)
     broker_requests: BrokerRequestConfig = field(default_factory=BrokerRequestConfig)
     otel: OtelConfig = field(default_factory=OtelConfig)
+    batch: BatchConfig = field(default_factory=BatchConfig)
 
     def __post_init__(self) -> None:
         if self.retry is None:
@@ -257,6 +266,10 @@ def load_config() -> ServerConfig:
             enabled=otel_enabled,
             service_name=os.getenv("OTEL_SERVICE_NAME", "open-stocks-mcp"),
             exporter_endpoint=os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT") or None,
+        ),
+        batch=BatchConfig(
+            batch_size=_env_int("OPEN_STOCKS_MCP_BATCH_SIZE", 10),
+            queue_max_wait=_env_float("OPEN_STOCKS_MCP_QUEUE_MAX_WAIT", 0.5),
         ),
     )
 
