@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: open-stocks-mcp-config
+  labels:
+    app: open-stocks-mcp
+data:
+  MCP_SERVER_NAME: "open-stocks-mcp"
+  LOG_LEVEL: "INFO"
+  ENABLED_BROKERS: "robinhood"
+  DEFAULT_BROKER: "robinhood"

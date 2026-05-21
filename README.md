@@ -109,6 +109,9 @@ docker-compose up -d
 - Health monitoring
 - Security headers and CORS
 
+**Kubernetes / Orchestrated Deployment:**
+See [examples/kubernetes/README.md](examples/kubernetes/README.md) for Kustomize manifests covering HTTP transport, non-root security context, PVC-backed token/log persistence, and health probes.
+
 ## MCP Client Integration
 
 ### Claude Desktop

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: open-stocks-mcp
+  labels:
+    app: open-stocks-mcp
+spec:
+  type: ClusterIP
+  selector:
+    app: open-stocks-mcp
+  ports:
+    - name: http
+      port: 3001
+      targetPort: 3001
+      protocol: TCP
