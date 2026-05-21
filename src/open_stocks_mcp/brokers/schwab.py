@@ -1,5 +1,6 @@
 """Schwab broker implementation using schwab-py library."""
 
+import asyncio
 import os
 from datetime import datetime
 from pathlib import Path
@@ -304,5 +305,38 @@ class SchwabBroker(BaseBroker):
             "result": {
                 "error": "Not yet implemented in Schwab broker adapter",
                 "status": "not_implemented",
+            }
+        }
+
+    async def get_transactions(
+        self,
+        account_hash: str,
+        *,
+        start_date: Any = None,
+        end_date: Any = None,
+        transaction_types: list[str] | None = None,
+        symbol: str | None = None,
+    ) -> dict[str, Any]:
+        """Get Schwab transactions for an account with optional filters."""
+        if not self.is_available():
+            return self.create_unavailable_response("get_transactions")
+        if self.client is None:
+            return self.create_unavailable_response("get_transactions")
+
+        transactions = await asyncio.to_thread(
+            self.client.get_transactions,
+            account_hash,
+            start_date=start_date,
+            end_date=end_date,
+            transaction_types=transaction_types,
+            symbol=symbol,
+        )
+        if hasattr(transactions, "json"):
+            transactions = transactions.json()
+
+        return {
+            "result": {
+                "transactions": transactions,
+                "count": len(transactions) if isinstance(transactions, list) else 1,
             }
         }

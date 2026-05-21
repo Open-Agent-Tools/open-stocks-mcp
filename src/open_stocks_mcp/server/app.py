@@ -156,6 +156,8 @@ from open_stocks_mcp.tools.schwab_trading_tools import (
     get_schwab_orders,
     schwab_buy_limit,
     schwab_buy_market,
+    schwab_get_transactions,
+    schwab_get_transactions_by_date,
     schwab_sell_limit,
     schwab_sell_market,
 )
@@ -1268,6 +1270,34 @@ async def schwab_get_order(account_hash: str, order_id: str) -> dict[str, Any]:
         order_id: Order ID to retrieve
     """
     return await get_schwab_order_by_id(account_hash, order_id)
+
+
+@mcp.tool()
+async def schwab_transactions(
+    account_hash: str,
+    start_date: str | None = None,
+    end_date: str | None = None,
+    transaction_types: list[str] | None = None,
+    symbol: str | None = None,
+) -> dict[str, Any]:
+    """Get Schwab transactions with optional date/type/symbol filters."""
+    return await schwab_get_transactions(
+        account_hash, start_date, end_date, transaction_types, symbol
+    )
+
+
+@mcp.tool()
+async def schwab_transactions_by_date(
+    account_hash: str,
+    start_date: str,
+    end_date: str,
+    transaction_types: list[str] | None = None,
+    symbol: str | None = None,
+) -> dict[str, Any]:
+    """Get Schwab transactions constrained by required start and end dates."""
+    return await schwab_get_transactions_by_date(
+        account_hash, start_date, end_date, transaction_types, symbol
+    )
 
 
 # Schwab Options Tools
