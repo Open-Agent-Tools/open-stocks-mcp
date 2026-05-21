@@ -7,13 +7,26 @@ from collections import defaultdict, deque
 from datetime import datetime, timedelta
 from typing import Any
 
+from open_stocks_mcp.alerting import (
+    AlertConfig,
+    AlertEvent,
+    AlertHook,
+    AlertManager,
+    create_webhook_alerter,
+)
 from open_stocks_mcp.logging_config import logger
 
 
 class MetricsCollector:
     """Collects and tracks metrics for monitoring."""
 
-    def __init__(self, window_size_minutes: int = 60):
+    def __init__(
+        self,
+        window_size_minutes: int = 60,
+        *,
+        alert_config: AlertConfig | None = None,
+        alert_hooks: list[AlertHook] | None = None,
+    ):
         """Initialize metrics collector.
 
         Args:
@@ -40,6 +53,19 @@ class MetricsCollector:
         # Cache hit/miss counters, keyed by cache name
         self.cache_hits: dict[str, int] = defaultdict(int)
         self.cache_misses: dict[str, int] = defaultdict(int)
+        self._last_health_status = "healthy"
+        self._active_threshold_alerts: set[str] = set()
+
+        self.alert_config = alert_config or AlertConfig()
+        hooks = list(alert_hooks or [])
+        if self.alert_config.enabled and self.alert_config.webhook_url:
+            hooks.append(
+                create_webhook_alerter(
+                    self.alert_config.webhook_url,
+                    timeout_seconds=self.alert_config.webhook_timeout_seconds,
+                )
+            )
+        self.alert_manager = AlertManager(config=self.alert_config, hooks=hooks)
 
         self._lock = asyncio.Lock()
 
@@ -105,9 +131,7 @@ class MetricsCollector:
             now = datetime.now()
             self._clean_old_entries(now)
             duration_ms_val = (
-                duration_ms
-                if duration_ms is not None
-                else ((duration or 0.0) * 1000.0)
+                duration_ms if duration_ms is not None else ((duration or 0.0) * 1000.0)
             )
             self.broker_operations.append(
                 {
@@ -158,7 +182,9 @@ class MetricsCollector:
             while tool_durations and tool_durations[0][0] < cutoff:
                 tool_durations.popleft()
 
-        while self.broker_operations and self.broker_operations[0]["timestamp"] < cutoff:
+        while (
+            self.broker_operations and self.broker_operations[0]["timestamp"] < cutoff
+        ):
             self.broker_operations.popleft()
 
     @staticmethod
@@ -413,6 +439,8 @@ class MetricsCollector:
             health = "degraded" if health == "healthy" else health
             issues.append(f"High response time: {avg_response_time}ms")
 
+        await self._emit_alerts(metrics=metrics, health=health)
+
         return {
             "status": health,
             "issues": issues,
@@ -422,6 +450,67 @@ class MetricsCollector:
                 "calls_last_hour": metrics["calls_in_window"],
             },
         }
+
+    async def _emit_alerts(self, *, metrics: dict[str, Any], health: str) -> None:
+        """Emit alert events for health transitions and threshold breaches."""
+        if not self.alert_config.enabled:
+            return
+
+        now = datetime.now().isoformat()
+
+        if health in {"degraded", "unhealthy"} and health != self._last_health_status:
+            await self.alert_manager.dispatch(
+                AlertEvent(
+                    alert_type="health_transition",
+                    status=health,
+                    message=f"Health transitioned to {health}",
+                    timestamp=now,
+                    metric_values={
+                        "error_rate_percent": float(metrics["error_rate_percent"]),
+                        "p95_response_time_ms": float(metrics["p95_response_time_ms"]),
+                    },
+                    threshold_values={},
+                )
+            )
+        self._last_health_status = health
+
+        breached: dict[str, tuple[float, float]] = {}
+        error_rate = float(metrics["error_rate_percent"])
+        p95_latency = float(metrics["p95_response_time_ms"])
+
+        if error_rate > self.alert_config.error_rate_threshold_percent:
+            breached["error_rate_threshold_percent"] = (
+                error_rate,
+                self.alert_config.error_rate_threshold_percent,
+            )
+        if p95_latency > self.alert_config.latency_p95_threshold_ms:
+            breached["latency_p95_threshold_ms"] = (
+                p95_latency,
+                self.alert_config.latency_p95_threshold_ms,
+            )
+
+        current_keys = set(breached.keys())
+        new_breaches = current_keys - self._active_threshold_alerts
+        self._active_threshold_alerts = current_keys
+
+        for breach_key in new_breaches:
+            observed, threshold = breached[breach_key]
+            await self.alert_manager.dispatch(
+                AlertEvent(
+                    alert_type="threshold_breach",
+                    status="warning",
+                    message=f"Threshold breached: {breach_key}",
+                    timestamp=now,
+                    metric_values={
+                        "error_rate_percent": error_rate,
+                        "p95_response_time_ms": p95_latency,
+                    },
+                    threshold_values={
+                        breach_key: threshold,
+                        "observed_value": observed,
+                    },
+                )
+            )
 
 
 # Global metrics collector instance

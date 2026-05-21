@@ -158,6 +158,17 @@ class OtelConfig:
 
 
 @dataclass
+class AlertConfig:
+    """Alerting configuration for proactive monitoring notifications."""
+
+    enabled: bool = False
+    webhook_url: str | None = None
+    error_rate_threshold_percent: float = 50.0
+    latency_p95_threshold_ms: float = 10000.0
+    webhook_timeout_seconds: float = 5.0
+
+
+@dataclass
 class ServerConfig:
     """Configuration for the MCP server"""
 
@@ -170,6 +181,7 @@ class ServerConfig:
     circuit_breaker: CircuitBreakerConfig = field(default_factory=CircuitBreakerConfig)
     broker_requests: BrokerRequestConfig = field(default_factory=BrokerRequestConfig)
     otel: OtelConfig = field(default_factory=OtelConfig)
+    alerting: AlertConfig = field(default_factory=AlertConfig)
 
     def __post_init__(self) -> None:
         if self.retry is None:
@@ -257,6 +269,17 @@ def load_config() -> ServerConfig:
             enabled=otel_enabled,
             service_name=os.getenv("OTEL_SERVICE_NAME", "open-stocks-mcp"),
             exporter_endpoint=os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT") or None,
+        ),
+        alerting=AlertConfig(
+            enabled=_env_bool("ALERTING_ENABLED", False),
+            webhook_url=os.getenv("ALERT_WEBHOOK_URL") or None,
+            error_rate_threshold_percent=_env_float(
+                "ALERT_ERROR_RATE_THRESHOLD_PERCENT", 50.0
+            ),
+            latency_p95_threshold_ms=_env_float(
+                "ALERT_LATENCY_P95_THRESHOLD_MS", 10000.0
+            ),
+            webhook_timeout_seconds=_env_float("ALERT_WEBHOOK_TIMEOUT_SECONDS", 5.0),
         ),
     )
 
