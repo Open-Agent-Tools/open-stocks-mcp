@@ -352,6 +352,26 @@ class TestHTTPEndpoints:
         assert "result" in data
         assert "tools" in data["result"]
 
+    async def test_docs_endpoint_returns_swagger(
+        self, http_client: httpx.AsyncClient
+    ) -> None:
+        response = await http_client.get("/docs")
+        assert response.status_code == 200
+        assert response.headers["content-type"].startswith("text/html")
+        assert "swagger-ui" in response.text
+
+    async def test_openapi_contains_all_mcp_tools(
+        self, http_client: httpx.AsyncClient, mcp_server: FastMCP
+    ) -> None:
+        response = await http_client.get("/openapi.json")
+        assert response.status_code == 200
+        payload = response.json()
+        mcp_tools = await mcp_server.list_tools()
+        mcp_doc_paths = [
+            path for path in payload.get("paths", {}) if path.startswith("/mcp/tools/")
+        ]
+        assert len(mcp_doc_paths) == len(mcp_tools)
+
     async def test_cors_headers(self, http_client: httpx.AsyncClient) -> None:
         """Test CORS headers are present"""
         # Test CORS with a GET request instead of OPTIONS

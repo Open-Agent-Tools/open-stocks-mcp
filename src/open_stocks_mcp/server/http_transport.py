@@ -19,6 +19,11 @@ from open_stocks_mcp.config import load_config
 from open_stocks_mcp.health import get_health_service
 from open_stocks_mcp.logging_config import logger
 from open_stocks_mcp.monitoring import get_metrics_collector
+from open_stocks_mcp.server.tool_docs import (
+    build_tool_docs_payload,
+    build_tool_docs_payload_from_snapshot,
+    build_tool_openapi_paths,
+)
 from open_stocks_mcp.tools.circuit_breaker import get_broker_circuit_breaker
 from open_stocks_mcp.tools.rate_limiter import get_rate_limiter
 from open_stocks_mcp.tools.session_manager import get_session_manager
@@ -262,6 +267,7 @@ def create_http_server(
         # Initialize rate limiter and session manager
         get_rate_limiter()
         get_session_manager()
+        app.state.tool_docs_payload = await build_tool_docs_payload(mcp_server)
 
         yield
 
@@ -282,6 +288,19 @@ def create_http_server(
         version=__version__,
         lifespan=lifespan,
     )
+    default_openapi = app.openapi
+
+    def custom_openapi() -> dict[str, Any]:
+        """Merge MCP tool docs into OpenAPI so /docs exposes the full tool registry."""
+        if app.openapi_schema is not None:
+            return app.openapi_schema
+        schema = default_openapi()
+        payload = getattr(app.state, "tool_docs_payload", None)
+        if payload is None:
+            payload = build_tool_docs_payload_from_snapshot(mcp_server)
+        schema.setdefault("paths", {}).update(build_tool_openapi_paths(payload))
+        app.openapi_schema = schema
+        return schema
 
     # Add middleware
     app.add_middleware(
@@ -428,6 +447,17 @@ def create_http_server(
         except Exception as e:
             logger.error(f"Failed to list tools: {e}")
             raise HTTPException(status_code=500, detail="Failed to list tools") from e
+
+    @app.get("/tools/docs")
+    async def tools_docs() -> dict[str, Any]:
+        """Return MCP tool docs metadata from the live registry."""
+        try:
+            return await build_tool_docs_payload(mcp_server)
+        except Exception as e:
+            logger.error(f"Failed to generate tool docs payload: {e}")
+            raise HTTPException(
+                status_code=500, detail="Failed to generate tool docs"
+            ) from e
 
     @app.get("/metrics")
     async def metrics() -> Response:
@@ -735,6 +765,7 @@ def create_http_server(
 
         return EventSourceResponse(event_generator())
 
+    app.openapi = custom_openapi  # type: ignore[method-assign]
     return app
 
 
