@@ -511,60 +511,67 @@ class TestServerMetrics:
         assert result["result"]["session_refreshes"] == 1
         assert result["result"]["status"] == "success"
 
-    @patch("open_stocks_mcp.server.tool_helpers.get_metrics_collector")
+    @patch("open_stocks_mcp.server.tool_helpers.get_broker_circuit_breaker")
+    @patch("open_stocks_mcp.server.tool_helpers.get_health_service")
     @pytest.mark.journey_research
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_health_check_healthy(self, mock_get_metrics_collector: Any) -> None:
+    async def test_health_check_healthy(
+        self,
+        mock_get_health_service: Any,
+        mock_get_breaker: Any,
+    ) -> None:
         """Test health check with healthy status."""
         from open_stocks_mcp.server.app import health_check
 
-        mock_metrics_collector = AsyncMock()
-        mock_metrics_collector.get_health_status.return_value = {
-            "health_status": "healthy",
-            "issues": [],
-            "metrics_summary": {
-                "error_rate_percent": 1.5,
-                "avg_response_time_ms": 200.0,
-                "calls_last_hour": 100,
-            },
+        mock_health_service = AsyncMock()
+        mock_health_service.get_status.return_value = {
+            "status": "healthy",
+            "components": {},
+            "timestamp": 123.0,
         }
-        mock_get_metrics_collector.return_value = mock_metrics_collector
+        mock_get_health_service.return_value = mock_health_service
+        mock_get_breaker.return_value.snapshot.return_value = {
+            "state": "closed",
+            "failure_count": 0,
+        }
 
         result = await health_check()
 
         assert "result" in result
         assert result["result"]["status"] == "success"
         assert result["result"]["health_status"] == "healthy"
-        assert result["result"]["issues"] == []
-        assert result["result"]["metrics_summary"]["error_rate_percent"] == 1.5
-        assert result["result"]["metrics_summary"]["avg_response_time_ms"] == 200.0
+        assert result["result"]["circuit_breaker"]["state"] == "closed"
 
-    @patch("open_stocks_mcp.server.tool_helpers.get_metrics_collector")
+    @patch("open_stocks_mcp.server.tool_helpers.get_broker_circuit_breaker")
+    @patch("open_stocks_mcp.server.tool_helpers.get_health_service")
     @pytest.mark.journey_research
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_health_check_degraded(self, mock_get_metrics_collector: Any) -> None:
+    async def test_health_check_degraded(
+        self,
+        mock_get_health_service: Any,
+        mock_get_breaker: Any,
+    ) -> None:
         """Test health check with degraded status."""
         from open_stocks_mcp.server.app import health_check
 
-        mock_metrics_collector = AsyncMock()
-        mock_metrics_collector.get_health_status.return_value = {
-            "health_status": "degraded",
-            "issues": ["High error rate: 15.0%", "Slow response times"],
-            "metrics_summary": {
-                "error_rate_percent": 15.0,
-                "avg_response_time_ms": 6000.0,
-                "calls_last_hour": 50,
-            },
+        mock_health_service = AsyncMock()
+        mock_health_service.get_status.return_value = {
+            "status": "degraded",
+            "components": {"session": {"status": "degraded"}},
+            "timestamp": 123.0,
         }
-        mock_get_metrics_collector.return_value = mock_metrics_collector
+        mock_get_health_service.return_value = mock_health_service
+        mock_get_breaker.return_value.snapshot.return_value = {
+            "state": "open",
+            "failure_count": 5,
+        }
 
         result = await health_check()
 
         assert "result" in result
         assert result["result"]["status"] == "success"
         assert result["result"]["health_status"] == "degraded"
-        assert "High error rate: 15.0%" in result["result"]["issues"]
-        assert "Slow response times" in result["result"]["issues"]
-        assert result["result"]["metrics_summary"]["error_rate_percent"] == 15.0
+        assert result["result"]["components"]["session"]["status"] == "degraded"
+        assert result["result"]["circuit_breaker"]["state"] == "open"

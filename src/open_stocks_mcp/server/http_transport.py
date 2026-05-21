@@ -19,6 +19,7 @@ from open_stocks_mcp.config import load_config
 from open_stocks_mcp.health import get_health_service
 from open_stocks_mcp.logging_config import logger
 from open_stocks_mcp.monitoring import get_metrics_collector
+from open_stocks_mcp.tools.circuit_breaker import get_broker_circuit_breaker
 from open_stocks_mcp.tools.rate_limiter import get_rate_limiter
 from open_stocks_mcp.tools.session_manager import get_session_manager
 
@@ -320,6 +321,7 @@ def create_http_server(
             return {
                 "status": health_status["status"],
                 "components": health_status["components"],
+                "circuit_breaker": get_broker_circuit_breaker().snapshot(),
                 "timestamp": health_status.get("timestamp", time.time()),
                 "version": __version__,
                 "transport": "http",
@@ -352,6 +354,7 @@ def create_http_server(
                 },
                 "session": session_info,
                 "rate_limiting": rate_stats,
+                "circuit_breaker": get_broker_circuit_breaker().snapshot(),
                 "metrics": metrics,
             }
         except HTTPException:

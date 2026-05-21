@@ -9,6 +9,7 @@ from open_stocks_mcp.config import load_config
 from open_stocks_mcp.logging_config import logger
 from open_stocks_mcp.tools.exceptions import (
     AuthenticationError,
+    CircuitBreakerError,
     DataError,
     classify_error,
 )
@@ -26,6 +27,7 @@ async def execute_with_retry(
     **kwargs: Any,
 ) -> Any:
     """Execute a function with retry logic for transient errors."""
+    from open_stocks_mcp.tools.circuit_breaker import get_broker_circuit_breaker
     from open_stocks_mcp.tools.rate_limiter import get_rate_limiter
     from open_stocks_mcp.tools.session_manager import get_session_manager
 
@@ -41,6 +43,7 @@ async def execute_with_retry(
         retry_config.backoff_factor if backoff_factor is None else backoff_factor
     )
     session_manager = get_session_manager()
+    circuit_breaker = get_broker_circuit_breaker()
     rate_limiter = get_rate_limiter() if rate_limit else None
     auth_retry_count = 0
     max_auth_retries = retry_config.auth_max_retries
@@ -48,6 +51,7 @@ async def execute_with_retry(
     attempt = 0
     while attempt <= configured_max_retries:
         try:
+            await circuit_breaker.before_request()
             if rate_limiter:
                 await rate_limiter.acquire(endpoint)
 
@@ -59,9 +63,12 @@ async def execute_with_retry(
                 result = await loop.run_in_executor(None, bound_func)
 
             session_manager.update_last_successful_call()
+            await circuit_breaker.record_success()
             return result
 
         except Exception as e:
+            if isinstance(e, CircuitBreakerError):
+                raise
             last_exception = e
             classified_error = classify_error(e)
             if max_retries is None:
@@ -91,12 +98,19 @@ async def execute_with_retry(
                             )
                             continue
                         logger.error("Re-authentication failed")
+                        await circuit_breaker.record_failure(
+                            classified_error.error_type
+                        )
                         raise classified_error
                     except Exception as reauth_error:
                         logger.error(f"Re-authentication error: {reauth_error}")
+                        await circuit_breaker.record_failure(
+                            classified_error.error_type
+                        )
                         raise classified_error from reauth_error
                 else:
                     logger.error(f"Authentication error after re-auth attempts: {e}")
+                    await circuit_breaker.record_failure(classified_error.error_type)
                     raise classified_error from e
 
             if isinstance(classified_error, DataError):
@@ -112,6 +126,7 @@ async def execute_with_retry(
                 attempt += 1
             else:
                 logger.error(f"All {configured_max_retries + 1} attempts failed: {e}")
+                await circuit_breaker.record_failure(classified_error.error_type)
                 raise classified_error from e
 
     if last_exception:

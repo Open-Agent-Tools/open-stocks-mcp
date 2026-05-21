@@ -7,6 +7,7 @@ across focused modules.
 from open_stocks_mcp.tools.exceptions import (
     APIError,
     AuthenticationError,
+    CircuitBreakerError,
     DataError,
     NetworkError,
     RateLimitError,
@@ -33,6 +34,7 @@ from open_stocks_mcp.tools.validation import (
 __all__ = [
     "APIError",
     "AuthenticationError",
+    "CircuitBreakerError",
     "DataError",
     "NetworkError",
     "RateLimitError",

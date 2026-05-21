@@ -123,6 +123,15 @@ class TimeoutConfig:
 
 
 @dataclass
+class CircuitBreakerConfig:
+    """Configuration for broker-call circuit breaker behavior."""
+
+    enabled: bool = True
+    failure_threshold: int = 5
+    cooldown_seconds: float = 60.0
+
+
+@dataclass
 class OtelConfig:
     """OpenTelemetry tracing configuration"""
 
@@ -141,6 +150,7 @@ class ServerConfig:
     cache: CacheConfig = field(default_factory=CacheConfig)
     retry: RetryConfig | None = None
     timeout: TimeoutConfig | None = None
+    circuit_breaker: CircuitBreakerConfig = field(default_factory=CircuitBreakerConfig)
     otel: OtelConfig = field(default_factory=OtelConfig)
 
     def __post_init__(self) -> None:
@@ -193,6 +203,15 @@ def load_config() -> ServerConfig:
             request_timeout_seconds=_env_float(
                 "OPEN_STOCKS_MCP_HTTP_REQUEST_TIMEOUT_SECONDS", 120.0
             )
+        ),
+        circuit_breaker=CircuitBreakerConfig(
+            enabled=_env_bool("OPEN_STOCKS_MCP_CIRCUIT_BREAKER_ENABLED", True),
+            failure_threshold=_env_int(
+                "OPEN_STOCKS_MCP_CIRCUIT_BREAKER_FAILURE_THRESHOLD", 5
+            ),
+            cooldown_seconds=_env_float(
+                "OPEN_STOCKS_MCP_CIRCUIT_BREAKER_COOLDOWN_SECONDS", 60.0
+            ),
         ),
         otel=OtelConfig(
             enabled=otel_enabled,

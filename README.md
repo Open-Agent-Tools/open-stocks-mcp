@@ -81,6 +81,20 @@ The `/metrics` endpoint exposes:
 - `open_stocks_mcp_tool_calls_per_minute` (gauge by tool)
 - `open_stocks_mcp_tool_latency_ms` (gauge by tool and quantile: `0.50`, `0.95`, `0.99`)
 
+### Operational Circuit Breaker Defaults
+
+Broker call protection is enabled by default and reports state in MCP `health_check`,
+MCP `rate_limit_status`, HTTP `/health`, and HTTP `/status`.
+
+- `OPEN_STOCKS_MCP_CIRCUIT_BREAKER_ENABLED` (default: `true`)
+- `OPEN_STOCKS_MCP_CIRCUIT_BREAKER_FAILURE_THRESHOLD` (default: `5`)
+- `OPEN_STOCKS_MCP_CIRCUIT_BREAKER_COOLDOWN_SECONDS` (default: `60`)
+
+State meanings:
+- `closed`: requests flow normally.
+- `open`: broker calls fail fast until cooldown expires.
+- `half_open`: one probe call is allowed; success resets to `closed`, failure returns to `open`.
+
 ## Docker Deployment
 
 **Production Docker Setup:**
