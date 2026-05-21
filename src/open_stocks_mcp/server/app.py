@@ -1424,11 +1424,6 @@ async def setup_brokers(username: str | None, password: str | None) -> None:
             "   Set ROBINHOOD_USERNAME and ROBINHOOD_PASSWORD to enable Robinhood"
         )
 
-    # TODO: Add Schwab broker registration when implemented
-    # if schwab_api_key and schwab_app_secret:
-    #     schwab_broker = SchwabBroker(...)
-    #     registry.register(schwab_broker)
-
     # Attempt to authenticate all registered brokers
     await attempt_broker_logins(require_at_least_one=False)
 

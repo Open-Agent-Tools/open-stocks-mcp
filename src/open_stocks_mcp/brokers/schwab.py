@@ -224,100 +224,88 @@ class SchwabBroker(BaseBroker):
         except Exception as e:
             logger.error(f"Error during Schwab logout: {e}")
 
-    # Placeholder implementations for required abstract methods
-    # These will be implemented by delegating to Schwab tools
-
     async def get_account_info(self) -> dict[str, Any]:
-        """Get account information.
-
-        Note: Implementation delegates to Schwab account tools.
-        """
+        """Get account information."""
         if not self.is_available():
             return self.create_unavailable_response("get_account_info")
 
-        # TODO: Implement via schwab_account_tools
-        return {
-            "result": {
-                "error": "Not yet implemented in Schwab broker adapter",
-                "status": "not_implemented",
-            }
-        }
+        from open_stocks_mcp.tools.schwab_account_tools import get_schwab_accounts
+
+        return await get_schwab_accounts(include_positions=False)
 
     async def get_portfolio(self) -> dict[str, Any]:
         """Get portfolio holdings."""
         if not self.is_available():
             return self.create_unavailable_response("get_portfolio")
 
-        # TODO: Implement via schwab_account_tools
-        return {
-            "result": {
-                "error": "Not yet implemented in Schwab broker adapter",
-                "status": "not_implemented",
-            }
-        }
+        from open_stocks_mcp.tools.schwab_account_tools import get_schwab_accounts
+
+        return await get_schwab_accounts(include_positions=True)
 
     async def get_positions(self) -> dict[str, Any]:
         """Get current positions."""
         if not self.is_available():
             return self.create_unavailable_response("get_positions")
 
-        # TODO: Implement via schwab_account_tools
-        return {
-            "result": {
-                "error": "Not yet implemented in Schwab broker adapter",
-                "status": "not_implemented",
-            }
-        }
+        from open_stocks_mcp.tools.schwab_account_tools import get_schwab_accounts
+
+        return await get_schwab_accounts(include_positions=True)
 
     async def get_stock_quote(self, symbol: str) -> dict[str, Any]:
         """Get stock quote by symbol."""
         if not self.is_available():
             return self.create_unavailable_response(f"get stock quote for {symbol}")
 
-        # TODO: Implement via schwab_market_tools
-        return {
-            "result": {
-                "error": "Not yet implemented in Schwab broker adapter",
-                "status": "not_implemented",
-            }
-        }
+        from open_stocks_mcp.tools.schwab_market_tools import get_schwab_quote
+
+        return await get_schwab_quote(symbol)
 
     async def get_stock_price(self, symbol: str) -> dict[str, Any]:
         """Get current stock price."""
         if not self.is_available():
             return self.create_unavailable_response(f"get stock price for {symbol}")
 
-        # TODO: Implement via schwab_market_tools
-        return {
-            "result": {
-                "error": "Not yet implemented in Schwab broker adapter",
-                "status": "not_implemented",
-            }
-        }
+        from open_stocks_mcp.tools.schwab_market_tools import get_schwab_quote
+
+        return await get_schwab_quote(symbol)
 
     async def order_buy_market(self, symbol: str, quantity: float) -> dict[str, Any]:
-        """Place market buy order."""
+        """Place market buy order.
+
+        Note: Schwab orders require an account hash not present in this interface.
+        Use schwab_buy_market() from schwab_trading_tools with an explicit account_hash.
+        """
         if not self.is_available():
             return self.create_unavailable_response(f"place buy order for {symbol}")
 
-        # TODO: Implement via schwab_trading_tools
         return {
             "result": {
-                "error": "Not yet implemented in Schwab broker adapter",
-                "status": "not_implemented",
+                "error": (
+                    "Schwab market orders require an account hash. "
+                    "Use schwab_buy_market() with get_schwab_account_numbers() instead."
+                ),
+                "status": "error",
+                "broker": "schwab",
             }
         }
 
     async def order_sell_market(self, symbol: str, quantity: float) -> dict[str, Any]:
-        """Place market sell order."""
+        """Place market sell order.
+
+        Note: Schwab orders require an account hash not present in this interface.
+        Use schwab_sell_market() from schwab_trading_tools with an explicit account_hash.
+        """
         if not self.is_available():
             return self.create_unavailable_response(f"place sell order for {symbol}")
 
-        # TODO: Implement via schwab_trading_tools
         return {
             "result": {
-                "error": "Not yet implemented in Schwab broker adapter",
-                "status": "not_implemented",
+                "error": (
+                    "Schwab market orders require an account hash. "
+                    "Use schwab_sell_market() with get_schwab_account_numbers() instead."
+                ),
+                "status": "error",
+                "broker": "schwab",
             }
         }
 
