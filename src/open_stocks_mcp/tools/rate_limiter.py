@@ -3,6 +3,7 @@
 import asyncio
 import time
 from collections import defaultdict, deque
+from collections.abc import Callable, Coroutine
 from typing import Any
 
 from open_stocks_mcp.logging_config import logger
@@ -153,8 +154,64 @@ class RateLimiter:
         }
 
 
+class RequestCoordinator:
+    """Asyncio-safe singleflight coordinator for deduplicating concurrent reads.
+
+    Callers that supply the same key while a request is already in-flight receive
+    the same result without triggering a second broker call. Mutating/trading paths
+    must NOT use a coalesce key so they are never deduplicated.
+    """
+
+    def __init__(self) -> None:
+        self._in_flight: dict[str, asyncio.Future[Any]] = {}
+        self._lock = asyncio.Lock()
+        self.coalesced_count: int = 0
+
+    async def execute(
+        self,
+        key: str,
+        coro_factory: Callable[[], Coroutine[Any, Any, Any]],
+    ) -> Any:
+        """Execute *coro_factory* unless a call with *key* is already in-flight.
+
+        When a duplicate key is detected the caller awaits the existing future
+        instead of launching a new coroutine, so the underlying broker call runs
+        only once regardless of how many concurrent callers arrive.
+        """
+        waiter: asyncio.Future[Any]
+        async with self._lock:
+            if key in self._in_flight:
+                self.coalesced_count += 1
+                waiter = self._in_flight[key]
+                is_new = False
+            else:
+                waiter = asyncio.get_running_loop().create_future()
+                self._in_flight[key] = waiter
+                is_new = True
+
+        if not is_new:
+            return await asyncio.shield(waiter)
+
+        try:
+            result = await coro_factory()
+            waiter.set_result(result)
+            return result
+        except BaseException as exc:
+            if isinstance(exc, asyncio.CancelledError):
+                waiter.cancel()
+            else:
+                waiter.set_exception(exc)
+            raise
+        finally:
+            async with self._lock:
+                self._in_flight.pop(key, None)
+
+
 # Global rate limiter instance
 _rate_limiter: RateLimiter | None = None
+
+# Global request coordinator instance
+_request_coordinator: RequestCoordinator | None = None
 
 
 def configure_global_rate_limiter(
@@ -193,6 +250,14 @@ def get_rate_limiter() -> RateLimiter:
             burst_size=5,  # Allow small bursts
         )
     return _rate_limiter
+
+
+def get_request_coordinator() -> RequestCoordinator:
+    """Get the global request coordinator instance."""
+    global _request_coordinator
+    if _request_coordinator is None:
+        _request_coordinator = RequestCoordinator()
+    return _request_coordinator
 
 
 async def rate_limited_call(

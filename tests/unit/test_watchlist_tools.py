@@ -378,16 +378,50 @@ class TestRemoveSymbolsFromWatchlist:
 class TestGetWatchlistPerformance:
     """Test get watchlist performance functionality."""
 
+    @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.get_watchlist_by_name")
-    @pytest.mark.slow
+    @pytest.mark.journey_watchlists
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    async def test_get_watchlist_performance_uses_bulk_calls(
+        self, mock_get_watchlist: Any, mock_execute: Any
+    ) -> None:
+        """A three-symbol watchlist makes one bulk price call and one bulk quote call."""
+        mock_get_watchlist.return_value = {
+            "result": {
+                "name": "Tech Stocks",
+                "symbols": ["AAPL", "GOOGL", "MSFT"],
+                "status": "success",
+            }
+        }
+        mock_execute.side_effect = [
+            ["150.00", "130.00", "380.00"],
+            [
+                {"previous_close": "148.00", "volume": "1000000"},
+                {"previous_close": "128.00", "volume": "2000000"},
+                {"previous_close": "375.00", "volume": "500000"},
+            ],
+        ]
+
+        result = await get_watchlist_performance("Tech Stocks")
+
+        assert result["result"]["status"] == "success"
+        assert result["result"]["watchlist_name"] == "Tech Stocks"
+        assert len(result["result"]["symbols"]) == 3
+        assert result["result"]["summary"]["total_symbols"] == 3
+        assert result["result"]["summary"]["gainers"] == 3
+        assert result["result"]["summary"]["losers"] == 0
+        assert mock_execute.call_count == 2
+
+    @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.get_watchlist_by_name")
     @pytest.mark.journey_watchlists
     @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_watchlist_performance_success(
-        self, mock_get_watchlist: Any
+        self, mock_get_watchlist: Any, mock_execute: Any
     ) -> None:
-        """Test watchlist performance handling when API calls fail."""
-        # Mock watchlist data
+        """Test successful watchlist performance with properly mocked bulk calls."""
         mock_get_watchlist.return_value = {
             "result": {
                 "name": "Tech Stocks",
@@ -395,31 +429,25 @@ class TestGetWatchlistPerformance:
                 "status": "success",
             }
         }
+        mock_execute.side_effect = [
+            ["150.00", "130.00"],
+            [
+                {"previous_close": "148.00", "volume": "1000000"},
+                {"previous_close": "128.00", "volume": "2000000"},
+            ],
+        ]
 
-        # Due to source code bug (rh.get_quote doesn't exist), the function will fail
-        # Test that it handles this gracefully by returning error data
         result = await get_watchlist_performance("Tech Stocks")
 
         assert "result" in result
         assert result["result"]["watchlist_name"] == "Tech Stocks"
         assert len(result["result"]["symbols"]) == 2
+        assert result["result"]["status"] == "success"
 
-        # Check that symbols are returned but with error data
-        for symbol_data in result["result"]["symbols"]:
-            assert symbol_data["symbol"] in ["AAPL", "GOOGL"]
-            assert symbol_data["current_price"] == "N/A"
-            assert symbol_data["change"] == "N/A"
-            assert symbol_data["change_percent"] == "N/A"
-            assert "error" in symbol_data
-
-        # Check summary - no gainers/losers since all failed
         summary = result["result"]["summary"]
         assert summary["total_symbols"] == 2
-        assert summary["gainers"] == 0
+        assert summary["gainers"] == 2
         assert summary["losers"] == 0
-        assert summary["unchanged"] == 0
-        assert summary["total_volume"] == 0
-        assert result["result"]["status"] == "success"
 
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.get_watchlist_by_name")
     @pytest.mark.journey_watchlists
@@ -469,63 +497,148 @@ class TestGetWatchlistPerformance:
         assert result["result"]["summary"]["total_symbols"] == 0
         assert result["result"]["status"] == "no_data"
 
+    @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.get_watchlist_by_name")
-    @pytest.mark.slow
     @pytest.mark.journey_watchlists
     @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_watchlist_performance_mixed_results(
-        self, mock_get_watchlist: Any
+        self, mock_get_watchlist: Any, mock_execute: Any
     ) -> None:
-        """Test watchlist performance with multiple symbols (all will fail gracefully)."""
+        """Test watchlist performance with gainer, loser, and unchanged symbols."""
         mock_get_watchlist.return_value = {
             "result": {
                 "name": "Mixed",
-                "symbols": ["AAPL", "TSLA", "UNCHANGED"],
+                "symbols": ["AAPL", "TSLA", "MSFT"],
                 "status": "success",
             }
         }
+        mock_execute.side_effect = [
+            ["150.00", "100.00", "375.00"],
+            [
+                {"previous_close": "148.00", "volume": "1000000"},
+                {"previous_close": "102.00", "volume": "500000"},
+                {"previous_close": "375.00", "volume": "300000"},
+            ],
+        ]
 
-        # Due to source code bug (rh.get_quote doesn't exist), all symbols will fail
-        # Test that it handles this gracefully
         result = await get_watchlist_performance("Mixed")
 
         assert "result" in result
         summary = result["result"]["summary"]
         assert summary["total_symbols"] == 3
-        # All will fail so no gainers/losers/unchanged
-        assert summary["gainers"] == 0
-        assert summary["losers"] == 0
-        assert summary["unchanged"] == 0
-        assert summary["total_volume"] == 0
+        assert summary["gainers"] == 1
+        assert summary["losers"] == 1
+        assert summary["unchanged"] == 1
 
-    @pytest.mark.exception_test
-    @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
+    @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
     @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.get_watchlist_by_name")
     @pytest.mark.journey_watchlists
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_get_watchlist_performance_api_error(
-        self, mock_get_watchlist: Any
+    async def test_get_watchlist_performance_bulk_call_failure(
+        self, mock_get_watchlist: Any, mock_execute: Any
     ) -> None:
-        """Test watchlist performance when API calls fail for some symbols."""
+        """When the bulk broker call fails, all symbols get fallback error entries."""
         mock_get_watchlist.return_value = {
-            "result": {"name": "Test", "symbols": ["AAPL"], "status": "success"}
+            "result": {"name": "Test", "symbols": ["AAPL", "GOOGL"], "status": "success"}
         }
+        mock_execute.side_effect = Exception("API Error")
 
-        # Mock API error
-        with patch(
-            "open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry"
-        ) as mock_execute:
-            mock_execute.side_effect = Exception("API Error")
+        result = await get_watchlist_performance("Test")
 
-            result = await get_watchlist_performance("Test")
-
-            assert "result" in result
-            assert len(result["result"]["symbols"]) == 1
-            symbol_data = result["result"]["symbols"][0]
-            assert symbol_data["symbol"] == "AAPL"
+        assert "result" in result
+        assert len(result["result"]["symbols"]) == 2
+        for symbol_data in result["result"]["symbols"]:
             assert symbol_data["current_price"] == "N/A"
             assert symbol_data["change"] == "N/A"
+            assert symbol_data["change_percent"] == "N/A"
             assert "error" in symbol_data
-            assert result["result"]["status"] == "success"
+        assert result["result"]["summary"]["gainers"] == 0
+        assert result["result"]["status"] == "success"
+
+    @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.get_watchlist_by_name")
+    @pytest.mark.journey_watchlists
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    async def test_get_watchlist_performance_missing_price_data(
+        self, mock_get_watchlist: Any, mock_execute: Any
+    ) -> None:
+        """Symbols with no price data in bulk response get fallback entries."""
+        mock_get_watchlist.return_value = {
+            "result": {
+                "name": "Test",
+                "symbols": ["AAPL", "GOOGL", "MSFT"],
+                "status": "success",
+            }
+        }
+        mock_execute.side_effect = [
+            ["150.00", None, "380.00"],
+            [
+                {"previous_close": "148.00", "volume": "1000000"},
+                {"previous_close": "128.00", "volume": "2000000"},
+                {"previous_close": "375.00", "volume": "500000"},
+            ],
+        ]
+
+        result = await get_watchlist_performance("Test")
+
+        assert result["result"]["status"] == "success"
+        symbols = result["result"]["symbols"]
+        assert len(symbols) == 3
+
+        aapl = next(s for s in symbols if s["symbol"] == "AAPL")
+        googl = next(s for s in symbols if s["symbol"] == "GOOGL")
+        msft = next(s for s in symbols if s["symbol"] == "MSFT")
+
+        assert aapl["current_price"] == "150.00"
+        assert googl["current_price"] == "N/A"
+        assert msft["current_price"] == "380.00"
+
+    @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.get_watchlist_by_name")
+    @pytest.mark.journey_watchlists
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    async def test_get_watchlist_performance_maps_quotes_by_symbol(
+        self, mock_get_watchlist: Any, mock_execute: Any
+    ) -> None:
+        """Skipped bulk quote entries do not shift data onto later symbols."""
+        mock_get_watchlist.return_value = {
+            "result": {
+                "name": "Test",
+                "symbols": ["AAPL", "GOOGL", "MSFT"],
+                "status": "success",
+            }
+        }
+        mock_execute.side_effect = [
+            ["150.00", "380.00"],
+            [
+                {
+                    "symbol": "AAPL",
+                    "last_trade_price": "150.00",
+                    "previous_close": "148.00",
+                    "volume": "1000000",
+                },
+                {
+                    "symbol": "MSFT",
+                    "last_trade_price": "380.00",
+                    "previous_close": "375.00",
+                    "volume": "500000",
+                },
+            ],
+        ]
+
+        result = await get_watchlist_performance("Test")
+
+        symbols = result["result"]["symbols"]
+        assert len(symbols) == 3
+
+        aapl = next(s for s in symbols if s["symbol"] == "AAPL")
+        googl = next(s for s in symbols if s["symbol"] == "GOOGL")
+        msft = next(s for s in symbols if s["symbol"] == "MSFT")
+
+        assert aapl["current_price"] == "150.00"
+        assert googl["current_price"] == "N/A"
+        assert msft["current_price"] == "380.00"

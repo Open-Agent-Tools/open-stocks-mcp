@@ -1,5 +1,6 @@
 """Simple tests for rate limiter without time delays."""
 
+import asyncio
 from typing import Any
 from unittest.mock import patch
 
@@ -117,3 +118,143 @@ def test_configure_global_rate_limiter_updates_singleton() -> None:
     assert limiter.calls_per_hour == 222
     assert limiter.burst_size == 3
     assert get_rate_limiter() is limiter
+
+
+class TestRequestCoordinator:
+    """Test RequestCoordinator singleflight deduplication logic."""
+
+    @pytest.mark.journey_system
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    async def test_coalesce_concurrent_same_key(self) -> None:
+        """Concurrent calls with the same key share one underlying coroutine."""
+        from open_stocks_mcp.tools.rate_limiter import RequestCoordinator
+
+        coordinator = RequestCoordinator()
+        call_count = 0
+
+        async def slow_fetch() -> str:
+            nonlocal call_count
+            call_count += 1
+            await asyncio.sleep(0)
+            return "result"
+
+        results = await asyncio.gather(
+            coordinator.execute("key-A", slow_fetch),
+            coordinator.execute("key-A", slow_fetch),
+        )
+
+        assert call_count == 1
+        assert list(results) == ["result", "result"]
+
+    @pytest.mark.journey_system
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    async def test_coalesce_independent_keys(self) -> None:
+        """Different keys execute independently (no deduplication)."""
+        from open_stocks_mcp.tools.rate_limiter import RequestCoordinator
+
+        coordinator = RequestCoordinator()
+        call_count = 0
+
+        async def fetch() -> str:
+            nonlocal call_count
+            call_count += 1
+            await asyncio.sleep(0)
+            return "result"
+
+        results = await asyncio.gather(
+            coordinator.execute("key-A", fetch),
+            coordinator.execute("key-B", fetch),
+        )
+
+        assert call_count == 2
+        assert list(results) == ["result", "result"]
+
+    @pytest.mark.journey_system
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    async def test_coalesce_failed_call_cleanup(self) -> None:
+        """Failed calls are cleaned up from the in-flight map so next call executes fresh."""
+        from open_stocks_mcp.tools.rate_limiter import RequestCoordinator
+
+        coordinator = RequestCoordinator()
+
+        async def failing_fetch() -> str:
+            raise ValueError("broker error")
+
+        with pytest.raises(ValueError, match="broker error"):
+            await coordinator.execute("key-A", failing_fetch)
+
+        assert "key-A" not in coordinator._in_flight
+
+        call_count = 0
+
+        async def ok_fetch() -> str:
+            nonlocal call_count
+            call_count += 1
+            return "ok"
+
+        result = await coordinator.execute("key-A", ok_fetch)
+        assert result == "ok"
+        assert call_count == 1
+
+    @pytest.mark.journey_system
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    async def test_initial_caller_cancellation_releases_waiters(self) -> None:
+        """Cancellation of the first caller does not leave coalesced waiters pending."""
+        from open_stocks_mcp.tools.rate_limiter import RequestCoordinator
+
+        coordinator = RequestCoordinator()
+        started = asyncio.Event()
+
+        async def slow_fetch() -> str:
+            started.set()
+            await asyncio.sleep(60)
+            return "result"
+
+        first = asyncio.create_task(coordinator.execute("key-A", slow_fetch))
+        await started.wait()
+        second = asyncio.create_task(coordinator.execute("key-A", slow_fetch))
+        await asyncio.sleep(0)
+
+        first.cancel()
+
+        with pytest.raises(asyncio.CancelledError):
+            await first
+        with pytest.raises(asyncio.CancelledError):
+            await asyncio.wait_for(second, timeout=1)
+
+        assert "key-A" not in coordinator._in_flight
+
+    @pytest.mark.journey_system
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    async def test_coalesced_count_increments(self) -> None:
+        """coalesced_count tracks how many calls were deduplicated."""
+        from open_stocks_mcp.tools.rate_limiter import RequestCoordinator
+
+        coordinator = RequestCoordinator()
+
+        async def slow_fetch() -> str:
+            await asyncio.sleep(0)
+            return "result"
+
+        await asyncio.gather(
+            coordinator.execute("key-A", slow_fetch),
+            coordinator.execute("key-A", slow_fetch),
+            coordinator.execute("key-A", slow_fetch),
+        )
+
+        assert coordinator.coalesced_count == 2
+
+    @pytest.mark.journey_system
+    @pytest.mark.unit
+    def test_get_request_coordinator_singleton(self) -> None:
+        """get_request_coordinator returns the same instance each time."""
+        from open_stocks_mcp.tools.rate_limiter import get_request_coordinator
+
+        c1 = get_request_coordinator()
+        c2 = get_request_coordinator()
+        assert c1 is c2
