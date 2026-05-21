@@ -40,20 +40,15 @@ class TestStockMarketTools:
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_latest_price")
     @pytest.mark.asyncio
     async def test_get_stock_price_success(
-        self, mock_latest_price: Any, mock_quotes: Any
+        self,
+        mock_latest_price: Any,
+        mock_quotes: Any,
+        robinhood_quote_payload: dict[str, Any],
     ) -> None:
         """Test successful stock price retrieval."""
         clear_all_caches()
-        mock_latest_price.return_value = ["150.25"]
-        mock_quotes.return_value = [
-            {
-                "previous_close": "148.50",
-                "volume": "1000000",
-                "ask_price": "150.30",
-                "bid_price": "150.20",
-                "last_trade_price": "150.25",
-            }
-        ]
+        mock_latest_price.return_value = [robinhood_quote_payload["last_trade_price"]]
+        mock_quotes.return_value = [robinhood_quote_payload]
 
         result = await get_stock_price("AAPL")
 
@@ -173,23 +168,16 @@ class TestStockMarketTools:
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_fundamentals")
     @pytest.mark.asyncio
     async def test_get_stock_info_success(
-        self, mock_fundamentals: Any, mock_instruments: Any, mock_name: Any
+        self,
+        mock_fundamentals: Any,
+        mock_instruments: Any,
+        mock_name: Any,
+        robinhood_fundamentals_payload: dict[str, Any],
+        robinhood_instrument_payload: dict[str, Any],
     ) -> None:
         """Test successful stock info retrieval."""
-        mock_fundamentals.return_value = [
-            {
-                "sector": "Technology",
-                "industry": "Consumer Electronics",
-                "description": "Apple Inc. designs and manufactures smartphones",
-                "market_cap": "3000000000000",
-                "pe_ratio": "25.5",
-                "dividend_yield": "0.50",
-                "high_52_weeks": "182.94",
-                "low_52_weeks": "124.17",
-                "average_volume": "50000000",
-            }
-        ]
-        mock_instruments.return_value = [{"simple_name": "Apple", "tradeable": True}]
+        mock_fundamentals.return_value = [robinhood_fundamentals_payload]
+        mock_instruments.return_value = [robinhood_instrument_payload]
         mock_name.return_value = "Apple Inc."
 
         result = await get_stock_info("AAPL")
@@ -228,24 +216,13 @@ class TestStockMarketTools:
     @pytest.mark.unit
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.find_instrument_data")
     @pytest.mark.asyncio
-    async def test_search_stocks_success(self, mock_find_instrument: Any) -> None:
+    async def test_search_stocks_success(
+        self,
+        mock_find_instrument: Any,
+        robinhood_search_payload: list[dict[str, Any]],
+    ) -> None:
         """Test successful stock search."""
-        mock_find_instrument.return_value = [
-            {
-                "symbol": "AAPL",
-                "simple_name": "Apple Inc.",
-                "tradeable": True,
-                "country": "US",
-                "type": "stock",
-            },
-            {
-                "symbol": "GOOGL",
-                "simple_name": "Alphabet Inc.",
-                "tradeable": True,
-                "country": "US",
-                "type": "stock",
-            },
-        ]
+        mock_find_instrument.return_value = robinhood_search_payload
 
         result = await search_stocks("Apple")
 

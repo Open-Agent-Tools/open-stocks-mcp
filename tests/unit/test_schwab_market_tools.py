@@ -1,5 +1,6 @@
 """Unit tests for Schwab market data tools."""
 
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -24,34 +25,17 @@ class TestSchwabMarketTools:
     )
     @patch("open_stocks_mcp.tools.schwab_market_tools.execute_broker_request")
     async def test_get_quote_success(
-        self, mock_to_thread: AsyncMock, mock_get_broker: AsyncMock
+        self,
+        mock_to_thread: AsyncMock,
+        mock_get_broker: AsyncMock,
+        schwab_quote_payload: dict[str, Any],
     ) -> None:
         """Test successful stock quote retrieval."""
         # Mock broker
         mock_broker = MagicMock()
         mock_get_broker.return_value = (mock_broker, None)
 
-        # Mock response
-        mock_to_thread.return_value = {
-            "AAPL": {
-                "quote": {
-                    "lastPrice": 175.50,
-                    "bidPrice": 175.45,
-                    "askPrice": 175.55,
-                    "bidSize": 100,
-                    "askSize": 200,
-                    "totalVolume": 50000000,
-                    "openPrice": 174.00,
-                    "highPrice": 176.00,
-                    "lowPrice": 173.50,
-                    "closePrice": 174.50,
-                    "netChange": 1.00,
-                    "netPercentChange": 0.57,
-                    "52WkHigh": 200.00,
-                    "52WkLow": 125.00,
-                }
-            }
-        }
+        mock_to_thread.return_value = schwab_quote_payload
 
         result = await get_schwab_quote("AAPL")
 
@@ -67,15 +51,17 @@ class TestSchwabMarketTools:
     @patch(
         "open_stocks_mcp.tools.schwab_market_tools.get_authenticated_broker_or_error"
     )
-    async def test_get_quote_auth_error(self, mock_get_broker: AsyncMock) -> None:
+    async def test_get_quote_auth_error(
+        self,
+        mock_get_broker: AsyncMock,
+        broker_auth_error_payload: dict[str, Any],
+    ) -> None:
         """Test quote retrieval when authentication fails."""
-        # Mock authentication error
-        error_response = {"result": {"error": "Not authenticated", "status": "error"}}
-        mock_get_broker.return_value = (None, error_response)
+        mock_get_broker.return_value = (None, broker_auth_error_payload)
 
         result = await get_schwab_quote("AAPL")
 
-        assert result == error_response
+        assert result == broker_auth_error_payload
 
     @pytest.mark.journey_market_data
     @pytest.mark.unit
@@ -85,36 +71,17 @@ class TestSchwabMarketTools:
     )
     @patch("open_stocks_mcp.tools.schwab_market_tools.execute_broker_request")
     async def test_get_quotes_success(
-        self, mock_to_thread: AsyncMock, mock_get_broker: AsyncMock
+        self,
+        mock_to_thread: AsyncMock,
+        mock_get_broker: AsyncMock,
+        schwab_quotes_payload: dict[str, Any],
     ) -> None:
         """Test successful multiple quotes retrieval."""
         # Mock broker
         mock_broker = MagicMock()
         mock_get_broker.return_value = (mock_broker, None)
 
-        # Mock response
-        mock_to_thread.return_value = {
-            "AAPL": {
-                "quote": {
-                    "lastPrice": 175.50,
-                    "netChange": 1.00,
-                    "netPercentChange": 0.57,
-                    "totalVolume": 50000000,
-                    "bidPrice": 175.45,
-                    "askPrice": 175.55,
-                }
-            },
-            "GOOGL": {
-                "quote": {
-                    "lastPrice": 140.25,
-                    "netChange": -2.50,
-                    "netPercentChange": -1.75,
-                    "totalVolume": 25000000,
-                    "bidPrice": 140.20,
-                    "askPrice": 140.30,
-                }
-            },
-        }
+        mock_to_thread.return_value = schwab_quotes_payload
 
         result = await get_schwab_quotes(["AAPL", "GOOGL"])
 
@@ -135,8 +102,9 @@ class TestSchwabMarketTools:
     async def test_get_price_history_success(
         self,
         mock_client: MagicMock,
-        mock_to_thread: MagicMock,
-        mock_get_broker: MagicMock,
+        mock_to_thread: AsyncMock,
+        mock_get_broker: AsyncMock,
+        schwab_price_history_payload: dict[str, Any],
     ) -> None:
         """Test successful price history retrieval."""
         # Mock broker
@@ -147,28 +115,7 @@ class TestSchwabMarketTools:
         mock_client.PriceHistory.PeriodType.DAY = "day"
         mock_client.PriceHistory.FrequencyType.MINUTE = "minute"
 
-        # Mock response
-        mock_to_thread.return_value = {
-            "candles": [
-                {
-                    "open": 174.00,
-                    "high": 175.00,
-                    "low": 173.50,
-                    "close": 174.50,
-                    "volume": 1000000,
-                    "datetime": 1672531200000,
-                },
-                {
-                    "open": 174.50,
-                    "high": 176.00,
-                    "low": 174.00,
-                    "close": 175.50,
-                    "volume": 1500000,
-                    "datetime": 1672534800000,
-                },
-            ],
-            "empty": False,
-        }
+        mock_to_thread.return_value = schwab_price_history_payload
 
         result = await get_schwab_price_history("AAPL", "day", 1, "minute", 1)
 
@@ -208,25 +155,17 @@ class TestSchwabMarketTools:
     )
     @patch("open_stocks_mcp.tools.schwab_market_tools.execute_broker_request")
     async def test_get_instrument_success(
-        self, mock_to_thread: AsyncMock, mock_get_broker: AsyncMock
+        self,
+        mock_to_thread: AsyncMock,
+        mock_get_broker: AsyncMock,
+        schwab_quote_payload: dict[str, Any],
     ) -> None:
         """Test successful instrument retrieval."""
         # Mock broker
         mock_broker = MagicMock()
         mock_get_broker.return_value = (mock_broker, None)
 
-        # Mock response
-        mock_to_thread.return_value = {
-            "AAPL": {
-                "assetMainType": "EQUITY",
-                "reference": {
-                    "description": "Apple Inc",
-                    "exchange": "Q",
-                    "exchangeName": "NASDAQ",
-                    "cusip": "037833100",
-                },
-            }
-        }
+        mock_to_thread.return_value = schwab_quote_payload
 
         result = await get_schwab_instrument("AAPL")
 
@@ -243,23 +182,17 @@ class TestSchwabMarketTools:
     )
     @patch("open_stocks_mcp.tools.schwab_market_tools.execute_broker_request")
     async def test_search_instruments_success(
-        self, mock_to_thread: AsyncMock, mock_get_broker: AsyncMock
+        self,
+        mock_to_thread: AsyncMock,
+        mock_get_broker: AsyncMock,
+        schwab_quote_payload: dict[str, Any],
     ) -> None:
         """Test successful instrument search."""
         # Mock broker
         mock_broker = MagicMock()
         mock_get_broker.return_value = (mock_broker, None)
 
-        # Mock response
-        mock_to_thread.return_value = {
-            "AAPL": {
-                "assetMainType": "EQUITY",
-                "reference": {
-                    "description": "Apple Inc",
-                    "exchangeName": "NASDAQ",
-                },
-            }
-        }
+        mock_to_thread.return_value = schwab_quote_payload
 
         result = await search_schwab_instruments("AAPL")
 

@@ -18,6 +18,7 @@ except ImportError:
 
 import pytest
 
+from tests.fixtures import broker_payloads
 from tests.integration.live_market_harness import (
     LIVE_MARKET_ENV_VAR,
     LIVE_MARKET_SKIP_REASON,
@@ -146,6 +147,108 @@ def sample_portfolio_data() -> dict[str, Any]:
         "total_return_today_percent": "2.61",
         "day_trade_buying_power": "0.00",
     }
+
+
+@pytest.fixture
+def robinhood_quote_payload() -> dict[str, Any]:
+    """Representative Robinhood quote payload."""
+    return broker_payloads.robinhood_quote_payload()
+
+
+@pytest.fixture
+def robinhood_fundamentals_payload() -> dict[str, Any]:
+    """Representative Robinhood fundamentals payload."""
+    return broker_payloads.robinhood_fundamentals_payload()
+
+
+@pytest.fixture
+def robinhood_instrument_payload() -> dict[str, Any]:
+    """Representative Robinhood instrument payload."""
+    return broker_payloads.robinhood_instrument_payload()
+
+
+@pytest.fixture
+def robinhood_search_payload() -> list[dict[str, Any]]:
+    """Representative Robinhood search payload."""
+    return broker_payloads.robinhood_search_payload()
+
+
+@pytest.fixture
+def robinhood_user_profile_payload() -> dict[str, Any]:
+    """Representative Robinhood user profile payload."""
+    return broker_payloads.robinhood_user_profile_payload()
+
+
+@pytest.fixture
+def robinhood_portfolio_payload() -> dict[str, Any]:
+    """Representative Robinhood portfolio payload."""
+    return broker_payloads.robinhood_portfolio_payload()
+
+
+@pytest.fixture
+def robinhood_positions_payload() -> list[dict[str, Any]]:
+    """Representative Robinhood positions payload."""
+    return broker_payloads.robinhood_positions_payload()
+
+
+@pytest.fixture
+def robinhood_phoenix_account_payload() -> dict[str, Any]:
+    """Representative Robinhood phoenix account payload."""
+    return broker_payloads.robinhood_phoenix_account_payload()
+
+
+@pytest.fixture
+def robinhood_build_holdings_payload() -> dict[str, Any]:
+    """Representative Robinhood build_holdings payload."""
+    return broker_payloads.robinhood_build_holdings_payload()
+
+
+@pytest.fixture
+def schwab_quote_payload() -> dict[str, Any]:
+    """Representative Schwab quote payload."""
+    return broker_payloads.schwab_quote_payload()
+
+
+@pytest.fixture
+def schwab_quotes_payload() -> dict[str, Any]:
+    """Representative Schwab multi-quote payload."""
+    return broker_payloads.schwab_quotes_payload()
+
+
+@pytest.fixture
+def schwab_price_history_payload() -> dict[str, Any]:
+    """Representative Schwab price-history payload."""
+    return broker_payloads.schwab_price_history_payload()
+
+
+@pytest.fixture
+def schwab_account_numbers_payload() -> list[dict[str, Any]]:
+    """Representative Schwab account-number payload."""
+    return broker_payloads.schwab_account_numbers_payload()
+
+
+@pytest.fixture
+def schwab_account_payload() -> dict[str, Any]:
+    """Representative Schwab account payload."""
+    return broker_payloads.schwab_account_payload()
+
+
+@pytest.fixture
+def schwab_accounts_payload() -> list[dict[str, Any]]:
+    """Representative Schwab accounts payload."""
+    return broker_payloads.schwab_accounts_payload()
+
+
+@pytest.fixture
+def schwab_balances_payload() -> dict[str, Any]:
+    """Representative Schwab balances payload."""
+    return broker_payloads.schwab_balances_payload()
+
+
+@pytest.fixture
+def broker_auth_error_payload() -> dict[str, Any]:
+    """Structured broker authentication error response."""
+    return broker_payloads.broker_auth_error_payload()
 
 
 # Journey-specific fixtures
