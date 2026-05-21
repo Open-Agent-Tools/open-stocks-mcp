@@ -132,6 +132,18 @@ class CircuitBreakerConfig:
 
 
 @dataclass
+class BrokerRequestConfig:
+    """Configuration for broker-specific request policies."""
+
+    robinhood_timeout_seconds: float = 16.0
+    schwab_timeout_seconds: float = 30.0
+    retry_max_retries: int = 3
+    retry_initial_delay: float = 1.0
+    retry_backoff_factor: float = 2.0
+    total_deadline_seconds: float | None = None
+
+
+@dataclass
 class OtelConfig:
     """OpenTelemetry tracing configuration"""
 
@@ -151,6 +163,7 @@ class ServerConfig:
     retry: RetryConfig | None = None
     timeout: TimeoutConfig | None = None
     circuit_breaker: CircuitBreakerConfig = field(default_factory=CircuitBreakerConfig)
+    broker_requests: BrokerRequestConfig = field(default_factory=BrokerRequestConfig)
     otel: OtelConfig = field(default_factory=OtelConfig)
 
     def __post_init__(self) -> None:
@@ -212,6 +225,22 @@ def load_config() -> ServerConfig:
             cooldown_seconds=_env_float(
                 "OPEN_STOCKS_MCP_CIRCUIT_BREAKER_COOLDOWN_SECONDS", 60.0
             ),
+        ),
+        broker_requests=BrokerRequestConfig(
+            robinhood_timeout_seconds=_env_float(
+                "OPEN_STOCKS_MCP_ROBINHOOD_REQUEST_TIMEOUT_SECONDS", 16.0
+            ),
+            schwab_timeout_seconds=_env_float(
+                "OPEN_STOCKS_MCP_SCHWAB_REQUEST_TIMEOUT_SECONDS", 30.0
+            ),
+            retry_max_retries=_env_int("OPEN_STOCKS_MCP_RETRY_MAX_RETRIES", 3),
+            retry_initial_delay=_env_float("OPEN_STOCKS_MCP_RETRY_INITIAL_DELAY", 1.0),
+            retry_backoff_factor=_env_float("OPEN_STOCKS_MCP_RETRY_BACKOFF_FACTOR", 2.0),
+            total_deadline_seconds=_env_float(
+                "OPEN_STOCKS_MCP_BROKER_REQUEST_TOTAL_DEADLINE_SECONDS", 45.0
+            )
+            if os.getenv("OPEN_STOCKS_MCP_BROKER_REQUEST_TOTAL_DEADLINE_SECONDS")
+            else None,
         ),
         otel=OtelConfig(
             enabled=otel_enabled,

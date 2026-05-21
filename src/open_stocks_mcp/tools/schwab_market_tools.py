@@ -1,12 +1,14 @@
 """Schwab market data MCP tools using schwab-py library."""
 
-import asyncio
 from typing import Any
 
 from schwab.client import Client
 
 from open_stocks_mcp.logging_config import logger
-from open_stocks_mcp.tools.broker_utils import get_authenticated_broker_or_error
+from open_stocks_mcp.tools.broker_utils import (
+    execute_broker_request,
+    get_authenticated_broker_or_error,
+)
 from open_stocks_mcp.tools.error_handling import (
     create_error_response,
     create_success_response,
@@ -36,7 +38,7 @@ async def get_schwab_quote(symbol: str) -> dict[str, Any]:
             response = broker.client.get_quote(symbol.upper())
             return response.json()
 
-        quote_data = await asyncio.to_thread(_get_quote)
+        quote_data = await execute_broker_request(_get_quote, retry_safe=True)
 
         # Extract quote from response
         quote = quote_data.get(symbol.upper(), {}).get("quote", {})
@@ -93,7 +95,7 @@ async def get_schwab_quotes(symbols: list[str]) -> dict[str, Any]:
             response = broker.client.get_quotes(symbols_upper)
             return response.json()
 
-        quotes_data = await asyncio.to_thread(_get_quotes)
+        quotes_data = await execute_broker_request(_get_quotes, retry_safe=True)
 
         # Format quotes
         quotes = {}
@@ -188,7 +190,7 @@ async def get_schwab_price_history(
             )
             return response.json()
 
-        history_data = await asyncio.to_thread(_get_price_history)
+        history_data = await execute_broker_request(_get_price_history, retry_safe=True)
 
         candles = history_data.get("candles", [])
 
@@ -228,7 +230,7 @@ async def get_schwab_instrument(symbol: str) -> dict[str, Any]:
             response = broker.client.get_quote(symbol.upper())
             return response.json()
 
-        quote_data = await asyncio.to_thread(_get_quote)
+        quote_data = await execute_broker_request(_get_quote, retry_safe=True)
 
         symbol_data = quote_data.get(symbol.upper(), {})
         reference = symbol_data.get("reference", {})
@@ -274,7 +276,7 @@ async def search_schwab_instruments(query: str) -> dict[str, Any]:
             response = broker.client.get_quote(query.upper())
             return response.json()
 
-        quote_data = await asyncio.to_thread(_get_quote)
+        quote_data = await execute_broker_request(_get_quote, retry_safe=True)
 
         results = []
         for symbol, data in quote_data.items():

@@ -22,7 +22,7 @@ class TestSchwabAccountTools:
     @patch(
         "open_stocks_mcp.tools.schwab_account_tools.get_authenticated_broker_or_error"
     )
-    @patch("open_stocks_mcp.tools.schwab_account_tools.asyncio.to_thread")
+    @patch("open_stocks_mcp.tools.schwab_account_tools.execute_broker_request")
     async def test_get_account_numbers_success(
         self, mock_to_thread: AsyncMock, mock_get_broker: AsyncMock
     ) -> None:
@@ -81,7 +81,7 @@ class TestSchwabAccountTools:
     @patch(
         "open_stocks_mcp.tools.schwab_account_tools.get_authenticated_broker_or_error"
     )
-    @patch("open_stocks_mcp.tools.schwab_account_tools.asyncio.to_thread")
+    @patch("open_stocks_mcp.tools.schwab_account_tools.execute_broker_request")
     @patch("open_stocks_mcp.tools.schwab_account_tools.Client")
     async def test_get_account_success(
         self,
@@ -121,7 +121,7 @@ class TestSchwabAccountTools:
     @patch(
         "open_stocks_mcp.tools.schwab_account_tools.get_authenticated_broker_or_error"
     )
-    @patch("open_stocks_mcp.tools.schwab_account_tools.asyncio.to_thread")
+    @patch("open_stocks_mcp.tools.schwab_account_tools.execute_broker_request")
     async def test_get_accounts_success(
         self, mock_to_thread: AsyncMock, mock_get_broker: AsyncMock
     ) -> None:
@@ -159,7 +159,7 @@ class TestSchwabAccountTools:
     @patch(
         "open_stocks_mcp.tools.schwab_account_tools.get_authenticated_broker_or_error"
     )
-    @patch("open_stocks_mcp.tools.schwab_account_tools.asyncio.to_thread")
+    @patch("open_stocks_mcp.tools.schwab_account_tools.execute_broker_request")
     @patch("open_stocks_mcp.tools.schwab_account_tools.Client")
     async def test_get_portfolio_success(
         self,
@@ -212,7 +212,7 @@ class TestSchwabAccountTools:
     @patch(
         "open_stocks_mcp.tools.schwab_account_tools.get_authenticated_broker_or_error"
     )
-    @patch("open_stocks_mcp.tools.schwab_account_tools.asyncio.to_thread")
+    @patch("open_stocks_mcp.tools.schwab_account_tools.execute_broker_request")
     @patch("open_stocks_mcp.tools.schwab_account_tools.Client")
     async def test_get_account_balances_success(
         self,
@@ -254,7 +254,7 @@ class TestSchwabAccountTools:
     @patch(
         "open_stocks_mcp.tools.schwab_account_tools.get_authenticated_broker_or_error"
     )
-    @patch("open_stocks_mcp.tools.schwab_account_tools.asyncio.to_thread")
+    @patch("open_stocks_mcp.tools.schwab_account_tools.execute_broker_request")
     async def test_get_account_numbers_error(
         self, mock_to_thread: AsyncMock, mock_get_broker: AsyncMock
     ) -> None:
@@ -277,7 +277,7 @@ class TestSchwabAccountTools:
     @patch(
         "open_stocks_mcp.tools.schwab_account_tools.get_authenticated_broker_or_error"
     )
-    @patch("open_stocks_mcp.tools.schwab_account_tools.asyncio.to_thread")
+    @patch("open_stocks_mcp.tools.schwab_account_tools.execute_broker_request")
     @pytest.mark.parametrize(
         "function,args",
         [
