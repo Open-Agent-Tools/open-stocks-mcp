@@ -5,6 +5,7 @@ metadata:
   labels:
     app: open-stocks-mcp
 data:
+  # Cross-reference: examples/open-stocks-mcp-docker/.env.example
   MCP_SERVER_NAME: "open-stocks-mcp"
   LOG_LEVEL: "INFO"
   ENABLED_BROKERS: "robinhood"

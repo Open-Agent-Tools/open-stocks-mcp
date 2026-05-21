@@ -1,4 +1,4 @@
-# Kubernetes Deployment — Open Stocks MCP
+# Kubernetes Deployment - Open Stocks MCP
 
 Run the Open Stocks MCP server in a Kubernetes cluster using the Kustomize manifests in this directory.
 
@@ -6,17 +6,17 @@ Run the Open Stocks MCP server in a Kubernetes cluster using the Kustomize manif
 
 - `kubectl` configured for a running cluster
 - A container image `open-stocks-mcp:latest` accessible to the cluster (see [Build the image](#build-the-image))
-- Robinhood credentials (and optionally Schwab credentials)
+- Robinhood credentials, an MCP API key, and optionally Schwab credentials
 
 ## Files
 
 | File | Purpose |
 |------|---------|
-| `deployment.yaml` | Deployment — HTTP transport, `/health` probes, non-root UID 1001 |
+| `deployment.yaml` | Deployment - HTTP transport, `/health` probes, non-root UID 1001 |
 | `service.yaml` | ClusterIP Service exposing port 3001 |
 | `configmap.yaml` | Non-secret runtime config (`LOG_LEVEL`, `ENABLED_BROKERS`, etc.) |
 | `persistentvolumeclaim.yaml` | 1 Gi PVC for token and log persistence |
-| `kustomization.yaml` | Kustomize entry point (excludes the Secret — create it manually) |
+| `kustomization.yaml` | Kustomize entry point (excludes the Secret - create it manually) |
 | `secret.yaml.example` | Template for the required Kubernetes Secret |
 
 ## Build the image
@@ -32,6 +32,9 @@ kind load docker-image open-stocks-mcp:latest
 # or
 k3d image import open-stocks-mcp:latest
 
+# For minikube:
+minikube image load open-stocks-mcp:latest
+
 # For a remote registry: tag and push
 docker tag open-stocks-mcp:latest registry.example.com/open-stocks-mcp:latest
 docker push registry.example.com/open-stocks-mcp:latest
@@ -45,7 +48,8 @@ The Secret is intentionally excluded from `kustomization.yaml` to prevent placeh
 ```bash
 kubectl create secret generic open-stocks-mcp-secrets \
   --from-literal=ROBINHOOD_USERNAME='your-email@example.com' \
-  --from-literal=ROBINHOOD_PASSWORD='your-password'
+  --from-literal=ROBINHOOD_PASSWORD='your-password' \
+  --from-literal=MCP_API_KEY='a-long-random-secret'
 ```
 
 For Schwab credentials, add them to the same secret:
@@ -54,13 +58,14 @@ For Schwab credentials, add them to the same secret:
 kubectl create secret generic open-stocks-mcp-secrets \
   --from-literal=ROBINHOOD_USERNAME='your-email@example.com' \
   --from-literal=ROBINHOOD_PASSWORD='your-password' \
+  --from-literal=MCP_API_KEY='a-long-random-secret' \
   --from-literal=SCHWAB_API_KEY='your-api-key' \
   --from-literal=SCHWAB_APP_SECRET='your-app-secret' \
   --from-literal=SCHWAB_CALLBACK_URL='https://127.0.0.1:8182/' \
   --from-literal=SCHWAB_TOKEN_PATH='/home/mcp/.tokens/schwab_token.json'
 ```
 
-Alternatively, copy `secret.yaml.example` to `secret.yaml`, fill in real values, apply it, and then delete the file — never commit `secret.yaml` to version control.
+Alternatively, copy `secret.yaml.example` to `secret.yaml`, fill in real values, apply it, and then delete the file - never commit `secret.yaml` to version control.
 
 ## Secrets model
 
@@ -68,6 +73,7 @@ Alternatively, copy `secret.yaml.example` to `secret.yaml`, fill in real values,
 |-----------|----------|-------------|
 | `ROBINHOOD_USERNAME` | Yes | Robinhood account email |
 | `ROBINHOOD_PASSWORD` | Yes | Robinhood account password |
+| `MCP_API_KEY` | Yes | Bearer token required because the Deployment binds HTTP transport to `0.0.0.0` |
 | `SCHWAB_API_KEY` | No | Schwab developer API key |
 | `SCHWAB_APP_SECRET` | No | Schwab app secret |
 | `SCHWAB_CALLBACK_URL` | No | OAuth callback URL (default: `https://127.0.0.1:8182/`) |
@@ -117,10 +123,10 @@ A healthy server returns HTTP 200 with `{"status": "ok", ...}`.
 
 Session tokens and logs are stored on a PVC mounted at:
 
-- `/home/mcp/.tokens` — Robinhood pickle session (subPath: `tokens`)
-- `/home/mcp/.local/state/mcp-servers/logs` — application logs (subPath: `logs`)
+- `/home/mcp/.tokens` - Robinhood pickle session (subPath: `tokens`)
+- `/home/mcp/.local/state/mcp-servers/logs` - application logs (subPath: `logs`)
 
-The PVC keeps state across pod restarts. **Pin `replicas: 1`** (the default) — Robinhood treats each new IP/session as a new device, which triggers MFA from a server with no terminal.
+The PVC keeps state across pod restarts. **Pin `replicas: 1`** (the default) - Robinhood treats each new IP/session as a new device, which triggers MFA from a server with no terminal.
 
 ## Cleanup
 
@@ -134,4 +140,4 @@ kubectl delete pvc open-stocks-mcp-data
 ## Notes
 
 - CI workflow configuration (`.github/workflows/**`, etc.) is intentionally out of scope for these Kubernetes artifacts. Cluster image builds and deployment pipelines are operator-managed.
-- The Deployment uses HTTP transport (`--transport http`), not stdio — liveness and readiness probes use `httpGet /health` on port 3001.
+- The Deployment uses HTTP transport (`--transport http`), not stdio - liveness and readiness probes use `httpGet /health` on port 3001.
