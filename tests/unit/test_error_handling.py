@@ -1,11 +1,10 @@
 """Unit tests for error handling helpers and retry behavior."""
 
 import asyncio
-from collections.abc import Callable
 import inspect
+from collections.abc import Callable
 from types import SimpleNamespace
 from typing import Any
-from typing import cast
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
@@ -50,6 +49,14 @@ def _patch_retry_dependencies(
         session_manager_module, "get_session_manager", lambda: session_manager
     )
     monkeypatch.setattr(rate_limiter, "get_rate_limiter", lambda: None)
+    breaker = Mock()
+    breaker.before_request = AsyncMock(return_value=None)
+    breaker.record_success = AsyncMock(return_value=None)
+    breaker.record_failure = AsyncMock(return_value=None)
+    monkeypatch.setattr(
+        "open_stocks_mcp.tools.circuit_breaker.get_broker_circuit_breaker",
+        lambda: breaker,
+    )
 
     sleep_calls: list[float] = []
 
@@ -280,6 +287,10 @@ def retry_patch(monkeypatch: pytest.MonkeyPatch) -> dict[str, Any]:
     fake_session.should_block_auth_retries = Mock(return_value=False)
 
     fake_rate_limiter = SimpleNamespace(acquire=AsyncMock())
+    fake_breaker = Mock()
+    fake_breaker.before_request = AsyncMock(return_value=None)
+    fake_breaker.record_success = AsyncMock(return_value=None)
+    fake_breaker.record_failure = AsyncMock(return_value=None)
     sleep_mock = AsyncMock()
 
     monkeypatch.setattr(
@@ -290,11 +301,16 @@ def retry_patch(monkeypatch: pytest.MonkeyPatch) -> dict[str, Any]:
         "open_stocks_mcp.tools.rate_limiter.get_rate_limiter",
         lambda: fake_rate_limiter,
     )
+    monkeypatch.setattr(
+        "open_stocks_mcp.tools.circuit_breaker.get_broker_circuit_breaker",
+        lambda: fake_breaker,
+    )
     monkeypatch.setattr("open_stocks_mcp.tools.retry.asyncio.sleep", sleep_mock)
 
     return {
         "session": fake_session,
         "rate_limiter": fake_rate_limiter,
+        "breaker": fake_breaker,
         "sleep": sleep_mock,
     }
 
@@ -354,7 +370,9 @@ async def test_execute_with_retry_explicit_arguments_override_config(
 
 
 @pytest.mark.asyncio
-async def test_execute_with_retry_blocks_auth_retry_when_pickle_clear_failures_persist() -> None:
+async def test_execute_with_retry_blocks_auth_retry_when_pickle_clear_failures_persist() -> (
+    None
+):
     """Auth retries should short-circuit when session cache clear keeps failing."""
 
     def auth_fail() -> None:
@@ -402,7 +420,9 @@ async def test_execute_with_retry_attempts_reauth_when_not_blocked() -> None:
 
 
 @pytest.mark.asyncio
-async def test_execute_with_retry_uses_registry_single_flight_for_auth_refresh() -> None:
+async def test_execute_with_retry_uses_registry_single_flight_for_auth_refresh() -> (
+    None
+):
     calls = 0
 
     def auth_fail_then_success_factory() -> Callable[[], str]:
