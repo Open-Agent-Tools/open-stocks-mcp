@@ -262,6 +262,18 @@ ruff format .                   # Format code
 mypy .                          # Type check
 ```
 
+### YAML Configuration
+Open Stocks MCP can load configuration from `open-stocks-mcp.yaml` or `config.yaml` in the current working directory.
+You can also set an explicit path with `OPEN_STOCKS_MCP_CONFIG=/path/to/config.yaml`.
+
+Environment variables always win over YAML values, including:
+- `MCP_SERVER_NAME`, `LOG_LEVEL`
+- `RATE_LIMIT_CALLS_PER_MINUTE`, `RATE_LIMIT_CALLS_PER_HOUR`, `RATE_LIMIT_BURST_SIZE`
+- `CACHE_TTL_MARKET_SECONDS`, `CACHE_TTL_ACCOUNT_SECONDS`, `CACHE_MAX_SIZE`
+- `ENABLE_CACHE`, `ENABLE_CIRCUIT_BREAKER`
+
+See `config.yaml.example` for the supported schema.
+
 ### Google ADK Evaluation
 ```bash
 # Set environment variables

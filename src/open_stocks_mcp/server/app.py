@@ -24,6 +24,7 @@ from open_stocks_mcp.server.tool_helpers import (
 # Cross-Broker Tools
 from open_stocks_mcp.tools.broker_comparison_tools import get_broker_comparison
 from open_stocks_mcp.tools.cross_broker_tools import get_aggregated_portfolio
+from open_stocks_mcp.tools.rate_limiter import configure_global_rate_limiter
 from open_stocks_mcp.tools.robinhood_account_features_tools import (
     get_account_features,
     get_latest_notification,
@@ -1398,6 +1399,11 @@ def create_mcp_server(config: ServerConfig | None = None) -> FastMCP:
         config = load_config()
 
     setup_logging(config)
+    configure_global_rate_limiter(
+        config.rate_limits.calls_per_minute,
+        config.rate_limits.calls_per_hour,
+        config.rate_limits.burst_size,
+    )
     setup_tracing(config)
     instrument_mcp_tool_calls(mcp)
     return mcp

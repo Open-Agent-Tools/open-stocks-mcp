@@ -26,6 +26,7 @@ class TestServerApp:
         with (
             patch("open_stocks_mcp.server.app.load_config") as mock_config,
             patch("open_stocks_mcp.server.app.setup_logging") as mock_logging,
+            patch("open_stocks_mcp.server.app.configure_global_rate_limiter"),
         ):
             mock_cfg = MagicMock()
             mock_cfg.otel.enabled = False
@@ -41,7 +42,10 @@ class TestServerApp:
         mock_config = MagicMock()
         mock_config.otel.enabled = False
 
-        with patch("open_stocks_mcp.server.app.setup_logging") as mock_logging:
+        with (
+            patch("open_stocks_mcp.server.app.setup_logging") as mock_logging,
+            patch("open_stocks_mcp.server.app.configure_global_rate_limiter"),
+        ):
             result = create_mcp_server(mock_config)
 
             assert result is mcp
@@ -207,3 +211,36 @@ class TestToolRegistration:
         assert "broker_health" in metrics["result"]
         assert "account_health" in metrics["result"]
         assert "endpoint_usage" in rate["result"]
+
+
+def test_create_mcp_server_propagates_config_error() -> None:
+    from open_stocks_mcp.config import ConfigError
+
+    with (
+        patch("open_stocks_mcp.server.app.load_config") as mock_config,
+        patch("open_stocks_mcp.server.app.setup_logging") as mock_logging,
+    ):
+        mock_config.side_effect = ConfigError("bad config")
+
+        with pytest.raises(ConfigError, match="bad config"):
+            create_mcp_server()
+
+        mock_logging.assert_not_called()
+
+
+def test_create_mcp_server_applies_rate_limiter_from_config() -> None:
+    mock_config = MagicMock()
+    mock_config.otel.enabled = False
+    mock_config.rate_limits.calls_per_minute = 77
+    mock_config.rate_limits.calls_per_hour = 1700
+    mock_config.rate_limits.burst_size = 13
+
+    with (
+        patch("open_stocks_mcp.server.app.setup_logging") as mock_logging,
+        patch("open_stocks_mcp.server.app.configure_global_rate_limiter") as mock_rl,
+    ):
+        result = create_mcp_server(mock_config)
+
+    assert result is mcp
+    mock_logging.assert_called_once_with(mock_config)
+    mock_rl.assert_called_once_with(77, 1700, 13)

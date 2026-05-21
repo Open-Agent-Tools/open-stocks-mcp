@@ -157,6 +157,27 @@ class RateLimiter:
 _rate_limiter: RateLimiter | None = None
 
 
+def configure_global_rate_limiter(
+    calls_per_minute: int,
+    calls_per_hour: int,
+    burst_size: int,
+) -> RateLimiter:
+    """Configure the process-global rate limiter from startup config."""
+    global _rate_limiter
+    _rate_limiter = RateLimiter(
+        calls_per_minute=calls_per_minute,
+        calls_per_hour=calls_per_hour,
+        burst_size=burst_size,
+    )
+    return _rate_limiter
+
+
+def reset_global_rate_limiter() -> None:
+    """Reset global rate limiter state for test isolation."""
+    global _rate_limiter
+    _rate_limiter = None
+
+
 def get_rate_limiter() -> RateLimiter:
     """Get the global rate limiter instance.
 
