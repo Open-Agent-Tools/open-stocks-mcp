@@ -1,5 +1,6 @@
 """Unit tests for Schwab trading tools."""
 
+import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -11,6 +12,8 @@ from open_stocks_mcp.tools.schwab_trading_tools import (
     place_schwab_order,
     schwab_buy_limit,
     schwab_buy_market,
+    schwab_get_transactions,
+    schwab_get_transactions_by_date,
     schwab_sell_limit,
     schwab_sell_market,
 )
@@ -274,6 +277,133 @@ class TestSchwabTradingTools:
         assert "result" in result
         assert result["result"]["orderId"] == 12345
         assert result["result"]["status"] == "FILLED"
+
+    @pytest.mark.journey_trading
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    @patch(
+        "open_stocks_mcp.tools.schwab_trading_tools.get_authenticated_broker_or_error"
+    )
+    @patch("open_stocks_mcp.tools.schwab_trading_tools.asyncio.to_thread")
+    async def test_get_transactions_success(
+        self, mock_to_thread: AsyncMock, mock_get_broker: AsyncMock
+    ) -> None:
+        """Test successful transactions retrieval."""
+        mock_broker = MagicMock()
+        mock_get_broker.return_value = (mock_broker, None)
+        mock_to_thread.return_value = [
+            {"transactionId": 1, "symbol": "AAPL"},
+            {"transactionId": 2, "symbol": "MSFT"},
+        ]
+
+        result = await schwab_get_transactions("abc123")
+
+        assert result["result"]["transactions"] == [
+            {"transactionId": 1, "symbol": "AAPL"},
+            {"transactionId": 2, "symbol": "MSFT"},
+        ]
+        assert result["result"]["count"] == 2
+
+    @pytest.mark.journey_trading
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    @patch(
+        "open_stocks_mcp.tools.schwab_trading_tools.get_authenticated_broker_or_error"
+    )
+    @patch("open_stocks_mcp.tools.schwab_trading_tools.asyncio.to_thread")
+    async def test_get_transactions_empty(
+        self, mock_to_thread: AsyncMock, mock_get_broker: AsyncMock
+    ) -> None:
+        """Test empty transactions list."""
+        mock_broker = MagicMock()
+        mock_get_broker.return_value = (mock_broker, None)
+        mock_to_thread.return_value = []
+
+        result = await schwab_get_transactions("abc123")
+
+        assert result["result"]["transactions"] == []
+        assert result["result"]["count"] == 0
+
+    @pytest.mark.journey_trading
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    @patch(
+        "open_stocks_mcp.tools.schwab_trading_tools.get_authenticated_broker_or_error"
+    )
+    async def test_get_transactions_auth_error(
+        self, mock_get_broker: AsyncMock
+    ) -> None:
+        """Test auth error passthrough for transactions."""
+        error_response = {"result": {"error": "Not authenticated", "status": "error"}}
+        mock_get_broker.return_value = (None, error_response)
+
+        result = await schwab_get_transactions("abc123")
+        assert result == error_response
+
+    @pytest.mark.journey_trading
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    @patch(
+        "open_stocks_mcp.tools.schwab_trading_tools.get_authenticated_broker_or_error"
+    )
+    @patch("open_stocks_mcp.tools.schwab_trading_tools.asyncio.to_thread")
+    async def test_get_transactions_with_filters(
+        self, mock_to_thread: AsyncMock, mock_get_broker: AsyncMock
+    ) -> None:
+        """Test filters are passed through to Schwab client."""
+        mock_broker = MagicMock()
+        mock_get_broker.return_value = (mock_broker, None)
+        mock_to_thread.return_value = [{"transactionId": 1, "symbol": "AAPL"}]
+
+        await schwab_get_transactions(
+            "abc123",
+            start_date="2026-04-01",
+            end_date="2026-04-30",
+            transaction_types=["TRADE"],
+            symbol="AAPL",
+        )
+
+        call_args = mock_to_thread.call_args
+        assert call_args is not None
+        args, kwargs = call_args
+        assert args[0] is mock_broker.client.get_transactions
+        assert args[1] == "abc123"
+        assert kwargs["start_date"] == datetime.date(2026, 4, 1)
+        assert kwargs["end_date"] == datetime.date(2026, 4, 30)
+        assert kwargs["transaction_types"] == ["TRADE"]
+        assert kwargs["symbol"] == "AAPL"
+
+    @pytest.mark.journey_trading
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    @patch(
+        "open_stocks_mcp.tools.schwab_trading_tools.get_authenticated_broker_or_error"
+    )
+    @patch("open_stocks_mcp.tools.schwab_trading_tools.asyncio.to_thread")
+    async def test_get_transactions_by_date_success(
+        self, mock_to_thread: AsyncMock, mock_get_broker: AsyncMock
+    ) -> None:
+        """Test date-scoped transactions retrieval."""
+        mock_broker = MagicMock()
+        mock_get_broker.return_value = (mock_broker, None)
+        mock_to_thread.return_value = [{"transactionId": 1}, {"transactionId": 2}]
+
+        result = await schwab_get_transactions_by_date(
+            "abc123", "2026-04-01", "2026-04-30"
+        )
+
+        assert result["result"]["transactions"] == [
+            {"transactionId": 1},
+            {"transactionId": 2},
+        ]
+        assert result["result"]["count"] == 2
+        call_args = mock_to_thread.call_args
+        assert call_args is not None
+        args, kwargs = call_args
+        assert args[0] is mock_broker.client.get_transactions
+        assert args[1] == "abc123"
+        assert kwargs["start_date"] == datetime.date(2026, 4, 1)
+        assert kwargs["end_date"] == datetime.date(2026, 4, 30)
 
     @pytest.mark.journey_trading
     @pytest.mark.unit

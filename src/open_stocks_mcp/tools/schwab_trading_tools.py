@@ -1,6 +1,7 @@
 """Schwab trading MCP tools using schwab-py library."""
 
 import asyncio
+import datetime
 from typing import Any
 
 from schwab.orders.equities import (
@@ -417,3 +418,66 @@ async def get_schwab_order_by_id(account_hash: str, order_id: str) -> dict[str, 
     except Exception as e:
         logger.error(f"Error getting Schwab order {order_id}: {e}")
         return create_error_response(e)
+
+
+@handle_schwab_errors
+async def schwab_get_transactions(
+    account_hash: str,
+    start_date: str | None = None,
+    end_date: str | None = None,
+    transaction_types: list[str] | None = None,
+    symbol: str | None = None,
+) -> dict[str, Any]:
+    """Get transactions for a Schwab account with optional filters."""
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", f"get transactions for {account_hash}"
+    )
+    if error:
+        return error
+
+    try:
+        parsed_start_date = (
+            datetime.date.fromisoformat(start_date) if start_date is not None else None
+        )
+        parsed_end_date = (
+            datetime.date.fromisoformat(end_date) if end_date is not None else None
+        )
+
+        response = await asyncio.to_thread(
+            broker.client.get_transactions,
+            account_hash,
+            start_date=parsed_start_date,
+            end_date=parsed_end_date,
+            transaction_types=transaction_types,
+            symbol=symbol,
+        )
+        transactions_data = response.json() if hasattr(response, "json") else response
+        return create_success_response(
+            {
+                "transactions": transactions_data,
+                "count": len(transactions_data)
+                if isinstance(transactions_data, list)
+                else 1,
+            }
+        )
+    except Exception as e:
+        logger.error(f"Error getting Schwab transactions: {e}")
+        return create_error_response(e)
+
+
+@handle_schwab_errors
+async def schwab_get_transactions_by_date(
+    account_hash: str,
+    start_date: str,
+    end_date: str,
+    transaction_types: list[str] | None = None,
+    symbol: str | None = None,
+) -> dict[str, Any]:
+    """Get transactions for a Schwab account within a required date range."""
+    return await schwab_get_transactions(
+        account_hash,
+        start_date=start_date,
+        end_date=end_date,
+        transaction_types=transaction_types,
+        symbol=symbol,
+    )
