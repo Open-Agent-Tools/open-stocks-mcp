@@ -167,11 +167,13 @@ async def get_schwab_day_trades() -> dict[str, Any]:
         account_numbers = await execute_broker_request(
             _get_account_numbers, retry_safe=True
         )
-        account_hashes = [
-            item.get("hashValue")
-            for item in account_numbers
-            if isinstance(item, dict) and item.get("hashValue")
-        ]
+        account_hashes: list[str] = []
+        for item in account_numbers if isinstance(account_numbers, list) else []:
+            if not isinstance(item, dict):
+                continue
+            hash_value = item.get("hashValue")
+            if isinstance(hash_value, str) and hash_value:
+                account_hashes.append(hash_value)
 
         end_date = datetime.now(UTC).date()
         start_date = end_date - timedelta(days=6)
@@ -179,9 +181,9 @@ async def get_schwab_day_trades() -> dict[str, Any]:
         trades: list[dict[str, Any]] = []
 
         for account_hash in account_hashes:
-            def _get_transactions(account_hash: str = account_hash) -> Any:
+            def _get_transactions(current_account_hash: str = account_hash) -> Any:
                 response = broker.client.get_transactions(
-                    account_hash,
+                    current_account_hash,
                     start_date=start_date,
                     end_date=end_date,
                     transaction_types=Client.Transactions.TransactionType.TRADE,
