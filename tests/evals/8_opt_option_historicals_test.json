@@ -38,8 +38,8 @@
                 "id": "adk-tool-use-id",
                 "args": {
                   "symbol": "AAPL",
-                  "expiration_date": "2025-08-15",
-                  "strike_price": "200",
+                  "expiration_date": "resolved-expiration-date",
+                  "strike_price": "resolved-strike-price",
                   "option_type": "call",
                   "interval": "hour",
                   "span": "week"
