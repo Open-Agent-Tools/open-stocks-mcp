@@ -13,6 +13,24 @@ The Schwab integration is **fully implemented and merged to main**. All code is 
 
 **Next Step**: Apply for Schwab Developer API credentials at https://developer.schwab.com/
 
+
+## Roadmap Reconciliation
+
+This status page documents the currently implemented **24 Schwab MCP tools** as the shipped core surface.
+
+The broader comparison-roadmap target (67 parity tools plus 9 Schwab bonus tools) is tracked as decomposition work under parent issue #187 and child issues:
+- #192 account/profile consolidation
+- #193 portfolio computed tools
+- #194 market data expansion
+- #195 options expansion
+- #196 trading expansion (including order replacement coverage)
+- #197 dividends and payment extraction
+- #198 margin and notifications mapping
+- #199 streaming tools expansion
+- #127 Schwab transaction history bonus tools
+
+Roadmap deferral and not-applicable scope decisions are tracked in #201 and mirrored in `docs/TOOL_COMPARISON_ROBINHOOD_VS_SCHWAB.md`.
+
 ---
 
 ## What's Complete ✅
