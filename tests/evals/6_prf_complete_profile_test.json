@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "complete_profile_test_set",
+  "name": "Complete Profile Test",
+  "description": "Test case for retrieving all Robinhood profile data in a single consolidated response through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "complete_profile_test",
+      "conversation": [
+        {
+          "invocation_id": "complete-profile-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me my complete Robinhood profile including account, basic info, and investment settings in a bulleted list."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here is your complete Robinhood profile:\n\n*   **Account Profile**: ...\n*   **Basic Profile**: ...\n*   **Investment Profile**: ...\n*   **Status**: success"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "complete_profile"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

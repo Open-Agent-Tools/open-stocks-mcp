@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "security_profile_test_set",
+  "name": "Security Profile Test",
+  "description": "Test case for retrieving Robinhood account security profile data through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "security_profile_test",
+      "conversation": [
+        {
+          "invocation_id": "security-profile-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me my Robinhood security profile information in a bulleted list."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here is your Robinhood security profile:\n\n*   **Status**: success"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "security_profile"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

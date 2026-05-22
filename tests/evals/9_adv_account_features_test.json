@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "account_features_test_set",
+  "name": "Account Features Test",
+  "description": "Test case for retrieving which Robinhood account features and permissions are enabled through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "account_features_test",
+      "conversation": [
+        {
+          "invocation_id": "account-features-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Which features and permissions are enabled on my Robinhood account? Show them in a bulleted list."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here are the features enabled on your Robinhood account:\n\n*   **Status**: success"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "account_features"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

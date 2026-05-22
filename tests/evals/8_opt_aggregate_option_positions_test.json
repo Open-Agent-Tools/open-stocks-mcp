@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "aggregate_option_positions_test_set",
+  "name": "Aggregate Option Positions Test",
+  "description": "Test case for retrieving aggregated options exposure grouped by underlying stock through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "aggregate_option_positions_test",
+      "conversation": [
+        {
+          "invocation_id": "aggregate-option-positions-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me my aggregate options exposure grouped by underlying stock in a bulleted list."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here are your aggregate option positions by underlying:\n\n*   **Status**: success"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "aggregate_option_positions"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "eval_set_id": "option_historicals_test_set",
+  "name": "Option Historicals Test",
+  "description": "Test case for retrieving historical price data for an AAPL call option contract through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "option_historicals_test",
+      "conversation": [
+        {
+          "invocation_id": "option-historicals-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me historical price data for an AAPL call option. First find an available expiration and strike from the options chain, then retrieve the historical data."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here is the historical price data for the AAPL call option:\n\n*   **Symbol**: AAPL\n*   **Option Type**: call\n*   **Interval**: hour\n*   **Status**: success"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "symbol": "AAPL",
+                  "option_type": "call"
+                },
+                "name": "options_chains"
+              },
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "symbol": "AAPL",
+                  "expiration_date": "resolved-expiration-date",
+                  "strike_price": "resolved-strike-price",
+                  "option_type": "call",
+                  "interval": "hour",
+                  "span": "week"
+                },
+                "name": "option_historicals"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}
