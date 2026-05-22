@@ -11,6 +11,39 @@ import pytest
 from open_stocks_mcp.tools.session_manager import SessionManager
 
 
+def test_handle_login_prompt_returns_mfa_code_from_env(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """MFA code prompts should return ROBINHOOD_MFA_CODE when set."""
+    manager = SessionManager()
+    monkeypatch.setenv("ROBINHOOD_MFA_CODE", "123456")
+
+    result = manager._handle_login_prompt("Please enter the verification code: ")
+
+    assert result == "123456"
+
+
+def test_handle_login_prompt_returns_empty_when_env_missing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """MFA prompts should return empty string when code env var is missing."""
+    manager = SessionManager()
+    monkeypatch.delenv("ROBINHOOD_MFA_CODE", raising=False)
+
+    result = manager._handle_login_prompt("Enter SMS code: ")
+
+    assert result == ""
+
+
+def test_handle_login_prompt_returns_empty_for_device_approval() -> None:
+    """Device approval prompts should continue returning empty string."""
+    manager = SessionManager()
+
+    result = manager._handle_login_prompt("Approve this device in the Robinhood app")
+
+    assert result == ""
+
+
 def test_logout_clears_session_state() -> None:
     """Logout should clear authentication state and timestamps."""
     manager = SessionManager()

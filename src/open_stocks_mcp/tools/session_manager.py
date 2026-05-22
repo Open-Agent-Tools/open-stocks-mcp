@@ -262,6 +262,44 @@ class SessionManager:
 
         return ""
 
+    def _handle_login_prompt(self, prompt: str = "") -> str:
+        """Handle Robin Stocks login prompts for MFA and device approval."""
+        logger.info(f"Robin Stocks prompt: {prompt}")
+
+        prompt_lower = prompt.lower()
+
+        if any(
+            keyword in prompt_lower
+            for keyword in ["code", "sms", "email", "verification", "mfa", "2fa"]
+        ):
+            logger.warning(f"MFA/Verification code required: {prompt}")
+            mfa_code = os.environ.get("ROBINHOOD_MFA_CODE", "").strip()
+            if mfa_code:
+                logger.info("Using ROBINHOOD_MFA_CODE from environment for MFA prompt")
+                return mfa_code
+
+            logger.info("Authentication requires MFA. This may indicate:")
+            logger.info("1. A new device needs verification")
+            logger.info("2. Session cache may be corrupted")
+            logger.info("3. Account has enhanced security enabled")
+            logger.info("Suggestion: Clear session cache and try fresh login")
+            logger.warning(
+                "Set ROBINHOOD_MFA_CODE env var with the time-sensitive code before retrying."
+            )
+            return ""
+
+        if any(
+            keyword in prompt_lower
+            for keyword in ["app", "device", "approval", "notification", "push"]
+        ):
+            logger.info(f"Device approval required: {prompt}")
+            logger.info("Please check your Robinhood mobile app and approve the device")
+            logger.info("Waiting for approval...")
+            return ""
+
+        logger.debug(f"Returning empty string for prompt: {prompt}")
+        return ""
+
     async def ensure_authenticated(self) -> bool:
         """Ensure session is authenticated, re-authenticating if necessary.
 
@@ -372,53 +410,7 @@ class SessionManager:
 
                 def mock_input(prompt: str = "") -> str:
                     """Mock input function that handles various Robin Stocks prompts."""
-                    logger.info(f"Robin Stocks prompt: {prompt}")
-
-                    # Handle MFA code requests more gracefully
-                    if any(
-                        keyword in prompt.lower()
-                        for keyword in [
-                            "code",
-                            "sms",
-                            "email",
-                            "verification",
-                            "mfa",
-                            "2fa",
-                        ]
-                    ):
-                        logger.warning(f"MFA/Verification code required: {prompt}")
-                        logger.info("Authentication requires MFA. This may indicate:")
-                        logger.info("1. A new device needs verification")
-                        logger.info("2. Session cache may be corrupted")
-                        logger.info("3. Account has enhanced security enabled")
-                        logger.info(
-                            "Suggestion: Clear session cache and try fresh login"
-                        )
-
-                        # Attempt to resolve the code
-                        return self._resolve_mfa_code()
-
-                    # Handle device approval prompts
-                    if any(
-                        keyword in prompt.lower()
-                        for keyword in [
-                            "app",
-                            "device",
-                            "approval",
-                            "notification",
-                            "push",
-                        ]
-                    ):
-                        logger.info(f"Device approval required: {prompt}")
-                        logger.info(
-                            "Please check your Robinhood mobile app and approve the device"
-                        )
-                        logger.info("Waiting for approval...")
-                        return ""
-
-                    # Handle any other prompts
-                    logger.debug(f"Returning empty string for prompt: {prompt}")
-                    return ""
+                    return self._handle_login_prompt(prompt)
 
                 # Temporarily replace input function
                 if isinstance(__builtins__, dict):
