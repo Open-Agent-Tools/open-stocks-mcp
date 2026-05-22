@@ -155,6 +155,13 @@ from open_stocks_mcp.tools.schwab_options_tools import (
     get_schwab_option_expirations,
     get_schwab_options_positions,
 )
+from open_stocks_mcp.tools.schwab_portfolio_tools import (
+    get_schwab_aggregate_positions,
+    get_schwab_all_option_positions,
+    get_schwab_build_holdings,
+    get_schwab_day_trades,
+    get_schwab_open_option_positions,
+)
 from open_stocks_mcp.tools.schwab_trading_tools import (
     cancel_schwab_order,
     get_schwab_order_by_id,
@@ -1422,6 +1429,36 @@ async def schwab_options_positions(account_hash: str) -> dict[str, Any]:
         account_hash: Account hash from schwab_account_numbers
     """
     return await get_schwab_options_positions(account_hash)
+
+
+@mcp.tool()
+async def schwab_get_build_holdings() -> dict[str, Any]:
+    """Build enriched holdings from Schwab positions and quotes."""
+    return await get_schwab_build_holdings()
+
+
+@mcp.tool()
+async def schwab_get_day_trades() -> dict[str, Any]:
+    """Get day-trade counts derived from Schwab transaction history."""
+    return await get_schwab_day_trades()
+
+
+@mcp.tool()
+async def schwab_get_aggregate_positions() -> dict[str, Any]:
+    """Aggregate Schwab positions across all linked accounts."""
+    return await get_schwab_aggregate_positions()
+
+
+@mcp.tool()
+async def schwab_get_all_option_positions() -> dict[str, Any]:
+    """Get all Schwab option positions across linked accounts."""
+    return await get_schwab_all_option_positions()
+
+
+@mcp.tool()
+async def schwab_get_open_option_positions() -> dict[str, Any]:
+    """Get open Schwab option positions with non-zero net quantity."""
+    return await get_schwab_open_option_positions()
 
 
 def create_mcp_server(config: ServerConfig | None = None) -> FastMCP:
