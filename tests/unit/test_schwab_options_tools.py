@@ -1,5 +1,7 @@
 """Unit tests for Schwab options tools."""
 
+from collections.abc import Awaitable, Callable
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -19,6 +21,83 @@ def _assert_retry_safe(mock_execute_broker_request: AsyncMock, expected: bool) -
     assert call_args is not None
     _, kwargs = call_args
     assert kwargs.get("retry_safe") is expected
+
+
+@pytest.mark.journey_options
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_schwab_option_buy_to_open_wrapper_delegates_to_tool() -> None:
+    """Server wrapper should delegate buy-to-open to tool implementation alias."""
+    from open_stocks_mcp.server import app as server_app
+
+    expected = {"result": {"status": "order_placed", "action": "buy_to_open"}}
+    with patch.object(
+        server_app,
+        "_schwab_option_buy_to_open_impl",
+        AsyncMock(return_value=expected),
+    ) as mock_execute:
+        result = await server_app.schwab_option_buy_to_open(
+            "abc123", "AAPL", 1, "CALL", 170.0, "2024-01-19"
+        )
+
+    mock_execute.assert_awaited_once_with(
+        "abc123", "AAPL", 1, "CALL", 170.0, "2024-01-19"
+    )
+    assert result == expected
+
+
+@pytest.mark.journey_options
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_schwab_option_sell_to_close_wrapper_delegates_to_tool() -> None:
+    """Server wrapper should delegate sell-to-close to tool implementation alias."""
+    from open_stocks_mcp.server import app as server_app
+
+    expected = {"result": {"status": "order_placed", "action": "sell_to_close"}}
+    with patch.object(
+        server_app,
+        "_schwab_option_sell_to_close_impl",
+        AsyncMock(return_value=expected),
+    ) as mock_execute:
+        result = await server_app.schwab_option_sell_to_close(
+            "abc123", "AAPL", 1, "PUT", 165.0, "2024-02-16"
+        )
+
+    mock_execute.assert_awaited_once_with(
+        "abc123", "AAPL", 1, "PUT", 165.0, "2024-02-16"
+    )
+    assert result == expected
+
+
+@pytest.mark.journey_options
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_schwab_option_order_wrappers_preserve_auth_error_response() -> None:
+    """Server wrappers should preserve auth error payload shape unchanged."""
+    from open_stocks_mcp.server import app as server_app
+
+    error_response = {"result": {"error": "Not authenticated", "status": "error"}}
+    with (
+        patch.object(
+            server_app,
+            "_schwab_option_buy_to_open_impl",
+            AsyncMock(return_value=error_response),
+        ),
+        patch.object(
+            server_app,
+            "_schwab_option_sell_to_close_impl",
+            AsyncMock(return_value=error_response),
+        ),
+    ):
+        buy_result = await server_app.schwab_option_buy_to_open(
+            "abc123", "AAPL", 1, "CALL", 170.0, "2024-01-19"
+        )
+        sell_result = await server_app.schwab_option_sell_to_close(
+            "abc123", "AAPL", 1, "PUT", 165.0, "2024-02-16"
+        )
+
+    assert buy_result == error_response
+    assert sell_result == error_response
 
 
 class TestSchwabOptionsTools:
@@ -381,8 +460,8 @@ class TestSchwabOptionsTools:
         self,
         mock_to_thread: AsyncMock,
         mock_get_broker: AsyncMock,
-        function,
-        args,
+        function: Callable[..., Awaitable[dict[str, Any]]],
+        args: tuple[Any, ...],
     ) -> None:
         """Test various options tools for API failure responses."""
         mock_broker = MagicMock()
@@ -400,6 +479,7 @@ class TestSchwabOptionsTools:
     async def test_schwab_option_buy_to_open_mcp_wrapper(self) -> None:
         """Test the MCP wrapper for schwab_option_buy_to_open."""
         from unittest.mock import AsyncMock, patch
+
         from open_stocks_mcp.server.app import schwab_option_buy_to_open
 
         with patch(
@@ -427,6 +507,7 @@ class TestSchwabOptionsTools:
     async def test_schwab_option_sell_to_close_mcp_wrapper(self) -> None:
         """Test the MCP wrapper for schwab_option_sell_to_close."""
         from unittest.mock import AsyncMock, patch
+
         from open_stocks_mcp.server.app import schwab_option_sell_to_close
 
         with patch(
