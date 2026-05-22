@@ -11,7 +11,7 @@ import pytest
 from mcp.server.fastmcp import FastMCP
 
 from open_stocks_mcp.server.app import mcp as production_mcp
-from open_stocks_mcp.tools import rate_limiter, retry
+from open_stocks_mcp.tools import rate_limiter
 from open_stocks_mcp.tools import session_manager as session_manager_module
 from open_stocks_mcp.tools.error_handling import (
     APIError,
@@ -63,7 +63,7 @@ def _patch_retry_dependencies(
     async def fake_sleep(seconds: float) -> None:
         sleep_calls.append(seconds)
 
-    monkeypatch.setattr(retry.asyncio, "sleep", fake_sleep)
+    monkeypatch.setattr("open_stocks_mcp.tools.retry.asyncio.sleep", fake_sleep)
     return sleep_calls
 
 
@@ -441,7 +441,7 @@ async def test_execute_with_retry_uses_registry_single_flight_for_auth_refresh()
     ) -> bool:
         nonlocal calls
         calls += 1
-        return await refresh_coro()
+        return bool(await refresh_coro())
 
     registry = Mock()
     registry.coordinated_refresh = AsyncMock(side_effect=coordinated_refresh)
