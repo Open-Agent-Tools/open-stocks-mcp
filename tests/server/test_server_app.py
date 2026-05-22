@@ -155,6 +155,11 @@ class TestToolRegistration:
             "unified_add_to_watchlist",
             "unified_remove_from_watchlist",
             "broker_comparison",
+            "schwab_get_build_holdings",
+            "schwab_get_day_trades",
+            "schwab_get_aggregate_positions",
+            "schwab_get_all_option_positions",
+            "schwab_get_open_option_positions",
         ]
 
         for tool_name in expected_tools:
