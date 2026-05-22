@@ -667,24 +667,65 @@ def test_sanitize_api_response_redacts_recursive_values() -> None:
     assert sanitized["safe"] == 7
 
 
+@pytest.mark.parametrize(
+    "key",
+    [
+        "password",
+        "token",
+        "secret",
+        "key",
+        "authorization",
+        "account_number",
+        "routing_number",
+        "ssn",
+        "tax_id",
+        "Token",
+        "SSN",
+    ],
+)
+def test_sanitize_api_response_redacts_all_top_level_sensitive_keys(
+    key: str,
+) -> None:
+    sanitized = sanitize_api_response({key: "sensitive_value", "safe": "ok"})
+    assert sanitized[key] == "[REDACTED]"
+    assert sanitized["safe"] == "ok"
+
+
 def test_sanitize_api_response_preserves_scalars() -> None:
     assert sanitize_api_response("x") == "x"
     assert sanitize_api_response(5) == 5
     assert sanitize_api_response(None) is None
 
 
-def test_log_api_call_excludes_sensitive_kwargs(
+def test_log_api_call_records_function_name_and_symbol(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    caplog.set_level("INFO")
+    log_api_call("stock_price", symbol="AAPL", interval="day")
+    message = caplog.records[-1].message
+    assert "stock_price" in message
+    assert "AAPL" in message
+    assert "interval" in message
+
+
+def test_log_api_call_excludes_all_sensitive_kwargs(
     caplog: pytest.LogCaptureFixture,
 ) -> None:
     caplog.set_level("INFO")
     log_api_call(
-        "stock_price", symbol="AAPL", token="secret", include_extended_hours=True
+        "stock_price",
+        password="p",
+        token="t",
+        secret="s",
+        key="k",
+        safe="yes",
     )
     message = caplog.records[-1].message
-    assert "stock_price" in message
-    assert "AAPL" in message
+    assert "safe" in message
+    assert "password" not in message
     assert "token" not in message
-    assert "include_extended_hours" in message
+    assert "secret" not in message
+    assert "key" not in message
 
 
 # --- Failure-mode regression tests ---
