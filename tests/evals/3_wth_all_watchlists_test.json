@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "wth_all_watchlists_test_set",
+  "name": "All Watchlists Test",
+  "description": "Read-only eval that exercises the all_watchlists tool to list all Robinhood watchlists. Does not invoke add_to_watchlist, remove_from_watchlist, or any trading/mutation tool.",
+  "eval_cases": [
+    {
+      "eval_id": "wth_all_watchlists_test",
+      "conversation": [
+        {
+          "invocation_id": "wth-all-watchlists-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me all of my Robinhood watchlists."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here are your Robinhood watchlists. Each watchlist is listed with its name and the number of symbols it contains."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "all_watchlists"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

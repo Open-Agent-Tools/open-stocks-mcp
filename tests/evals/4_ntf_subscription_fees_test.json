@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "ntf_subscription_fees_test_set",
+  "name": "Subscription Fees Test",
+  "description": "Read-only eval that exercises the subscription_fees tool to retrieve Robinhood Gold subscription fee history. The live account may legitimately return no fees if not subscribed to Gold. Does not invoke any trading or account-mutation tool.",
+  "eval_cases": [
+    {
+      "eval_id": "ntf_subscription_fees_test",
+      "conversation": [
+        {
+          "invocation_id": "ntf-subscription-fees-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show my Robinhood Gold subscription fee history."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here is your Robinhood Gold subscription fee history. The data includes any subscription fees charged to your account."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "subscription_fees"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

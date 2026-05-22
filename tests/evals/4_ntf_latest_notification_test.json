@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "ntf_latest_notification_test_set",
+  "name": "Latest Notification Test",
+  "description": "Read-only eval that exercises the latest_notification tool to retrieve the most recent account notification. The live account may legitimately return no notification. Does not invoke any trading or account-mutation tool.",
+  "eval_cases": [
+    {
+      "eval_id": "ntf_latest_notification_test",
+      "conversation": [
+        {
+          "invocation_id": "ntf-latest-notification-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me my latest Robinhood notification."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here is your latest Robinhood notification. The notification includes its type, message, and timestamp."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "latest_notification"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

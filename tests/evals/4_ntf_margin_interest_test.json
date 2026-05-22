@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "ntf_margin_interest_test_set",
+  "name": "Margin Interest Test",
+  "description": "Read-only eval that exercises the margin_interest tool to retrieve margin interest charges and current rate. The live account may legitimately return no margin interest data if the account does not use margin. Does not invoke any trading or account-mutation tool.",
+  "eval_cases": [
+    {
+      "eval_id": "ntf_margin_interest_test",
+      "conversation": [
+        {
+          "invocation_id": "ntf-margin-interest-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show my margin interest charges and current rate."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here are your margin interest charges and current rate. The data includes any interest accrued on margin balances."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "margin_interest"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

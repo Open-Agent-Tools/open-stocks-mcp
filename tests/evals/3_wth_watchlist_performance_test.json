@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "wth_watchlist_performance_test_set",
+  "name": "Watchlist Performance Test",
+  "description": "Read-only eval that exercises the watchlist_performance tool to analyze performance of a named watchlist. Assumes a watchlist named 'Tech Stocks' exists in the live account; rename the watchlist_name arg to an existing watchlist before running live. Does not invoke any mutation or trading tool.",
+  "eval_cases": [
+    {
+      "eval_id": "wth_watchlist_performance_test",
+      "conversation": [
+        {
+          "invocation_id": "wth-watchlist-performance-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Analyze the performance of my Tech Stocks watchlist."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here is the performance analysis of your Tech Stocks watchlist. The results include price and percentage change data for each symbol in the watchlist."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {"watchlist_name": "Tech Stocks"},
+                "name": "watchlist_performance"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}
