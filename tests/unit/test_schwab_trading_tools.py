@@ -563,8 +563,8 @@ class TestSchwabTradingTools:
         self,
         mock_to_thread: AsyncMock,
         mock_get_broker: AsyncMock,
-        function,
-        args,
+        function: Any,
+        args: tuple[Any, ...],
     ) -> None:
         """Test various trading tools for API failure responses."""
         mock_broker = MagicMock()
@@ -646,26 +646,32 @@ class TestSchwabTradingTools:
         assert "result" in result
         assert "error" in result["result"]
 
+    @pytest.mark.journey_trading
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_schwab_place_order_mcp_wrapper(self) -> None:
-        """Test the MCP wrapper for schwab_place_order."""
+    async def test_schwab_place_order_wrapper_delegates_to_tool(self) -> None:
+        """The server-layer schwab_place_order tool delegates to place_schwab_order."""
         from unittest.mock import AsyncMock, patch
-        from open_stocks_mcp.server.app import schwab_place_order
 
-        with patch(
-            "open_stocks_mcp.server.app.place_schwab_order", new_callable=AsyncMock
-        ) as mock_impl:
-            mock_impl.return_value = {
-                "result": {"status": "order_placed", "order_id": "1"}
+        from open_stocks_mcp.server import app as server_app
+
+        account_hash = "abc123"
+        order_spec = {"orderType": "MARKET", "orderLegCollection": []}
+        expected_payload = {
+            "result": {
+                "status": "order_placed",
+                "order_id": "99999",
+                "status_code": 201,
             }
+        }
 
-            result = await schwab_place_order(
-                account_hash="HASH", order_spec={"orderType": "MARKET"}
-            )
+        with patch.object(
+            server_app, "place_schwab_order", new=AsyncMock(return_value=expected_payload)
+        ) as mock_place:
+            result = await server_app.schwab_place_order(account_hash, order_spec)
 
-            mock_impl.assert_awaited_once_with("HASH", {"orderType": "MARKET"})
-            assert result == {"result": {"status": "order_placed", "order_id": "1"}}
+            mock_place.assert_awaited_once_with(account_hash, order_spec)
+            assert result is expected_payload
 
 
 # ============================================================

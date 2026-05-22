@@ -1396,6 +1396,20 @@ async def schwab_sell_stock_limit(
 
 
 @mcp.tool()
+async def schwab_place_order(
+    account_hash: str, order_spec: dict[str, Any]
+) -> dict[str, Any]:
+    """Place a generic Schwab order using a raw order specification.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+        order_spec: Order specification dict as accepted by the Schwab API
+            (typically produced via schwab order builder helpers)
+    """
+    return await place_schwab_order(account_hash, order_spec)
+
+
+@mcp.tool()
 async def schwab_orders(account_hash: str, max_results: int = 50) -> dict[str, Any]:
     """Get orders for a Schwab account.
 
@@ -1426,14 +1440,6 @@ async def schwab_get_order(account_hash: str, order_id: str) -> dict[str, Any]:
         order_id: Order ID to retrieve
     """
     return await get_schwab_order_by_id(account_hash, order_id)
-
-
-@mcp.tool()
-async def schwab_place_order(
-    account_hash: str, order_spec: dict[str, Any]
-) -> dict[str, Any]:
-    """Place a generic order with Schwab using a pre-built order spec."""
-    return await place_schwab_order(account_hash, order_spec)
 
 
 async def schwab_transactions(
