@@ -24,14 +24,14 @@
 | `get_account_details` | ✅ Direct Match | `schwab_get_account_details` | Schwab provides more detailed balance info |
 | `get_portfolio` | ✅ Direct Match | `schwab_get_portfolio` | Calculated from account positions |
 | `get_positions` | ✅ Direct Match | `schwab_get_positions` | Part of account response |
-| `get_account_profile` | 🔄 Partial Match | `schwab_get_user_preferences` | Different structure but similar data |
-| `get_account_settings` | 🔄 Partial Match | `schwab_get_user_preferences` | Combined in user preferences |
-| `get_basic_profile` | 🔄 Partial Match | `schwab_get_user_preferences` | Subset of user preferences |
-| `get_user_profile` | 🔄 Partial Match | `schwab_get_user_preferences` | Subset of user preferences |
+| `get_account_profile` | 🔄 Partial Match (Implemented) | `schwab_get_user_preferences` | Different structure but similar data |
+| `get_account_settings` | 🔄 Partial Match (Implemented) | `schwab_get_user_preferences` | Combined in user preferences |
+| `get_basic_profile` | 🔄 Partial Match (Implemented) | `schwab_get_user_preferences` | Subset of user preferences |
+| `get_user_profile` | 🔄 Partial Match (Implemented) | `schwab_get_user_preferences` | Subset of user preferences |
 | `get_investment_profile` | ⚠️ Requires Mapping | `schwab_get_account` | Derive from account data |
 | `get_security_profile` | ⚠️ Requires Mapping | `schwab_get_account` | Derive from account data |
-| `get_complete_profile` | ⚠️ Requires Mapping | `schwab_get_all_account_data` | Aggregate multiple API calls |
-| `get_build_user_profile` | ⚠️ Requires Mapping | `schwab_build_user_profile` | Custom aggregation function |
+| `get_complete_profile` | ⚠️ Requires Mapping (Implemented) | `schwab_get_all_account_data` | Aggregate multiple API calls |
+| `get_build_user_profile` | ⚠️ Requires Mapping (Implemented) | `schwab_build_user_profile` | Custom aggregation function |
 | `get_account_features` | ❌ Not Available | N/A | Robinhood-specific feature flags |
 | `get_account_numbers` | ➕ Schwab Bonus | `schwab_get_account_numbers` | Hash value mapping |
 

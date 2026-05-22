@@ -6,11 +6,14 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from open_stocks_mcp.tools.schwab_account_tools import (
+    build_schwab_user_profile,
     get_schwab_account,
     get_schwab_account_balances,
     get_schwab_account_numbers,
     get_schwab_accounts,
+    get_schwab_all_account_data,
     get_schwab_portfolio,
+    get_schwab_user_preferences,
 )
 
 
@@ -242,3 +245,106 @@ class TestSchwabAccountTools:
         result = await function(*args)
         assert result["result"]["status"] == "error"
         assert "API Error" in result["result"]["error"]
+
+    @pytest.mark.journey_account
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    @patch(
+        "open_stocks_mcp.tools.schwab_account_tools.get_authenticated_broker_or_error"
+    )
+    @patch("open_stocks_mcp.tools.schwab_account_tools.execute_broker_request")
+    async def test_get_user_preferences_success(
+        self,
+        mock_to_thread: AsyncMock,
+        mock_get_broker: AsyncMock,
+        schwab_user_preferences_payload: dict[str, Any],
+    ) -> None:
+        """Test successful user preferences retrieval."""
+        mock_broker = MagicMock()
+        mock_get_broker.return_value = (mock_broker, None)
+        mock_to_thread.return_value = schwab_user_preferences_payload
+
+        result = await get_schwab_user_preferences()
+
+        assert "result" in result
+        assert "user_preferences" in result["result"]
+        assert (
+            result["result"]["user_preferences"]["userProps"]["firstName"] == "John"
+        )
+
+    @pytest.mark.journey_account
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    @patch(
+        "open_stocks_mcp.tools.schwab_account_tools.get_authenticated_broker_or_error"
+    )
+    @patch("open_stocks_mcp.tools.schwab_account_tools.execute_broker_request")
+    @patch("open_stocks_mcp.tools.schwab_account_tools.Client")
+    async def test_get_all_account_data_success(
+        self,
+        mock_client: MagicMock,
+        mock_to_thread: AsyncMock,
+        mock_get_broker: AsyncMock,
+        schwab_user_preferences_payload: dict[str, Any],
+        schwab_account_numbers_payload: list[dict[str, Any]],
+        schwab_accounts_payload: list[dict[str, Any]],
+    ) -> None:
+        """Test successful aggregation of all account data."""
+        mock_broker = MagicMock()
+        mock_get_broker.return_value = (mock_broker, None)
+
+        # Mock Client.Account.Fields
+        mock_client.Account.Fields.POSITIONS = "positions"
+
+        # Mock sequential calls in execute_broker_request
+        mock_to_thread.side_effect = [
+            schwab_user_preferences_payload,
+            schwab_account_numbers_payload,
+            schwab_accounts_payload,
+        ]
+
+        result = await get_schwab_all_account_data()
+
+        assert "result" in result
+        assert "user_preferences" in result["result"]
+        assert "account_numbers" in result["result"]
+        assert "accounts" in result["result"]
+        assert result["result"]["count"] == 2
+
+    @pytest.mark.journey_account
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    @patch(
+        "open_stocks_mcp.tools.schwab_account_tools.get_authenticated_broker_or_error"
+    )
+    @patch("open_stocks_mcp.tools.schwab_account_tools.execute_broker_request")
+    @patch("open_stocks_mcp.tools.schwab_account_tools.Client")
+    async def test_build_user_profile_success(
+        self,
+        mock_client: MagicMock,
+        mock_to_thread: AsyncMock,
+        mock_get_broker: AsyncMock,
+        schwab_user_preferences_payload: dict[str, Any],
+        schwab_accounts_payload: list[dict[str, Any]],
+    ) -> None:
+        """Test successful normalized user profile building."""
+        mock_broker = MagicMock()
+        mock_get_broker.return_value = (mock_broker, None)
+
+        # Mock Client.Account.Fields
+        mock_client.Account.Fields.POSITIONS = "positions"
+
+        # Mock sequential calls
+        mock_to_thread.side_effect = [
+            schwab_user_preferences_payload,
+            schwab_accounts_payload,
+        ]
+
+        result = await build_schwab_user_profile()
+
+        assert "result" in result
+        assert "user_profile" in result["result"]
+        profile = result["result"]["user_profile"]
+        assert profile["account_count"] == 2
+        assert "accounts" in profile
+        assert "user_preferences" in profile

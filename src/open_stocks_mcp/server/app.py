@@ -133,11 +133,14 @@ from open_stocks_mcp.tools.robinhood_watchlist_tools import (
 
 # Schwab Tools
 from open_stocks_mcp.tools.schwab_account_tools import (
+    build_schwab_user_profile,
     get_schwab_account,
     get_schwab_account_balances,
     get_schwab_account_numbers,
     get_schwab_accounts,
+    get_schwab_all_account_data,
     get_schwab_portfolio,
+    get_schwab_user_preferences,
 )
 from open_stocks_mcp.tools.schwab_market_tools import (
     get_schwab_instrument,
@@ -1105,6 +1108,34 @@ async def schwab_account_balances(account_hash: str) -> dict[str, Any]:
         account_hash: Account hash from schwab_account_numbers
     """
     return await get_schwab_account_balances(account_hash)
+
+
+@mcp.tool()
+async def schwab_get_user_preferences() -> dict[str, Any]:
+    """Get Schwab user preferences including account list and streamer info.
+
+    Consolidates account profile, settings, and user profile data.
+    """
+    return await get_schwab_user_preferences()
+
+
+@mcp.tool()
+async def schwab_get_all_account_data() -> dict[str, Any]:
+    """Get a complete snapshot of all Schwab accounts and user preferences.
+
+    Aggregates user preferences, account numbers, and all account data with positions.
+    """
+    return await get_schwab_all_account_data()
+
+
+@mcp.tool()
+async def schwab_build_user_profile() -> dict[str, Any]:
+    """Build a normalized Schwab user profile from account and preference data.
+
+    Returns a complete financial profile including total equity, cash balances,
+    and position counts across all accounts.
+    """
+    return await build_schwab_user_profile()
 
 
 # Cross-Broker Tools

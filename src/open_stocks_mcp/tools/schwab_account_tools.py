@@ -253,3 +253,154 @@ async def get_schwab_account_balances(account_hash: str) -> dict[str, Any]:
     except Exception as e:
         logger.error(f"Error getting Schwab account balances: {e}")
         return create_error_response(e)
+
+
+@handle_schwab_errors
+async def get_schwab_user_preferences() -> dict[str, Any]:
+    """Get Schwab user preferences including account list and streamer info.
+
+    Consolidates account profile, settings, and user profile data.
+
+    Returns:
+        Dict with result containing user preferences
+    """
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", "get user preferences"
+    )
+    if error:
+        return error
+
+    try:
+
+        def _get_user_preferences() -> Any:
+            response = broker.client.get_user_preferences()
+            return response.json()
+
+        result = await execute_broker_request(_get_user_preferences, retry_safe=True)
+
+        return create_success_response({"user_preferences": result})
+
+    except Exception as e:
+        logger.error(f"Error getting Schwab user preferences: {e}")
+        return create_error_response(e)
+
+
+@handle_schwab_errors
+async def get_schwab_all_account_data() -> dict[str, Any]:
+    """Get a complete snapshot of all Schwab accounts and user preferences.
+
+    Aggregates user preferences, account numbers, and all account data with positions.
+
+    Returns:
+        Dict with result containing aggregated account snapshot
+    """
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", "get all account data"
+    )
+    if error:
+        return error
+
+    try:
+        # 1. Get User Preferences
+        def _get_prefs() -> Any:
+            return broker.client.get_user_preferences().json()
+
+        user_preferences = await execute_broker_request(_get_prefs, retry_safe=True)
+
+        # 2. Get Account Numbers
+        def _get_numbers() -> Any:
+            return broker.client.get_account_numbers().json()
+
+        account_numbers = await execute_broker_request(_get_numbers, retry_safe=True)
+
+        # 3. Get All Accounts with Positions
+        def _get_accounts() -> Any:
+            return broker.client.get_accounts(
+                fields=Client.Account.Fields.POSITIONS
+            ).json()
+
+        accounts_data = await execute_broker_request(_get_accounts, retry_safe=True)
+
+        return create_success_response(
+            {
+                "user_preferences": user_preferences,
+                "account_numbers": account_numbers,
+                "accounts": accounts_data,
+                "count": len(accounts_data) if isinstance(accounts_data, list) else 1,
+            }
+        )
+
+    except Exception as e:
+        logger.error(f"Error aggregating Schwab account data: {e}")
+        return create_error_response(e)
+
+
+@handle_schwab_errors
+async def build_schwab_user_profile() -> dict[str, Any]:
+    """Build a normalized Schwab user profile from account and preference data.
+
+    Returns:
+        Dict with result containing normalized user profile
+    """
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", "build user profile"
+    )
+    if error:
+        return error
+
+    try:
+        # Fetch required data
+        def _get_prefs() -> Any:
+            return broker.client.get_user_preferences().json()
+
+        user_preferences = await execute_broker_request(_get_prefs, retry_safe=True)
+
+        def _get_accounts() -> Any:
+            return broker.client.get_accounts(
+                fields=Client.Account.Fields.POSITIONS
+            ).json()
+
+        accounts_data = await execute_broker_request(_get_accounts, retry_safe=True)
+
+        # Normalize data
+        accounts = []
+        total_equity = 0.0
+        total_cash = 0.0
+        total_positions = 0
+
+        for account in accounts_data:
+            sec_account = account.get("securitiesAccount", {})
+            balances = sec_account.get("currentBalances", {})
+
+            acct_equity = balances.get("liquidationValue", 0.0)
+            acct_cash = balances.get("cashBalance", 0.0)
+            acct_positions = len(sec_account.get("positions", []))
+
+            total_equity += acct_equity
+            total_cash += acct_cash
+            total_positions += acct_positions
+
+            accounts.append(
+                {
+                    "account_number": sec_account.get("accountNumber"),
+                    "type": sec_account.get("type"),
+                    "equity": acct_equity,
+                    "cash": acct_cash,
+                    "position_count": acct_positions,
+                }
+            )
+
+        user_profile = {
+            "user_preferences": user_preferences,
+            "accounts": accounts,
+            "account_count": len(accounts),
+            "total_equity": total_equity,
+            "total_cash": total_cash,
+            "total_positions_count": total_positions,
+        }
+
+        return create_success_response({"user_profile": user_profile})
+
+    except Exception as e:
+        logger.error(f"Error building Schwab user profile: {e}")
+        return create_error_response(e)

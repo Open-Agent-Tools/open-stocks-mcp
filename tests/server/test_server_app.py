@@ -161,6 +161,21 @@ class TestToolRegistration:
             assert tool_name in tool_names, f"Tool {tool_name} not registered"
 
     @pytest.mark.asyncio
+    async def test_schwab_account_profile_tools_are_registered(self) -> None:
+        """Test that the three new Schwab account/profile tools are registered."""
+        tools_list = await mcp.list_tools()
+        tool_names = [tool.name for tool in tools_list]
+
+        expected_tools = [
+            "schwab_get_user_preferences",
+            "schwab_get_all_account_data",
+            "schwab_build_user_profile",
+        ]
+
+        for tool_name in expected_tools:
+            assert tool_name in tool_names, f"Tool {tool_name} not registered"
+
+    @pytest.mark.asyncio
     async def test_account_info_tool_callable(self) -> None:
         """Test that account_info tool is callable."""
         tools_list = await mcp.list_tools()
