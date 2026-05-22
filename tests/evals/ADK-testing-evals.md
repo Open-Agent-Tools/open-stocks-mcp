@@ -150,7 +150,93 @@ adk eval examples/google_adk_agent tests/evals/0_sys_metrics_summary_test.json -
 adk eval examples/google_adk_agent tests/evals/0_sys_rate_limit_status_test.json --config_file_path tests/evals/test_config.json
 ```
 
-### 3. Schwab Market & Account Evals (`schwab_*`)
+### 3. Account Evals (`1_acc_*`)
+
+Read-only account evaluations for Robinhood portfolio, positions, and dividend tools. Require `ROBINHOOD_USERNAME` and `ROBINHOOD_PASSWORD`.
+
+- `tests/evals/1_acc_account_info_test.json` — exercises `account_info`.
+- `tests/evals/1_acc_account_details_test.json` — exercises `account_details`.
+- `tests/evals/1_acc_portfolio_test.json` — exercises `portfolio`.
+- `tests/evals/1_acc_positions_test.json` — exercises `positions`.
+- `tests/evals/1_acc_build_holdings_test.json` — exercises `build_holdings`.
+- `tests/evals/1_acc_dividends_test.json` — exercises `dividends`.
+- `tests/evals/1_acc_total_dividends_test.json` — exercises `total_dividends`.
+- `tests/evals/1_acc_dividends_by_instrument_test.json` — exercises `dividends_by_instrument`.
+- `tests/evals/1_acc_day_trades_test.json` — exercises `day_trades`.
+- `tests/evals/1_acc_interest_payments_test.json` — exercises `interest_payments`.
+- `tests/evals/1_acc_stock_loan_payments_test.json` — exercises `stock_loan_payments`.
+- `tests/evals/1_acc_health_check_test.json` — exercises the account-level `health_check`.
+
+### 4. Market Data Evals (`2_mkt_*`)
+
+Read-only market data evaluations for stock quotes, search, and info tools. Do not require Robinhood credentials.
+
+- `tests/evals/2_mkt_stock_price_test.json` — exercises `stock_price`.
+- `tests/evals/2_mkt_stock_info_test.json` — exercises `stock_info`.
+- `tests/evals/2_mkt_search_stocks_test.json` — exercises `search_stocks`.
+- `tests/evals/2_mkt_market_hours_test.json` — exercises `market_hours`.
+
+### 5. Profiles Tests (`6_prf_*`)
+
+Read-only evaluations for Robinhood profile tools. All require `ROBINHOOD_USERNAME` and `ROBINHOOD_PASSWORD`.
+
+- `tests/evals/6_prf_account_profile_test.json` — exercises `account_profile` to retrieve Robinhood account profile data.
+- `tests/evals/6_prf_basic_profile_test.json` — exercises `basic_profile` to retrieve basic user information.
+- `tests/evals/6_prf_investment_profile_test.json` — exercises `investment_profile` to retrieve investment objectives and risk tolerance.
+- `tests/evals/6_prf_security_profile_test.json` — exercises `security_profile` to retrieve security/authentication profile data.
+- `tests/evals/6_prf_user_profile_test.json` — exercises `user_profile` to retrieve user profile details.
+- `tests/evals/6_prf_complete_profile_test.json` — exercises `complete_profile` to retrieve all profile data in one call.
+
+Run with:
+
+```bash
+adk eval examples/google_adk_agent tests/evals/6_prf_account_profile_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/6_prf_basic_profile_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/6_prf_investment_profile_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/6_prf_security_profile_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/6_prf_user_profile_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/6_prf_complete_profile_test.json --config_file_path tests/evals/test_config.json
+```
+
+### 6. Options Data Evals (`8_opt_*`)
+
+Evaluations for Robinhood options tools. Multi-step evals for `option_market_data` and `option_historicals` resolve an option contract via `options_chains` first (public data). The `aggregate_option_positions` and `open_option_positions_with_details` evals require `ROBINHOOD_USERNAME` and `ROBINHOOD_PASSWORD`.
+
+- `tests/evals/8_opt_find_options_test.json` — exercises `find_options` and `options_chains`.
+- `tests/evals/8_opt_options_chains_test.json` — exercises `options_chains` for TSLA.
+- `tests/evals/8_opt_option_market_data_test.json` — multi-step: `options_chains` then `option_market_data` to retrieve live market data for a specific AAPL call option contract.
+- `tests/evals/8_opt_option_historicals_test.json` — multi-step: `options_chains` then `option_historicals` to retrieve historical price data for an AAPL call option.
+- `tests/evals/8_opt_aggregate_option_positions_test.json` — exercises `aggregate_option_positions` to show options exposure grouped by underlying (requires Robinhood credentials).
+- `tests/evals/8_opt_open_option_positions_with_details_test.json` — exercises `open_option_positions_with_details` to list open positions with call/put details and Greeks (requires Robinhood credentials).
+
+Run with:
+
+```bash
+adk eval examples/google_adk_agent tests/evals/8_opt_option_market_data_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/8_opt_option_historicals_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/8_opt_aggregate_option_positions_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/8_opt_open_option_positions_with_details_test.json --config_file_path tests/evals/test_config.json
+```
+
+### 7. Advanced Tests (`9_adv_*`)
+
+Read-only evaluations for advanced aggregation and account management tools. `build_user_profile`, `account_settings`, and `account_features` require `ROBINHOOD_USERNAME` and `ROBINHOOD_PASSWORD`. `broker_status` does not require Robinhood credentials.
+
+- `tests/evals/9_adv_build_user_profile_test.json` — exercises `build_user_profile` to retrieve aggregated equity, cash, and dividend totals.
+- `tests/evals/9_adv_account_settings_test.json` — exercises `account_settings` to retrieve current account settings and configuration.
+- `tests/evals/9_adv_account_features_test.json` — exercises `account_features` to list enabled account features and permissions.
+- `tests/evals/9_adv_broker_status_test.json` — exercises `broker_status` to show connected brokers and their status.
+
+Run with:
+
+```bash
+adk eval examples/google_adk_agent tests/evals/9_adv_build_user_profile_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/9_adv_account_settings_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/9_adv_account_features_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/9_adv_broker_status_test.json --config_file_path tests/evals/test_config.json
+```
+
+### 8. Schwab Market & Account Evals (`schwab_*`)
 
 Evaluations for Schwab-specific tools. These typically require live Schwab OAuth credentials and a running MCP server.
 

@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "account_settings_test_set",
+  "name": "Account Settings Test",
+  "description": "Test case for retrieving Robinhood account settings and configuration through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "account_settings_test",
+      "conversation": [
+        {
+          "invocation_id": "account-settings-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me my current Robinhood account settings and configuration in a bulleted list."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here are your Robinhood account settings:\n\n*   **Status**: success"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "account_settings"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

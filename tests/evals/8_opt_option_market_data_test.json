@@ -1,0 +1,56 @@
+{
+  "eval_set_id": "option_market_data_test_set",
+  "name": "Option Market Data Test",
+  "description": "Test case for retrieving market data for a specific option contract by first resolving an option ID from the options chain",
+  "eval_cases": [
+    {
+      "eval_id": "option_market_data_test",
+      "conversation": [
+        {
+          "invocation_id": "option-market-data-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Get me the current market data for an AAPL call option. First look up the options chain to find a valid option, then show me its market data."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here is the market data for the AAPL call option:\n\n*   **Symbol**: AAPL\n*   **Option Type**: call\n*   **Status**: success"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "symbol": "AAPL",
+                  "option_type": "call"
+                },
+                "name": "options_chains"
+              },
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "option_id": "resolved-option-id"
+                },
+                "name": "option_market_data"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

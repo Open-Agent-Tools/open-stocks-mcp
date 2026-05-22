@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "build_user_profile_test_set",
+  "name": "Build User Profile Test",
+  "description": "Test case for retrieving an aggregated financial profile including equity, cash, and dividends through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "build_user_profile_test",
+      "conversation": [
+        {
+          "invocation_id": "build-user-profile-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Give me a complete financial summary of my portfolio including total equity, cash, and dividend income."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here are your aggregated portfolio totals:\n\n*   **Total Equity**: ...\n*   **Cash**: ...\n*   **Total Dividends**: ...\n*   **Status**: success"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "build_user_profile"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

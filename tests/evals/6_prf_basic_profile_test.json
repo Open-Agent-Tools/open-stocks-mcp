@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "basic_profile_test_set",
+  "name": "Basic Profile Test",
+  "description": "Test case for retrieving Robinhood basic user profile data through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "basic_profile_test",
+      "conversation": [
+        {
+          "invocation_id": "basic-profile-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "What is my basic profile information on Robinhood? Show it as a bulleted list."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here is your basic Robinhood profile:\n\n*   **Name**: ...\n*   **Status**: success"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "basic_profile"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

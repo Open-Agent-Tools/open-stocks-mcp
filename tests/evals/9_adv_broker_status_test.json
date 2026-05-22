@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "broker_status_test_set",
+  "name": "Broker Status Test",
+  "description": "Test case for checking which brokers are connected and their current status through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "broker_status_test",
+      "conversation": [
+        {
+          "invocation_id": "broker-status-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Which brokers are currently connected and what is their status? Show in a bulleted list."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here is the status of your connected brokers:\n\n*   **Status**: success"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "broker_status"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

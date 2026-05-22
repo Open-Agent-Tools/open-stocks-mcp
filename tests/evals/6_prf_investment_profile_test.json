@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "investment_profile_test_set",
+  "name": "Investment Profile Test",
+  "description": "Test case for retrieving Robinhood investment profile and risk tolerance data through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "investment_profile_test",
+      "conversation": [
+        {
+          "invocation_id": "investment-profile-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me my investment profile and risk tolerance settings in a bulleted list."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here is your investment profile:\n\n*   **Investment Objective**: ...\n*   **Risk Tolerance**: ...\n*   **Status**: success"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "investment_profile"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}
