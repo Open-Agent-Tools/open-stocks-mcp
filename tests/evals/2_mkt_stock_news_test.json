@@ -1,0 +1,48 @@
+{
+  "eval_set_id": "stock_news_test_set",
+  "name": "Stock News Test",
+  "description": "Test case for retrieving stock news through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "stock_news_test",
+      "conversation": [
+        {
+          "invocation_id": "stock-news-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Get the latest news for Tesla (TSLA)."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "I retrieved the latest available news items for Tesla (TSLA), including recent headlines and publisher metadata."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "symbol": "TSLA"
+                },
+                "name": "stock_news"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

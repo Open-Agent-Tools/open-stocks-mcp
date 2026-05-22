@@ -1,0 +1,49 @@
+{
+  "eval_set_id": "price_history_test_set",
+  "name": "Price History Test",
+  "description": "Test case for retrieving weekly historical pricing through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "price_history_test",
+      "conversation": [
+        {
+          "invocation_id": "price-history-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me the weekly price history for AAPL."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here is the weekly price history summary for AAPL. I retrieved recent OHLC data points and volume from the market data feed, which you can use to review trend direction over the last week."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "symbol": "AAPL",
+                  "period": "week"
+                },
+                "name": "price_history"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

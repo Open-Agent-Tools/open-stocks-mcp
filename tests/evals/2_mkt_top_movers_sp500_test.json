@@ -1,0 +1,48 @@
+{
+  "eval_set_id": "top_movers_sp500_test_set",
+  "name": "Top Movers S&P 500 Test",
+  "description": "Test case for retrieving top S&P 500 movers through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "top_movers_sp500_test",
+      "conversation": [
+        {
+          "invocation_id": "top-movers-sp500-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "What are today's top S&P 500 gainers?"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "I pulled the top S&P 500 gainers for today. The response includes leading symbols, price changes, and percentage moves so you can quickly see the strongest performers."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "direction": "up"
+                },
+                "name": "top_movers_sp500"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}
