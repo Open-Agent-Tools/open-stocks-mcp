@@ -432,24 +432,31 @@
 
 ---
 
-## Open Questions
+## Roadmap Reconciliation
 
-1. **Watchlist Replacement**: Should we build a persistent watchlist storage layer?
-   - **Option A**: SQLite database for MCP server
-   - **Option B**: JSON file storage
-   - **Option C**: Let users manage externally
+The current implementation remains a 24-tool Schwab core. The broader parity roadmap from this document is tracked as decomposition work under parent issue #187.
 
-2. **Missing Data Sources**: Should we integrate 3rd party APIs for news/earnings?
-   - **Option A**: Add as separate tools (e.g., `alpha_vantage_get_earnings`)
-   - **Option B**: Transparent fallback from Schwab tools
-   - **Option C**: Document as limitation
+| Category | Decision | Tracking |
+|---|---|---|
+| Account/profile consolidation | Implement in dedicated follow-up issue | #192 |
+| Portfolio computed tools | Implement in dedicated follow-up issue | #193 |
+| Expanded market data | Implement in dedicated follow-up issue | #194 |
+| Options expansion | Implement in dedicated follow-up issue | #195 |
+| Trading expansion and order replacement | Implement in dedicated follow-up issue | #196 |
+| Dividends and payment extraction | Implement in dedicated follow-up issue | #197 |
+| Margin and notifications mapping | Implement in dedicated follow-up issue | #198 |
+| Streaming expansion | Implement in dedicated follow-up issue | #199 |
+| Transaction history Schwab bonus tools | Implement in dedicated follow-up issue | #127 |
+| Remaining roadmap deferrals and not-applicable scope | Documented as explicit decisions | #201 |
 
-3. **Streaming Architecture**: How to expose Schwab streaming in MCP?
-   - **Option A**: Use SSE endpoint for streaming quotes
-   - **Option B**: Polling with cached data
-   - **Option C**: WebSocket support (Phase 6+)
+## Decisions
 
----
+- Watchlists: deferred to client-side storage patterns; no Schwab-native watchlist API is available.
+- Missing research data (earnings, ratings, news, events, splits): deferred to a future third-party integration; we will not add a transparent Schwab fallback that implies this data exists in Schwab.
+- Historical options pricing: unavailable in the Schwab API; this remains a documented gap unless a new external data source is added.
+- Cryptocurrency tools: not applicable to Schwab scope because Schwab does not expose crypto trading in this MCP surface.
+- Robinhood-specific referrals, subscriptions, and account-feature flags: not applicable to Schwab scope.
+- Streaming exposure: tracked through broker capability baseline work and the dedicated Schwab streaming expansion issue #199.
 
 ## Conclusion
 
