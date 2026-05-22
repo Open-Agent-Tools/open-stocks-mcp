@@ -176,7 +176,51 @@ adk eval examples/google_adk_agent tests/evals/8_opt_schwab_option_expirations_t
 adk eval examples/google_adk_agent tests/evals/5_ord_schwab_orders_test.json --config_file_path tests/evals/test_config.json
 ```
 
-### 4. Creating Custom Evaluation Tests
+### 4. Watchlist Read-Only Evaluations (`3_wth_*`)
+
+Read-only evals that exercise the three Robinhood watchlist query tools. These do not invoke `add_to_watchlist`, `remove_from_watchlist`, or any order-placement or account-mutation tool.
+
+- `tests/evals/3_wth_all_watchlists_test.json` — exercises `all_watchlists` with empty args to list all account watchlists.
+- `tests/evals/3_wth_watchlist_by_name_test.json` — exercises `watchlist_by_name` with `{"watchlist_name": "Tech Stocks"}` to retrieve contents of a named watchlist.
+- `tests/evals/3_wth_watchlist_performance_test.json` — exercises `watchlist_performance` with `{"watchlist_name": "Tech Stocks"}` to analyze price and percentage changes for symbols in a named watchlist.
+
+**Credential assumptions**: Requires `GOOGLE_API_KEY`, a running MCP server, and Robinhood read credentials. The `watchlist_by_name` and `watchlist_performance` scenarios assume a watchlist named `Tech Stocks` exists in the live account. Rename `watchlist_name` to an existing watchlist before running those two evals against a live account.
+
+Run with:
+
+```bash
+adk eval examples/google_adk_agent tests/evals/3_wth_all_watchlists_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/3_wth_watchlist_by_name_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/3_wth_watchlist_performance_test.json --config_file_path tests/evals/test_config.json
+```
+
+### 5. Notifications and Account Features Read-Only Evaluations (`4_ntf_*`)
+
+Read-only evals that exercise seven notification and account-feature query tools. These do not invoke any order-placement, watchlist-mutation, or account-modification tool. The live account may legitimately return empty or no-data responses for notifications, margin, fees, or referrals.
+
+- `tests/evals/4_ntf_notifications_test.json` — exercises `notifications` with `{"count": 5}` to retrieve the five most recent account notifications.
+- `tests/evals/4_ntf_latest_notification_test.json` — exercises `latest_notification` with empty args to retrieve the single most recent notification.
+- `tests/evals/4_ntf_margin_calls_test.json` — exercises `margin_calls` with empty args to check for active margin calls.
+- `tests/evals/4_ntf_margin_interest_test.json` — exercises `margin_interest` with empty args to retrieve margin interest charges and current rate.
+- `tests/evals/4_ntf_subscription_fees_test.json` — exercises `subscription_fees` with empty args to retrieve Robinhood Gold subscription fee history.
+- `tests/evals/4_ntf_referrals_test.json` — exercises `referrals` with empty args to retrieve referral program status.
+- `tests/evals/4_ntf_account_features_test.json` — exercises `account_features` with empty args to summarize available subscription, margin, notification, and referral features; may return `partial_success` if one data source is unavailable.
+
+**Credential assumptions**: Requires `GOOGLE_API_KEY`, a running MCP server, and Robinhood read credentials. All tools may return empty data on accounts without margin, Gold subscriptions, or referrals — this is an expected valid outcome, not a failure.
+
+Run with:
+
+```bash
+adk eval examples/google_adk_agent tests/evals/4_ntf_notifications_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/4_ntf_latest_notification_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/4_ntf_margin_calls_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/4_ntf_margin_interest_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/4_ntf_subscription_fees_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/4_ntf_referrals_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/4_ntf_account_features_test.json --config_file_path tests/evals/test_config.json
+```
+
+### 6. Creating Custom Evaluation Tests
 
 #### Test File Structure
 ```json

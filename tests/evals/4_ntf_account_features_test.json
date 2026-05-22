@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "ntf_account_features_test_set",
+  "name": "Account Features Test",
+  "description": "Read-only eval that exercises the account_features tool to summarize Robinhood account features. This tool aggregates subscription, margin, notification, and referral data and may return partial_success if one source is unavailable. Does not invoke any trading or account-mutation tool.",
+  "eval_cases": [
+    {
+      "eval_id": "ntf_account_features_test",
+      "conversation": [
+        {
+          "invocation_id": "ntf-account-features-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Summarize my Robinhood account features."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here is a summary of your Robinhood account features. The summary includes available subscription, margin, notification, and referral information for your account."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "account_features"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

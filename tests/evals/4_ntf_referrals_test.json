@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "ntf_referrals_test_set",
+  "name": "Referrals Test",
+  "description": "Read-only eval that exercises the referrals tool to retrieve Robinhood referral program status. The live account may legitimately return no referral data. Does not invoke any trading or account-mutation tool.",
+  "eval_cases": [
+    {
+      "eval_id": "ntf_referrals_test",
+      "conversation": [
+        {
+          "invocation_id": "ntf-referrals-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show my Robinhood referral program status."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here is your Robinhood referral program status. The data includes any referral rewards or pending referrals associated with your account."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "referrals"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "ntf_notifications_test_set",
+  "name": "Notifications Test",
+  "description": "Read-only eval that exercises the notifications tool to retrieve recent account notifications. The live account may legitimately return an empty list. Does not invoke any trading or account-mutation tool.",
+  "eval_cases": [
+    {
+      "eval_id": "ntf_notifications_test",
+      "conversation": [
+        {
+          "invocation_id": "ntf-notifications-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me my five most recent account notifications."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here are your five most recent account notifications. Each notification includes its type, message, and timestamp."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {"count": 5},
+                "name": "notifications"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

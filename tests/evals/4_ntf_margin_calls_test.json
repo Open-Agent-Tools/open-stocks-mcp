@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "ntf_margin_calls_test_set",
+  "name": "Margin Calls Test",
+  "description": "Read-only eval that exercises the margin_calls tool to check for active margin calls. The live account may legitimately return no margin calls. Does not invoke any trading or account-mutation tool.",
+  "eval_cases": [
+    {
+      "eval_id": "ntf_margin_calls_test",
+      "conversation": [
+        {
+          "invocation_id": "ntf-margin-calls-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Check whether I have any margin calls."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "I have checked your account for margin calls. Your account currently has no active margin calls, or the margin call details are listed above."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "margin_calls"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}
