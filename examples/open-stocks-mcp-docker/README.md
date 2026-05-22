@@ -392,10 +392,12 @@ docker-compose restart
 *MFA/2FA Issues:*
 The server supports two primary authentication flows for Robinhood:
 
-1.  **App-Push Approval (Recommended)**: Check your Robinhood mobile app and approve the login notification. This is the only flow that works with detached containers without additional configuration.
-2.  **SMS/Email MFA Code**: Detached Docker containers cannot interactively prompt for codes. To use a code-based flow:
-    -   Set `ROBINHOOD_MFA_CODE=123456` in your `.env` file and restart.
-    -   Note: MFA codes expire quickly. Once the session is successfully cached (check `docker-compose logs`), remove the code from your `.env` file and restart to avoid unnecessary login attempts.
+1.  **App-Push Approval (Recommended)**: Passive default flow. Approve the login notification in your Robinhood mobile app; no MFA env vars are needed.
+2.  **SMS/Email MFA Code**: Detached Docker containers cannot do interactive code entry. For code-based challenges:
+    -   Set `ROBINHOOD_MFA_CODE=<current_code>` in `.env` or under `environment:` in `docker-compose.yml`.
+    -   Run `docker-compose restart` before retrying login so the container receives the current code.
+    -   Codes are single-use and time-sensitive; update the env var each attempt.
+    -   If `ROBINHOOD_MFA_CODE` is unset during an SMS/email challenge, login will wait for verification and eventually time out.
 
 ### Debug Mode
 

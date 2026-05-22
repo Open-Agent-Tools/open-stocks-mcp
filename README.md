@@ -238,7 +238,7 @@ All Schwab tools use `schwab_` prefix (e.g., `schwab_get_portfolio`, `schwab_buy
 
 The server handles Robinhood's authentication requirements:
 - **App-Push Approval**: Automatic handling of app-based device approval (approve via Robinhood mobile app).
-- **SMS/Email MFA**: Support for code-based verification using the `ROBINHOOD_MFA_CODE` environment variable or interactive terminal input.
+- **SMS/Email MFA Code**: Set `ROBINHOOD_MFA_CODE` before login attempts to complete code-based verification (time-sensitive, typically 5-10 minutes).
 - **Session Persistence**: Cached and encrypted authentication to reduce re-verification.
 
 ## Development
