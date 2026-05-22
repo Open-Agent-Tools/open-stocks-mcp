@@ -441,7 +441,7 @@ DEFAULT_BROKER=robinhood
 - ✅ All existing tests passing
 
 **Success Criteria**:
-- ✅ All 80 Robinhood tools work through adapter
+- ✅ All 87 Robinhood tools work through adapter
 - ✅ No breaking changes to existing API
 - ✅ Authentication still works
 - ✅ All journey tests pass
@@ -469,7 +469,7 @@ DEFAULT_BROKER=robinhood
 
 **Success Criteria**:
 - ✅ Schwab authentication works (OAuth flow with `easy_client()`)
-- ✅ Core operations implemented across 24 tools
+- ✅ Core operations implemented across 35 tools
 - ✅ Error handling works correctly
 - ✅ Token refresh automatic via schwab-py
 
@@ -482,19 +482,19 @@ DEFAULT_BROKER=robinhood
 
 **Tasks**:
 1. ✅ Create Schwab tool modules (4 files: account, market, trading, options)
-2. ✅ Register `schwab_*` tool set (24 tools total)
+2. ✅ Register `schwab_*` tool set (35 tools total)
 3. ✅ Update tool descriptions to indicate broker
 4. ✅ Export SchwabBroker and RobinhoodBroker from `brokers/__init__.py`
 
 **Deliverables**:
-- ✅ `tools/schwab_account_tools.py` - 5 account tools
+- ✅ `tools/schwab_account_tools.py` - 11 account tools
 - ✅ `tools/schwab_market_tools.py` - 5 market data tools
-- ✅ `tools/schwab_trading_tools.py` - 8 trading tools
-- ✅ `tools/schwab_options_tools.py` - 6 options tools
-- ✅ Updated `server/app.py` with 24 @mcp.tool() registrations
+- ✅ `tools/schwab_trading_tools.py` - 11 trading tools
+- ✅ `tools/schwab_options_tools.py` - 8 options tools
+- ✅ Updated `server/app.py` with 35 @mcp.tool() registrations
 
 **Success Criteria**:
-- ✅ All 24 Schwab tool sets registered
+- ✅ All 35 Schwab tool sets registered
 - ✅ LLM can discover and call Schwab tools
 - ✅ Backward compatibility maintained (Robinhood tools unchanged)
 - ✅ Clear tool naming convention (schwab_ prefix)
