@@ -696,10 +696,20 @@ def test_classify_timeout_error_as_network_error() -> None:
     assert isinstance(error, NetworkError)
 
 
+test_classify_timeout_error_as_network_error = pytest.mark.exception_test(
+    test_classify_timeout_error_as_network_error
+)
+
+
 def test_classify_connection_refused_as_network_error() -> None:
     """ConnectionError 'connection refused' should classify as NetworkError."""
     error = classify_error(ConnectionError("connection refused"))
     assert isinstance(error, NetworkError)
+
+
+test_classify_connection_refused_as_network_error = pytest.mark.exception_test(
+    test_classify_connection_refused_as_network_error
+)
 
 
 @pytest.mark.asyncio
@@ -724,6 +734,13 @@ async def test_execute_with_retry_succeeds_after_transient_network_failure(
     assert call_count == 2
 
 
+test_execute_with_retry_succeeds_after_transient_network_failure = (
+    pytest.mark.exception_test(
+        test_execute_with_retry_succeeds_after_transient_network_failure
+    )
+)
+
+
 @pytest.mark.asyncio
 async def test_execute_with_retry_raises_network_error_on_repeated_timeout(
     monkeypatch: pytest.MonkeyPatch,
@@ -736,3 +753,10 @@ async def test_execute_with_retry_raises_network_error_on_repeated_timeout(
 
     with pytest.raises(NetworkError):
         await execute_with_retry(always_timeout, max_retries=1, delay=0)
+
+
+test_execute_with_retry_raises_network_error_on_repeated_timeout = (
+    pytest.mark.exception_test(
+        test_execute_with_retry_raises_network_error_on_repeated_timeout
+    )
+)

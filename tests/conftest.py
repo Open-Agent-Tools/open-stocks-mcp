@@ -257,6 +257,30 @@ def broker_auth_error_payload() -> dict[str, Any]:
     return broker_payloads.broker_auth_error_payload()
 
 
+@pytest.fixture
+def network_timeout_error() -> TimeoutError:
+    """Deterministic timeout error used by exception tests."""
+    return TimeoutError("request timeout")
+
+
+@pytest.fixture
+def connection_refused_error() -> ConnectionError:
+    """Deterministic connection-refused error used by exception tests."""
+    return ConnectionError("connection refused")
+
+
+@pytest.fixture
+def expired_token_error() -> Exception:
+    """Deterministic expired-token error used by auth exception tests."""
+    return Exception("token expired")
+
+
+@pytest.fixture
+def invalid_credentials_error() -> Exception:
+    """Deterministic invalid-credentials error used by auth exception tests."""
+    return Exception("invalid credentials")
+
+
 # Journey-specific fixtures
 
 
