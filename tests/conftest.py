@@ -246,6 +246,12 @@ def schwab_balances_payload() -> dict[str, Any]:
 
 
 @pytest.fixture
+def schwab_user_preferences_payload() -> dict[str, Any]:
+    """Representative Schwab user preferences payload."""
+    return broker_payloads.schwab_user_preferences_payload()
+
+
+@pytest.fixture
 def broker_auth_error_payload() -> dict[str, Any]:
     """Structured broker authentication error response."""
     return broker_payloads.broker_auth_error_payload()

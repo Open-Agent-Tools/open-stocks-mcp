@@ -360,6 +360,42 @@ def schwab_balances_payload() -> dict[str, Any]:
     )
 
 
+def schwab_user_preferences_payload() -> dict[str, Any]:
+    """Return representative Schwab user preferences response."""
+    return _copy(
+        {
+            "accounts": [
+                {
+                    "accountNumber": "12345678",
+                    "primaryAccount": True,
+                    "type": "MARGIN",
+                    "nickName": "Main Trading",
+                    "accountColor": "GREEN",
+                    "displayAcctId": "12345678",
+                }
+            ],
+            "streamerInfo": [
+                {
+                    "streamerBinaryUrl": "https://streamer.schwab.com",
+                    "streamerSocketUrl": "wss://streamer.schwab.com",
+                    "token": "token123",
+                    "tokenTimestamp": "2023-01-01T00:00:00Z",
+                    "userGroup": "group1",
+                    "accessLevel": "full",
+                    "acl": "acl123",
+                    "appId": "app123",
+                    "authorized": "Y",
+                }
+            ],
+            "userProps": {
+                "firstName": "John",
+                "lastName": "Doe",
+                "email": "john.doe@example.com",
+            },
+        }
+    )
+
+
 def broker_auth_error_payload() -> dict[str, Any]:
     """Return a structured broker authentication error response."""
     return _copy({"result": {"error": "Not authenticated", "status": "error"}})
