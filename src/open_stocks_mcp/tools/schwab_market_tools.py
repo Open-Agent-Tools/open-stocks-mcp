@@ -1,5 +1,6 @@
 """Schwab market data MCP tools using schwab-py library."""
 
+import datetime
 from typing import Any
 
 from schwab.client import Client
@@ -304,3 +305,221 @@ async def search_schwab_instruments(query: str) -> dict[str, Any]:
                 f"No results found for '{query}'. Try using exact ticker symbol."
             )
         )
+
+
+@handle_schwab_errors
+async def get_schwab_market_hours(
+    market: str = "equity", date: str | None = None
+) -> dict[str, Any]:
+    """Get market hours for a given market and optional date.
+
+    Args:
+        market: Market type ('equity', 'option', 'bond', 'forex', 'future')
+        date: Optional ISO date string (e.g. '2026-05-20'). Defaults to today.
+
+    Returns:
+        Dict with market hours data.
+    """
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", f"get market hours for {market}"
+    )
+    if error:
+        return error
+
+    market_map = {
+        "equity": Client.MarketHours.Market.EQUITY,
+        "option": Client.MarketHours.Market.OPTION,
+        "bond": Client.MarketHours.Market.BOND,
+        "forex": Client.MarketHours.Market.FOREX,
+        "future": Client.MarketHours.Market.FUTURE,
+    }
+
+    mapped_market = market_map.get(market.lower())
+    if mapped_market is None:
+        return create_error_response(
+            ValueError(
+                f"Invalid market '{market}'. Valid markets: {list(market_map.keys())}"
+            )
+        )
+
+    parsed_date: datetime.date | None = None
+    if date is not None:
+        try:
+            parsed_date = datetime.date.fromisoformat(date)
+        except ValueError:
+            return create_error_response(
+                ValueError(f"Invalid date format '{date}'. Use ISO format: YYYY-MM-DD")
+            )
+
+    try:
+
+        def _get_market_hours() -> Any:
+            response = broker.client.get_market_hours([mapped_market], date=parsed_date)
+            return response.json()
+
+        hours_data = await execute_broker_request(_get_market_hours, retry_safe=True)
+
+        return create_success_response(
+            {
+                "market": market.lower(),
+                "date": date,
+                "hours": hours_data,
+            }
+        )
+
+    except Exception as e:
+        logger.error(f"Error getting Schwab market hours for {market}: {e}")
+        return create_error_response(e)
+
+
+@handle_schwab_errors
+async def get_schwab_movers(
+    index: str,
+    sort_order: str | None = None,
+    frequency: int | None = None,
+) -> dict[str, Any]:
+    """Get market movers for a given index.
+
+    Args:
+        index: Index to query (e.g. '$DJI', '$SPX', 'NASDAQ', 'NYSE', '$COMPX',
+               'EQUITY_ALL', 'INDEX_ALL', 'OPTION_ALL', 'OPTION_CALL', 'OPTION_PUT',
+               'OTCBB')
+        sort_order: Optional sort order ('PERCENT_CHANGE_UP', 'PERCENT_CHANGE_DOWN',
+                    'VOLUME', 'TRADES')
+        frequency: Optional frequency in minutes (0, 1, 5, 10, 30, 60)
+
+    Returns:
+        Dict with movers data.
+    """
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", f"get movers for {index}"
+    )
+    if error:
+        return error
+
+    index_map = {
+        "$compx": Client.Movers.Index.COMPX,
+        "$dji": Client.Movers.Index.DJI,
+        "equity_all": Client.Movers.Index.EQUITY_ALL,
+        "index_all": Client.Movers.Index.INDEX_ALL,
+        "nasdaq": Client.Movers.Index.NASDAQ,
+        "nyse": Client.Movers.Index.NYSE,
+        "option_all": Client.Movers.Index.OPTION_ALL,
+        "option_call": Client.Movers.Index.OPTION_CALL,
+        "option_put": Client.Movers.Index.OPTION_PUT,
+        "otcbb": Client.Movers.Index.OTCBB,
+        "$spx": Client.Movers.Index.SPX,
+    }
+
+    mapped_index = index_map.get(index.lower())
+    if mapped_index is None:
+        return create_error_response(
+            ValueError(
+                f"Invalid index '{index}'. Valid indexes: {list(index_map.keys())}"
+            )
+        )
+
+    sort_order_map = {
+        "percent_change_up": Client.Movers.SortOrder.PERCENT_CHANGE_UP,
+        "percent_change_down": Client.Movers.SortOrder.PERCENT_CHANGE_DOWN,
+        "volume": Client.Movers.SortOrder.VOLUME,
+        "trades": Client.Movers.SortOrder.TRADES,
+    }
+    mapped_sort_order = (
+        sort_order_map.get(sort_order.lower()) if sort_order is not None else None
+    )
+
+    frequency_map = {
+        0: Client.Movers.Frequency.ZERO,
+        1: Client.Movers.Frequency.ONE,
+        5: Client.Movers.Frequency.FIVE,
+        10: Client.Movers.Frequency.TEN,
+        30: Client.Movers.Frequency.THIRTY,
+        60: Client.Movers.Frequency.SIXTY,
+    }
+    mapped_frequency = frequency_map.get(frequency) if frequency is not None else None
+
+    try:
+
+        def _get_movers() -> Any:
+            response = broker.client.get_movers(
+                mapped_index,
+                sort_order=mapped_sort_order,
+                frequency=mapped_frequency,
+            )
+            return response.json()
+
+        movers_data = await execute_broker_request(_get_movers, retry_safe=True)
+
+        return create_success_response(
+            {
+                "index": index,
+                "movers": movers_data.get("screeners", movers_data),
+            }
+        )
+
+    except Exception as e:
+        logger.error(f"Error getting Schwab movers for {index}: {e}")
+        return create_error_response(e)
+
+
+@handle_schwab_errors
+async def get_schwab_movers_sp500(
+    sort_order: str | None = None,
+    frequency: int | None = None,
+) -> dict[str, Any]:
+    """Get market movers for the S&P 500 index ($SPX).
+
+    Args:
+        sort_order: Optional sort order ('PERCENT_CHANGE_UP', 'PERCENT_CHANGE_DOWN',
+                    'VOLUME', 'TRADES')
+        frequency: Optional frequency in minutes (0, 1, 5, 10, 30, 60)
+
+    Returns:
+        Dict with S&P 500 movers data.
+    """
+    return await get_schwab_movers("$SPX", sort_order=sort_order, frequency=frequency)
+
+
+@handle_schwab_errors
+async def get_schwab_instrument_by_cusip(cusip: str) -> dict[str, Any]:
+    """Get instrument details by CUSIP identifier.
+
+    Args:
+        cusip: CUSIP identifier (leading zeros are preserved, e.g. '037833100')
+
+    Returns:
+        Dict with instrument data.
+    """
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", f"get instrument by CUSIP {cusip}"
+    )
+    if error:
+        return error
+
+    cusip_clean = cusip.strip()
+    if not cusip_clean:
+        return create_error_response(ValueError("CUSIP cannot be empty"))
+
+    try:
+
+        def _get_instrument() -> Any:
+            response = broker.client.get_instrument_by_cusip(cusip_clean)
+            return response.json()
+
+        instrument_data = await execute_broker_request(_get_instrument, retry_safe=True)
+
+        return create_success_response(
+            {
+                "cusip": cusip_clean,
+                "symbol": instrument_data.get("symbol"),
+                "description": instrument_data.get("description"),
+                "exchange": instrument_data.get("exchange"),
+                "asset_type": instrument_data.get("assetType"),
+                "data": instrument_data,
+            }
+        )
+
+    except Exception as e:
+        logger.error(f"Error getting Schwab instrument by CUSIP {cusip}: {e}")
+        return create_error_response(e)
