@@ -1508,6 +1508,86 @@ async def schwab_options_positions(account_hash: str) -> dict[str, Any]:
 
 
 @mcp.tool()
+async def schwab_find_tradable_options(
+    symbol: str,
+    expiration_date: str | None = None,
+    option_type: str | None = None,
+    strike: float | None = None,
+) -> dict[str, Any]:
+    """Find tradable option contracts filtered by expiration, type, and strike.
+
+    Args:
+        symbol: Underlying stock ticker symbol
+        expiration_date: Optional expiration date (YYYY-MM-DD) to filter by
+        option_type: Optional contract type ('call' or 'put')
+        strike: Optional strike price to filter by
+    """
+    return await _schwab_find_tradable_options_impl(
+        symbol, expiration_date, option_type, strike
+    )
+
+
+@mcp.tool()
+async def schwab_option_positions_detailed(account_hash: str) -> dict[str, Any]:
+    """Get open option positions enriched with live market quotes.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+    """
+    return await schwab_get_option_positions_detailed(account_hash)
+
+
+@mcp.tool()
+async def schwab_option_quote(
+    symbol: str,
+    expiration_date: str,
+    strike: float,
+    option_type: str,
+) -> dict[str, Any]:
+    """Get a quote for a single option contract.
+
+    Args:
+        symbol: Underlying stock ticker symbol
+        expiration_date: Contract expiration (YYYY-MM-DD)
+        strike: Strike price
+        option_type: 'call' or 'put'
+    """
+    return await schwab_get_option_quote(
+        symbol, expiration_date, strike, option_type
+    )
+
+
+@mcp.tool()
+async def schwab_option_orders(
+    account_hash: str,
+    max_results: int = 50,
+    status: str | None = None,
+) -> dict[str, Any]:
+    """Get orders filtered to option-legged orders.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+        max_results: Maximum number of orders to fetch (default: 50)
+        status: Optional order status filter (e.g. 'FILLED', 'WORKING')
+    """
+    return await schwab_get_option_orders(account_hash, max_results, status)
+
+
+@mcp.tool()
+async def schwab_open_option_orders(
+    account_hash: str,
+    max_results: int = 50,
+) -> dict[str, Any]:
+    """Get open (working/pending) option-legged orders.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+        max_results: Maximum number of orders to fetch (default: 50)
+    """
+    return await schwab_get_open_option_orders(account_hash, max_results)
+
+
+@mcp.tool()
 async def schwab_option_buy_to_open(
     account_hash: str,
     symbol: str,
