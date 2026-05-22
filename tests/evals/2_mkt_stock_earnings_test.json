@@ -1,0 +1,48 @@
+{
+  "eval_set_id": "stock_earnings_test_set",
+  "name": "Stock Earnings Test",
+  "description": "Test case for retrieving earnings history through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "stock_earnings_test",
+      "conversation": [
+        {
+          "invocation_id": "stock-earnings-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me Microsoft's (MSFT) recent earnings reports."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "I pulled recent earnings information for Microsoft (MSFT), including report periods and headline results for quick review."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "symbol": "MSFT"
+                },
+                "name": "stock_earnings"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

@@ -306,7 +306,38 @@ adk eval examples/google_adk_agent tests/evals/4_ntf_referrals_test.json --confi
 adk eval examples/google_adk_agent tests/evals/4_ntf_account_features_test.json --config_file_path tests/evals/test_config.json
 ```
 
-### 6. Creating Custom Evaluation Tests
+### 6. Market & Research Read-Only Evaluations (`2_mkt_*`)
+
+Read-only evals for market and research MCP tools. These scenarios must remain non-trading and non-mutating.
+
+Credential assumptions:
+- Requires `GOOGLE_API_KEY` and read-only `ROBINHOOD_USERNAME`/`ROBINHOOD_PASSWORD`.
+- No order placement, cancellation, watchlist mutation, or trading tool usage is permitted.
+
+Files and tool coverage:
+- `tests/evals/2_mkt_market_hours_test.json` - `market_hours`
+- `tests/evals/2_mkt_search_stocks_test.json` - `stocks_by_tag`
+- `tests/evals/2_mkt_stock_price_test.json` - `stock_price`
+- `tests/evals/2_mkt_stock_info_test.json` - `stock_info`
+- `tests/evals/2_mkt_price_history_test.json` - `price_history`
+- `tests/evals/2_mkt_top_movers_sp500_test.json` - `top_movers_sp500`
+- `tests/evals/2_mkt_top_100_stocks_test.json` - `top_100_stocks`
+- `tests/evals/2_mkt_top_movers_test.json` - `top_movers`
+- `tests/evals/2_mkt_stock_ratings_test.json` - `stock_ratings`
+- `tests/evals/2_mkt_stock_earnings_test.json` - `stock_earnings`
+- `tests/evals/2_mkt_stock_news_test.json` - `stock_news`
+- `tests/evals/2_mkt_stock_splits_test.json` - `stock_splits`
+- `tests/evals/2_mkt_schwab_quote_test.json` - `schwab_quote`
+- `tests/evals/2_mkt_schwab_price_history_test.json` - `schwab_price_history`
+- `tests/evals/2_mkt_schwab_search_instruments_test.json` - `schwab_search_instruments`
+
+Command pattern:
+
+```bash
+adk eval examples/google_adk_agent tests/evals/2_mkt_stock_news_test.json --config_file_path tests/evals/test_config.json
+```
+
+### 7. Creating Custom Evaluation Tests
 
 #### Test File Structure
 ```json
