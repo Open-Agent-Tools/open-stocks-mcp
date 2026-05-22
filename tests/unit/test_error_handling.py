@@ -4,14 +4,14 @@ import asyncio
 import inspect
 from collections.abc import Callable
 from types import SimpleNamespace
-from typing import Any
+from typing import Any, cast
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
 from mcp.server.fastmcp import FastMCP
 
 from open_stocks_mcp.server.app import mcp as production_mcp
-from open_stocks_mcp.tools import rate_limiter, retry
+from open_stocks_mcp.tools import rate_limiter
 from open_stocks_mcp.tools import session_manager as session_manager_module
 from open_stocks_mcp.tools.error_handling import (
     APIError,
@@ -63,7 +63,7 @@ def _patch_retry_dependencies(
     async def fake_sleep(seconds: float) -> None:
         sleep_calls.append(seconds)
 
-    monkeypatch.setattr(retry.asyncio, "sleep", fake_sleep)
+    monkeypatch.setattr("open_stocks_mcp.tools.retry.asyncio.sleep", fake_sleep)
     return sleep_calls
 
 
@@ -155,6 +155,117 @@ def test_create_no_data_response() -> None:
 
     with_context = create_no_data_response("no data", {"symbol": "AAPL"})
     assert with_context["result"]["symbol"] == "AAPL"
+
+
+class TestDecorators:
+    @pytest.mark.asyncio
+    async def test_handle_robin_stocks_errors_returns_value_on_success(self) -> None:
+        async def echo(x: str) -> str:
+            return x
+
+        decorated = handle_robin_stocks_errors(echo)
+        assert await decorated("AAPL") == "AAPL"
+
+    @pytest.mark.asyncio
+    async def test_handle_robin_stocks_errors_classifies_exception(self) -> None:
+        async def boom() -> dict[str, Any]:
+            raise RuntimeError("rate limit hit")
+
+        decorated = handle_robin_stocks_errors(boom)
+        assert await decorated() == {
+            "result": {
+                "error": "Rate limit exceeded",
+                "error_type": "rate_limit",
+                "status": "error",
+                "context": "in boom",
+            }
+        }
+
+    @pytest.mark.asyncio
+    async def test_handle_robin_stocks_errors_preserves_signature_and_coroutine(
+        self,
+    ) -> None:
+        async def sample(symbol: str, span: str = "day") -> dict[str, str]:
+            return {"symbol": symbol, "span": span}
+
+        decorated = handle_robin_stocks_errors(sample)
+        assert cast(Any, decorated).__wrapped__ is sample
+        assert decorated.__name__ == "sample"
+        assert (
+            inspect.signature(decorated).parameters
+            == inspect.signature(sample).parameters
+        )
+        assert inspect.iscoroutinefunction(decorated) is True
+
+    def test_handle_robin_stocks_sync_errors_returns_value_on_success(self) -> None:
+        def echo(x: str) -> str:
+            return x
+
+        decorated = handle_robin_stocks_sync_errors(echo)
+        assert decorated("AAPL") == "AAPL"
+
+    def test_handle_robin_stocks_sync_errors_classifies_exception(self) -> None:
+        def boom() -> dict[str, Any]:
+            raise RuntimeError("rate limit hit")
+
+        decorated = handle_robin_stocks_sync_errors(boom)
+        assert decorated() == {
+            "result": {
+                "error": "Rate limit exceeded",
+                "error_type": "rate_limit",
+                "status": "error",
+                "context": "in boom",
+            }
+        }
+
+    def test_handle_robin_stocks_sync_errors_preserves_signature_and_coroutine(
+        self,
+    ) -> None:
+        def sample(symbol: str, span: str = "day") -> dict[str, str]:
+            return {"symbol": symbol, "span": span}
+
+        decorated = handle_robin_stocks_sync_errors(sample)
+        assert cast(Any, decorated).__wrapped__ is sample
+        assert decorated.__name__ == "sample"
+        assert (
+            inspect.signature(decorated).parameters
+            == inspect.signature(sample).parameters
+        )
+        assert inspect.iscoroutinefunction(decorated) is False
+
+    @pytest.mark.asyncio
+    async def test_handle_schwab_errors_behaves_like_robin_stocks_variant(
+        self,
+    ) -> None:
+        async def echo(x: str) -> str:
+            return x
+
+        async def boom() -> dict[str, Any]:
+            raise RuntimeError("rate limit hit")
+
+        async def sample(symbol: str, span: str = "day") -> dict[str, str]:
+            return {"symbol": symbol, "span": span}
+
+        echo_decorated = handle_schwab_errors(echo)
+        boom_decorated = handle_schwab_errors(boom)
+        sample_decorated = handle_schwab_errors(sample)
+
+        assert await echo_decorated("AAPL") == "AAPL"
+        assert await boom_decorated() == {
+            "result": {
+                "error": "Rate limit exceeded",
+                "error_type": "rate_limit",
+                "status": "error",
+                "context": "in boom",
+            }
+        }
+        assert cast(Any, sample_decorated).__wrapped__ is sample
+        assert sample_decorated.__name__ == "sample"
+        assert (
+            inspect.signature(sample_decorated).parameters
+            == inspect.signature(sample).parameters
+        )
+        assert inspect.iscoroutinefunction(sample_decorated) is True
 
 
 @pytest.mark.asyncio
@@ -441,7 +552,7 @@ async def test_execute_with_retry_uses_registry_single_flight_for_auth_refresh()
     ) -> bool:
         nonlocal calls
         calls += 1
-        return await refresh_coro()
+        return bool(await refresh_coro())
 
     registry = Mock()
     registry.coordinated_refresh = AsyncMock(side_effect=coordinated_refresh)
