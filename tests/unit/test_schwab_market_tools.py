@@ -434,6 +434,47 @@ class TestSchwabMovers:
 
         assert "result" in result
         assert "error" in result["result"]
+        assert "Invalid index" in result["result"]["error"]
+
+    @pytest.mark.journey_market_data
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    @patch(
+        "open_stocks_mcp.tools.schwab_market_tools.get_authenticated_broker_or_error"
+    )
+    async def test_get_movers_invalid_sort_order(
+        self,
+        mock_get_broker: AsyncMock,
+    ) -> None:
+        """Test movers with invalid sort order."""
+        mock_broker = MagicMock()
+        mock_get_broker.return_value = (mock_broker, None)
+
+        result = await get_schwab_movers("$DJI", sort_order="INVALID_SORT")
+
+        assert "result" in result
+        assert "error" in result["result"]
+        assert "Invalid sort_order" in result["result"]["error"]
+
+    @pytest.mark.journey_market_data
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    @patch(
+        "open_stocks_mcp.tools.schwab_market_tools.get_authenticated_broker_or_error"
+    )
+    async def test_get_movers_invalid_frequency(
+        self,
+        mock_get_broker: AsyncMock,
+    ) -> None:
+        """Test movers with invalid frequency."""
+        mock_broker = MagicMock()
+        mock_get_broker.return_value = (mock_broker, None)
+
+        result = await get_schwab_movers("$DJI", frequency=999)
+
+        assert "result" in result
+        assert "error" in result["result"]
+        assert "Invalid frequency" in result["result"]["error"]
 
     @pytest.mark.journey_market_data
     @pytest.mark.unit

@@ -425,9 +425,15 @@ async def get_schwab_movers(
         "volume": Client.Movers.SortOrder.VOLUME,
         "trades": Client.Movers.SortOrder.TRADES,
     }
-    mapped_sort_order = (
-        sort_order_map.get(sort_order.lower()) if sort_order is not None else None
-    )
+    mapped_sort_order = None
+    if sort_order is not None:
+        mapped_sort_order = sort_order_map.get(sort_order.lower())
+        if mapped_sort_order is None:
+            return create_error_response(
+                ValueError(
+                    f"Invalid sort_order '{sort_order}'. Valid values: {list(sort_order_map.keys())}"
+                )
+            )
 
     frequency_map = {
         0: Client.Movers.Frequency.ZERO,
@@ -437,7 +443,15 @@ async def get_schwab_movers(
         30: Client.Movers.Frequency.THIRTY,
         60: Client.Movers.Frequency.SIXTY,
     }
-    mapped_frequency = frequency_map.get(frequency) if frequency is not None else None
+    mapped_frequency = None
+    if frequency is not None:
+        mapped_frequency = frequency_map.get(frequency)
+        if mapped_frequency is None:
+            return create_error_response(
+                ValueError(
+                    f"Invalid frequency {frequency}. Valid values: {list(frequency_map.keys())}"
+                )
+            )
 
     try:
 
