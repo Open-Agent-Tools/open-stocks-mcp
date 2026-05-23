@@ -678,7 +678,6 @@ async def schwab_get_option_positions_detailed(
                 response = broker.client.get_option_chain(
                     symbol.upper(),
                     contract_type=contract_type,
-                    strike_count=1,
                 )
                 return response.json()
 

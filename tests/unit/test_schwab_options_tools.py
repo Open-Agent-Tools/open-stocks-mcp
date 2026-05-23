@@ -758,6 +758,75 @@ class TestSchwabOptionsTools:
     )
     @patch("open_stocks_mcp.tools.schwab_options_tools.execute_broker_request")
     @patch("open_stocks_mcp.tools.schwab_options_tools.Client")
+    async def test_get_option_positions_detailed_otm_strike_enriched(
+        self,
+        mock_client: MagicMock,
+        mock_to_thread: AsyncMock,
+        mock_get_broker: AsyncMock,
+    ) -> None:
+        """Positions with strikes far OTM/ITM from ATM are still enriched when strike_count is not truncated."""
+        mock_broker = MagicMock()
+        mock_get_broker.return_value = (mock_broker, None)
+        mock_client.Account.Fields.POSITIONS = "positions"
+        mock_client.Options.ContractType.ALL = "ALL"
+
+        # Position at 250.0 — a strike well away from a hypothetical ATM of 170.
+        account_payload = {
+            "securitiesAccount": {
+                "positions": [
+                    {
+                        "shortQuantity": 0.0,
+                        "averagePrice": 1.20,
+                        "longQuantity": 2.0,
+                        "currentDayProfitLoss": -40.0,
+                        "instrument": {
+                            "assetType": "OPTION",
+                            "symbol": "AAPL_011924C250",
+                            "underlyingSymbol": "AAPL",
+                            "putCall": "CALL",
+                            "strikePrice": 250.0,
+                            "expirationDate": "2024-01-19T00:00:00.000Z",
+                        },
+                        "marketValue": 240.0,
+                    }
+                ]
+            }
+        }
+        # Chain contains only the far-OTM strike (250.0), simulating a full-chain response.
+        chain_payload = {
+            "callExpDateMap": {
+                "2024-01-19:30": {
+                    "250.0": [
+                        {
+                            "putCall": "CALL",
+                            "bid": 1.10,
+                            "ask": 1.30,
+                            "last": 1.20,
+                            "mark": 1.20,
+                            "delta": 0.05,
+                        }
+                    ]
+                }
+            }
+        }
+        mock_to_thread.side_effect = [account_payload, chain_payload]
+
+        result = await schwab_get_option_positions_detailed("abc123")
+
+        positions = result["result"]["positions"]
+        assert len(positions) == 1
+        assert positions[0]["quote"]["bid"] == 1.10
+        assert positions[0]["quote"]["ask"] == 1.30
+        assert result["result"]["enrichment_success_rate"] == "100%"
+
+    @pytest.mark.journey_options
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    @patch(
+        "open_stocks_mcp.tools.schwab_options_tools.get_authenticated_broker_or_error"
+    )
+    @patch("open_stocks_mcp.tools.schwab_options_tools.execute_broker_request")
+    @patch("open_stocks_mcp.tools.schwab_options_tools.Client")
     async def test_get_option_positions_detailed_no_positions(
         self,
         mock_client: MagicMock,
