@@ -139,6 +139,14 @@ def test_create_error_response_with_context() -> None:
     assert response["result"]["error_type"] == "rate_limit"
 
 
+def test_create_error_response_error_type_matches_api_error_fallback() -> None:
+    exc = RuntimeError("kaboom")
+    response = create_error_response(exc)
+    assert response["result"]["error_type"] == classify_error(exc).error_type
+    assert response["result"]["error_type"] == "api"
+    assert response["result"]["status"] == "error"
+
+
 def test_create_success_response_default_and_custom_status() -> None:
     payload = {"symbol": "AAPL"}
     response = create_success_response(payload)
