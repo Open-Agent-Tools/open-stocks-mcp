@@ -1,5 +1,7 @@
 """Unit tests for cross-broker portfolio aggregation."""
 
+import asyncio
+import time
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -52,6 +54,79 @@ class MockBroker(BaseBroker):
 
 class TestGetAggregatedPortfolio:
     """Tests for cross-broker portfolio aggregation."""
+
+    @pytest.mark.asyncio
+    @pytest.mark.unit
+    @pytest.mark.journey_portfolio
+    async def test_brokers_collected_concurrently(self):
+        """Broker collection runs concurrently for available brokers."""
+        mock_registry = MagicMock()
+        mock_registry.list_brokers.return_value = ["robinhood", "schwab"]
+
+        rh_broker = MockBroker("robinhood", authenticated=True)
+        schwab_broker = MockBroker("schwab", authenticated=True)
+        mock_registry.get_broker.side_effect = lambda name: (
+            rh_broker if name == "robinhood" else schwab_broker
+        )
+
+        async def _slow_rh_portfolio(*_args, **_kwargs):
+            await asyncio.sleep(0.2)
+            return {
+                "result": {
+                    "market_value": "0",
+                    "equity": "0",
+                    "buying_power": "0",
+                    "status": "success",
+                }
+            }
+
+        async def _slow_rh_positions(*_args, **_kwargs):
+            await asyncio.sleep(0.2)
+            return {"result": {"positions": [], "count": 0, "status": "success"}}
+
+        async def _slow_schwab_accounts(*_args, **_kwargs):
+            await asyncio.sleep(0.2)
+            return {
+                "result": {
+                    "accounts": [
+                        {
+                            "securitiesAccount": {
+                                "currentBalances": {
+                                    "liquidationValue": 0.0,
+                                    "buyingPower": 0.0,
+                                },
+                                "positions": [],
+                            }
+                        }
+                    ],
+                    "count": 1,
+                    "status": "success",
+                }
+            }
+
+        with (
+            patch(
+                "open_stocks_mcp.tools.cross_broker_tools.get_broker_registry",
+                return_value=mock_registry,
+            ),
+            patch(
+                "open_stocks_mcp.tools.cross_broker_tools.get_portfolio",
+                AsyncMock(side_effect=_slow_rh_portfolio),
+            ),
+            patch(
+                "open_stocks_mcp.tools.cross_broker_tools.get_positions",
+                AsyncMock(side_effect=_slow_rh_positions),
+            ),
+            patch(
+                "open_stocks_mcp.tools.cross_broker_tools.get_schwab_accounts",
+                AsyncMock(side_effect=_slow_schwab_accounts),
+            ),
+        ):
+            start = time.perf_counter()
+            await get_aggregated_portfolio()
+            elapsed = time.perf_counter() - start
+
+        assert elapsed < 0.35
 
     @pytest.mark.asyncio
     @pytest.mark.unit
