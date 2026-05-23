@@ -1,5 +1,6 @@
 """Cross-broker portfolio aggregation tools."""
 
+import asyncio
 from typing import Any
 
 from open_stocks_mcp.brokers.registry import get_broker_registry
@@ -28,14 +29,16 @@ async def _collect_robinhood_data(
     summary: dict[str, Any] = {}
     positions: list[dict[str, Any]] = []
 
-    portfolio_result = await get_portfolio()
+    portfolio_result, positions_result = await asyncio.gather(
+        get_portfolio(),
+        get_positions(),
+    )
     portfolio_data = portfolio_result.get("result", {})
     if "error" not in portfolio_data:
         summary["market_value"] = _safe_float(portfolio_data.get("market_value"))
         summary["equity"] = _safe_float(portfolio_data.get("equity"))
         summary["buying_power"] = _safe_float(portfolio_data.get("buying_power"))
 
-    positions_result = await get_positions()
     positions_data = positions_result.get("result", {})
     if "error" not in positions_data:
         for pos in positions_data.get("positions", []):
@@ -117,11 +120,14 @@ async def get_aggregated_portfolio() -> dict[str, Any]:
     broker_names = registry.list_brokers()
 
     brokers_out: dict[str, Any] = {}
+    unavailable_records: dict[str, dict[str, Any]] = {}
     unavailable: list[str] = []
     all_positions: list[dict[str, Any]] = []
     total_market_value = 0.0
     total_equity = 0.0
     total_buying_power = 0.0
+    available_names: list[str] = []
+    coros = []
 
     for name in broker_names:
         broker = registry.get_broker(name)
@@ -131,7 +137,7 @@ async def get_aggregated_portfolio() -> dict[str, Any]:
                 error_msg = (
                     broker.auth_info.error_message or broker.auth_info.status.value
                 )
-            brokers_out[name] = {
+            unavailable_records[name] = {
                 "status": "unavailable",
                 "error": error_msg,
                 "market_value": 0.0,
@@ -144,15 +150,39 @@ async def get_aggregated_portfolio() -> dict[str, Any]:
             logger.warning(f"Broker {name} unavailable for aggregation: {error_msg}")
             continue
 
-        try:
-            if name == "robinhood":
-                summary, positions = await _collect_robinhood_data(name)
-            elif name == "schwab":
-                summary, positions = await _collect_schwab_data(name)
-            else:
-                logger.warning(f"No aggregation collector for broker: {name}")
-                summary, positions = {}, []
+        available_names.append(name)
+        if name == "robinhood":
+            coros.append(_collect_robinhood_data(name))
+        elif name == "schwab":
+            coros.append(_collect_schwab_data(name))
+        else:
+            async def _collect_unknown(broker_name: str) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+                logger.warning(f"No aggregation collector for broker: {broker_name}")
+                return {}, []
 
+            coros.append(_collect_unknown(name))
+
+    if coros:
+        results = await asyncio.gather(*coros, return_exceptions=True)
+        for name, result in zip(available_names, results, strict=True):
+            if isinstance(result, BaseException):
+                logger.error(
+                    f"Error collecting data from broker {name}: {result}",
+                    exc_info=result,
+                )
+                brokers_out[name] = {
+                    "status": "error",
+                    "error": str(result),
+                    "market_value": 0.0,
+                    "equity": 0.0,
+                    "buying_power": 0.0,
+                    "positions": [],
+                    "position_count": 0,
+                }
+                unavailable.append(name)
+                continue
+
+            summary, positions = result
             market_value = summary.get("market_value", 0.0)
             equity = summary.get("equity", 0.0)
             buying_power = summary.get("buying_power", 0.0)
@@ -171,20 +201,11 @@ async def get_aggregated_portfolio() -> dict[str, Any]:
             total_equity += equity
             total_buying_power += buying_power
 
-        except Exception as exc:
-            logger.error(
-                f"Error collecting data from broker {name}: {exc}", exc_info=True
-            )
-            brokers_out[name] = {
-                "status": "error",
-                "error": str(exc),
-                "market_value": 0.0,
-                "equity": 0.0,
-                "buying_power": 0.0,
-                "positions": [],
-                "position_count": 0,
-            }
-            unavailable.append(name)
+    for name in broker_names:
+        if name in brokers_out:
+            continue
+        if name in unavailable_records:
+            brokers_out[name] = unavailable_records[name]
 
     return create_success_response(
         {
