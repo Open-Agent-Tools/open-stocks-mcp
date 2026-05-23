@@ -160,6 +160,8 @@ class TestToolRegistration:
             "schwab_get_aggregate_positions",
             "schwab_get_all_option_positions",
             "schwab_get_open_option_positions",
+            "schwab_option_buy_to_open",
+            "schwab_option_sell_to_close",
         ]
 
         for tool_name in expected_tools:
