@@ -4,7 +4,7 @@ import asyncio
 import inspect
 from collections.abc import Callable
 from types import SimpleNamespace
-from typing import Any
+from typing import Any, cast
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
@@ -163,6 +163,117 @@ def test_create_no_data_response() -> None:
 
     with_context = create_no_data_response("no data", {"symbol": "AAPL"})
     assert with_context["result"]["symbol"] == "AAPL"
+
+
+class TestDecorators:
+    @pytest.mark.asyncio
+    async def test_handle_robin_stocks_errors_returns_value_on_success(self) -> None:
+        async def echo(x: str) -> str:
+            return x
+
+        decorated = handle_robin_stocks_errors(echo)
+        assert await decorated("AAPL") == "AAPL"
+
+    @pytest.mark.asyncio
+    async def test_handle_robin_stocks_errors_classifies_exception(self) -> None:
+        async def boom() -> dict[str, Any]:
+            raise RuntimeError("rate limit hit")
+
+        decorated = handle_robin_stocks_errors(boom)
+        assert await decorated() == {
+            "result": {
+                "error": "Rate limit exceeded",
+                "error_type": "rate_limit",
+                "status": "error",
+                "context": "in boom",
+            }
+        }
+
+    @pytest.mark.asyncio
+    async def test_handle_robin_stocks_errors_preserves_signature_and_coroutine(
+        self,
+    ) -> None:
+        async def sample(symbol: str, span: str = "day") -> dict[str, str]:
+            return {"symbol": symbol, "span": span}
+
+        decorated = handle_robin_stocks_errors(sample)
+        assert cast(Any, decorated).__wrapped__ is sample
+        assert decorated.__name__ == "sample"
+        assert (
+            inspect.signature(decorated).parameters
+            == inspect.signature(sample).parameters
+        )
+        assert inspect.iscoroutinefunction(decorated) is True
+
+    def test_handle_robin_stocks_sync_errors_returns_value_on_success(self) -> None:
+        def echo(x: str) -> str:
+            return x
+
+        decorated = handle_robin_stocks_sync_errors(echo)
+        assert decorated("AAPL") == "AAPL"
+
+    def test_handle_robin_stocks_sync_errors_classifies_exception(self) -> None:
+        def boom() -> dict[str, Any]:
+            raise RuntimeError("rate limit hit")
+
+        decorated = handle_robin_stocks_sync_errors(boom)
+        assert decorated() == {
+            "result": {
+                "error": "Rate limit exceeded",
+                "error_type": "rate_limit",
+                "status": "error",
+                "context": "in boom",
+            }
+        }
+
+    def test_handle_robin_stocks_sync_errors_preserves_signature_and_coroutine(
+        self,
+    ) -> None:
+        def sample(symbol: str, span: str = "day") -> dict[str, str]:
+            return {"symbol": symbol, "span": span}
+
+        decorated = handle_robin_stocks_sync_errors(sample)
+        assert cast(Any, decorated).__wrapped__ is sample
+        assert decorated.__name__ == "sample"
+        assert (
+            inspect.signature(decorated).parameters
+            == inspect.signature(sample).parameters
+        )
+        assert inspect.iscoroutinefunction(decorated) is False
+
+    @pytest.mark.asyncio
+    async def test_handle_schwab_errors_behaves_like_robin_stocks_variant(
+        self,
+    ) -> None:
+        async def echo(x: str) -> str:
+            return x
+
+        async def boom() -> dict[str, Any]:
+            raise RuntimeError("rate limit hit")
+
+        async def sample(symbol: str, span: str = "day") -> dict[str, str]:
+            return {"symbol": symbol, "span": span}
+
+        echo_decorated = handle_schwab_errors(echo)
+        boom_decorated = handle_schwab_errors(boom)
+        sample_decorated = handle_schwab_errors(sample)
+
+        assert await echo_decorated("AAPL") == "AAPL"
+        assert await boom_decorated() == {
+            "result": {
+                "error": "Rate limit exceeded",
+                "error_type": "rate_limit",
+                "status": "error",
+                "context": "in boom",
+            }
+        }
+        assert cast(Any, sample_decorated).__wrapped__ is sample
+        assert sample_decorated.__name__ == "sample"
+        assert (
+            inspect.signature(sample_decorated).parameters
+            == inspect.signature(sample).parameters
+        )
+        assert inspect.iscoroutinefunction(sample_decorated) is True
 
 
 @pytest.mark.asyncio
