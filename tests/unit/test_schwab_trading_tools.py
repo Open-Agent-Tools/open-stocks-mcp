@@ -1,6 +1,7 @@
 """Unit tests for Schwab trading tools."""
 
 import datetime
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
