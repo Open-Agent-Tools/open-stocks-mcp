@@ -39,6 +39,7 @@ class BrokerCapabilities:
     streaming_quotes: bool = False
     options: bool = False
     crypto: bool = False
+    extended_hours: bool = False
 
 
 class BaseBroker(ABC):
