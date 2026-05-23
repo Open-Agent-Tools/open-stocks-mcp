@@ -160,3 +160,67 @@ def test_interactive_mfa_prompt_uses_original_stderr_when_stderr_is_redirected()
     assert "ROBINHOOD MFA REQUIRED" in original_stderr.getvalue()
     assert "Enter verification code:" in original_stderr.getvalue()
     assert "ROBINHOOD MFA REQUIRED" not in redirected_stderr.getvalue()
+
+
+@pytest.mark.unit
+@pytest.mark.journey_account
+@pytest.mark.exception_test
+def test_ensure_authenticated_handles_expired_session_without_unhandled_exception() -> (
+    None
+):
+    manager = SessionManager(session_timeout_hours=0)
+    manager.set_credentials("user", "pass")
+    manager._is_authenticated = True
+    manager.login_time = datetime.now()
+
+    with patch.object(manager, "_authenticate", return_value=False):
+        result = asyncio.run(manager.ensure_authenticated())
+
+    assert result is False
+
+
+@pytest.mark.unit
+@pytest.mark.journey_account
+@pytest.mark.exception_test
+def test_ensure_authenticated_handles_invalid_credentials_login_failure() -> None:
+    manager = SessionManager()
+    manager.set_credentials("user", "pass")
+
+    with (
+        patch(
+            "open_stocks_mcp.tools.session_manager.rh.login",
+            side_effect=Exception("invalid credentials"),
+        ),
+        patch("open_stocks_mcp.tools.session_manager.rh.load_user_profile"),
+    ):
+        result = asyncio.run(manager.ensure_authenticated())
+
+    assert result is False
+    assert manager._is_authenticated is False
+    assert manager._failed_login_attempts == 1
+
+
+@pytest.mark.asyncio
+@pytest.mark.unit
+@pytest.mark.journey_account
+@pytest.mark.exception_test
+async def test_ensure_authenticated_session_returns_error_tuple_on_exception() -> None:
+    from open_stocks_mcp.tools import session_manager as session_manager_module
+
+    fake_manager = SessionManager()
+    with (
+        patch.object(
+            fake_manager,
+            "ensure_authenticated",
+            side_effect=Exception("invalid credentials"),
+        ),
+        patch.object(
+            session_manager_module,
+            "get_session_manager",
+            return_value=fake_manager,
+        ),
+    ):
+        success, error = await session_manager_module.ensure_authenticated_session()
+
+    assert success is False
+    assert error == "invalid credentials"

@@ -110,8 +110,10 @@ class TestSchwabBroker:
         with (
             patch("schwab.auth.easy_client") as mock_easy_client,
             patch("os.isatty", return_value=True),
-            patch.dict("os.environ", {"OPEN_STOCKS_MCP_SCHWAB_REQUEST_TIMEOUT_SECONDS": "2.5"}),
-            patch("open_stocks_mcp.config._global_config", None), # Reset config
+            patch.dict(
+                "os.environ", {"OPEN_STOCKS_MCP_SCHWAB_REQUEST_TIMEOUT_SECONDS": "2.5"}
+            ),
+            patch("open_stocks_mcp.config._global_config", None),  # Reset config
         ):
             mock_client = MagicMock()
             mock_easy_client.return_value = mock_client
@@ -248,6 +250,71 @@ class TestSchwabBroker:
                 "Interactive authentication required"
                 in schwab_broker._auth_info.error_message
             )
+
+    @pytest.mark.asyncio
+    @pytest.mark.unit
+    @pytest.mark.journey_account
+    @pytest.mark.exception_test
+    async def test_authenticate_expired_token_then_bad_oauth_credentials(
+        self, schwab_broker: SchwabBroker
+    ) -> None:
+        token_dir = Path.home() / ".tokens"
+        token_dir.mkdir(parents=True, exist_ok=True)
+        token_file = token_dir / "schwab_token_expired_test.json"
+        token_file.write_text('{"access_token":"expired"}')
+        schwab_broker.token_path = str(token_file)
+
+        try:
+            with (
+                patch(
+                    "schwab.auth.client_from_token_file",
+                    side_effect=Exception("token expired"),
+                ),
+                patch(
+                    "schwab.auth.easy_client", side_effect=Exception("bad credentials")
+                ),
+                patch("os.isatty", return_value=True),
+            ):
+                result = await schwab_broker.authenticate()
+        finally:
+            if token_file.exists():
+                token_file.unlink()
+
+        assert result is False
+        assert schwab_broker.client is None
+        assert schwab_broker._auth_info.status == BrokerAuthStatus.AUTH_FAILED
+        assert schwab_broker._auth_info.error_message is not None
+        assert "bad credentials" in schwab_broker._auth_info.error_message
+
+    @pytest.mark.asyncio
+    @pytest.mark.unit
+    @pytest.mark.journey_account
+    @pytest.mark.exception_test
+    async def test_authenticate_bad_credentials_non_interactive_no_browser(
+        self, schwab_broker: SchwabBroker
+    ) -> None:
+        token_dir = Path.home() / ".tokens"
+        token_dir.mkdir(parents=True, exist_ok=True)
+        token_file = token_dir / "schwab_token_noexist_test.json"
+        if token_file.exists():
+            token_file.unlink()
+        schwab_broker.token_path = str(token_file)
+
+        with (
+            patch("os.isatty", return_value=False),
+            patch("schwab.auth.easy_client") as mock_easy_client,
+        ):
+            result = await schwab_broker.authenticate()
+
+        assert result is False
+        assert schwab_broker._auth_info.status == BrokerAuthStatus.AUTH_FAILED
+        assert schwab_broker.client is None
+        assert schwab_broker._auth_info.error_message is not None
+        assert (
+            "Interactive authentication required"
+            in schwab_broker._auth_info.error_message
+        )
+        mock_easy_client.assert_not_called()
 
     @pytest.mark.asyncio
     async def test_authenticate_import_error(self, schwab_broker: SchwabBroker) -> None:
