@@ -7,6 +7,7 @@ SCHWAB_TOOL_FILES = [
     "schwab_account_tools.py",
     "schwab_market_tools.py",
     "schwab_options_tools.py",
+    "schwab_payment_tools.py",
     "schwab_trading_tools.py",
 ]
 
