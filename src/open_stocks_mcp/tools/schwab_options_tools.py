@@ -672,9 +672,7 @@ async def schwab_get_option_positions_detailed(
             underlying = position.get("underlying_symbol")
             if not underlying or underlying in chain_cache:
                 continue
-            ct = _resolve_contract_type(
-                str(position.get("option_type") or "").lower() or None
-            )
+            ct = _resolve_contract_type("all")
 
             def _get_chain(symbol: str = underlying, contract_type: Any = ct) -> Any:
                 response = broker.client.get_option_chain(

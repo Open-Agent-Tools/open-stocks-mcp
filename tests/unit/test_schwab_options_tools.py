@@ -679,6 +679,85 @@ class TestSchwabOptionsTools:
     )
     @patch("open_stocks_mcp.tools.schwab_options_tools.execute_broker_request")
     @patch("open_stocks_mcp.tools.schwab_options_tools.Client")
+    async def test_get_option_positions_detailed_mixed_call_put_same_underlying(
+        self,
+        mock_client: MagicMock,
+        mock_to_thread: AsyncMock,
+        mock_get_broker: AsyncMock,
+    ) -> None:
+        """Mixed CALL/PUT positions on one underlying both enrich from one ALL-chain fetch."""
+        mock_broker = MagicMock()
+        mock_get_broker.return_value = (mock_broker, None)
+        mock_client.Account.Fields.POSITIONS = "positions"
+        mock_client.Options.ContractType.ALL = "ALL"
+
+        account_payload = {
+            "securitiesAccount": {
+                "positions": [
+                    {
+                        "shortQuantity": 0.0,
+                        "averagePrice": 6.50,
+                        "longQuantity": 1.0,
+                        "currentDayProfitLoss": 50.0,
+                        "instrument": {
+                            "assetType": "OPTION",
+                            "symbol": "AAPL_011924C170",
+                            "underlyingSymbol": "AAPL",
+                            "putCall": "CALL",
+                            "strikePrice": 170.0,
+                            "expirationDate": "2024-01-19T00:00:00.000Z",
+                        },
+                        "marketValue": 700.0,
+                    },
+                    {
+                        "shortQuantity": 0.0,
+                        "averagePrice": 3.20,
+                        "longQuantity": 1.0,
+                        "currentDayProfitLoss": 25.0,
+                        "instrument": {
+                            "assetType": "OPTION",
+                            "symbol": "AAPL_011924P170",
+                            "underlyingSymbol": "AAPL",
+                            "putCall": "PUT",
+                            "strikePrice": 170.0,
+                            "expirationDate": "2024-01-19T00:00:00.000Z",
+                        },
+                        "marketValue": 330.0,
+                    },
+                ]
+            }
+        }
+        chain_payload = {
+            "callExpDateMap": {
+                "2024-01-19:30": {
+                    "170.0": [{"putCall": "CALL", "bid": 6.60, "ask": 6.70, "last": 6.65}]
+                }
+            },
+            "putExpDateMap": {
+                "2024-01-19:30": {
+                    "170.0": [{"putCall": "PUT", "bid": 3.10, "ask": 3.20, "last": 3.15}]
+                }
+            },
+        }
+        mock_to_thread.side_effect = [account_payload, chain_payload]
+
+        result = await schwab_get_option_positions_detailed("abc123")
+
+        positions = result["result"]["positions"]
+        assert len(positions) == 2
+        assert positions[0]["quote"]["bid"] == 6.60
+        assert positions[1]["quote"]["bid"] == 3.10
+        assert result["result"]["enrichment_success_rate"] == "100%"
+        _assert_retry_safe(mock_to_thread, True)
+
+    @pytest.mark.journey_options
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    @patch(
+        "open_stocks_mcp.tools.schwab_options_tools.get_authenticated_broker_or_error"
+    )
+    @patch("open_stocks_mcp.tools.schwab_options_tools.execute_broker_request")
+    @patch("open_stocks_mcp.tools.schwab_options_tools.Client")
     async def test_get_option_positions_detailed_no_positions(
         self,
         mock_client: MagicMock,
