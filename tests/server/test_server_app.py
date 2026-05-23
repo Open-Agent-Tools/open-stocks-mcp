@@ -197,6 +197,28 @@ class TestToolRegistration:
             assert tool_name in tool_names, f"Tool {tool_name} not registered"
 
     @pytest.mark.asyncio
+    async def test_schwab_trading_expansion_tools_are_registered(self) -> None:
+        """Test that all 10 new Schwab trading expansion tools are registered."""
+        tools_list = await mcp.list_tools()
+        tool_names = [tool.name for tool in tools_list]
+
+        expected_tools = [
+            "schwab_order_sell_stop",
+            "schwab_get_open_stock_orders",
+            "schwab_cancel_all_stock_orders",
+            "schwab_order_buy_option_limit",
+            "schwab_order_sell_option_limit",
+            "schwab_cancel_option_order",
+            "schwab_cancel_all_option_orders",
+            "schwab_order_option_credit_spread",
+            "schwab_order_option_debit_spread",
+            "schwab_replace_order",
+        ]
+
+        for tool_name in expected_tools:
+            assert tool_name in tool_names, f"Tool {tool_name} not registered"
+
+    @pytest.mark.asyncio
     async def test_account_info_tool_callable(self) -> None:
         """Test that account_info tool is callable."""
         tools_list = await mcp.list_tools()

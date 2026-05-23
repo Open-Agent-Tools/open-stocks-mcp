@@ -185,6 +185,36 @@ from open_stocks_mcp.tools.schwab_trading_tools import (
     schwab_sell_limit,
     schwab_sell_market,
 )
+from open_stocks_mcp.tools.schwab_trading_tools import (
+    schwab_cancel_all_option_orders as _schwab_cancel_all_option_orders,
+)
+from open_stocks_mcp.tools.schwab_trading_tools import (
+    schwab_cancel_all_stock_orders as _schwab_cancel_all_stock_orders,
+)
+from open_stocks_mcp.tools.schwab_trading_tools import (
+    schwab_cancel_option_order as _schwab_cancel_option_order,
+)
+from open_stocks_mcp.tools.schwab_trading_tools import (
+    schwab_get_open_stock_orders as _schwab_get_open_stock_orders,
+)
+from open_stocks_mcp.tools.schwab_trading_tools import (
+    schwab_order_buy_option_limit as _schwab_order_buy_option_limit,
+)
+from open_stocks_mcp.tools.schwab_trading_tools import (
+    schwab_order_option_credit_spread as _schwab_order_option_credit_spread,
+)
+from open_stocks_mcp.tools.schwab_trading_tools import (
+    schwab_order_option_debit_spread as _schwab_order_option_debit_spread,
+)
+from open_stocks_mcp.tools.schwab_trading_tools import (
+    schwab_order_sell_option_limit as _schwab_order_sell_option_limit,
+)
+from open_stocks_mcp.tools.schwab_trading_tools import (
+    schwab_order_sell_stop as _schwab_order_sell_stop,
+)
+from open_stocks_mcp.tools.schwab_trading_tools import (
+    schwab_replace_order as _schwab_replace_order,
+)
 from open_stocks_mcp.tools.session_manager import get_session_manager
 from open_stocks_mcp.tools.unified_watchlist_tools import (
     add_symbols_to_unified_watchlist,
@@ -1444,6 +1474,173 @@ async def schwab_get_transaction(
         transaction_id: Transaction ID to retrieve
     """
     return await get_schwab_transaction(account_hash, transaction_id)
+
+
+@mcp.tool()
+async def schwab_order_sell_stop(
+    account_hash: str, symbol: str, quantity: int, stop_price: str
+) -> dict[str, Any]:
+    """Place a stop sell order for stock.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+        symbol: Stock ticker symbol
+        quantity: Number of shares to sell
+        stop_price: Stop trigger price as a string (e.g. "148.00")
+    """
+    return await _schwab_order_sell_stop(account_hash, symbol, quantity, stop_price)
+
+
+@mcp.tool()
+async def schwab_get_open_stock_orders(
+    account_hash: str, max_results: int = 200
+) -> dict[str, Any]:
+    """Get open (cancellable) equity orders for a Schwab account.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+        max_results: Maximum orders to fetch from API before filtering
+    """
+    return await _schwab_get_open_stock_orders(account_hash, max_results)
+
+
+@mcp.tool()
+async def schwab_cancel_all_stock_orders(
+    account_hash: str, max_results: int = 200
+) -> dict[str, Any]:
+    """Cancel all open equity orders for a Schwab account.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+        max_results: Maximum orders to fetch before filtering
+    """
+    return await _schwab_cancel_all_stock_orders(account_hash, max_results)
+
+
+@mcp.tool()
+async def schwab_order_buy_option_limit(
+    account_hash: str, option_symbol: str, quantity: int, price: str
+) -> dict[str, Any]:
+    """Place a limit buy-to-open order for an option contract.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+        option_symbol: OCC option symbol (e.g. "AAPL  251219C00150000")
+        quantity: Number of contracts to buy
+        price: Limit price as a string (e.g. "5.50")
+    """
+    return await _schwab_order_buy_option_limit(
+        account_hash, option_symbol, quantity, price
+    )
+
+
+@mcp.tool()
+async def schwab_order_sell_option_limit(
+    account_hash: str, option_symbol: str, quantity: int, price: str
+) -> dict[str, Any]:
+    """Place a limit sell-to-close order for an option contract.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+        option_symbol: OCC option symbol (e.g. "AAPL  251219C00150000")
+        quantity: Number of contracts to sell
+        price: Limit price as a string (e.g. "4.00")
+    """
+    return await _schwab_order_sell_option_limit(
+        account_hash, option_symbol, quantity, price
+    )
+
+
+@mcp.tool()
+async def schwab_cancel_option_order(
+    account_hash: str, order_id: str
+) -> dict[str, Any]:
+    """Cancel a specific option order.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+        order_id: Option order ID to cancel
+    """
+    return await _schwab_cancel_option_order(account_hash, order_id)
+
+
+@mcp.tool()
+async def schwab_cancel_all_option_orders(
+    account_hash: str, max_results: int = 200
+) -> dict[str, Any]:
+    """Cancel all open option orders for a Schwab account.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+        max_results: Maximum orders to fetch before filtering
+    """
+    return await _schwab_cancel_all_option_orders(account_hash, max_results)
+
+
+@mcp.tool()
+async def schwab_order_option_credit_spread(
+    account_hash: str,
+    option_type: str,
+    short_symbol: str,
+    long_symbol: str,
+    quantity: int,
+    net_credit: str,
+) -> dict[str, Any]:
+    """Place a vertical credit spread option order.
+
+    For CALL: bear call spread. For PUT: bull put spread.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+        option_type: "CALL" or "PUT"
+        short_symbol: OCC symbol for the leg you sell (collects premium)
+        long_symbol: OCC symbol for the hedge/protective leg
+        quantity: Number of spread contracts
+        net_credit: Net credit received as a string (e.g. "2.00")
+    """
+    return await _schwab_order_option_credit_spread(
+        account_hash, option_type, short_symbol, long_symbol, quantity, net_credit
+    )
+
+
+@mcp.tool()
+async def schwab_order_option_debit_spread(
+    account_hash: str,
+    option_type: str,
+    long_symbol: str,
+    short_symbol: str,
+    quantity: int,
+    net_debit: str,
+) -> dict[str, Any]:
+    """Place a vertical debit spread option order.
+
+    For CALL: bull call spread. For PUT: bear put spread.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+        option_type: "CALL" or "PUT"
+        long_symbol: OCC symbol for the leg you buy (main directional position)
+        short_symbol: OCC symbol for the hedge/short leg
+        quantity: Number of spread contracts
+        net_debit: Net debit paid as a string (e.g. "3.00")
+    """
+    return await _schwab_order_option_debit_spread(
+        account_hash, option_type, long_symbol, short_symbol, quantity, net_debit
+    )
+
+
+@mcp.tool()
+async def schwab_replace_order(
+    account_hash: str, order_id: str, order_spec: dict[str, Any]
+) -> dict[str, Any]:
+    """Replace (modify) an existing Schwab order.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+        order_id: ID of the order to replace
+        order_spec: New order specification dict (use order builder helpers)
+    """
+    return await _schwab_replace_order(account_hash, order_id, order_spec)
 
 
 # Schwab Options Tools
