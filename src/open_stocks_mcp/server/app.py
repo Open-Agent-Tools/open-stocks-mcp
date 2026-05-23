@@ -159,6 +159,12 @@ from open_stocks_mcp.tools.schwab_options_tools import (
     get_schwab_option_expirations,
     get_schwab_options_positions,
 )
+from open_stocks_mcp.tools.schwab_options_tools import (
+    schwab_option_buy_to_open as _schwab_option_buy_to_open_impl,
+)
+from open_stocks_mcp.tools.schwab_options_tools import (
+    schwab_option_sell_to_close as _schwab_option_sell_to_close_impl,
+)
 from open_stocks_mcp.tools.schwab_portfolio_tools import (
     get_schwab_aggregate_positions,
     get_schwab_all_option_positions,
@@ -171,6 +177,7 @@ from open_stocks_mcp.tools.schwab_trading_tools import (
     get_schwab_order_by_id,
     get_schwab_orders,
     get_schwab_transaction,
+    place_schwab_order,
     schwab_buy_limit,
     schwab_buy_market,
     schwab_get_transactions,
@@ -1391,6 +1398,14 @@ async def schwab_get_order(account_hash: str, order_id: str) -> dict[str, Any]:
     return await get_schwab_order_by_id(account_hash, order_id)
 
 
+@mcp.tool()
+async def schwab_place_order(
+    account_hash: str, order_spec: dict[str, Any]
+) -> dict[str, Any]:
+    """Place a generic order with Schwab using a pre-built order spec."""
+    return await place_schwab_order(account_hash, order_spec)
+
+
 async def schwab_transactions(
     account_hash: str,
     start_date: str | None = None,
@@ -1490,6 +1505,36 @@ async def schwab_options_positions(account_hash: str) -> dict[str, Any]:
         account_hash: Account hash from schwab_account_numbers
     """
     return await get_schwab_options_positions(account_hash)
+
+
+@mcp.tool()
+async def schwab_option_buy_to_open(
+    account_hash: str,
+    symbol: str,
+    quantity: int,
+    option_type: str,
+    strike: float,
+    expiration: str,
+) -> dict[str, Any]:
+    """Buy an option to open a position (Schwab)."""
+    return await _schwab_option_buy_to_open_impl(
+        account_hash, symbol, quantity, option_type, strike, expiration
+    )
+
+
+@mcp.tool()
+async def schwab_option_sell_to_close(
+    account_hash: str,
+    symbol: str,
+    quantity: int,
+    option_type: str,
+    strike: float,
+    expiration: str,
+) -> dict[str, Any]:
+    """Sell an option to close a position (Schwab)."""
+    return await _schwab_option_sell_to_close_impl(
+        account_hash, symbol, quantity, option_type, strike, expiration
+    )
 
 
 @mcp.tool()

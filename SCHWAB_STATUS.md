@@ -9,14 +9,14 @@
 
 ## Summary
 
-The Schwab integration is **fully implemented and merged to main**. All code is production-ready and tested. The integration adds **24 new Schwab MCP tools** alongside the existing **80 Robinhood tools** for a total of **104 tools**.
+The Schwab integration is **fully implemented and merged to main**. All code is production-ready and tested. The integration adds **35 new Schwab MCP tools** alongside the existing **87 Robinhood tools** for a total of **122 tools**.
 
 **Next Step**: Apply for Schwab Developer API credentials at https://developer.schwab.com/
 
 
 ## Roadmap Reconciliation
 
-This status page documents the currently implemented **24 Schwab MCP tools** as the shipped core surface.
+This status page documents the currently implemented **35 Schwab MCP tools** as the shipped core surface.
 
 The broader comparison-roadmap target (67 parity tools plus 9 Schwab bonus tools) is tracked as decomposition work under parent issue #187 and child issues:
 - #192 account/profile consolidation
@@ -56,11 +56,11 @@ Roadmap deferral and not-applicable scope decisions are tracked in #201 and mirr
    - Interactive browser-based OAuth flow
 
 4. **Tool Registration** (Phase 4) ✅
-   - **24 Schwab MCP tools** registered:
-     - 5 account tools (account_numbers, balances, portfolio, etc.)
+   - **35 Schwab MCP tools** registered:
+     - 11 account tools (account_numbers, balances, portfolio, etc.)
      - 5 market data tools (quotes, price history, search)
-     - 8 trading tools (buy/sell market/limit, order management)
-     - 6 options tools (chains, expirations, positions, buy/sell)
+     - 11 trading tools (buy/sell market/limit, order management, transactions)
+     - 8 options tools (chains, expirations, positions, buy/sell)
    - All tools use `schwab_` prefix
    - Clear tool descriptions indicating broker
 
@@ -120,7 +120,7 @@ docs/
 ```
 
 ### Modified Files (6 files)
-- `src/open_stocks_mcp/server/app.py` - Added 24 Schwab tool registrations (+481 lines)
+- `src/open_stocks_mcp/server/app.py` - Added 35 Schwab tool registrations
 - `src/open_stocks_mcp/tools/error_handling.py` - Added `handle_schwab_errors` decorator
 - `pyproject.toml` - Added `schwab-py>=1.5.0` dependency
 - `README.md` - Updated for multi-broker support
@@ -258,7 +258,7 @@ open-stocks-mcp-server --transport http --port 3001
 ```python
 # List all tools (includes both brokers)
 await list_available_tools()
-# Returns: 104 tools (80 robinhood, 24 schwab)
+# Returns: 122 tools (87 robinhood, 35 schwab)
 
 # Schwab tools are prefixed with "schwab_"
 # Robinhood tools have no prefix (backward compatible)
@@ -324,7 +324,7 @@ if error:
 
 ### When API Approved
 5. Test OAuth authentication flow
-6. Live test all 24 Schwab tools
+6. Live test all 35 Schwab tools
 7. Create Schwab journey tests
 8. Validate multi-broker scenarios
 9. Performance testing with real data

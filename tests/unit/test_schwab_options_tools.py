@@ -394,3 +394,57 @@ class TestSchwabOptionsTools:
         assert "API Error" in result["result"]["error"]
         if function in {schwab_option_buy_to_open, schwab_option_sell_to_close}:
             _assert_retry_safe(mock_to_thread, False)
+
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    async def test_schwab_option_buy_to_open_mcp_wrapper(self) -> None:
+        """Test the MCP wrapper for schwab_option_buy_to_open."""
+        from unittest.mock import AsyncMock, patch
+        from open_stocks_mcp.server.app import schwab_option_buy_to_open
+
+        with patch(
+            "open_stocks_mcp.server.app._schwab_option_buy_to_open_impl",
+            new_callable=AsyncMock,
+        ) as mock_impl:
+            mock_impl.return_value = {"result": {"status": "order_placed"}}
+
+            result = await schwab_option_buy_to_open(
+                account_hash="HASH",
+                symbol="AAPL",
+                quantity=1,
+                option_type="CALL",
+                strike=150.0,
+                expiration="2026-06-19",
+            )
+
+            mock_impl.assert_awaited_once_with(
+                "HASH", "AAPL", 1, "CALL", 150.0, "2026-06-19"
+            )
+            assert result == {"result": {"status": "order_placed"}}
+
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    async def test_schwab_option_sell_to_close_mcp_wrapper(self) -> None:
+        """Test the MCP wrapper for schwab_option_sell_to_close."""
+        from unittest.mock import AsyncMock, patch
+        from open_stocks_mcp.server.app import schwab_option_sell_to_close
+
+        with patch(
+            "open_stocks_mcp.server.app._schwab_option_sell_to_close_impl",
+            new_callable=AsyncMock,
+        ) as mock_impl:
+            mock_impl.return_value = {"result": {"status": "order_placed"}}
+
+            result = await schwab_option_sell_to_close(
+                account_hash="HASH",
+                symbol="AAPL",
+                quantity=1,
+                option_type="CALL",
+                strike=150.0,
+                expiration="2026-06-19",
+            )
+
+            mock_impl.assert_awaited_once_with(
+                "HASH", "AAPL", 1, "CALL", 150.0, "2026-06-19"
+            )
+            assert result == {"result": {"status": "order_placed"}}

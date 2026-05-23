@@ -138,7 +138,7 @@ ROBINHOOD_PASSWORD="password"
 ## Current Development Status
 
 ### Completed (v0.6.4)
-- ✅ **Phases 0-7**: 79 MCP tools with complete trading functionality (4 deprecated)
+- ✅ **Phases 0-7**: 122 MCP tools with complete trading functionality (4 deprecated)
 - ✅ **Enhanced Options Tools**: New `get_open_option_positions_with_details()` with call/put enrichment
 - ✅ **Journey Testing**: 11 user journey categories for organized testing
 - ✅ **HTTP Transport**: Server-Sent Events (SSE) on port 3001
