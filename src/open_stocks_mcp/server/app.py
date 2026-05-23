@@ -144,6 +144,10 @@ from open_stocks_mcp.tools.schwab_account_tools import (
 )
 from open_stocks_mcp.tools.schwab_market_tools import (
     get_schwab_instrument,
+    get_schwab_instrument_by_cusip,
+    get_schwab_market_hours,
+    get_schwab_movers,
+    get_schwab_movers_sp500,
     get_schwab_price_history,
     get_schwab_quote,
     get_schwab_quotes,
@@ -1236,6 +1240,63 @@ async def schwab_search_instruments(query: str) -> dict[str, Any]:
         query: Symbol or company name to search
     """
     return await search_schwab_instruments(query)
+
+
+@mcp.tool()
+async def schwab_get_market_hours(
+    market: str = "equity", date: str | None = None
+) -> dict[str, Any]:
+    """Get market hours for a given market and optional date.
+
+    Args:
+        market: Market type ('equity', 'option', 'bond', 'forex', 'future')
+        date: Optional ISO date string (e.g. '2026-05-20'). Defaults to today.
+    """
+    return await get_schwab_market_hours(market, date)
+
+
+@mcp.tool()
+async def schwab_get_movers(
+    index: str,
+    sort_order: str | None = None,
+    frequency: int | None = None,
+) -> dict[str, Any]:
+    """Get market movers for a given index.
+
+    Args:
+        index: Index to query (e.g. '$DJI', '$SPX', 'NASDAQ', 'NYSE', '$COMPX',
+               'EQUITY_ALL', 'INDEX_ALL', 'OPTION_ALL', 'OPTION_CALL', 'OPTION_PUT',
+               'OTCBB')
+        sort_order: Optional sort order ('PERCENT_CHANGE_UP', 'PERCENT_CHANGE_DOWN',
+                    'VOLUME', 'TRADES')
+        frequency: Optional frequency in minutes (0, 1, 5, 10, 30, 60)
+    """
+    return await get_schwab_movers(index, sort_order, frequency)
+
+
+@mcp.tool()
+async def schwab_get_movers_sp500(
+    sort_order: str | None = None,
+    frequency: int | None = None,
+) -> dict[str, Any]:
+    """Get market movers for the S&P 500 index ($SPX).
+
+    Args:
+        sort_order: Optional sort order ('PERCENT_CHANGE_UP', 'PERCENT_CHANGE_DOWN',
+                    'VOLUME', 'TRADES')
+        frequency: Optional frequency in minutes (0, 1, 5, 10, 30, 60)
+    """
+    return await get_schwab_movers_sp500(sort_order, frequency)
+
+
+@mcp.tool()
+async def schwab_get_instrument_by_cusip(cusip: str) -> dict[str, Any]:
+    """Get instrument details by CUSIP identifier.
+
+    Args:
+        cusip: CUSIP identifier (leading zeros are preserved, e.g. '037833100')
+    """
+    return await get_schwab_instrument_by_cusip(cusip)
 
 
 # Schwab Trading Tools
