@@ -597,6 +597,24 @@ class TestSchwabOptionsTools:
         assert result["result"]["status"] == "error"
         assert "Invalid option_type" in result["result"]["error"]
 
+    @pytest.mark.journey_options
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    @patch(
+        "open_stocks_mcp.tools.schwab_options_tools.get_authenticated_broker_or_error"
+    )
+    async def test_find_tradable_options_rejects_all(
+        self, mock_get_broker: AsyncMock
+    ) -> None:
+        """option_type='all' must be rejected — public contract is call/put-only."""
+        mock_broker = MagicMock()
+        mock_get_broker.return_value = (mock_broker, None)
+
+        result = await schwab_find_tradable_options("AAPL", option_type="all")
+
+        assert result["result"]["status"] == "error"
+        assert "Invalid option_type" in result["result"]["error"]
+
     # ---- schwab_get_option_positions_detailed --------------------------
 
     @pytest.mark.journey_options
@@ -951,6 +969,26 @@ class TestSchwabOptionsTools:
 
         result = await schwab_get_option_quote(
             "AAPL", "2024-01-19", 170.0, "spread"
+        )
+
+        assert result["result"]["status"] == "error"
+        assert "Invalid option_type" in result["result"]["error"]
+
+    @pytest.mark.journey_options
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    @patch(
+        "open_stocks_mcp.tools.schwab_options_tools.get_authenticated_broker_or_error"
+    )
+    async def test_get_option_quote_rejects_all(
+        self, mock_get_broker: AsyncMock
+    ) -> None:
+        """option_type='all' must be rejected — single-contract quote is call/put-only."""
+        mock_broker = MagicMock()
+        mock_get_broker.return_value = (mock_broker, None)
+
+        result = await schwab_get_option_quote(
+            "AAPL", "2024-01-19", 170.0, "all"
         )
 
         assert result["result"]["status"] == "error"

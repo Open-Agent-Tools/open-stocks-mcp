@@ -408,6 +408,9 @@ _OPEN_ORDER_STATUSES = {
 }
 
 
+_CALL_PUT_ONLY = ("call", "put")
+
+
 def _resolve_contract_type(option_type: str | None) -> Any:
     """Resolve a string option type to a schwab-py ContractType enum value."""
     if option_type is None:
@@ -417,6 +420,16 @@ def _resolve_contract_type(option_type: str | None) -> Any:
         return None
     enum_name = _CONTRACT_TYPE_MAP[key]
     return getattr(Client.Options.ContractType, enum_name, None)
+
+
+def _resolve_call_put_only(option_type: str | None) -> Any:
+    """Resolve option_type to a ContractType enum, accepting only 'call' or 'put'."""
+    if option_type is None:
+        return None
+    key = option_type.lower()
+    if key not in _CALL_PUT_ONLY:
+        return None
+    return _resolve_contract_type(key)
 
 
 def _flatten_chain_map(chain_map: dict[str, Any], put_call: str) -> list[dict[str, Any]]:
@@ -535,11 +548,11 @@ async def schwab_find_tradable_options(
 
     ct = None
     if option_type is not None:
-        ct = _resolve_contract_type(option_type)
+        ct = _resolve_call_put_only(option_type)
         if ct is None:
             return create_error_response(
                 ValueError(
-                    f"Invalid option_type. Valid options: {list(_CONTRACT_TYPE_MAP.keys())}"
+                    f"Invalid option_type. Valid options: {list(_CALL_PUT_ONLY)}"
                 )
             )
 
@@ -767,11 +780,11 @@ async def schwab_get_option_quote(
     if error:
         return error
 
-    ct = _resolve_contract_type(option_type)
+    ct = _resolve_call_put_only(option_type)
     if ct is None:
         return create_error_response(
             ValueError(
-                f"Invalid option_type. Valid options: {list(_CONTRACT_TYPE_MAP.keys())}"
+                f"Invalid option_type. Valid options: {list(_CALL_PUT_ONLY)}"
             )
         )
 
