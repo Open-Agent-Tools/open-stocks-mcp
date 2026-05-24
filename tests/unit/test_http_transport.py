@@ -2,7 +2,7 @@
 
 from collections.abc import Iterator
 from typing import Any
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import pytest
 from fastapi.testclient import TestClient
@@ -106,7 +106,7 @@ class TestHttpTransportUnit:
 
     @patch("open_stocks_mcp.server.http_transport.get_session_manager", return_value=None)
     def test_health_returns_503_when_session_manager_unavailable(
-        self, _mock_get_session_manager: Any, client: TestClient
+        self, _mock_get_session_manager: Mock, client: TestClient
     ) -> None:
         response = client.get("/health")
         assert response.status_code == 503
@@ -116,7 +116,7 @@ class TestHttpTransportUnit:
         "open_stocks_mcp.server.http_transport.get_metrics_collector", return_value=None
     )
     def test_health_returns_503_when_metrics_collector_unavailable(
-        self, _mock_get_metrics_collector: Any, client: TestClient
+        self, _mock_get_metrics_collector: Mock, client: TestClient
     ) -> None:
         response = client.get("/health")
         assert response.status_code == 503
@@ -124,7 +124,7 @@ class TestHttpTransportUnit:
 
     @patch("open_stocks_mcp.server.http_transport.get_metrics_collector", return_value=None)
     def test_status_returns_503_when_metrics_collector_unavailable(
-        self, _mock_get_metrics_collector: Any, client: TestClient
+        self, _mock_get_metrics_collector: Mock, client: TestClient
     ) -> None:
         response = client.get("/status")
         assert response.status_code == 503
@@ -132,7 +132,7 @@ class TestHttpTransportUnit:
 
     @patch("open_stocks_mcp.server.http_transport.get_session_manager", return_value=None)
     def test_status_returns_503_when_session_manager_unavailable(
-        self, _mock_get_session_manager: Any, client: TestClient
+        self, _mock_get_session_manager: Mock, client: TestClient
     ) -> None:
         response = client.get("/status")
         assert response.status_code == 503
@@ -140,7 +140,7 @@ class TestHttpTransportUnit:
 
     @patch("open_stocks_mcp.server.http_transport.get_session_manager", return_value=None)
     def test_session_refresh_returns_503_when_session_manager_unavailable(
-        self, _mock_get_session_manager: Any, client: TestClient
+        self, _mock_get_session_manager: Mock, client: TestClient
     ) -> None:
         response = client.post("/session/refresh")
         assert response.status_code == 503
@@ -151,7 +151,7 @@ class TestHttpTransportUnit:
         side_effect=RuntimeError("boom"),
     )
     def test_tools_endpoint_returns_500_when_list_available_tools_raises(
-        self, _mock_list_available_tools: Any, client: TestClient
+        self, _mock_list_available_tools: Mock, client: TestClient
     ) -> None:
         response = client.get("/tools")
         assert response.status_code == 500
