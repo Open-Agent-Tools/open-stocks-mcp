@@ -624,7 +624,7 @@ def create_http_server(
                                 "jsonrpc": "2.0",
                                 "error": {
                                     "code": -32602,
-                                    "message": "Invalid params: missing tool name",
+                                    "message": "Invalid params: missing 'name'",
                                 },
                                 "id": request_id,
                             },
