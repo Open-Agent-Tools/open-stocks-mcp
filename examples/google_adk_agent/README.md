@@ -1,6 +1,6 @@
 # Stock Trading Agent (Google ADK + MCP)
 
-A comprehensive stock trading agent that uses Google ADK to connect with our open-stocks-mcp server for Robin Stocks and Schwab API operations. This agent provides access to 60+ MCP tools for complete stock market analysis and portfolio management across multiple brokers.
+A comprehensive stock trading agent that uses Google ADK to connect with our open-stocks-mcp server for Robinhood and Schwab API operations. This agent provides access to 60+ MCP tools for complete stock market analysis and portfolio management across multiple brokers.
 
 > **📁 Note**: Evaluation tests and documentation have been moved to `tests/evals/` for better organization alongside the main test suite. See `tests/evals/ADK-testing-evals.md` for comprehensive testing documentation.
 
@@ -92,7 +92,7 @@ The agent has access to 60+ MCP tools organized into these categories:
 - **`options_orders`**: Options order history
 
 ### **Schwab Order Management (3 tools)**
-- **`schwab_orders`**: Account order history and status
+- **`schwab_orders`**: Account order history and status (read-only)
 - **`schwab_get_order`**: Specific order details
 - **`schwab_cancel_order`**: Cancel an existing order
 
@@ -140,6 +140,19 @@ The agent has access to 60+ MCP tools organized into these categories:
 - **`rate_limit_status`**: Rate limiting information
 - **`metrics_summary`**: Performance metrics
 - **`health_check`**: System health
+
+## Testing & Evaluation
+
+You can evaluate the agent's performance using ADK's evaluation tools. 
+
+### **Schwab Orders Evaluation**
+To test the agent's ability to retrieve Schwab order history (read-only), run:
+
+```bash
+MCP_HTTP_URL="http://localhost:3001/mcp" adk eval examples/google_adk_agent tests/evals/5_ord_schwab_orders_test.json --config_file_path tests/evals/test_config.json
+```
+
+> **Note**: This evaluation requires live Schwab OAuth credentials and a valid account hash returned by `schwab_account_numbers`.
 
 ## Agent Capabilities
 
