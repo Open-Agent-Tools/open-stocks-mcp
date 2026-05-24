@@ -303,6 +303,41 @@ class TestStockMarketTools:
 
     @pytest.mark.journey_market_data
     @pytest.mark.unit
+    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_instruments_by_symbols")
+    @pytest.mark.asyncio
+    async def test_get_instruments_by_symbols_batched(
+        self, mock_get_instruments: Any, robinhood_instrument_payload: dict[str, Any]
+    ) -> None:
+        """Concurrent instrument lookups should be batched into one API call."""
+
+        # Setup mock to return results for requested symbols
+        def side_effect(symbols):
+            return [
+                {**robinhood_instrument_payload, "symbol": s}
+                for s in (symbols if isinstance(symbols, list) else [symbols])
+            ]
+
+        mock_get_instruments.side_effect = side_effect
+
+        # Trigger concurrent calls
+        # We need to ensure they arrive within the batching window
+        results = await asyncio.gather(
+            get_instruments_by_symbols(["AAPL", "MSFT"]),
+            get_instruments_by_symbols(["GOOGL"]),
+        )
+
+        # Verify each tool call got its expected results
+        assert len(results) == 2
+        assert len(results[0]["result"]["instruments"]) == 2
+        assert len(results[1]["result"]["instruments"]) == 1
+
+        # Verify only ONE API call was made for all three symbols
+        assert mock_get_instruments.call_count == 1
+        called_symbols = mock_get_instruments.call_args[0][0]
+        assert set(called_symbols) == {"AAPL", "MSFT", "GOOGL"}
+
+    @pytest.mark.journey_market_data
+    @pytest.mark.unit
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_markets")
     @pytest.mark.asyncio
     async def test_get_market_hours_success(self, mock_markets: Any) -> None:

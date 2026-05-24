@@ -1,10 +1,11 @@
 """MCP tools for Robin Stocks stock market data operations."""
 
+import asyncio
 from typing import Any
 
 import robin_stocks.robinhood as rh
 
-from open_stocks_mcp.config import load_config
+from open_stocks_mcp.config import get_config, load_config
 from open_stocks_mcp.logging_config import logger
 from open_stocks_mcp.tools.cache import cached_async
 from open_stocks_mcp.tools.error_handling import (
@@ -17,8 +18,19 @@ from open_stocks_mcp.tools.error_handling import (
     validate_period,
     validate_symbol,
 )
+from open_stocks_mcp.tools.rate_limiter import get_batcher
 
 _cache_cfg = load_config().cache
+
+
+async def _fetch_instruments_batch(symbols: list[str]) -> dict[str, Any]:
+    """Helper for batching instrument lookups."""
+    instruments = await execute_with_retry(rh.get_instruments_by_symbols, symbols)
+    return {
+        inst.get("symbol", "").upper(): inst
+        for inst in instruments
+        if inst and inst.get("symbol")
+    }
 
 
 @handle_robin_stocks_errors
@@ -111,16 +123,25 @@ async def get_stock_info(symbol: str) -> dict[str, Any]:
     log_api_call("get_stock_info", symbol=symbol)
 
     # Get fundamentals and instrument data with retry logic
-    fundamentals = await execute_with_retry(rh.get_fundamentals, symbol)
-    instruments = await execute_with_retry(rh.get_instruments_by_symbols, symbol)
+    # Use batching for instruments lookup
+    cfg = get_config()
+    batcher = get_batcher(
+        "robinhood_instruments",
+        batch_size=cfg.batch.batch_size,
+        queue_max_wait=cfg.batch.queue_max_wait,
+    )
 
-    if not fundamentals or not instruments:
+    fundamentals_task = execute_with_retry(rh.get_fundamentals, symbol)
+    instruments_task = batcher.fetch(symbol, _fetch_instruments_batch)
+
+    fundamentals, instrument = await asyncio.gather(fundamentals_task, instruments_task)
+
+    if not fundamentals or not instrument:
         return create_no_data_response(
             f"No company information found for symbol: {symbol}", {"symbol": symbol}
         )
 
     fundamental = fundamentals[0] if fundamentals else {}
-    instrument = instruments[0] if instruments else {}
 
     # Get company name with retry logic
     company_name = await execute_with_retry(rh.get_name_by_symbol, symbol)
@@ -338,12 +359,19 @@ async def get_instruments_by_symbols(symbols: list[str]) -> dict[str, Any]:
     clean_symbols = [symbol.strip().upper() for symbol in symbols]
     log_api_call("get_instruments_by_symbols", symbols=clean_symbols)
 
-    # Get instruments data with retry logic
-    instruments_data = await execute_with_retry(
-        rh.get_instruments_by_symbols, clean_symbols
+    # Use batching for instruments lookup
+    cfg = get_config()
+    batcher = get_batcher(
+        "robinhood_instruments",
+        batch_size=cfg.batch.batch_size,
+        queue_max_wait=cfg.batch.queue_max_wait,
     )
 
-    if not instruments_data:
+    instruments_data = await asyncio.gather(
+        *(batcher.fetch(s, _fetch_instruments_batch) for s in clean_symbols)
+    )
+
+    if not any(instruments_data):
         return create_no_data_response(
             f"No instrument data found for symbols: {clean_symbols}",
             {"symbols": clean_symbols},
