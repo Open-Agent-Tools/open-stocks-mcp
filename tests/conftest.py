@@ -1,5 +1,6 @@
 """Shared pytest fixtures for open-stocks-mcp tests."""
 
+import contextlib
 import os
 import sys
 from typing import Any
@@ -121,10 +122,8 @@ def pytest_collection_modifyitems(config: Any, items: list[Any]) -> None:
 
     run_live = False
     if hasattr(config, "getoption"):
-        try:
+        with contextlib.suppress(ValueError, AttributeError):
             run_live = config.getoption("--run-live-market", default=False)
-        except (ValueError, AttributeError):
-            pass
 
     env_live = bool(os.environ.get(LIVE_MARKET_ENV_VAR))
     if not (run_live and env_live):
