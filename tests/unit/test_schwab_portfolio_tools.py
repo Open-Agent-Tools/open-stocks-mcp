@@ -78,10 +78,26 @@ class TestSchwabPortfolioTools:
 
         accounts_payload = [{"hashValue": "hash-1"}]
         trades_payload = [
-            {"symbol": "AAPL", "transactionDate": "2026-01-01T10:00:00Z", "instruction": "BUY"},
-            {"symbol": "AAPL", "transactionDate": "2026-01-01T11:00:00Z", "instruction": "SELL"},
-            {"symbol": "MSFT", "transactionDate": "2026-01-01T11:00:00Z", "instruction": "BUY"},
-            {"symbol": "AAPL", "transactionDate": "2026-01-02T11:00:00Z", "instruction": "BUY"},
+            {
+                "symbol": "AAPL",
+                "transactionDate": "2026-01-01T10:00:00Z",
+                "instruction": "BUY",
+            },
+            {
+                "symbol": "AAPL",
+                "transactionDate": "2026-01-01T11:00:00Z",
+                "instruction": "SELL",
+            },
+            {
+                "symbol": "MSFT",
+                "transactionDate": "2026-01-01T11:00:00Z",
+                "instruction": "BUY",
+            },
+            {
+                "symbol": "AAPL",
+                "transactionDate": "2026-01-02T11:00:00Z",
+                "instruction": "BUY",
+            },
         ]
         mock_execute_broker_request.side_effect = [accounts_payload, trades_payload]
 

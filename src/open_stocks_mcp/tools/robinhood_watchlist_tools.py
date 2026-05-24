@@ -497,7 +497,11 @@ async def get_watchlist_performance(watchlist_name: str) -> dict[str, Any]:
                 or quote.get("ask_price")
                 or quote.get("bid_price")
             )
-            if price_str in (None, "") and prices_are_aligned and not quotes_have_symbols:
+            if (
+                price_str in (None, "")
+                and prices_are_aligned
+                and not quotes_have_symbols
+            ):
                 price_str = price_results[i]
 
             if price_str is not None:

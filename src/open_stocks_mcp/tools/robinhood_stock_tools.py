@@ -50,11 +50,14 @@ async def get_stock_price(symbol: str) -> dict[str, Any]:
     # Get latest price and quote data with retry logic; coalesce_key deduplicates
     # concurrent calls for the same symbol while cache is cold.
     price_data = await execute_with_retry(
-        rh.get_latest_price, symbol, "ask_price",
+        rh.get_latest_price,
+        symbol,
+        "ask_price",
         coalesce_key=f"get_latest_price:{symbol}",
     )
     quote_data = await execute_with_retry(
-        rh.get_quotes, symbol,
+        rh.get_quotes,
+        symbol,
         coalesce_key=f"get_quotes:{symbol}",
     )
 

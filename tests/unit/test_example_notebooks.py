@@ -41,6 +41,7 @@ async def test_example_notebooks_have_required_structure() -> None:
         )
         assert len(code_cells) >= 3
         assert any(
-            any(tool_name in cell for tool_name in live_tool_names) for cell in code_cells
+            any(tool_name in cell for tool_name in live_tool_names)
+            for cell in code_cells
         )
         assert all("your_password" not in cell for cell in markdown_cells + code_cells)

@@ -541,7 +541,11 @@ class TestGetWatchlistPerformance:
     ) -> None:
         """When the bulk broker call fails, all symbols get fallback error entries."""
         mock_get_watchlist.return_value = {
-            "result": {"name": "Test", "symbols": ["AAPL", "GOOGL"], "status": "success"}
+            "result": {
+                "name": "Test",
+                "symbols": ["AAPL", "GOOGL"],
+                "status": "success",
+            }
         }
         mock_execute.side_effect = Exception("API Error")
 

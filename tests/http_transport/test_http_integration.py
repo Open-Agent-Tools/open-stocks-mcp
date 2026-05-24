@@ -180,7 +180,11 @@ class TestHTTPIntegration:
             content="invalid json",
             headers={"content-type": "application/json"},
         )
-        assert response.status_code in [400, 401, 422]  # Bad request or validation error
+        assert response.status_code in [
+            400,
+            401,
+            422,
+        ]  # Bad request or validation error
 
     async def test_security_middleware_integration(
         self, mcp_server_with_tools: FastMCP
@@ -202,7 +206,10 @@ class TestHTTPIntegration:
     @patch("open_stocks_mcp.health.get_session_manager")
     @patch("open_stocks_mcp.server.http_transport.get_session_manager")
     async def test_session_lifecycle_integration(
-        self, mock_get_session_manager_transport: Mock, mock_get_session_manager_health: Mock, mock_http_client: httpx.AsyncClient
+        self,
+        mock_get_session_manager_transport: Mock,
+        mock_get_session_manager_health: Mock,
+        mock_http_client: httpx.AsyncClient,
     ) -> None:
         """Test complete session lifecycle over HTTP"""
         # Mock session manager for lifecycle testing

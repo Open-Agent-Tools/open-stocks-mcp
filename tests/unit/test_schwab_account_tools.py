@@ -268,9 +268,7 @@ class TestSchwabAccountTools:
 
         assert "result" in result
         assert "user_preferences" in result["result"]
-        assert (
-            result["result"]["user_preferences"]["userProps"]["firstName"] == "John"
-        )
+        assert result["result"]["user_preferences"]["userProps"]["firstName"] == "John"
 
     @pytest.mark.journey_account
     @pytest.mark.unit

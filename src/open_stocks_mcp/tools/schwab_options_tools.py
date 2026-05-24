@@ -163,7 +163,9 @@ async def get_schwab_option_expirations(symbol: str) -> dict[str, Any]:
             response = broker.client.get_option_expiration_chain(symbol.upper())
             return response.json()
 
-        expiration_data = await execute_broker_request(_get_option_chain, retry_safe=True)
+        expiration_data = await execute_broker_request(
+            _get_option_chain, retry_safe=True
+        )
 
         # Extract expiration dates
         expirations = expiration_data.get("expirationList", [])

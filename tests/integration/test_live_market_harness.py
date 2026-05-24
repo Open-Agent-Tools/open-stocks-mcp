@@ -25,7 +25,9 @@ class TestDefaultOptInRejection:
         config.getoption.return_value = False
         with pytest.raises(pytest.skip.Exception) as exc_info:
             require_live_market_preflight(config)
-        assert "run-live-market" in str(exc_info.value).lower() or LIVE_MARKET_SKIP_REASON in str(exc_info.value)
+        assert "run-live-market" in str(
+            exc_info.value
+        ).lower() or LIVE_MARKET_SKIP_REASON in str(exc_info.value)
 
     def test_skips_without_env_var(self, monkeypatch: Any) -> None:
         """Skip when OPEN_STOCKS_RUN_LIVE_MARKET env var is absent."""

@@ -66,47 +66,123 @@ async def test_get_broker_comparison_success():
     )
 
     # Mock Robinhood responses
-    mock_rh_price = AsyncMock(return_value={"result": {"symbol": "AAPL", "price": 150.0, "status": "success"}})
-    mock_rh_portfolio = AsyncMock(return_value={"result": {"equity": 10000.0, "buying_power": 2000.0, "status": "success"}})
-    mock_rh_positions = AsyncMock(return_value={"result": {"positions": [{"symbol": "AAPL", "quantity": 10}], "status": "success"}})
-    mock_rh_orders = AsyncMock(return_value={"result": {"orders": [{"symbol": "AAPL", "side": "BUY", "quantity": 5, "state": "filled"}], "status": "success"}})
+    mock_rh_price = AsyncMock(
+        return_value={"result": {"symbol": "AAPL", "price": 150.0, "status": "success"}}
+    )
+    mock_rh_portfolio = AsyncMock(
+        return_value={
+            "result": {"equity": 10000.0, "buying_power": 2000.0, "status": "success"}
+        }
+    )
+    mock_rh_positions = AsyncMock(
+        return_value={
+            "result": {
+                "positions": [{"symbol": "AAPL", "quantity": 10}],
+                "status": "success",
+            }
+        }
+    )
+    mock_rh_orders = AsyncMock(
+        return_value={
+            "result": {
+                "orders": [
+                    {"symbol": "AAPL", "side": "BUY", "quantity": 5, "state": "filled"}
+                ],
+                "status": "success",
+            }
+        }
+    )
 
     # Mock Schwab responses
-    mock_schwab_quote = AsyncMock(return_value={"result": {"symbol": "AAPL", "last_price": 150.5, "status": "success"}})
-    mock_schwab_account_numbers = AsyncMock(return_value={"result": {"accounts": [{"hash_value": "hash1"}], "status": "success"}})
-    mock_schwab_balances = AsyncMock(return_value={"result": {"current_balances": {"liquidationValue": 5000.0, "buyingPower": 1000.0}, "status": "success"}})
-    mock_schwab_portfolio = AsyncMock(return_value={"result": {"positions": [{"symbol": "AAPL", "quantity": 5}], "status": "success"}})
-    mock_schwab_orders = AsyncMock(return_value={
-        "result": {
-            "orders": [
-                {
-                    "orderLegCollection": [
-                        {
-                            "instruction": "BUY",
-                            "quantity": 2,
-                            "instrument": {"symbol": "AAPL"}
-                        }
-                    ],
-                    "status": "FILLED",
-                    "enteredTime": "2023-10-27T14:55:00Z",
-                    "price": 150.5
-                }
-            ],
-            "status": "success"
+    mock_schwab_quote = AsyncMock(
+        return_value={
+            "result": {"symbol": "AAPL", "last_price": 150.5, "status": "success"}
         }
-    })
+    )
+    mock_schwab_account_numbers = AsyncMock(
+        return_value={
+            "result": {"accounts": [{"hash_value": "hash1"}], "status": "success"}
+        }
+    )
+    mock_schwab_balances = AsyncMock(
+        return_value={
+            "result": {
+                "current_balances": {"liquidationValue": 5000.0, "buyingPower": 1000.0},
+                "status": "success",
+            }
+        }
+    )
+    mock_schwab_portfolio = AsyncMock(
+        return_value={
+            "result": {
+                "positions": [{"symbol": "AAPL", "quantity": 5}],
+                "status": "success",
+            }
+        }
+    )
+    mock_schwab_orders = AsyncMock(
+        return_value={
+            "result": {
+                "orders": [
+                    {
+                        "orderLegCollection": [
+                            {
+                                "instruction": "BUY",
+                                "quantity": 2,
+                                "instrument": {"symbol": "AAPL"},
+                            }
+                        ],
+                        "status": "FILLED",
+                        "enteredTime": "2023-10-27T14:55:00Z",
+                        "price": 150.5,
+                    }
+                ],
+                "status": "success",
+            }
+        }
+    )
 
     with (
-        patch("open_stocks_mcp.tools.broker_comparison_tools.get_broker_registry", return_value=mock_registry),
-        patch("open_stocks_mcp.tools.broker_comparison_tools.get_stock_price", mock_rh_price),
-        patch("open_stocks_mcp.tools.broker_comparison_tools.get_portfolio", mock_rh_portfolio),
-        patch("open_stocks_mcp.tools.broker_comparison_tools.get_positions", mock_rh_positions),
-        patch("open_stocks_mcp.tools.broker_comparison_tools.get_stock_orders", mock_rh_orders),
-        patch("open_stocks_mcp.tools.broker_comparison_tools.get_schwab_quote", mock_schwab_quote),
-        patch("open_stocks_mcp.tools.broker_comparison_tools.get_schwab_account_numbers", mock_schwab_account_numbers),
-        patch("open_stocks_mcp.tools.broker_comparison_tools.get_schwab_account_balances", mock_schwab_balances),
-        patch("open_stocks_mcp.tools.broker_comparison_tools.get_schwab_portfolio", mock_schwab_portfolio),
-        patch("open_stocks_mcp.tools.broker_comparison_tools.get_schwab_orders", mock_schwab_orders),
+        patch(
+            "open_stocks_mcp.tools.broker_comparison_tools.get_broker_registry",
+            return_value=mock_registry,
+        ),
+        patch(
+            "open_stocks_mcp.tools.broker_comparison_tools.get_stock_price",
+            mock_rh_price,
+        ),
+        patch(
+            "open_stocks_mcp.tools.broker_comparison_tools.get_portfolio",
+            mock_rh_portfolio,
+        ),
+        patch(
+            "open_stocks_mcp.tools.broker_comparison_tools.get_positions",
+            mock_rh_positions,
+        ),
+        patch(
+            "open_stocks_mcp.tools.broker_comparison_tools.get_stock_orders",
+            mock_rh_orders,
+        ),
+        patch(
+            "open_stocks_mcp.tools.broker_comparison_tools.get_schwab_quote",
+            mock_schwab_quote,
+        ),
+        patch(
+            "open_stocks_mcp.tools.broker_comparison_tools.get_schwab_account_numbers",
+            mock_schwab_account_numbers,
+        ),
+        patch(
+            "open_stocks_mcp.tools.broker_comparison_tools.get_schwab_account_balances",
+            mock_schwab_balances,
+        ),
+        patch(
+            "open_stocks_mcp.tools.broker_comparison_tools.get_schwab_portfolio",
+            mock_schwab_portfolio,
+        ),
+        patch(
+            "open_stocks_mcp.tools.broker_comparison_tools.get_schwab_orders",
+            mock_schwab_orders,
+        ),
     ):
         result = await get_broker_comparison(symbols=["AAPL"])
 
@@ -140,23 +216,53 @@ async def test_get_broker_comparison_partial_failure():
     mock_registry.list_brokers.return_value = ["robinhood", "schwab"]
 
     rh_broker = MockBroker("robinhood", authenticated=True)
-    schwab_broker = MockBroker("schwab", authenticated=False) # Schwab down
+    schwab_broker = MockBroker("schwab", authenticated=False)  # Schwab down
     mock_registry.get_broker.side_effect = lambda name: (
         rh_broker if name == "robinhood" else schwab_broker
     )
 
     # Mock Robinhood responses
-    mock_rh_price = AsyncMock(return_value={"result": {"symbol": "AAPL", "price": 150.0, "status": "success"}})
-    mock_rh_portfolio = AsyncMock(return_value={"result": {"equity": 10000.0, "buying_power": 2000.0, "status": "success"}})
-    mock_rh_positions = AsyncMock(return_value={"result": {"positions": [{"symbol": "AAPL", "quantity": 10}], "status": "success"}})
-    mock_rh_orders = AsyncMock(return_value={"result": {"orders": [], "status": "success"}})
+    mock_rh_price = AsyncMock(
+        return_value={"result": {"symbol": "AAPL", "price": 150.0, "status": "success"}}
+    )
+    mock_rh_portfolio = AsyncMock(
+        return_value={
+            "result": {"equity": 10000.0, "buying_power": 2000.0, "status": "success"}
+        }
+    )
+    mock_rh_positions = AsyncMock(
+        return_value={
+            "result": {
+                "positions": [{"symbol": "AAPL", "quantity": 10}],
+                "status": "success",
+            }
+        }
+    )
+    mock_rh_orders = AsyncMock(
+        return_value={"result": {"orders": [], "status": "success"}}
+    )
 
     with (
-        patch("open_stocks_mcp.tools.broker_comparison_tools.get_broker_registry", return_value=mock_registry),
-        patch("open_stocks_mcp.tools.broker_comparison_tools.get_stock_price", mock_rh_price),
-        patch("open_stocks_mcp.tools.broker_comparison_tools.get_portfolio", mock_rh_portfolio),
-        patch("open_stocks_mcp.tools.broker_comparison_tools.get_positions", mock_rh_positions),
-        patch("open_stocks_mcp.tools.broker_comparison_tools.get_stock_orders", mock_rh_orders),
+        patch(
+            "open_stocks_mcp.tools.broker_comparison_tools.get_broker_registry",
+            return_value=mock_registry,
+        ),
+        patch(
+            "open_stocks_mcp.tools.broker_comparison_tools.get_stock_price",
+            mock_rh_price,
+        ),
+        patch(
+            "open_stocks_mcp.tools.broker_comparison_tools.get_portfolio",
+            mock_rh_portfolio,
+        ),
+        patch(
+            "open_stocks_mcp.tools.broker_comparison_tools.get_positions",
+            mock_rh_positions,
+        ),
+        patch(
+            "open_stocks_mcp.tools.broker_comparison_tools.get_stock_orders",
+            mock_rh_orders,
+        ),
     ):
         result = await get_broker_comparison(symbols=["AAPL"])
 

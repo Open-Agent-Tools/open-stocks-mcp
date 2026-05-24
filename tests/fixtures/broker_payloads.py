@@ -143,6 +143,7 @@ def robinhood_positions_payload() -> list[dict[str, Any]]:
 
 def robinhood_phoenix_account_payload() -> dict[str, Any]:
     """Return representative Robinhood phoenix account details."""
+
     def currency(amount: str) -> dict[str, str]:
         return {"amount": amount, "currency_code": "USD", "currency_id": "usd"}
 

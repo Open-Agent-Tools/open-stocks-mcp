@@ -10,6 +10,7 @@ from open_stocks_mcp.logging_config import logger
 
 class RegistryNotInitializedError(LookupError):
     """Raised when broker registry is accessed before initialization."""
+
     pass
 
 
@@ -294,13 +295,18 @@ class BrokerRegistry:
                     "operation": operation_name,
                     "status": "error",
                     "duration_ms": 0,
-                    "error": {"type": "invalid_operation", "message": "Operation must be callable"},
+                    "error": {
+                        "type": "invalid_operation",
+                        "message": "Operation must be callable",
+                    },
                 }
 
             start = time.perf_counter()
             try:
                 async with semaphore:
-                    result = await asyncio.wait_for(operation(), timeout=timeout_seconds)
+                    result = await asyncio.wait_for(
+                        operation(), timeout=timeout_seconds
+                    )
                 return {
                     "broker": broker,
                     "account_id": account_id,
@@ -332,7 +338,9 @@ class BrokerRegistry:
                     "error": {"type": type(exc).__name__, "message": str(exc)},
                 }
 
-        return await asyncio.gather(*[_run(op) for op in operations], return_exceptions=False)
+        return await asyncio.gather(
+            *[_run(op) for op in operations], return_exceptions=False
+        )
 
     async def coordinated_refresh(
         self,

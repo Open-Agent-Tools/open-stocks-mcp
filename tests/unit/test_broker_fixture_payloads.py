@@ -33,9 +33,7 @@ def test_robinhood_account_payloads_contain_consumed_fields() -> None:
     assert {"portfolio_equity", "total_equity", "account_buying_power"}.issubset(
         phoenix["results"][0]
     )
-    assert {"price", "quantity", "equity", "type", "name"}.issubset(
-        holdings["AAPL"]
-    )
+    assert {"price", "quantity", "equity", "type", "name"}.issubset(holdings["AAPL"])
 
 
 def test_schwab_market_payloads_contain_consumed_fields() -> None:

@@ -20,18 +20,25 @@ def tmp_tokens_dir(tmp_path: Path) -> Path:
 @pytest.fixture()
 def manager(tmp_tokens_dir: Path) -> Generator[SessionManager, None, None]:
     """SessionManager with home directory patched to a temp location."""
-    with patch("open_stocks_mcp.tools.session_manager.Path.home", return_value=tmp_tokens_dir.parent):
+    with patch(
+        "open_stocks_mcp.tools.session_manager.Path.home",
+        return_value=tmp_tokens_dir.parent,
+    ):
         yield SessionManager()
 
 
 class TestTokensDirectoryPermissions:
-    def test_directory_created_with_restricted_permissions(self, manager: SessionManager, tmp_tokens_dir: Path) -> None:
+    def test_directory_created_with_restricted_permissions(
+        self, manager: SessionManager, tmp_tokens_dir: Path
+    ) -> None:
         manager._get_tokens_dir()
         assert tmp_tokens_dir.exists()
         mode = stat.S_IMODE(tmp_tokens_dir.stat().st_mode)
         assert mode == 0o700
 
-    def test_existing_directory_permissions_are_hardened(self, manager: SessionManager, tmp_tokens_dir: Path) -> None:
+    def test_existing_directory_permissions_are_hardened(
+        self, manager: SessionManager, tmp_tokens_dir: Path
+    ) -> None:
         # Create directory with looser permissions first
         tmp_tokens_dir.mkdir(mode=0o755, parents=True, exist_ok=True)
         manager._get_tokens_dir()
@@ -40,19 +47,25 @@ class TestTokensDirectoryPermissions:
 
 
 class TestFernetKeyManagement:
-    def test_key_file_created_on_first_access(self, manager: SessionManager, tmp_tokens_dir: Path) -> None:
+    def test_key_file_created_on_first_access(
+        self, manager: SessionManager, tmp_tokens_dir: Path
+    ) -> None:
         key = manager._get_or_create_fernet_key()
         key_path = tmp_tokens_dir / ".session.key"
         assert key_path.exists()
         assert key == key_path.read_bytes()
 
-    def test_key_file_has_restricted_permissions(self, manager: SessionManager, tmp_tokens_dir: Path) -> None:
+    def test_key_file_has_restricted_permissions(
+        self, manager: SessionManager, tmp_tokens_dir: Path
+    ) -> None:
         manager._get_or_create_fernet_key()
         key_path = tmp_tokens_dir / ".session.key"
         mode = stat.S_IMODE(key_path.stat().st_mode)
         assert mode == 0o600
 
-    def test_same_key_returned_on_subsequent_calls(self, manager: SessionManager) -> None:
+    def test_same_key_returned_on_subsequent_calls(
+        self, manager: SessionManager
+    ) -> None:
         key1 = manager._get_or_create_fernet_key()
         key2 = manager._get_or_create_fernet_key()
         assert key1 == key2
@@ -66,7 +79,9 @@ class TestFernetKeyManagement:
 
 
 class TestPickleEncryption:
-    def test_encrypt_removes_plaintext(self, manager: SessionManager, tmp_tokens_dir: Path) -> None:
+    def test_encrypt_removes_plaintext(
+        self, manager: SessionManager, tmp_tokens_dir: Path
+    ) -> None:
         pickle_path = tmp_tokens_dir / "robinhood.pickle"
         tmp_tokens_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
         pickle_path.write_bytes(b"fake-pickle-data")
@@ -75,7 +90,9 @@ class TestPickleEncryption:
 
         assert not pickle_path.exists()
 
-    def test_encrypt_creates_enc_file(self, manager: SessionManager, tmp_tokens_dir: Path) -> None:
+    def test_encrypt_creates_enc_file(
+        self, manager: SessionManager, tmp_tokens_dir: Path
+    ) -> None:
         pickle_path = tmp_tokens_dir / "robinhood.pickle"
         tmp_tokens_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
         pickle_path.write_bytes(b"fake-pickle-data")
@@ -85,7 +102,9 @@ class TestPickleEncryption:
         enc_path = tmp_tokens_dir / "robinhood.pickle.enc"
         assert enc_path.exists()
 
-    def test_enc_file_has_restricted_permissions(self, manager: SessionManager, tmp_tokens_dir: Path) -> None:
+    def test_enc_file_has_restricted_permissions(
+        self, manager: SessionManager, tmp_tokens_dir: Path
+    ) -> None:
         pickle_path = tmp_tokens_dir / "robinhood.pickle"
         tmp_tokens_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
         pickle_path.write_bytes(b"fake-pickle-data")
@@ -96,14 +115,18 @@ class TestPickleEncryption:
         mode = stat.S_IMODE(enc_path.stat().st_mode)
         assert mode == 0o600
 
-    def test_encrypt_no_op_when_no_plaintext(self, manager: SessionManager, tmp_tokens_dir: Path) -> None:
+    def test_encrypt_no_op_when_no_plaintext(
+        self, manager: SessionManager, tmp_tokens_dir: Path
+    ) -> None:
         manager._encrypt_pickle_if_exists()  # Should not raise
         enc_path = tmp_tokens_dir / "robinhood.pickle.enc"
         assert not enc_path.exists()
 
 
 class TestPickleDecryption:
-    def test_round_trip_preserves_content(self, manager: SessionManager, tmp_tokens_dir: Path) -> None:
+    def test_round_trip_preserves_content(
+        self, manager: SessionManager, tmp_tokens_dir: Path
+    ) -> None:
         original_data = b"serialized-oauth-token-data"
         pickle_path = tmp_tokens_dir / "robinhood.pickle"
         tmp_tokens_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
@@ -118,11 +141,15 @@ class TestPickleDecryption:
         assert pickle_path.exists()
         assert pickle_path.read_bytes() == original_data
 
-    def test_decrypt_returns_false_when_no_enc_file(self, manager: SessionManager) -> None:
+    def test_decrypt_returns_false_when_no_enc_file(
+        self, manager: SessionManager
+    ) -> None:
         result = manager._decrypt_pickle_if_exists()
         assert result is False
 
-    def test_corrupt_enc_file_is_removed(self, manager: SessionManager, tmp_tokens_dir: Path) -> None:
+    def test_corrupt_enc_file_is_removed(
+        self, manager: SessionManager, tmp_tokens_dir: Path
+    ) -> None:
         tmp_tokens_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
         enc_path = tmp_tokens_dir / "robinhood.pickle.enc"
         enc_path.write_bytes(b"not-valid-fernet-ciphertext")
@@ -132,7 +159,9 @@ class TestPickleDecryption:
         assert result is False
         assert not enc_path.exists()
 
-    def test_decrypted_file_has_restricted_permissions(self, manager: SessionManager, tmp_tokens_dir: Path) -> None:
+    def test_decrypted_file_has_restricted_permissions(
+        self, manager: SessionManager, tmp_tokens_dir: Path
+    ) -> None:
         pickle_path = tmp_tokens_dir / "robinhood.pickle"
         tmp_tokens_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
         pickle_path.write_bytes(b"data")
@@ -177,7 +206,9 @@ class TestLoginPickleReencryption:
 
 
 class TestClearPickleFile:
-    def test_clears_both_plaintext_and_encrypted(self, manager: SessionManager, tmp_tokens_dir: Path) -> None:
+    def test_clears_both_plaintext_and_encrypted(
+        self, manager: SessionManager, tmp_tokens_dir: Path
+    ) -> None:
         tmp_tokens_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
         pickle_path = tmp_tokens_dir / "robinhood.pickle"
         enc_path = tmp_tokens_dir / "robinhood.pickle.enc"

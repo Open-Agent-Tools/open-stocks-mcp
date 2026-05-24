@@ -59,7 +59,11 @@ def test_secret_example_content():
     assert "ROBINHOOD_USERNAME" in text
     assert "ROBINHOOD_PASSWORD" in text
     # Must not contain real-looking credential values
-    assert "your_email@example.com" not in text or "placeholder" in text.lower() or "example" in text.lower()
+    assert (
+        "your_email@example.com" not in text
+        or "placeholder" in text.lower()
+        or "example" in text.lower()
+    )
     # Should not have real passwords
     for suspicious in ["my_password", "secretpassword123", "hunter2"]:
         assert suspicious not in text
@@ -91,4 +95,6 @@ def test_kubernetes_readme_content():
 @pytest.mark.journey_system
 def test_root_readme_links_to_kubernetes():
     text = ROOT_README.read_text(encoding="utf-8")
-    assert "examples/kubernetes" in text, "Expected root README.md to link to examples/kubernetes"
+    assert "examples/kubernetes" in text, (
+        "Expected root README.md to link to examples/kubernetes"
+    )
