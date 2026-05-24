@@ -167,14 +167,26 @@ Read-only account evaluations for Robinhood portfolio, positions, and dividend t
 - `tests/evals/1_acc_stock_loan_payments_test.json` — exercises `stock_loan_payments`.
 - `tests/evals/1_acc_health_check_test.json` — exercises the account-level `health_check`.
 
-### 4. Market Data Evals (`2_mkt_*`)
+### Market & Research Read-Only Evaluations
 
-Read-only market data evaluations for stock quotes, search, and info tools. Do not require Robinhood credentials.
+Read-only market and research evaluations for Robinhood quote, discovery, price history, mover, analyst, earnings, news, and split tools.
 
-- `tests/evals/2_mkt_stock_price_test.json` — exercises `stock_price`.
-- `tests/evals/2_mkt_stock_info_test.json` — exercises `stock_info`.
-- `tests/evals/2_mkt_search_stocks_test.json` — exercises `search_stocks`.
-- `tests/evals/2_mkt_market_hours_test.json` — exercises `market_hours`.
+**Credential assumptions**: requires GOOGLE_API_KEY and read-only ROBINHOOD_USERNAME/ROBINHOOD_PASSWORD; no order placement
+
+These scenarios are read-only and must not place orders, cancel orders, buy, sell, or mutate watchlists.
+
+- `tests/evals/2_mkt_stock_price_test.json` — exercises `stock_price` to retrieve a current stock price snapshot; run `adk eval examples/google_adk_agent tests/evals/2_mkt_stock_price_test.json --config_file_path tests/evals/test_config.json`.
+- `tests/evals/2_mkt_stock_info_test.json` — exercises `stock_info` to retrieve company profile and market metadata; run `adk eval examples/google_adk_agent tests/evals/2_mkt_stock_info_test.json --config_file_path tests/evals/test_config.json`.
+- `tests/evals/2_mkt_search_stocks_test.json` — exercises `stocks_by_tag` to discover stocks by market tag or category; run `adk eval examples/google_adk_agent tests/evals/2_mkt_search_stocks_test.json --config_file_path tests/evals/test_config.json`.
+- `tests/evals/2_mkt_market_hours_test.json` — exercises `market_hours` to inspect exchange schedules and current market status; run `adk eval examples/google_adk_agent tests/evals/2_mkt_market_hours_test.json --config_file_path tests/evals/test_config.json`.
+- `tests/evals/2_mkt_price_history_test.json` — exercises `price_history` to retrieve recent OHLC and volume data for a symbol; run `adk eval examples/google_adk_agent tests/evals/2_mkt_price_history_test.json --config_file_path tests/evals/test_config.json`.
+- `tests/evals/2_mkt_top_movers_sp500_test.json` — exercises `top_movers_sp500` to list major S&P 500 market movers; run `adk eval examples/google_adk_agent tests/evals/2_mkt_top_movers_sp500_test.json --config_file_path tests/evals/test_config.json`.
+- `tests/evals/2_mkt_top_100_stocks_test.json` — exercises `top_100_stocks` to retrieve popular Robinhood stocks; run `adk eval examples/google_adk_agent tests/evals/2_mkt_top_100_stocks_test.json --config_file_path tests/evals/test_config.json`.
+- `tests/evals/2_mkt_top_movers_test.json` — exercises `top_movers` to retrieve broad-market gainers and losers; run `adk eval examples/google_adk_agent tests/evals/2_mkt_top_movers_test.json --config_file_path tests/evals/test_config.json`.
+- `tests/evals/2_mkt_stock_ratings_test.json` — exercises `stock_ratings` to summarize analyst ratings for a symbol; run `adk eval examples/google_adk_agent tests/evals/2_mkt_stock_ratings_test.json --config_file_path tests/evals/test_config.json`.
+- `tests/evals/2_mkt_stock_earnings_test.json` — exercises `stock_earnings` to retrieve recent earnings report data; run `adk eval examples/google_adk_agent tests/evals/2_mkt_stock_earnings_test.json --config_file_path tests/evals/test_config.json`.
+- `tests/evals/2_mkt_stock_news_test.json` — exercises `stock_news` to retrieve recent symbol-specific news; run `adk eval examples/google_adk_agent tests/evals/2_mkt_stock_news_test.json --config_file_path tests/evals/test_config.json`.
+- `tests/evals/2_mkt_stock_splits_test.json` — exercises `stock_splits` to retrieve stock split history for a symbol; run `adk eval examples/google_adk_agent tests/evals/2_mkt_stock_splits_test.json --config_file_path tests/evals/test_config.json`.
 
 ### 5. Profiles Tests (`6_prf_*`)
 
@@ -241,9 +253,9 @@ adk eval examples/google_adk_agent tests/evals/9_adv_broker_status_test.json --c
 Evaluations for Schwab-specific tools. These typically require live Schwab OAuth credentials and a running MCP server.
 
 - `tests/evals/1_acc_schwab_account_numbers_test.json` — exercises `schwab_account_numbers`.
-- `tests/evals/2_mkt_schwab_quote_test.json` — exercises `schwab_quote`.
-- `tests/evals/2_mkt_schwab_price_history_test.json` — exercises `schwab_price_history`.
-- `tests/evals/2_mkt_schwab_search_instruments_test.json` — exercises `schwab_search_instruments`.
+- Schwab quote evaluation — exercises `schwab_quote`.
+- Schwab price history evaluation — exercises `schwab_price_history`.
+- Schwab search instruments evaluation — exercises `schwab_search_instruments`.
 - `tests/evals/8_opt_schwab_option_chain_test.json` — exercises `schwab_option_chain`.
 - `tests/evals/8_opt_schwab_option_expirations_test.json` — exercises `schwab_option_expirations`.
 - `tests/evals/5_ord_schwab_orders_test.json` — exercises `schwab_orders` (requires `account_hash`).
@@ -254,9 +266,8 @@ Run with:
 
 ```bash
 adk eval examples/google_adk_agent tests/evals/1_acc_schwab_account_numbers_test.json --config_file_path tests/evals/test_config.json
-adk eval examples/google_adk_agent tests/evals/2_mkt_schwab_quote_test.json --config_file_path tests/evals/test_config.json
-adk eval examples/google_adk_agent tests/evals/2_mkt_schwab_price_history_test.json --config_file_path tests/evals/test_config.json
-adk eval examples/google_adk_agent tests/evals/2_mkt_schwab_search_instruments_test.json --config_file_path tests/evals/test_config.json
+SCHWAB_EVAL_FILE=<schwab-market-eval-json>
+adk eval examples/google_adk_agent "tests/evals/${SCHWAB_EVAL_FILE}" --config_file_path tests/evals/test_config.json
 adk eval examples/google_adk_agent tests/evals/8_opt_schwab_option_chain_test.json --config_file_path tests/evals/test_config.json
 adk eval examples/google_adk_agent tests/evals/8_opt_schwab_option_expirations_test.json --config_file_path tests/evals/test_config.json
 adk eval examples/google_adk_agent tests/evals/5_ord_schwab_orders_test.json --config_file_path tests/evals/test_config.json
@@ -306,39 +317,6 @@ adk eval examples/google_adk_agent tests/evals/4_ntf_referrals_test.json --confi
 adk eval examples/google_adk_agent tests/evals/4_ntf_account_features_test.json --config_file_path tests/evals/test_config.json
 ```
 
-### 6. Market & Research Read-Only Evaluations (`2_mkt_*`)
-
-Read-only evals for market and research MCP tools. These scenarios must remain non-trading and non-mutating.
-
-Credential assumptions:
-- Requires `GOOGLE_API_KEY` and read-only `ROBINHOOD_USERNAME`/`ROBINHOOD_PASSWORD`.
-- No order placement, cancellation, watchlist mutation, or trading tool usage is permitted.
-
-Files and tool coverage:
-- `tests/evals/2_mkt_market_hours_test.json` - `market_hours`
-- `tests/evals/2_mkt_search_stocks_test.json` - `stocks_by_tag`
-- `tests/evals/2_mkt_stock_price_test.json` - `stock_price`
-- `tests/evals/2_mkt_stock_info_test.json` - `stock_info`
-- `tests/evals/2_mkt_price_history_test.json` - `price_history`
-- `tests/evals/2_mkt_top_movers_sp500_test.json` - `top_movers_sp500`
-- `tests/evals/2_mkt_top_100_stocks_test.json` - `top_100_stocks`
-- `tests/evals/2_mkt_top_movers_test.json` - `top_movers`
-- `tests/evals/2_mkt_stock_ratings_test.json` - `stock_ratings`
-- `tests/evals/2_mkt_stock_earnings_test.json` - `stock_earnings`
-- `tests/evals/2_mkt_stock_news_test.json` - `stock_news`
-- `tests/evals/2_mkt_stock_splits_test.json` - `stock_splits`
-- `tests/evals/2_mkt_schwab_quote_test.json` - `schwab_quote`
-- `tests/evals/2_mkt_schwab_price_history_test.json` - `schwab_price_history`
-- `tests/evals/2_mkt_schwab_search_instruments_test.json` - `schwab_search_instruments`
-
-Run with:
-
-```bash
-adk eval examples/google_adk_agent tests/evals/2_mkt_stock_ratings_test.json --config_file_path tests/evals/test_config.json
-adk eval examples/google_adk_agent tests/evals/2_mkt_stock_earnings_test.json --config_file_path tests/evals/test_config.json
-adk eval examples/google_adk_agent tests/evals/2_mkt_stock_news_test.json --config_file_path tests/evals/test_config.json
-adk eval examples/google_adk_agent tests/evals/2_mkt_stock_splits_test.json --config_file_path tests/evals/test_config.json
-```
 
 ### 7. Creating Custom Evaluation Tests
 
