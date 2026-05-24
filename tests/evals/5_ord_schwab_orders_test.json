@@ -11,7 +11,7 @@
           "user_content": {
             "parts": [
               {
-                "text": "Show me my recent orders on Schwab for account REPLACE_WITH_SCHWAB_ACCOUNT_HASH."
+                "text": "Show me my recent orders on Schwab for account REPLACE_WITH_SCHWAB_ACCOUNT_HASH. (Note: The placeholder account hash must be replaced with a real hash from schwab_account_numbers before live execution.)"
               }
             ],
             "role": "user"
@@ -19,7 +19,7 @@
           "final_response": {
             "parts": [
               {
-                "text": "I have retrieved your recent orders for Schwab account REPLACE_WITH_SCHWAB_ACCOUNT_HASH. You have 0 open orders."
+                "text": "I have retrieved your recent orders for Schwab account REPLACE_WITH_SCHWAB_ACCOUNT_HASH. You have 0 open orders. (Note: For live execution, ensure REPLACE_WITH_SCHWAB_ACCOUNT_HASH is replaced with a real account hash returned by the schwab_account_numbers tool.)"
               }
             ],
             "role": "model"

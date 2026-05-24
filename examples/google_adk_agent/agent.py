@@ -1,7 +1,7 @@
 """Stock Trading Agent Configuration.
 
 This module configures Stock_Trader, a specialized agent for handling
-stock market operations and interactions with Robin Stocks through our MCP server.
+stock market operations and interactions with Robinhood and Schwab through our MCP server.
 
 It uses the specified Google model and connects to our open-stocks-mcp server
 to provide real-time stock market data and trading capabilities.
@@ -51,7 +51,7 @@ def create_agent() -> Agent:
         model=os.environ.get("GOOGLE_MODEL") or "gemini-2.0-flash",
         name="Stock_Trader",
         instruction=agent_instruction,
-        description="Specialized stock trading agent that can perform Robin Stocks and Schwab operations through MCP tools.",
+        description="Specialized stock trading agent that can perform Robinhood and Schwab operations through MCP tools.",
         tools=agent_tools,
     )
 
