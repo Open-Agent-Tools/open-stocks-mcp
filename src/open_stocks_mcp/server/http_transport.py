@@ -457,7 +457,7 @@ def create_http_server(
         except Exception as e:
             logger.error(f"Failed to generate tool docs payload: {e}")
             raise HTTPException(
-                status_code=500, detail="Failed to generate tool docs"
+                status_code=500, detail="Failed to build tool docs"
             ) from e
 
     @app.get("/metrics")

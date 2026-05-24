@@ -367,6 +367,18 @@ class TestHTTPEndpoints:
         assert response.headers["content-type"].startswith("text/html")
         assert "swagger-ui" in response.text
 
+    async def test_tools_docs_endpoint_lists_tools(
+        self, http_client: httpx.AsyncClient
+    ) -> None:
+        response = await http_client.get("/tools/docs")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["result"]["count"] >= 1
+        assert data["result"]["tools"]
+        for item in data["result"]["tools"]:
+            assert "name" in item
+            assert "description" in item
+
     async def test_openapi_contains_all_mcp_tools(
         self, http_client: httpx.AsyncClient, mcp_server: FastMCP
     ) -> None:
