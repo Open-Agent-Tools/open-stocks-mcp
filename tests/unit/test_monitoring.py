@@ -227,3 +227,19 @@ async def test_threshold_alerts_fire_only_when_breached() -> None:
     assert len(threshold_events) == 2
     signals = {event.metadata.get("signal") for event in threshold_events}
     assert signals == {"error_rate_percent", "p95_response_time_ms"}
+
+
+@pytest.mark.asyncio
+async def test_alert_dedup_cleanup_avoids_memory_growth() -> None:
+    collector = MetricsCollector(alert_dedup_window_seconds=0.1)
+    now = datetime.now()
+
+    # Record an alert
+    collector._last_alert_at["test_signal"] = now - timedelta(seconds=1)
+
+    # Run cleanup via private method
+    collector._clean_old_entries(now)
+
+    # Map should be empty since 1s > 0.1s
+    assert "test_signal" not in collector._last_alert_at
+

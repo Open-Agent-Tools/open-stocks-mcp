@@ -202,6 +202,16 @@ class MetricsCollector:
         ):
             self.broker_operations.popleft()
 
+        # Clean alert deduplication map
+        dedup_cutoff = now - self._alert_dedup_window
+        signals_to_remove = [
+            signal
+            for signal, last_sent in self._last_alert_at.items()
+            if last_sent < dedup_cutoff
+        ]
+        for signal in signals_to_remove:
+            del self._last_alert_at[signal]
+
     @staticmethod
     def _percentile(samples: list[float], quantile: float) -> float:
         """Return percentile for a sorted sample list."""
@@ -450,17 +460,17 @@ class MetricsCollector:
         health = "healthy"
         issues = []
 
-        if error_rate > 25:
+        if error_rate > self._error_rate_unhealthy_threshold:
             health = "unhealthy"
             issues.append(f"Critical error rate: {error_rate}%")
-        elif error_rate > 10:
+        elif error_rate > self._error_rate_degraded_threshold:
             health = "degraded"
             issues.append(f"High error rate: {error_rate}%")
 
-        if avg_response_time > 10000:  # 10 seconds
+        if avg_response_time > self._avg_response_time_unhealthy_ms:
             health = "unhealthy"
             issues.append(f"Critical response time: {avg_response_time}ms")
-        elif avg_response_time > 5000:  # 5 seconds
+        elif avg_response_time > self._latency_p95_threshold_ms:
             health = "degraded" if health == "healthy" else health
             issues.append(f"High response time: {avg_response_time}ms")
 
@@ -598,8 +608,8 @@ def get_metrics_collector() -> MetricsCollector:
             alerts_enabled=alerts.enabled,
             webhook_url=alerts.webhook_url,
             alert_dedup_window_seconds=alerts.dedup_window_seconds,
-            error_rate_degraded_threshold=alerts.error_rate_threshold_percent,
-            error_rate_unhealthy_threshold=alerts.error_rate_unhealthy_threshold,
+            error_rate_degraded_threshold=alerts.error_rate_degraded_threshold_percent,
+            error_rate_unhealthy_threshold=alerts.error_rate_unhealthy_threshold_percent,
             avg_response_time_unhealthy_ms=alerts.avg_response_time_unhealthy_ms,
             latency_p95_threshold_ms=alerts.latency_p95_threshold_ms,
         )

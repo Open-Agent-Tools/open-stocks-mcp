@@ -70,3 +70,20 @@ async def test_webhook_alerter_sends_json_payload() -> None:
     assert payload["metric_value"] == 155.0
     assert payload["threshold_value"] == 100.0
     assert "timestamp" in payload
+
+
+def test_webhook_sink_url_validation() -> None:
+    # Valid
+    WebhookAlertSink("https://example.com/alert")
+
+    # Invalid scheme
+    with pytest.raises(ValueError, match="Webhook URL must use http or https"):
+        WebhookAlertSink("ftp://example.com/alert")
+
+    # localhost
+    with pytest.raises(ValueError, match="Webhook URL cannot target localhost"):
+        WebhookAlertSink("https://localhost/alert")
+    with pytest.raises(ValueError, match="Webhook URL cannot target localhost"):
+        WebhookAlertSink("http://127.0.0.1/alert")
+    with pytest.raises(ValueError, match="Webhook URL cannot target localhost"):
+        WebhookAlertSink("https://[::1]/alert")
