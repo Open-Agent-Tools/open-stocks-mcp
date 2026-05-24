@@ -50,20 +50,21 @@ VS Code Test Explorer uses `python.testing.pytestArgs` from `.vscode/settings.js
 
 The workspace launch file `.vscode/launch.json` provides two common entry points:
 
-- `Run MCP server (HTTP)` starts `open_stocks_mcp.server.app` with `--transport http --port 3001` in the integrated terminal.
+- `Run MCP server (HTTP)` starts `open_stocks_mcp.server.app` with `--transport http --host 127.0.0.1 --port 3001 --debug` in the integrated terminal.
 - `Pytest: current file` runs the currently open test file through `pytest -v`.
 
-For command-line debugging, start the HTTP server with Python development checks enabled:
+For command-line debugging, use `--debug` for one invocation or `DEBUG=true` for environment-driven DEBUG logging. An explicit `LOG_LEVEL` value takes precedence over `DEBUG=true`, while `--debug` forces DEBUG logging for that command.
 
 ```bash
-uv run python -X dev -m open_stocks_mcp.server.app --transport http --port 3001
+uv run python -X dev -m open_stocks_mcp.server.app --transport http --host 127.0.0.1 --port 3001 --debug
+DEBUG=true uv run open-stocks-mcp-server --transport http --host 127.0.0.1 --port 3001
 ```
 
 Inspect the local server from another terminal:
 
 ```bash
-curl http://localhost:3001/health
-curl http://localhost:3001/metrics
+curl -sf http://127.0.0.1:3001/health
+curl http://127.0.0.1:3001/metrics
 ```
 
 Use the standard debugger by setting `PYTHONBREAKPOINT` before running a focused test or server command:

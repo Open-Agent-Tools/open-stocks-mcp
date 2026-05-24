@@ -98,6 +98,47 @@ feature_flags:
 
 @pytest.mark.unit
 @pytest.mark.journey_system
+@pytest.mark.parametrize("debug_value", ["1", "true", "TRUE", "yes", "on"])
+def test_debug_env_enables_debug_log_level(
+    monkeypatch: pytest.MonkeyPatch, debug_value: str
+) -> None:
+    monkeypatch.delenv("LOG_LEVEL", raising=False)
+    monkeypatch.setenv("DEBUG", debug_value)
+
+    cfg = load_config(config_path=Path("/tmp/definitely-missing-config.yaml"))
+
+    assert cfg.log_level == "DEBUG"
+
+
+@pytest.mark.unit
+@pytest.mark.journey_system
+def test_log_level_env_takes_precedence_over_debug_env(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("DEBUG", "true")
+    monkeypatch.setenv("LOG_LEVEL", "WARNING")
+
+    cfg = load_config(config_path=Path("/tmp/definitely-missing-config.yaml"))
+
+    assert cfg.log_level == "WARNING"
+
+
+@pytest.mark.unit
+@pytest.mark.journey_system
+@pytest.mark.parametrize("debug_value", ["", "0", "false", "no", "off"])
+def test_false_debug_env_keeps_default_log_level(
+    monkeypatch: pytest.MonkeyPatch, debug_value: str
+) -> None:
+    monkeypatch.delenv("LOG_LEVEL", raising=False)
+    monkeypatch.setenv("DEBUG", debug_value)
+
+    cfg = load_config(config_path=Path("/tmp/definitely-missing-config.yaml"))
+
+    assert cfg.log_level == "INFO"
+
+
+@pytest.mark.unit
+@pytest.mark.journey_system
 def test_missing_file_uses_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
     for var in (
         "MCP_SERVER_NAME",

@@ -58,6 +58,13 @@ def _parse_bool(value: Any, field_name: str) -> bool:
     raise ConfigError(f"{field_name} must be a boolean")
 
 
+def _env_flag_is_truthy(name: str) -> bool:
+    raw_value = os.getenv(name)
+    if raw_value is None:
+        return False
+    return raw_value.strip().lower() in {"1", "true", "yes", "on"}
+
+
 def _env_optional_int(name: str) -> int | None:
     raw_value = os.getenv(name)
     if raw_value is None or raw_value == "":
@@ -355,9 +362,14 @@ def load_config(config_path: Path | str | None = None) -> ServerConfig:
         )
 
     name = os.getenv("MCP_SERVER_NAME", str(server.get("name", "Open Stocks MCP")))
-    log_level = _validate_log_level(
-        os.getenv("LOG_LEVEL", str(server.get("log_level", "INFO")))
-    )
+    raw_log_level = os.getenv("LOG_LEVEL")
+    if raw_log_level is None:
+        raw_log_level = (
+            "DEBUG"
+            if _env_flag_is_truthy("DEBUG")
+            else str(server.get("log_level", "INFO"))
+        )
+    log_level = _validate_log_level(raw_log_level)
 
     calls_per_minute = _validate_positive_int(
         _parse_int(

@@ -6,7 +6,18 @@
       "type": "python",
       "request": "launch",
       "module": "open_stocks_mcp.server.app",
-      "args": ["--transport", "http", "--port", "3001"],
+      "args": [
+        "--transport",
+        "http",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "3001",
+        "--debug"
+      ],
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+      },
       "console": "integratedTerminal",
       "justMyCode": false
     },

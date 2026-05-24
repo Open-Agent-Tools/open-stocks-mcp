@@ -1,13 +1,16 @@
 """Tests for server app module."""
 
+import inspect
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from click.testing import CliRunner
 
 from open_stocks_mcp.server.app import (
     attempt_login,
     create_mcp_server,
     health_check,
+    main,
     mcp,
     setup_brokers,
 )
@@ -371,3 +374,30 @@ async def test_setup_brokers_registers_schwab_when_enabled_and_configured() -> N
         await setup_brokers(None, None, config=config)
 
     mock_registry.register.assert_called_once()
+
+
+def test_main_debug_flag_passes_debug_config_to_server() -> None:
+    runner = CliRunner()
+    server = MagicMock()
+
+    async def noop(*_args: object) -> None:
+        return None
+
+    server.run_stdio_async.side_effect = noop
+
+    def fake_asyncio_run(awaitable: object) -> None:
+        if inspect.iscoroutine(awaitable):
+            awaitable.close()
+
+    with (
+        patch("open_stocks_mcp.server.app.create_mcp_server") as mock_create,
+        patch("open_stocks_mcp.server.app.setup_brokers", side_effect=noop),
+        patch("open_stocks_mcp.server.app.asyncio.run", side_effect=fake_asyncio_run),
+    ):
+        mock_create.return_value = server
+
+        result = runner.invoke(main, ["--debug", "--transport", "stdio"])
+
+    assert result.exit_code == 0
+    config = mock_create.call_args.args[0]
+    assert config.log_level == "DEBUG"

@@ -1936,6 +1936,7 @@ def attempt_login(username: str, password: str) -> None:
     default="stdio",
     help="Transport type (stdio or http)",
 )
+@click.option("--debug", is_flag=True, help="Enable DEBUG logging")
 @click.option(
     "--username", help="Robinhood username.", default=os.getenv("ROBINHOOD_USERNAME")
 )
@@ -1961,6 +1962,7 @@ def main(
     port: int,
     host: str,
     transport: str,
+    debug: bool,
     username: str | None,
     password: str | None,
     api_key: str | None,
@@ -1992,6 +1994,8 @@ def main(
 
     # Create MCP server
     config = load_config()
+    if debug:
+        config.log_level = "DEBUG"
     server = create_mcp_server(config)
 
     # Setup broker authentication (non-blocking)
