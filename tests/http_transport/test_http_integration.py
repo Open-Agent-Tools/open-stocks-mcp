@@ -215,7 +215,7 @@ class TestHTTPIntegration:
         # Mock session manager for lifecycle testing
         mock_session_manager = Mock()
         mock_session_manager.get_session_info.return_value = {
-            "authenticated": False,
+            "is_authenticated": False,
             "session_duration": None,
         }
         mock_session_manager.ensure_authenticated = AsyncMock(return_value=True)
@@ -225,11 +225,11 @@ class TestHTTPIntegration:
         # 1. Check initial session status (unauthenticated)
         response = await mock_http_client.get("/health")
         data = response.json()
-        assert data["components"]["session"]["status"] == "degraded"
+        assert data["components"]["session"]["status"] == "unhealthy"
 
         # 2. Refresh session (authenticate)
         mock_session_manager.get_session_info.return_value = {
-            "authenticated": True,
+            "is_authenticated": True,
             "session_duration": 3600,
         }
 

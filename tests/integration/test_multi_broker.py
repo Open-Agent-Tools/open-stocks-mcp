@@ -4,7 +4,7 @@ These tests verify that multiple brokers can work together correctly.
 They use mocked broker responses to avoid requiring real credentials.
 """
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -112,74 +112,91 @@ class TestMultiBrokerIntegration:
 
     @pytest.mark.asyncio
     @patch("open_stocks_mcp.brokers.robinhood.SessionManager")
-    @patch("open_stocks_mcp.brokers.schwab.auth")
+    @patch("schwab.auth")
     async def test_authenticate_all_brokers(
         self,
         mock_schwab_auth: MagicMock,
         mock_session_manager: MagicMock,
         registry: BrokerRegistry,
-        robinhood_broker: RobinhoodBroker,
-        schwab_broker: SchwabBroker,
     ) -> None:
         """Test authenticating all brokers simultaneously."""
         # Mock Robinhood authentication
         mock_session = MagicMock()
-        mock_session.ensure_authenticated.return_value = True
+        mock_session.ensure_authenticated = AsyncMock(return_value=True)
         mock_session_manager.return_value = mock_session
+
+        robinhood_broker = RobinhoodBroker(
+            username="test@example.com",
+            password="test_password",
+        )
 
         # Mock Schwab authentication
         mock_schwab_client = MagicMock()
         mock_schwab_auth.easy_client.return_value = mock_schwab_client
 
-        registry.register(robinhood_broker)
-        registry.register(schwab_broker)
+        schwab_broker = SchwabBroker(
+            api_key="test_api_key",
+            app_secret="test_app_secret",
+        )
 
-        results = await registry.authenticate_all()
+        # Mock tty check to allow interactive auth mock
+        with patch("os.isatty", return_value=True):
+            registry.register(robinhood_broker)
+            registry.register(schwab_broker)
+
+            results = await registry.authenticate_all()
 
         assert results["robinhood"] is True
         assert results["schwab"] is True
 
     @pytest.mark.asyncio
     @patch("open_stocks_mcp.brokers.robinhood.SessionManager")
-    @patch("open_stocks_mcp.brokers.schwab.auth")
+    @patch("schwab.auth")
     async def test_partial_authentication_failure(
         self,
         mock_schwab_auth: MagicMock,
         mock_session_manager: MagicMock,
         registry: BrokerRegistry,
-        robinhood_broker: RobinhoodBroker,
-        schwab_broker: SchwabBroker,
     ) -> None:
         """Test handling when some brokers authenticate and others fail."""
         # Mock Robinhood authentication success
         mock_session = MagicMock()
-        mock_session.ensure_authenticated.return_value = True
+        mock_session.ensure_authenticated = AsyncMock(return_value=True)
         mock_session_manager.return_value = mock_session
+
+        robinhood_broker = RobinhoodBroker(
+            username="test@example.com",
+            password="test_password",
+        )
 
         # Mock Schwab authentication failure
         mock_schwab_auth.easy_client.side_effect = Exception("OAuth failed")
 
-        registry.register(robinhood_broker)
-        registry.register(schwab_broker)
+        schwab_broker = SchwabBroker(
+            api_key="test_api_key",
+            app_secret="test_app_secret",
+        )
 
-        results = await registry.authenticate_all()
+        # Mock tty check to allow interactive auth mock
+        with patch("os.isatty", return_value=True):
+            registry.register(robinhood_broker)
+            registry.register(schwab_broker)
+
+            results = await registry.authenticate_all()
 
         assert results["robinhood"] is True
         assert results["schwab"] is False
 
     def test_broker_not_found_error(self, registry: BrokerRegistry) -> None:
         """Test error when requesting non-existent broker."""
-        with pytest.raises(ValueError, match="Broker not found"):
-            registry.get_broker("nonexistent")
+        assert registry.get_broker("nonexistent") is None
 
     def test_set_active_broker_not_registered(
         self, registry: BrokerRegistry, robinhood_broker: RobinhoodBroker
     ) -> None:
         """Test error when setting active broker that isn't registered."""
         registry.register(robinhood_broker)
-
-        with pytest.raises(ValueError, match="Broker not registered"):
-            registry.set_active_broker("schwab")
+        assert registry.set_active_broker("schwab") is False
 
     @pytest.mark.asyncio
     @patch("open_stocks_mcp.brokers.robinhood.SessionManager")
@@ -187,53 +204,76 @@ class TestMultiBrokerIntegration:
         self,
         mock_session_manager: MagicMock,
         registry: BrokerRegistry,
-        robinhood_broker: RobinhoodBroker,
     ) -> None:
         """Test that broker authentication status is tracked correctly."""
         # Mock authentication
         mock_session = MagicMock()
-        mock_session.ensure_authenticated.return_value = True
+        mock_session.ensure_authenticated = AsyncMock(return_value=True)
+        mock_session.logout = AsyncMock()
         mock_session_manager.return_value = mock_session
+
+        robinhood_broker = RobinhoodBroker(
+            username="test@example.com",
+            password="test_password",
+        )
 
         registry.register(robinhood_broker)
 
         # Initially unauthenticated
-        assert robinhood_broker.auth_status == BrokerAuthStatus.UNAUTHENTICATED
+        assert robinhood_broker.auth_info.status == BrokerAuthStatus.NOT_AUTHENTICATED
 
         # After authentication
         await robinhood_broker.authenticate()
-        assert robinhood_broker.auth_status == BrokerAuthStatus.AUTHENTICATED
+        assert robinhood_broker.auth_info.status == BrokerAuthStatus.AUTHENTICATED
 
         # After logout
         await robinhood_broker.logout()
-        assert robinhood_broker.auth_status == BrokerAuthStatus.UNAUTHENTICATED
+        assert robinhood_broker.auth_info.status == BrokerAuthStatus.NOT_AUTHENTICATED
 
     @pytest.mark.asyncio
     @patch("open_stocks_mcp.brokers.robinhood.SessionManager")
-    @patch("open_stocks_mcp.brokers.schwab.auth")
+    @patch("schwab.auth")
     async def test_concurrent_broker_operations(
         self,
         mock_schwab_auth: MagicMock,
         mock_session_manager: MagicMock,
         registry: BrokerRegistry,
-        robinhood_broker: RobinhoodBroker,
-        schwab_broker: SchwabBroker,
     ) -> None:
         """Test that multiple brokers can operate independently."""
         # Mock Robinhood
         mock_rh_session = MagicMock()
-        mock_rh_session.ensure_authenticated.return_value = True
+        mock_rh_session.ensure_authenticated = AsyncMock(return_value=True)
+        
+        # Track session validity state
+        session_state = {"valid": True}
+        def get_valid(): return session_state["valid"]
+        async def do_logout(): session_state["valid"] = False
+        
+        mock_rh_session.is_session_valid.side_effect = get_valid
+        mock_rh_session.logout = AsyncMock(side_effect=do_logout)
         mock_session_manager.return_value = mock_rh_session
+
+        robinhood_broker = RobinhoodBroker(
+            username="test@example.com",
+            password="test_password",
+        )
 
         # Mock Schwab
         mock_schwab_client = MagicMock()
         mock_schwab_auth.easy_client.return_value = mock_schwab_client
 
-        registry.register(robinhood_broker)
-        registry.register(schwab_broker)
+        schwab_broker = SchwabBroker(
+            api_key="test_api_key",
+            app_secret="test_app_secret",
+        )
 
-        # Authenticate both
-        await registry.authenticate_all()
+        # Mock tty check to allow interactive auth mock
+        with patch("os.isatty", return_value=True):
+            registry.register(robinhood_broker)
+            registry.register(schwab_broker)
+
+            # Authenticate both
+            await registry.authenticate_all()
 
         # Verify both are authenticated
         rh = registry.get_broker("robinhood")
@@ -247,16 +287,17 @@ class TestMultiBrokerIntegration:
         assert not await rh.is_authenticated()
         assert await schwab.is_authenticated()
 
-    def test_global_registry_singleton(self) -> None:
+    @pytest.mark.asyncio
+    async def test_global_registry_singleton(self) -> None:
         """Test that get_broker_registry returns singleton instance."""
-        registry1 = get_broker_registry()
-        registry2 = get_broker_registry()
+        registry1 = await get_broker_registry()
+        registry2 = await get_broker_registry()
 
         # Should be the same instance
         assert registry1 is registry2
 
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.brokers.schwab.auth")
+    @patch("schwab.auth")
     async def test_schwab_token_persistence(
         self, mock_schwab_auth: MagicMock, schwab_broker: SchwabBroker, tmp_path
     ) -> None:

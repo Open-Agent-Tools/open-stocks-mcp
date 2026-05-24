@@ -179,9 +179,16 @@ async def _collect_schwab_comparison(
                 # This depends on how get_schwab_orders formats them
                 # Based on schwab_trading_tools.py, it returns raw response.json()
 
-                leg = o.get("orderLegCollection", [{}])[0]
+                legs = o.get("orderLegCollection", [])
+                if not legs:
+                    continue
+
+                leg = legs[0]
                 instr = leg.get("instrument", {})
                 symbol = instr.get("symbol")
+
+                if not symbol:
+                    continue
 
                 if not symbols or symbol in symbols:
                     data["orders"].append(

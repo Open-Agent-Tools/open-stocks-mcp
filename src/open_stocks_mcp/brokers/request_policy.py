@@ -17,6 +17,15 @@ def install_robinhood_request_timeout(
     This wraps the session's request method to ensure every call uses the
     centrally configured timeout, overriding any call-site defaults provided
     by the SDK.
+
+    Note on Threading:
+    This function modifies the session object in-place. While the attribute
+    assignments are atomic in CPython, concurrent calls to this function
+    could theoretically result in multiple wrappers. However, the use of
+    `_is_timeout_wrapper` makes it idempotent. The Robinhood SDK's `helper.SESSION`
+    is typically used in a single-threaded context within the MCP server's
+    asyncio loop (via `to_thread`), but standard precautions apply if
+    using multiple sessions across threads.
     """
     if session is None:
         try:

@@ -40,7 +40,7 @@ async def test_get_status_returns_structured_snapshot_from_cached_broker_status(
 
     session_manager = MagicMock()
     session_manager.get_session_info.return_value = {
-        "authenticated": True,
+        "is_authenticated": True,
         "session_duration": 123,
     }
 
@@ -76,7 +76,7 @@ async def test_metrics_component_transitions_healthy_to_degraded_to_unhealthy() 
         {"status": "unhealthy", "issues": ["b"]},
     ]
     session_manager = MagicMock()
-    session_manager.get_session_info.return_value = {"authenticated": True}
+    session_manager.get_session_info.return_value = {"is_authenticated": True}
 
     service = HealthService(
         registry=registry,
@@ -105,7 +105,7 @@ async def test_broker_component_transitions_on_auth_status_change() -> None:
         "issues": [],
     }
     session_manager = MagicMock()
-    session_manager.get_session_info.return_value = {"authenticated": True}
+    session_manager.get_session_info.return_value = {"is_authenticated": True}
     service = HealthService(
         registry=registry,
         metrics_collector=metrics_collector,
@@ -152,7 +152,7 @@ async def test_broker_auth_status_mapping(
         "issues": [],
     }
     session_manager = MagicMock()
-    session_manager.get_session_info.return_value = {"authenticated": True}
+    session_manager.get_session_info.return_value = {"is_authenticated": True}
     service = HealthService(
         registry=registry,
         metrics_collector=metrics_collector,
@@ -181,7 +181,7 @@ async def test_overall_status_aggregation_rules() -> None:
     }[name]
 
     session_healthy = MagicMock()
-    session_healthy.get_session_info.return_value = {"authenticated": True}
+    session_healthy.get_session_info.return_value = {"is_authenticated": True}
     partial = HealthService(
         registry=registry_partial,
         metrics_collector=metrics_collector,
@@ -202,7 +202,7 @@ async def test_overall_status_aggregation_rules() -> None:
     assert (await all_bad.get_status())["status"] == "unhealthy"
 
     session_unhealthy = MagicMock()
-    session_unhealthy.get_session_info.return_value = {"authenticated": False}
+    session_unhealthy.get_session_info.return_value = {"is_authenticated": False}
     core_unhealthy = HealthService(
         registry=registry_partial,
         metrics_collector=metrics_collector,
@@ -225,7 +225,7 @@ async def test_registry_lookup_failure_omits_broker_components(
         "issues": [],
     }
     session_manager = MagicMock()
-    session_manager.get_session_info.return_value = {"authenticated": True}
+    session_manager.get_session_info.return_value = {"is_authenticated": True}
     service = HealthService(
         registry=None,
         metrics_collector=metrics_collector,
@@ -243,7 +243,7 @@ async def test_monitoring_disabled_skips_metrics_collection() -> None:
     registry.list_brokers.return_value = []
     metrics_collector = AsyncMock()
     session_manager = MagicMock()
-    session_manager.get_session_info.return_value = {"authenticated": True}
+    session_manager.get_session_info.return_value = {"is_authenticated": True}
     service = HealthService(
         registry=registry,
         metrics_collector=metrics_collector,

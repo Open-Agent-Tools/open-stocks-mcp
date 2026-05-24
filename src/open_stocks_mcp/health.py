@@ -127,7 +127,7 @@ class HealthService:
         session_info = self._get_session_manager().get_session_info()
         session_status = (
             ComponentStatus.HEALTHY
-            if session_info.get("authenticated", False)
+            if session_info.get("is_authenticated", False)
             else ComponentStatus.UNHEALTHY
         )
         session_component = ComponentHealth(
