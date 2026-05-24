@@ -101,6 +101,7 @@ class TestHttpTransportUnit:
         assert response.status_code == 200
         body = response.json()
         assert body["error"]["code"] == -32602
+        assert body["error"]["message"] == "Invalid params: missing 'name'"
         assert "invalid params" in body["error"]["message"].lower()
         assert body["id"] == 8
 
