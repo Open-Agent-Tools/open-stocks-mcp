@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import logging
 import secrets
 import time
 from collections.abc import AsyncGenerator
@@ -124,6 +125,53 @@ READ_ONLY_HTTP_TOOL_NAMES = frozenset(
         "watchlist_performance",
     }
 )
+
+
+def _mcp_log_value(value: object) -> str:
+    if value is None:
+        return "null"
+    return str(value)
+
+
+def _log_mcp_request(method: object, request_id: object) -> None:
+    if logger.isEnabledFor(logging.DEBUG):
+        logger.debug(
+            "MCP request received method=%s request_id=%s",
+            _mcp_log_value(method),
+            _mcp_log_value(request_id),
+        )
+
+
+def _mcp_json_response(
+    response_data: dict[str, Any],
+    *,
+    status_code: int,
+    method: object,
+    request_id: object,
+    outcome: str,
+    error_code: int | None = None,
+    error_type: str | None = None,
+) -> Response:
+    content = json.dumps(response_data).encode()
+    if logger.isEnabledFor(logging.DEBUG):
+        logger.debug(
+            (
+                "MCP response sent method=%s request_id=%s outcome=%s "
+                "status_code=%s error_code=%s error_type=%s response_bytes=%s"
+            ),
+            _mcp_log_value(method),
+            _mcp_log_value(request_id),
+            outcome,
+            status_code,
+            _mcp_log_value(error_code),
+            _mcp_log_value(error_type),
+            len(content),
+        )
+    return Response(
+        content=content,
+        status_code=status_code,
+        headers={"content-type": "application/json"},
+    )
 
 
 def is_loopback_host(host: str) -> bool:
@@ -488,41 +536,46 @@ def create_http_server(
             body = await request.body()
 
             if len(body) > MAX_MCP_REQUEST_BODY_SIZE:
-                return Response(
-                    content=json.dumps(
-                        {
-                            "jsonrpc": "2.0",
-                            "error": {
-                                "code": -32700,
-                                "message": "Request body too large",
-                            },
-                            "id": None,
-                        }
-                    ).encode(),
+                return _mcp_json_response(
+                    {
+                        "jsonrpc": "2.0",
+                        "error": {
+                            "code": -32700,
+                            "message": "Request body too large",
+                        },
+                        "id": None,
+                    },
                     status_code=413,
-                    headers={"content-type": "application/json"},
+                    method=None,
+                    request_id=None,
+                    outcome="error",
+                    error_code=-32700,
+                    error_type="body_too_large",
                 )
 
             # Parse the JSON-RPC request
             try:
                 json_request = json.loads(body.decode())
             except json.JSONDecodeError:
-                return Response(
-                    content=json.dumps(
-                        {
-                            "jsonrpc": "2.0",
-                            "error": {"code": -32700, "message": "Parse error"},
-                            "id": None,
-                        }
-                    ).encode(),
+                return _mcp_json_response(
+                    {
+                        "jsonrpc": "2.0",
+                        "error": {"code": -32700, "message": "Parse error"},
+                        "id": None,
+                    },
                     status_code=400,
-                    headers={"content-type": "application/json"},
+                    method=None,
+                    request_id=None,
+                    outcome="error",
+                    error_code=-32700,
+                    error_type="parse_error",
                 )
 
             # Handle different MCP methods
             method = json_request.get("method")
             request_id = json_request.get("id")
             params = json_request.get("params", {})
+            _log_mcp_request(method, request_id)
 
             try:
                 result: dict[str, Any]
@@ -566,41 +619,45 @@ def create_http_server(
                     arguments = params.get("arguments", {})
 
                     if not tool_name:
-                        return Response(
-                            content=json.dumps(
-                                {
-                                    "jsonrpc": "2.0",
-                                    "error": {
-                                        "code": -32602,
-                                        "message": "Invalid params: missing tool name",
-                                    },
-                                    "id": request_id,
-                                }
-                            ).encode(),
+                        return _mcp_json_response(
+                            {
+                                "jsonrpc": "2.0",
+                                "error": {
+                                    "code": -32602,
+                                    "message": "Invalid params: missing tool name",
+                                },
+                                "id": request_id,
+                            },
                             status_code=200,
-                            headers={"content-type": "application/json"},
+                            method=method,
+                            request_id=request_id,
+                            outcome="error",
+                            error_code=-32602,
+                            error_type="invalid_params",
                         )
 
                     if not _is_tool_allowed(tool_name):
                         logger.warning(
                             "Blocked MCP tool call in read-only mode: %s", tool_name
                         )
-                        return Response(
-                            content=json.dumps(
-                                {
-                                    "jsonrpc": "2.0",
-                                    "error": {
-                                        "code": -32600,
-                                        "message": (
-                                            "Tool is not allowed in read-only mode. "
-                                            "Enable --allow-trading to permit mutating tools."
-                                        ),
-                                    },
-                                    "id": request_id,
-                                }
-                            ).encode(),
+                        return _mcp_json_response(
+                            {
+                                "jsonrpc": "2.0",
+                                "error": {
+                                    "code": -32600,
+                                    "message": (
+                                        "Tool is not allowed in read-only mode. "
+                                        "Enable --allow-trading to permit mutating tools."
+                                    ),
+                                },
+                                "id": request_id,
+                            },
                             status_code=403,
-                            headers={"content-type": "application/json"},
+                            method=method,
+                            request_id=request_id,
+                            outcome="error",
+                            error_code=-32600,
+                            error_type="forbidden_tool",
                         )
 
                     # Record duration and success/failure for tool calls only.
@@ -670,31 +727,48 @@ def create_http_server(
                 elif method == "notifications/initialized":
                     # Handle initialization notification (no response needed for notifications)
                     logger.info("Client initialization notification received")
+                    if logger.isEnabledFor(logging.DEBUG):
+                        logger.debug(
+                            "MCP response sent method=%s request_id=%s outcome=%s "
+                            "status_code=%s error_code=%s error_type=%s "
+                            "response_bytes=%s",
+                            _mcp_log_value(method),
+                            _mcp_log_value(request_id),
+                            "success",
+                            200,
+                            "null",
+                            "null",
+                            0,
+                        )
                     return Response(status_code=200)
 
                 else:
-                    return Response(
-                        content=json.dumps(
-                            {
-                                "jsonrpc": "2.0",
-                                "error": {
-                                    "code": -32601,
-                                    "message": f"Method not found: {method}",
-                                },
-                                "id": request_id,
-                            }
-                        ).encode(),
+                    return _mcp_json_response(
+                        {
+                            "jsonrpc": "2.0",
+                            "error": {
+                                "code": -32601,
+                                "message": f"Method not found: {method}",
+                            },
+                            "id": request_id,
+                        },
                         status_code=200,
-                        headers={"content-type": "application/json"},
+                        method=method,
+                        request_id=request_id,
+                        outcome="error",
+                        error_code=-32601,
+                        error_type="method_not_found",
                     )
 
                 # Return successful response
                 response_data = {"jsonrpc": "2.0", "result": result, "id": request_id}
 
-                return Response(
-                    content=json.dumps(response_data).encode(),
+                return _mcp_json_response(
+                    response_data,
                     status_code=200,
-                    headers={"content-type": "application/json"},
+                    method=method,
+                    request_id=request_id,
+                    outcome="success",
                 )
 
             except Exception as e:
@@ -704,10 +778,14 @@ def create_http_server(
                     "error": {"code": -32603, "message": str(e)},
                     "id": request_id,
                 }
-                return Response(
-                    content=json.dumps(error_response).encode(),
+                return _mcp_json_response(
+                    error_response,
                     status_code=500,
-                    headers={"content-type": "application/json"},
+                    method=method,
+                    request_id=request_id,
+                    outcome="error",
+                    error_code=-32603,
+                    error_type=type(e).__name__,
                 )
 
         except Exception as e:
@@ -717,10 +795,14 @@ def create_http_server(
                 "error": {"code": -32603, "message": f"Internal error: {e!s}"},
                 "id": None,
             }
-            return Response(
-                content=json.dumps(error_response).encode(),
+            return _mcp_json_response(
+                error_response,
                 status_code=500,
-                headers={"content-type": "application/json"},
+                method=None,
+                request_id=None,
+                outcome="error",
+                error_code=-32603,
+                error_type=type(e).__name__,
             )
 
     # SSE endpoint for server-sent events

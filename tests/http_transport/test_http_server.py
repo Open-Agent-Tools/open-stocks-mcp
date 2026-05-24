@@ -2,6 +2,7 @@
 
 import asyncio
 import contextlib
+import logging
 from typing import Any
 from unittest.mock import AsyncMock, Mock, patch
 
@@ -410,6 +411,61 @@ class TestMCPIntegration:
         response = await http_client.get("/mcp")
         # Should get a method not allowed or proper response, not 404
         assert response.status_code != 404
+
+    @pytest.mark.anyio
+    async def test_mcp_debug_logging_records_safe_request_response_metadata(
+        self, caplog: pytest.LogCaptureFixture, http_client: httpx.AsyncClient
+    ) -> None:
+        """DEBUG logs include request metadata without full sensitive payloads."""
+        caplog.set_level(logging.DEBUG, logger="open_stocks_mcp")
+        payload = {
+            "jsonrpc": "2.0",
+            "id": "debug-1",
+            "method": "initialize",
+            "params": {
+                "password": "secret-password",
+                "token": "secret-token",
+                "account_number": "123456789",
+            },
+        }
+
+        response = await http_client.post("/mcp", json=payload)
+
+        assert response.status_code == 200
+        messages = "\n".join(record.getMessage() for record in caplog.records)
+        assert "MCP request" in messages
+        assert "MCP response" in messages
+        assert "method=initialize" in messages
+        assert "request_id=debug-1" in messages
+        assert "outcome=success" in messages
+        assert "status_code=200" in messages
+        assert "secret-password" not in messages
+        assert "secret-token" not in messages
+        assert "123456789" not in messages
+
+    @pytest.mark.anyio
+    async def test_mcp_debug_logging_records_error_status(
+        self, caplog: pytest.LogCaptureFixture, http_client: httpx.AsyncClient
+    ) -> None:
+        caplog.set_level(logging.DEBUG, logger="open_stocks_mcp")
+        payload = {
+            "jsonrpc": "2.0",
+            "id": 404,
+            "method": "unknown/method",
+            "params": {"password": "do-not-log"},
+        }
+
+        response = await http_client.post("/mcp", json=payload)
+
+        assert response.status_code == 200
+        assert response.json()["error"]["code"] == -32601
+        messages = "\n".join(record.getMessage() for record in caplog.records)
+        assert "method=unknown/method" in messages
+        assert "request_id=404" in messages
+        assert "outcome=error" in messages
+        assert "error_code=-32601" in messages
+        assert "error_type=method_not_found" in messages
+        assert "do-not-log" not in messages
 
     async def test_sse_endpoint(self, mcp_server: FastMCP) -> None:
         """Test SSE endpoint is registered."""
