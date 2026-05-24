@@ -33,14 +33,14 @@ class TestSchwabMarketTools:
         self,
         mock_to_thread: AsyncMock,
         mock_get_broker: AsyncMock,
-        schwab_quote_payload: dict[str, Any],
+        mock_schwab_quote: dict[str, Any],
     ) -> None:
         """Test successful stock quote retrieval."""
         # Mock broker
         mock_broker = MagicMock()
         mock_get_broker.return_value = (mock_broker, None)
 
-        mock_to_thread.return_value = schwab_quote_payload
+        mock_to_thread.return_value = mock_schwab_quote
 
         result = await get_schwab_quote("AAPL")
 
@@ -59,14 +59,14 @@ class TestSchwabMarketTools:
     async def test_get_quote_auth_error(
         self,
         mock_get_broker: AsyncMock,
-        broker_auth_error_payload: dict[str, Any],
+        mock_schwab_auth_error: dict[str, Any],
     ) -> None:
         """Test quote retrieval when authentication fails."""
-        mock_get_broker.return_value = (None, broker_auth_error_payload)
+        mock_get_broker.return_value = (None, mock_schwab_auth_error)
 
         result = await get_schwab_quote("AAPL")
 
-        assert result == broker_auth_error_payload
+        assert result == mock_schwab_auth_error
 
     @pytest.mark.journey_market_data
     @pytest.mark.unit
@@ -163,14 +163,14 @@ class TestSchwabMarketTools:
         self,
         mock_to_thread: AsyncMock,
         mock_get_broker: AsyncMock,
-        schwab_quote_payload: dict[str, Any],
+        mock_schwab_instrument: dict[str, Any],
     ) -> None:
         """Test successful instrument retrieval."""
         # Mock broker
         mock_broker = MagicMock()
         mock_get_broker.return_value = (mock_broker, None)
 
-        mock_to_thread.return_value = schwab_quote_payload
+        mock_to_thread.return_value = mock_schwab_instrument
 
         result = await get_schwab_instrument("AAPL")
 
@@ -190,14 +190,14 @@ class TestSchwabMarketTools:
         self,
         mock_to_thread: AsyncMock,
         mock_get_broker: AsyncMock,
-        schwab_quote_payload: dict[str, Any],
+        mock_schwab_instrument_search: dict[str, Any],
     ) -> None:
         """Test successful instrument search."""
         # Mock broker
         mock_broker = MagicMock()
         mock_get_broker.return_value = (mock_broker, None)
 
-        mock_to_thread.return_value = schwab_quote_payload
+        mock_to_thread.return_value = mock_schwab_instrument_search
 
         result = await search_schwab_instruments("AAPL")
 

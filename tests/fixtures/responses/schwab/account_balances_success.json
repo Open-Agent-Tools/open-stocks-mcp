@@ -1,0 +1,1 @@
+{"securitiesAccount":{"accountNumber":"12345678","type":"MARGIN","currentBalances":{"liquidationValue":50000.0,"cashBalance":10000.0,"buyingPower":25000.0,"availableFunds":24000.0,"longMarketValue":40000.0,"shortMarketValue":0.0},"initialBalances":{"accountValue":48000.0,"cashBalance":9500.0}}}

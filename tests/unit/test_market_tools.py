@@ -19,12 +19,11 @@ class TestMarketTools:
     @pytest.mark.unit
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.rh.get_top_movers")
     @pytest.mark.asyncio
-    async def test_get_top_movers_success(self, mock_movers: Any) -> None:
+    async def test_get_top_movers_success(
+        self, mock_movers: Any, mock_robinhood_top_movers: list[dict[str, Any]]
+    ) -> None:
         """Test successful top movers retrieval."""
-        mock_movers.return_value = [
-            {"symbol": "AAPL", "price": "150.00", "change": "5.00"},
-            {"symbol": "GOOGL", "price": "2500.00", "change": "-10.00"},
-        ]
+        mock_movers.return_value = mock_robinhood_top_movers
 
         result = await get_top_movers()
 
@@ -36,12 +35,11 @@ class TestMarketTools:
     @pytest.mark.unit
     @patch("open_stocks_mcp.tools.robinhood_market_data_tools.rh.get_top_100")
     @pytest.mark.asyncio
-    async def test_get_top_100_success(self, mock_top100: Any) -> None:
+    async def test_get_top_100_success(
+        self, mock_top100: Any, mock_robinhood_top_100: list[dict[str, Any]]
+    ) -> None:
         """Test successful top 100 retrieval."""
-        mock_top100.return_value = [
-            {"symbol": "AAPL", "market_cap": "2000000000"},
-            {"symbol": "MSFT", "market_cap": "1800000000"},
-        ]
+        mock_top100.return_value = mock_robinhood_top_100
 
         result = await get_top_100()
 
@@ -54,12 +52,11 @@ class TestMarketTools:
         "open_stocks_mcp.tools.robinhood_market_data_tools.rh.get_all_stocks_from_market_tag"
     )
     @pytest.mark.asyncio
-    async def test_get_stocks_by_tag_success(self, mock_stocks: Any) -> None:
+    async def test_get_stocks_by_tag_success(
+        self, mock_stocks: Any, mock_robinhood_market_tag: list[dict[str, Any]]
+    ) -> None:
         """Test successful stocks by tag retrieval."""
-        mock_stocks.return_value = [
-            {"symbol": "NVDA", "sector": "Technology"},
-            {"symbol": "AMD", "sector": "Technology"},
-        ]
+        mock_stocks.return_value = mock_robinhood_market_tag
 
         result = await get_stocks_by_tag("technology")
 

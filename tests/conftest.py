@@ -1,8 +1,11 @@
 """Shared pytest fixtures for open-stocks-mcp tests."""
 
 import contextlib
+import copy
+import json
 import os
 import sys
+from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock
 
@@ -31,6 +34,14 @@ RATE_LIMITED_SKIP_REASON = (
 PERFORMANCE_SKIP_REASON = (
     "performance test; set RUN_PERFORMANCE=1 or pass '-m performance' to enable"
 )
+RESPONSE_FIXTURE_ROOT = Path(__file__).resolve().parent / "fixtures" / "responses"
+
+
+def _load_response_fixture(*parts: str) -> Any:
+    """Load a JSON response fixture as a fresh deep-copied object."""
+    fixture_path = RESPONSE_FIXTURE_ROOT.joinpath(*parts)
+    payload = json.loads(fixture_path.read_text(encoding="utf-8"))
+    return copy.deepcopy(payload)
 
 
 def pytest_configure(config: Any) -> None:
@@ -171,19 +182,25 @@ def sample_portfolio_data() -> dict[str, Any]:
 @pytest.fixture
 def robinhood_quote_payload() -> dict[str, Any]:
     """Representative Robinhood quote payload."""
-    return broker_payloads.robinhood_quote_payload()
+    return _load_response_fixture("robinhood", "quote_success.json")
 
 
 @pytest.fixture
 def robinhood_fundamentals_payload() -> dict[str, Any]:
     """Representative Robinhood fundamentals payload."""
-    return broker_payloads.robinhood_fundamentals_payload()
+    return _load_response_fixture("robinhood", "fundamentals_success.json")
 
 
 @pytest.fixture
 def robinhood_instrument_payload() -> dict[str, Any]:
     """Representative Robinhood instrument payload."""
-    return broker_payloads.robinhood_instrument_payload()
+    return _load_response_fixture("robinhood", "instruments_success.json")[0]
+
+
+@pytest.fixture
+def robinhood_instruments_payload() -> list[dict[str, Any]]:
+    """Representative Robinhood instruments payload."""
+    return _load_response_fixture("robinhood", "instruments_success.json")
 
 
 @pytest.fixture
@@ -225,43 +242,43 @@ def robinhood_build_holdings_payload() -> dict[str, Any]:
 @pytest.fixture
 def schwab_quote_payload() -> dict[str, Any]:
     """Representative Schwab quote payload."""
-    return broker_payloads.schwab_quote_payload()
+    return _load_response_fixture("schwab", "quote_success.json")
 
 
 @pytest.fixture
 def schwab_quotes_payload() -> dict[str, Any]:
     """Representative Schwab multi-quote payload."""
-    return broker_payloads.schwab_quotes_payload()
+    return _load_response_fixture("schwab", "quotes_success.json")
 
 
 @pytest.fixture
 def schwab_price_history_payload() -> dict[str, Any]:
     """Representative Schwab price-history payload."""
-    return broker_payloads.schwab_price_history_payload()
+    return _load_response_fixture("schwab", "price_history_success.json")
 
 
 @pytest.fixture
 def schwab_account_numbers_payload() -> list[dict[str, Any]]:
     """Representative Schwab account-number payload."""
-    return broker_payloads.schwab_account_numbers_payload()
+    return _load_response_fixture("schwab", "account_numbers_success.json")
 
 
 @pytest.fixture
 def schwab_account_payload() -> dict[str, Any]:
     """Representative Schwab account payload."""
-    return broker_payloads.schwab_account_payload()
+    return _load_response_fixture("schwab", "account_success.json")
 
 
 @pytest.fixture
 def schwab_accounts_payload() -> list[dict[str, Any]]:
     """Representative Schwab accounts payload."""
-    return broker_payloads.schwab_accounts_payload()
+    return _load_response_fixture("schwab", "accounts_success.json")
 
 
 @pytest.fixture
 def schwab_balances_payload() -> dict[str, Any]:
     """Representative Schwab balances payload."""
-    return broker_payloads.schwab_balances_payload()
+    return _load_response_fixture("schwab", "account_balances_success.json")
 
 
 @pytest.fixture
@@ -273,7 +290,79 @@ def schwab_user_preferences_payload() -> dict[str, Any]:
 @pytest.fixture
 def broker_auth_error_payload() -> dict[str, Any]:
     """Structured broker authentication error response."""
-    return broker_payloads.broker_auth_error_payload()
+    return _load_response_fixture("schwab", "auth_error.json")
+
+
+@pytest.fixture
+def mock_robinhood_quote() -> dict[str, Any]:
+    """Named shared fixture for Robinhood quote payload."""
+    return _load_response_fixture("robinhood", "quote_success.json")
+
+
+@pytest.fixture
+def mock_robinhood_api_error() -> dict[str, Any]:
+    """Named shared fixture for Robinhood API error payload."""
+    return _load_response_fixture("robinhood", "quote_error.json")
+
+
+@pytest.fixture
+def mock_robinhood_top_movers() -> list[dict[str, Any]]:
+    """Named shared fixture for Robinhood top movers payload."""
+    return _load_response_fixture("robinhood", "top_movers_success.json")
+
+
+@pytest.fixture
+def mock_robinhood_top_100() -> list[dict[str, Any]]:
+    """Named shared fixture for Robinhood top 100 payload."""
+    return _load_response_fixture("robinhood", "top_100_success.json")
+
+
+@pytest.fixture
+def mock_robinhood_market_tag() -> list[dict[str, Any]]:
+    """Named shared fixture for Robinhood market tag payload."""
+    return _load_response_fixture("robinhood", "market_tag_success.json")
+
+
+@pytest.fixture
+def mock_robinhood_market_hours() -> list[dict[str, Any]]:
+    """Named shared fixture for Robinhood market-hours payload."""
+    return _load_response_fixture("robinhood", "markets_success.json")
+
+
+@pytest.fixture
+def mock_robinhood_price_history() -> list[dict[str, Any]]:
+    """Named shared fixture for Robinhood price-history payload."""
+    return _load_response_fixture("robinhood", "price_history_success.json")
+
+
+@pytest.fixture
+def mock_schwab_quote() -> dict[str, Any]:
+    """Named shared fixture for Schwab quote payload."""
+    return _load_response_fixture("schwab", "quote_success.json")
+
+
+@pytest.fixture
+def mock_schwab_auth_error() -> dict[str, Any]:
+    """Named shared fixture for Schwab auth error payload."""
+    return _load_response_fixture("schwab", "auth_error.json")
+
+
+@pytest.fixture
+def mock_schwab_instrument() -> dict[str, Any]:
+    """Named shared fixture for Schwab instrument payload."""
+    return _load_response_fixture("schwab", "instrument_success.json")
+
+
+@pytest.fixture
+def mock_schwab_instrument_search() -> dict[str, Any]:
+    """Named shared fixture for Schwab instrument-search payload."""
+    return _load_response_fixture("schwab", "instrument_search_success.json")
+
+
+@pytest.fixture
+def mock_schwab_portfolio() -> dict[str, Any]:
+    """Named shared fixture for Schwab portfolio payload."""
+    return _load_response_fixture("schwab", "portfolio_success.json")
 
 
 @pytest.fixture
