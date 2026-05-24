@@ -7,7 +7,7 @@ import pytest
 
 PYPROJECT = Path(__file__).parent.parent.parent / "pyproject.toml"
 REQUIRED_MARKERS = {"rate_limited", "live_market", "performance", "auth_required"}
-DEFAULT_EXCLUDED = {"live_market", "performance"}
+DEFAULT_EXCLUDED = {"live_market"}
 
 
 def _load_pytest_config() -> dict:
@@ -75,12 +75,13 @@ def test_addopts_excludes_live_market():
     )
 
 
-def test_addopts_excludes_performance():
+def test_addopts_leaves_performance_to_conftest_hook():
     cfg = _load_pytest_config()
     addopts = cfg.get("addopts", [])
     addopts_str = " ".join(addopts) if isinstance(addopts, list) else str(addopts)
-    assert "not performance" in addopts_str, (
-        "addopts must exclude performance tests by default"
+    assert "not performance" not in addopts_str, (
+        "performance tests are skipped by tests/conftest.py so "
+        "RUN_PERFORMANCE=1 can include them"
     )
 
 
