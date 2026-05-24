@@ -165,6 +165,9 @@ from open_stocks_mcp.tools.schwab_options_tools import (
 from open_stocks_mcp.tools.schwab_options_tools import (
     schwab_option_sell_to_close as _schwab_option_sell_to_close_impl,
 )
+from open_stocks_mcp.tools.schwab_payment_tools import (
+    schwab_get_dividends as _schwab_get_dividends_impl,
+)
 from open_stocks_mcp.tools.schwab_portfolio_tools import (
     get_schwab_aggregate_positions,
     get_schwab_all_option_positions,
@@ -1480,6 +1483,22 @@ async def schwab_get_transaction(
         transaction_id: Transaction ID to retrieve
     """
     return await get_schwab_transaction(account_hash, transaction_id)
+
+
+@mcp.tool()
+async def schwab_get_dividends(
+    account_hash: str,
+    start_date: str | None = None,
+    end_date: str | None = None,
+) -> dict[str, Any]:
+    """Get dividend payments for a Schwab account.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+        start_date: Optional start date (YYYY-MM-DD)
+        end_date: Optional end date (YYYY-MM-DD)
+    """
+    return await _schwab_get_dividends_impl(account_hash, start_date, end_date)
 
 
 @mcp.tool()
