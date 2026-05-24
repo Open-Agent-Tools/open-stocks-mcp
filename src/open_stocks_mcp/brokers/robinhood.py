@@ -35,7 +35,9 @@ class RobinhoodBroker(BaseBroker):
 
         # Install request timeout policy
         config = get_config()
-        install_robinhood_request_timeout(config.broker_requests.robinhood_timeout_seconds)
+        install_robinhood_request_timeout(
+            config.broker_requests.robinhood_timeout_seconds
+        )
 
         # Use provided session manager or create new one
         self.session_manager = session_manager or SessionManager()

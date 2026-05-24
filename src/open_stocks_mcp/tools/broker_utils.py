@@ -5,7 +5,7 @@ from typing import Any
 from open_stocks_mcp.brokers.registry import get_broker_registry
 from open_stocks_mcp.brokers.request_policy import execute_broker_request
 
-__all__ = ["get_authenticated_broker_or_error", "execute_broker_request"]
+__all__ = ["execute_broker_request", "get_authenticated_broker_or_error"]
 
 
 async def get_authenticated_broker_or_error(

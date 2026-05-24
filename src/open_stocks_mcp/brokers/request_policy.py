@@ -1,15 +1,19 @@
 import asyncio
 import functools
 import time
-from typing import Any, Callable, TypeVar
+from collections.abc import Callable
+from typing import Any, TypeVar
 
 from open_stocks_mcp.logging_config import logger
 
 T = TypeVar("T")
 
-def install_robinhood_request_timeout(timeout_seconds: float, session: Any | None = None) -> None:
+
+def install_robinhood_request_timeout(
+    timeout_seconds: float, session: Any | None = None
+) -> None:
     """Idempotently install a timeout policy on a requests-like session.
-    
+
     This wraps the session's request method to ensure every call uses the
     centrally configured timeout, overriding any call-site defaults provided
     by the SDK.
@@ -17,9 +21,12 @@ def install_robinhood_request_timeout(timeout_seconds: float, session: Any | Non
     if session is None:
         try:
             from robin_stocks.robinhood import helper
+
             session = helper.SESSION
         except ImportError:
-            logger.warning("robin_stocks not installed; skipping Robinhood timeout policy installation")
+            logger.warning(
+                "robin_stocks not installed; skipping Robinhood timeout policy installation"
+            )
             return
 
     # Check if already installed
@@ -35,7 +42,7 @@ def install_robinhood_request_timeout(timeout_seconds: float, session: Any | Non
         kwargs["timeout"] = getattr(session, "_robinhood_timeout", 16.0)
         return original_request(*args, **kwargs)
 
-    setattr(timeout_wrapper, "_is_timeout_wrapper", True)
+    timeout_wrapper._is_timeout_wrapper = True  # type: ignore[attr-defined]
     session.request = timeout_wrapper
     logger.debug(f"Installed Robinhood request timeout policy: {timeout_seconds}s")
 
@@ -81,9 +88,7 @@ async def execute_broker_request(
             if elapsed >= deadline:
                 if last_exception:
                     raise last_exception
-                raise asyncio.TimeoutError(
-                    f"Broker request exceeded deadline of {deadline}s"
-                )
+                raise TimeoutError(f"Broker request exceeded deadline of {deadline}s")
 
         try:
             # Run sync function in thread pool to avoid blocking the event loop

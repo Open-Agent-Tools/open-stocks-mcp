@@ -124,7 +124,9 @@ async def execute_with_retry(
                     auth_retry_count += 1
 
                     try:
-                        success = await (await get_broker_registry()).coordinated_refresh(
+                        success = await (
+                            await get_broker_registry()
+                        ).coordinated_refresh(
                             broker_name=broker_name,
                             account_id=account_id,
                             refresh_coro=session_manager.refresh_session,

@@ -293,7 +293,12 @@ class TestHTTPSecurity:
             headers={"content-type": "application/json"},
         )
         # Should handle gracefully, not crash
-        assert response.status_code in [400, 401, 422, 500]  # Various valid error responses
+        assert response.status_code in [
+            400,
+            401,
+            422,
+            500,
+        ]  # Various valid error responses
 
 
 @pytest.mark.integration

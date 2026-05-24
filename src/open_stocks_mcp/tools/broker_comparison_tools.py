@@ -63,7 +63,9 @@ async def _collect_robinhood_comparison(
     portfolio_data = portfolio_result.get("result", {})
     if "error" not in portfolio_data:
         data["summary"]["equity"] = _safe_float(portfolio_data.get("equity"))
-        data["summary"]["buying_power"] = _safe_float(portfolio_data.get("buying_power"))
+        data["summary"]["buying_power"] = _safe_float(
+            portfolio_data.get("buying_power")
+        )
 
     positions_result = await get_positions()
     positions_data = positions_result.get("result", {})
@@ -85,14 +87,16 @@ async def _collect_robinhood_comparison(
             for o in rh_orders[:max_orders]:
                 symbol = o.get("symbol")
                 if not symbols or symbol in symbols:
-                    data["orders"].append({
-                        "symbol": symbol,
-                        "side": o.get("side"),
-                        "quantity": _safe_float(o.get("quantity")),
-                        "price": _safe_float(o.get("average_price")),
-                        "state": o.get("state"),
-                        "created_at": o.get("created_at"),
-                    })
+                    data["orders"].append(
+                        {
+                            "symbol": symbol,
+                            "side": o.get("side"),
+                            "quantity": _safe_float(o.get("quantity")),
+                            "price": _safe_float(o.get("average_price")),
+                            "state": o.get("state"),
+                            "created_at": o.get("created_at"),
+                        }
+                    )
 
     return data
 
@@ -161,7 +165,9 @@ async def _collect_schwab_comparison(
 
     # 3. Orders
     if include_orders:
-        orders_result = await get_schwab_orders(account_hash, max_results=max_orders * 2)
+        orders_result = await get_schwab_orders(
+            account_hash, max_results=max_orders * 2
+        )
         orders_data = orders_result.get("result", {})
         if "error" not in orders_data:
             schwab_orders = orders_data.get("orders", [])
@@ -178,14 +184,16 @@ async def _collect_schwab_comparison(
                 symbol = instr.get("symbol")
 
                 if not symbols or symbol in symbols:
-                    data["orders"].append({
-                        "symbol": symbol,
-                        "side": leg.get("instruction"),
-                        "quantity": _safe_float(o.get("quantity")),
-                        "price": _safe_float(o.get("price")),
-                        "state": o.get("status"),
-                        "created_at": o.get("enteredTime"),
-                    })
+                    data["orders"].append(
+                        {
+                            "symbol": symbol,
+                            "side": leg.get("instruction"),
+                            "quantity": _safe_float(o.get("quantity")),
+                            "price": _safe_float(o.get("price")),
+                            "state": o.get("status"),
+                            "created_at": o.get("enteredTime"),
+                        }
+                    )
 
     return data
 
@@ -226,9 +234,13 @@ async def get_broker_comparison(
 
         try:
             if name == "robinhood":
-                broker_data = await _collect_robinhood_comparison(symbols, include_orders, max_orders)
+                broker_data = await _collect_robinhood_comparison(
+                    symbols, include_orders, max_orders
+                )
             elif name == "schwab":
-                broker_data = await _collect_schwab_comparison(symbols, include_orders, max_orders)
+                broker_data = await _collect_schwab_comparison(
+                    symbols, include_orders, max_orders
+                )
             else:
                 logger.warning(f"No comparison collector for broker: {name}")
                 continue
@@ -240,7 +252,9 @@ async def get_broker_comparison(
             brokers_out[name] = broker_data
 
         except Exception as exc:
-            logger.error(f"Error collecting comparison data from {name}: {exc}", exc_info=True)
+            logger.error(
+                f"Error collecting comparison data from {name}: {exc}", exc_info=True
+            )
             brokers_out[name] = {
                 "broker": name,
                 "available": False,
@@ -252,7 +266,7 @@ async def get_broker_comparison(
     # Build comparison summary
     comparison: dict[str, Any] = {
         "symbols": symbols if symbols else [],
-        "metrics": ["pricing", "holdings", "orders"]
+        "metrics": ["pricing", "holdings", "orders"],
     }
 
     status = "success"
@@ -261,9 +275,11 @@ async def get_broker_comparison(
     if not any(b.get("available") for b in brokers_out.values()):
         status = "error"
 
-    return create_success_response({
-        "brokers": brokers_out,
-        "comparison": comparison,
-        "availability_notes": availability_notes,
-        "status": status,
-    })
+    return create_success_response(
+        {
+            "brokers": brokers_out,
+            "comparison": comparison,
+            "availability_notes": availability_notes,
+            "status": status,
+        }
+    )

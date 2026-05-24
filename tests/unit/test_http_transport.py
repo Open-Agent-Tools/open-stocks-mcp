@@ -104,7 +104,9 @@ class TestHttpTransportUnit:
         assert "invalid params" in body["error"]["message"].lower()
         assert body["id"] == 8
 
-    @patch("open_stocks_mcp.server.http_transport.get_session_manager", return_value=None)
+    @patch(
+        "open_stocks_mcp.server.http_transport.get_session_manager", return_value=None
+    )
     def test_health_returns_503_when_session_manager_unavailable(
         self, _mock_get_session_manager: Any, client: TestClient
     ) -> None:
@@ -122,7 +124,9 @@ class TestHttpTransportUnit:
         assert response.status_code == 503
         assert response.json()["detail"] == "Metrics collector unavailable"
 
-    @patch("open_stocks_mcp.server.http_transport.get_metrics_collector", return_value=None)
+    @patch(
+        "open_stocks_mcp.server.http_transport.get_metrics_collector", return_value=None
+    )
     def test_status_returns_503_when_metrics_collector_unavailable(
         self, _mock_get_metrics_collector: Any, client: TestClient
     ) -> None:
@@ -130,7 +134,9 @@ class TestHttpTransportUnit:
         assert response.status_code == 503
         assert response.json()["detail"] == "Metrics collector unavailable"
 
-    @patch("open_stocks_mcp.server.http_transport.get_session_manager", return_value=None)
+    @patch(
+        "open_stocks_mcp.server.http_transport.get_session_manager", return_value=None
+    )
     def test_status_returns_503_when_session_manager_unavailable(
         self, _mock_get_session_manager: Any, client: TestClient
     ) -> None:
@@ -138,7 +144,9 @@ class TestHttpTransportUnit:
         assert response.status_code == 503
         assert response.json()["detail"] == "Session manager unavailable"
 
-    @patch("open_stocks_mcp.server.http_transport.get_session_manager", return_value=None)
+    @patch(
+        "open_stocks_mcp.server.http_transport.get_session_manager", return_value=None
+    )
     def test_session_refresh_returns_503_when_session_manager_unavailable(
         self, _mock_get_session_manager: Any, client: TestClient
     ) -> None:

@@ -84,8 +84,11 @@ async def get_schwab_build_holdings() -> dict[str, Any]:
         return error
 
     try:
+
         def _get_accounts() -> Any:
-            response = broker.client.get_accounts(fields=Client.Account.Fields.POSITIONS)
+            response = broker.client.get_accounts(
+                fields=Client.Account.Fields.POSITIONS
+            )
             return response.json()
 
         accounts_data = await execute_broker_request(_get_accounts, retry_safe=True)
@@ -105,6 +108,7 @@ async def get_schwab_build_holdings() -> dict[str, Any]:
 
         quotes: dict[str, Any] = {}
         if symbols:
+
             def _get_quotes() -> Any:
                 response = broker.client.get_quotes(sorted(symbols))
                 return response.json()
@@ -128,8 +132,7 @@ async def get_schwab_build_holdings() -> dict[str, Any]:
                 "market_value": row["market_value"],
                 "price": quote_price,
                 "day_change": _to_float(
-                    quote.get("quote", {}).get("netChange")
-                    or quote.get("netChange")
+                    quote.get("quote", {}).get("netChange") or quote.get("netChange")
                 ),
                 "day_change_percent": _to_float(
                     quote.get("quote", {}).get("netPercentChangeInDouble")
@@ -160,6 +163,7 @@ async def get_schwab_day_trades() -> dict[str, Any]:
         return error
 
     try:
+
         def _get_account_numbers() -> Any:
             response = broker.client.get_account_numbers()
             return response.json()
@@ -181,6 +185,7 @@ async def get_schwab_day_trades() -> dict[str, Any]:
         trades: list[dict[str, Any]] = []
 
         for account_hash in account_hashes:
+
             def _get_transactions(current_account_hash: str = account_hash) -> Any:
                 response = broker.client.get_transactions(
                     current_account_hash,
@@ -202,7 +207,13 @@ async def get_schwab_day_trades() -> dict[str, Any]:
                 if not txn_date:
                     continue
                 instruction = str(txn.get("instruction") or "").upper()
-                side = "BUY" if "BUY" in instruction else "SELL" if "SELL" in instruction else ""
+                side = (
+                    "BUY"
+                    if "BUY" in instruction
+                    else "SELL"
+                    if "SELL" in instruction
+                    else ""
+                )
                 if not side:
                     continue
                 bucket[(txn_date, symbol)].add(side)
@@ -244,8 +255,11 @@ async def get_schwab_aggregate_positions() -> dict[str, Any]:
         return error
 
     try:
+
         def _get_accounts() -> Any:
-            response = broker.client.get_accounts(fields=Client.Account.Fields.POSITIONS)
+            response = broker.client.get_accounts(
+                fields=Client.Account.Fields.POSITIONS
+            )
             return response.json()
 
         accounts_data = await execute_broker_request(_get_accounts, retry_safe=True)
@@ -317,7 +331,9 @@ async def get_schwab_all_option_positions() -> dict[str, Any]:
             return error
 
         def _get_accounts() -> Any:
-            response = broker.client.get_accounts(fields=Client.Account.Fields.POSITIONS)
+            response = broker.client.get_accounts(
+                fields=Client.Account.Fields.POSITIONS
+            )
             return response.json()
 
         accounts_data = await execute_broker_request(_get_accounts, retry_safe=True)

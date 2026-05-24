@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-import yaml  # type: ignore[import-untyped]
+import yaml
 
 
 class ConfigError(ValueError):
@@ -460,9 +460,7 @@ def load_config(config_path: Path | str | None = None) -> ServerConfig:
             ),
         ),
         alerts=AlertConfig(
-            enabled=_parse_bool(
-                os.getenv("ALERTS_ENABLED", "false"), "ALERTS_ENABLED"
-            ),
+            enabled=_parse_bool(os.getenv("ALERTS_ENABLED", "false"), "ALERTS_ENABLED"),
             webhook_url=os.getenv("ALERT_WEBHOOK_URL") or None,
             error_rate_degraded_threshold=_parse_float(
                 os.getenv("ALERT_ERROR_RATE_DEGRADED_THRESHOLD", "10.0"),

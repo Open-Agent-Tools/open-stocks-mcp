@@ -35,9 +35,7 @@ class _LogAlertSink:
     """Default no-op sink that logs events. No external delivery."""
 
     async def send(self, event: AlertEvent) -> None:
-        logger.warning(
-            f"ALERT [{event.severity}] {event.signal}: {event.message}"
-        )
+        logger.warning(f"ALERT [{event.severity}] {event.signal}: {event.message}")
 
 
 class MetricsCollector:
@@ -166,9 +164,7 @@ class MetricsCollector:
             now = datetime.now()
             self._clean_old_entries(now)
             duration_ms_val = (
-                duration_ms
-                if duration_ms is not None
-                else ((duration or 0.0) * 1000.0)
+                duration_ms if duration_ms is not None else ((duration or 0.0) * 1000.0)
             )
             self.broker_operations.append(
                 {
@@ -219,7 +215,9 @@ class MetricsCollector:
             while tool_durations and tool_durations[0][0] < cutoff:
                 tool_durations.popleft()
 
-        while self.broker_operations and self.broker_operations[0]["timestamp"] < cutoff:
+        while (
+            self.broker_operations and self.broker_operations[0]["timestamp"] < cutoff
+        ):
             self.broker_operations.popleft()
 
     @staticmethod

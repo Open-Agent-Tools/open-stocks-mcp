@@ -82,7 +82,8 @@ class TestHTTPErrorHandling:
             headers={"content-type": "application/json"},
         )
         assert response.status_code in [400, 401, 422]
-  # Bad Request or Unprocessable Entity
+
+    # Bad Request or Unprocessable Entity
 
     async def test_invalid_content_type(self, http_client: httpx.AsyncClient) -> None:
         """Test handling of invalid content types"""
@@ -92,7 +93,12 @@ class TestHTTPErrorHandling:
             headers={"content-type": "text/plain"},
         )
         # Should handle gracefully
-        assert response.status_code in [400, 401, 415, 422]  # Various acceptable error codes
+        assert response.status_code in [
+            400,
+            401,
+            415,
+            422,
+        ]  # Various acceptable error codes
 
     @patch("open_stocks_mcp.server.http_transport.get_health_service")
     async def test_503_service_unavailable(
@@ -118,7 +124,9 @@ class TestHTTPErrorHandling:
         """Test internal server error handling"""
         # Mock session manager failure
         mock_session_manager = Mock()
-        mock_session_manager.ensure_authenticated = AsyncMock(side_effect=Exception("Database connection failed"))
+        mock_session_manager.ensure_authenticated = AsyncMock(
+            side_effect=Exception("Database connection failed")
+        )
         mock_get_session_manager.return_value = mock_session_manager
 
         response = await http_client.post("/session/refresh")
@@ -378,7 +386,10 @@ class TestListToolsErrorHandling:
     ) -> None:
         """Valid list_available_tools responses are returned as-is."""
         mock_list_tools.return_value = {
-            "result": {"tools": [{"name": "get_stock_quote", "description": "Get quote"}], "count": 1}
+            "result": {
+                "tools": [{"name": "get_stock_quote", "description": "Get quote"}],
+                "count": 1,
+            }
         }
         response = await http_client.get("/tools")
         assert response.status_code == 200
@@ -400,7 +411,9 @@ class TestRecoveryMechanisms:
         mock_session_manager = Mock()
 
         # First call fails
-        mock_session_manager.ensure_authenticated = AsyncMock(side_effect=Exception("Temporary failure"))
+        mock_session_manager.ensure_authenticated = AsyncMock(
+            side_effect=Exception("Temporary failure")
+        )
         mock_get_session_manager.return_value = mock_session_manager
 
         response1 = await http_client.post("/session/refresh")

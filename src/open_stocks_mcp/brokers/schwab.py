@@ -143,7 +143,9 @@ class SchwabBroker(BaseBroker):
                     )
                     # Apply configured timeout
                     assert self.client is not None
-                    self.client.set_timeout(get_config().broker_requests.schwab_timeout_seconds)
+                    self.client.set_timeout(
+                        get_config().broker_requests.schwab_timeout_seconds
+                    )
                     logger.info("✓ Schwab authentication successful (existing token)")
                     self._auth_info.status = BrokerAuthStatus.AUTHENTICATED
                     self._auth_info.last_successful_auth = datetime.now()
@@ -349,7 +351,9 @@ class SchwabBroker(BaseBroker):
             }
         }
 
-    async def get_transaction(self, account_hash: str, transaction_id: str) -> dict[str, Any]:
+    async def get_transaction(
+        self, account_hash: str, transaction_id: str
+    ) -> dict[str, Any]:
         """Get details for a specific transaction.
 
         Args:
@@ -362,6 +366,7 @@ class SchwabBroker(BaseBroker):
             return self.create_unavailable_response(f"get transaction {transaction_id}")
 
         try:
+
             def _get() -> Any:
                 return self.client.get_transaction(account_hash, transaction_id).json()
 
