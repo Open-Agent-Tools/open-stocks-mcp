@@ -65,7 +65,7 @@ def assert_live_market_read_only(tool_name: str) -> None:
 
 
 @pytest.fixture(scope="module")
-def live_robinhood_session(request: Any) -> Any:  # type: ignore[misc]
+def live_robinhood_session(request: Any) -> Any:
     """Module-scoped fixture that opens a real Robinhood session.
 
     Skips the test module when the live-market opt-in is absent or credentials

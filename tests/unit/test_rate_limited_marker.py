@@ -54,6 +54,13 @@ _PYTESTER_MODULE = dedent("""
 """)
 
 
+def _config_with_markexpr(markexpr: str) -> SimpleNamespace:
+    return SimpleNamespace(
+        option=SimpleNamespace(markexpr=markexpr),
+        getoption=lambda name, default=False: default,
+    )
+
+
 class DummyItem:
     """Small pytest item double for marker hook tests."""
 
@@ -94,7 +101,7 @@ def test_rate_limited_tests_are_skipped_without_explicit_opt_in(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.delenv("RUN_RATE_LIMITED", raising=False)
-    config = SimpleNamespace(option=SimpleNamespace(markexpr="not slow"))
+    config = _config_with_markexpr("not slow")
     rate_limited_item = DummyItem({"rate_limited"})
     unmarked_item = DummyItem(set())
 
@@ -125,7 +132,7 @@ def test_rate_limited_tests_are_not_skipped_when_explicitly_selected(
     else:
         monkeypatch.setenv("RUN_RATE_LIMITED", run_rate_limited)
     item = DummyItem({"rate_limited"})
-    config = SimpleNamespace(option=SimpleNamespace(markexpr=markexpr))
+    config = _config_with_markexpr(markexpr)
 
     shared_conftest.pytest_collection_modifyitems(config, [item])
 

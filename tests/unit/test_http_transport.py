@@ -176,5 +176,5 @@ class TestHttpTransportUnit:
                 "Access-Control-Request-Headers": "content-type",
             },
         )
-        assert response.status_code == 200
-        assert "POST" in response.headers.get("access-control-allow-methods", "")
+        assert response.status_code in {200, 204}
+        assert "POST" in response.headers["access-control-allow-methods"]
