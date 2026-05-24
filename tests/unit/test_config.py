@@ -161,3 +161,88 @@ def test_invalid_boolean_env_value_raises(
 
     with pytest.raises(ConfigError, match="ENABLE_CACHE"):
         load_config(config_path=path)
+
+
+@pytest.mark.unit
+@pytest.mark.journey_system
+def test_load_config_from_open_stocks_config_env(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    path = tmp_path / "config.yaml"
+    path.write_text(
+        """
+server:
+  name: Env Path Config
+feature_flags:
+  brokers.robinhood:
+    default: false
+""".strip()
+    )
+    monkeypatch.setenv("OPEN_STOCKS_CONFIG", str(path))
+    monkeypatch.delenv("OPEN_STOCKS_CONFIG_FILE", raising=False)
+
+    cfg = load_config()
+    assert cfg.name == "Env Path Config"
+    assert cfg.is_feature_enabled("brokers.robinhood") is False
+
+
+@pytest.mark.unit
+@pytest.mark.journey_system
+def test_load_config_from_open_stocks_config_file_env(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    path = tmp_path / "config-file.yaml"
+    path.write_text(
+        """
+server:
+  name: Env Path Config File
+feature_flags:
+  brokers.schwab:
+    default: true
+""".strip()
+    )
+    monkeypatch.delenv("OPEN_STOCKS_CONFIG", raising=False)
+    monkeypatch.setenv("OPEN_STOCKS_CONFIG_FILE", str(path))
+
+    cfg = load_config()
+    assert cfg.name == "Env Path Config File"
+    assert cfg.is_feature_enabled("brokers.schwab") is True
+
+
+@pytest.mark.unit
+@pytest.mark.journey_system
+def test_feature_flags_resolve_per_environment(tmp_path: Path) -> None:
+    path = tmp_path / "feature-flags.yaml"
+    path.write_text(
+        """
+environment: prod
+feature_flags:
+  brokers.robinhood:
+    default: false
+    environments:
+      prod: true
+  brokers.schwab:
+    default: false
+""".strip()
+    )
+
+    cfg = load_config(config_path=path)
+    assert cfg.is_feature_enabled("brokers.robinhood") is True
+    assert cfg.is_feature_enabled("brokers.schwab") is False
+    assert cfg.is_feature_enabled("brokers.unknown") is False
+
+
+@pytest.mark.unit
+@pytest.mark.journey_system
+def test_invalid_feature_flag_schema_raises(tmp_path: Path) -> None:
+    path = tmp_path / "bad-feature-flags.yaml"
+    path.write_text(
+        """
+feature_flags:
+  brokers.robinhood:
+    default: maybe
+""".strip()
+    )
+
+    with pytest.raises(ConfigError, match=r"brokers\.robinhood"):
+        load_config(config_path=path)

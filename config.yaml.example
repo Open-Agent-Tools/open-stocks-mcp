@@ -1,9 +1,15 @@
 # Open Stocks MCP configuration
 # Environment variables override every value below.
+environment: development
 
 server:
   name: Open Stocks MCP
   log_level: INFO
+
+brokers:
+  schwab:
+    api_key: ""
+    app_secret: ""
 
 rate_limits:
   calls_per_minute: 30
@@ -18,3 +24,12 @@ cache:
 feature_flags:
   enable_cache: true
   enable_circuit_breaker: false
+  brokers.robinhood:
+    default: true
+    environments:
+      production: true
+      staging: true
+  brokers.schwab:
+    default: false
+    environments:
+      production: false
