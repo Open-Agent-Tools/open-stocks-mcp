@@ -15,7 +15,9 @@ class ConfigError(ValueError):
 
 
 _ALLOWED_TOP_LEVEL_KEYS = {
+    "environment",
     "server",
+    "brokers",
     "rate_limits",
     "batch",
     "cache",
@@ -47,6 +49,8 @@ def _parse_bool(value: Any, field_name: str) -> bool:
         return value
     if isinstance(value, str):
         normalized = value.strip().lower()
+        if normalized == "":
+            return False
         if normalized in {"1", "true", "yes", "on"}:
             return True
         if normalized in {"0", "false", "no", "off", ""}:
@@ -100,9 +104,10 @@ def _discover_config_path(explicit_path: Path | None) -> Path | None:
     if explicit_path is not None:
         return explicit_path
 
-    env_path = os.getenv("OPEN_STOCKS_MCP_CONFIG")
-    if env_path:
-        return Path(env_path)
+    for env_var in ("OPEN_STOCKS_CONFIG", "OPEN_STOCKS_CONFIG_FILE", "OPEN_STOCKS_MCP_CONFIG"):
+        env_path = os.getenv(env_var)
+        if env_path:
+            return Path(env_path)
 
     for candidate in (Path("open-stocks-mcp.yaml"), Path("config.yaml")):
         if candidate.exists():
@@ -152,6 +157,12 @@ class FeatureFlagConfig:
 
     enable_cache: bool = True
     enable_circuit_breaker: bool = False
+
+
+@dataclass
+class FeatureFlagDefinition:
+    default: bool = False
+    environments: dict[str, bool] = field(default_factory=dict)
 
 
 @dataclass
@@ -230,6 +241,7 @@ class OtelConfig:
 @dataclass
 class ServerConfig:
     name: str = "Open Stocks MCP"
+    environment: str = "default"
     log_level: str = "INFO"
     monitoring_enabled: bool = True
     rate_limits: RateLimitConfig = field(default_factory=RateLimitConfig)
@@ -242,12 +254,31 @@ class ServerConfig:
     broker_requests: BrokerRequestConfig = field(default_factory=BrokerRequestConfig)
     alerts: AlertConfig = field(default_factory=AlertConfig)
     otel: OtelConfig = field(default_factory=OtelConfig)
+    feature_flag_definitions: dict[str, FeatureFlagDefinition] = field(
+        default_factory=dict
+    )
+    schwab_api_key: str | None = None
+    schwab_app_secret: str | None = None
 
     def __post_init__(self) -> None:
         if self.retry is None:
             self.retry = RetryConfig()
         if self.timeout is None:
             self.timeout = TimeoutConfig()
+
+    def is_feature_enabled(self, flag_name: str) -> bool:
+        if flag_name == "enable_cache":
+            return self.feature_flags.enable_cache
+        if flag_name == "enable_circuit_breaker":
+            return self.feature_flags.enable_circuit_breaker
+
+        definition = self.feature_flag_definitions.get(flag_name)
+        if definition is None:
+            return False
+
+        if self.environment in definition.environments:
+            return definition.environments[self.environment]
+        return definition.default
 
 
 def load_config(config_path: Path | str | None = None) -> ServerConfig:
@@ -260,8 +291,11 @@ def load_config(config_path: Path | str | None = None) -> ServerConfig:
             raw = _load_yaml_mapping(selected)
         elif explicit is not None:
             raw = {}
+        else:
+            raise ConfigError(f"Config file not found: {selected}")
 
     server = raw.get("server", {}) if isinstance(raw.get("server", {}), dict) else {}
+    brokers = raw.get("brokers", {}) if isinstance(raw.get("brokers", {}), dict) else {}
     rate_limits = (
         raw.get("rate_limits", {})
         if isinstance(raw.get("rate_limits", {}), dict)
@@ -276,9 +310,11 @@ def load_config(config_path: Path | str | None = None) -> ServerConfig:
         if isinstance(raw.get("feature_flags", {}), dict)
         else {}
     )
+    environment = str(raw.get("environment", "default"))
 
     for section_name, section_value in (
         ("server", raw.get("server", {})),
+        ("brokers", raw.get("brokers", {})),
         ("rate_limits", raw.get("rate_limits", {})),
         ("batch", raw.get("batch", {})),
         ("cache", raw.get("cache", {})),
@@ -286,6 +322,37 @@ def load_config(config_path: Path | str | None = None) -> ServerConfig:
     ):
         if section_value is not None and not isinstance(section_value, dict):
             raise ConfigError(f"{section_name} must be a mapping")
+
+    feature_flag_definitions: dict[str, FeatureFlagDefinition] = {}
+    for flag_name, flag_value in feature_flags.items():
+        if flag_name in {"enable_cache", "enable_circuit_breaker"}:
+            continue
+        if isinstance(flag_value, bool):
+            feature_flag_definitions[flag_name] = FeatureFlagDefinition(
+                default=flag_value
+            )
+            continue
+        if not isinstance(flag_value, dict):
+            raise ConfigError(f"feature_flags.{flag_name} must be a boolean or mapping")
+        default_raw = flag_value.get("default", False)
+        if not isinstance(default_raw, bool):
+            raise ConfigError(f"feature_flags.{flag_name}.default must be a boolean")
+        env_values_raw = flag_value.get("environments", {})
+        if not isinstance(env_values_raw, dict):
+            raise ConfigError(
+                f"feature_flags.{flag_name}.environments must be a mapping"
+            )
+        env_values: dict[str, bool] = {}
+        for env_name, env_enabled in env_values_raw.items():
+            if not isinstance(env_enabled, bool):
+                raise ConfigError(
+                    f"feature_flags.{flag_name}.environments.{env_name} must be a boolean"
+                )
+            env_values[str(env_name)] = env_enabled
+        feature_flag_definitions[flag_name] = FeatureFlagDefinition(
+            default=default_raw,
+            environments=env_values,
+        )
 
     name = os.getenv("MCP_SERVER_NAME", str(server.get("name", "Open Stocks MCP")))
     log_level = _validate_log_level(
@@ -367,6 +434,7 @@ def load_config(config_path: Path | str | None = None) -> ServerConfig:
 
     cfg = ServerConfig(
         name=name,
+        environment=os.getenv("OPEN_STOCKS_ENVIRONMENT", environment),
         log_level=log_level,
         monitoring_enabled=monitoring_enabled,
         rate_limits=RateLimitConfig(
@@ -517,6 +585,21 @@ def load_config(config_path: Path | str | None = None) -> ServerConfig:
             enabled=otel_enabled,
             service_name=os.getenv("OTEL_SERVICE_NAME", "open-stocks-mcp"),
             exporter_endpoint=os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT") or None,
+        ),
+        feature_flag_definitions=feature_flag_definitions,
+        schwab_api_key=(
+            os.getenv("SCHWAB_API_KEY")
+            or str(
+                (brokers.get("schwab", {}) if isinstance(brokers.get("schwab"), dict) else {}).get("api_key", "")
+            )
+            or None
+        ),
+        schwab_app_secret=(
+            os.getenv("SCHWAB_APP_SECRET")
+            or str(
+                (brokers.get("schwab", {}) if isinstance(brokers.get("schwab"), dict) else {}).get("app_secret", "")
+            )
+            or None
         ),
     )
 

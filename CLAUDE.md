@@ -89,6 +89,11 @@ uv run ruff check src/open_stocks_mcp/config.py src/open_stocks_mcp/tools/rate_l
 uv run mypy src/open_stocks_mcp/config.py src/open_stocks_mcp/tools/rate_limiter.py src/open_stocks_mcp/server/app.py
 ```
 
+Config path environment variables:
+- `OPEN_STOCKS_CONFIG`
+- `OPEN_STOCKS_CONFIG_FILE`
+- `OPEN_STOCKS_MCP_CONFIG` (legacy alias)
+
 ### MCP Development
 ```bash
 # Test server locally (HTTP transport)
