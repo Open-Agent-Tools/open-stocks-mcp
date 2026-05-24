@@ -56,8 +56,9 @@ pytest -m "journey_account or journey_portfolio or journey_market_data or journe
 # Failure-mode regression tests (network/auth failures, no live credentials needed)
 uv run pytest tests/unit/test_error_handling.py tests/unit/test_auth_coordinator.py -k 'retry or timeout or connection or auth_failed' -q
 
-# Performance/load smoke tests (mocked, CI-safe, no credentials needed)
-uv run pytest tests/performance -k smoke -q
+# Performance/load benchmarks (mocked, CI-safe, no credentials needed)
+uv run pytest -m performance tests/performance -v
+RUN_PERFORMANCE=1 uv run pytest      # Include performance tests in a full run
 ```
 
 **Journey Categories:**
@@ -73,6 +74,9 @@ uv run pytest tests/performance -k smoke -q
 - `rate_limited` - Live endpoint tests that may hit Robinhood or Schwab rate
   limits; skipped by default unless selected with `-m rate_limited` or
   `RUN_RATE_LIMITED=1`
+- `performance` - Mocked benchmark tests for representative tool wrapper
+  latency; skipped by default unless selected with `-m performance` or
+  `RUN_PERFORMANCE=1`
 
 ### Code Quality
 ```bash
