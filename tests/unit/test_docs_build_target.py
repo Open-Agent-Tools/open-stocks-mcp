@@ -24,7 +24,7 @@ def test_generate_tool_docs_script_writes_reference(tmp_path: Path) -> None:
     )
 
     content = output_path.read_text(encoding="utf-8")
-    assert content.startswith("# Open Stocks MCP Tool Reference")
+    assert content.startswith("# Open Stocks MCP — Tool Reference")
     match = re.search(r"^Total tools: (\d+)$", content, re.MULTILINE)
     assert match is not None
     assert int(match.group(1)) >= 79

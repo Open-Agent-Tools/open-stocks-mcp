@@ -1,6 +1,6 @@
-# Open Stocks MCP Tool Reference
+# Open Stocks MCP — Tool Reference
 
-Total tools: 111
+Total tools: 137
 
 ## account_details
 
@@ -403,6 +403,14 @@ Get all Schwab linked accounts with balances and positions.
         include_positions: Whether to include positions (default: True)
     
 
+## schwab_build_user_profile
+
+Build a normalized Schwab user profile from account and preference data.
+
+    Returns a complete financial profile including total equity, cash balances,
+    and position counts across all accounts.
+    
+
 ## schwab_buy_stock_limit
 
 Place a limit buy order for stock.
@@ -424,6 +432,33 @@ Place a market buy order for stock.
         quantity: Number of shares to buy
     
 
+## schwab_cancel_all_option_orders
+
+Cancel all open option orders for a Schwab account.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+        max_results: Maximum orders to fetch before filtering
+    
+
+## schwab_cancel_all_stock_orders
+
+Cancel all open equity orders for a Schwab account.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+        max_results: Maximum orders to fetch before filtering
+    
+
+## schwab_cancel_option_order
+
+Cancel a specific option order.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+        order_id: Option order ID to cancel
+    
+
 ## schwab_cancel_order
 
 Cancel a specific Schwab order.
@@ -431,6 +466,92 @@ Cancel a specific Schwab order.
     Args:
         account_hash: Account hash from schwab_account_numbers
         order_id: Order ID to cancel
+    
+
+## schwab_get_aggregate_positions
+
+Aggregate Schwab positions across all linked accounts.
+
+## schwab_get_all_account_data
+
+Get a complete snapshot of all Schwab accounts and user preferences.
+
+    Aggregates user preferences, account numbers, and all account data with positions.
+    
+
+## schwab_get_all_option_positions
+
+Get all Schwab option positions across linked accounts.
+
+## schwab_get_build_holdings
+
+Build enriched holdings from Schwab positions and quotes.
+
+## schwab_get_day_trades
+
+Get day-trade counts derived from Schwab transaction history.
+
+## schwab_get_dividends
+
+Get dividend payments for a Schwab account.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+        start_date: Optional start date (YYYY-MM-DD)
+        end_date: Optional end date (YYYY-MM-DD)
+    
+
+## schwab_get_instrument_by_cusip
+
+Get instrument details by CUSIP identifier.
+
+    Args:
+        cusip: CUSIP identifier (leading zeros are preserved, e.g. '037833100')
+    
+
+## schwab_get_market_hours
+
+Get market hours for a given market and optional date.
+
+    Args:
+        market: Market type ('equity', 'option', 'bond', 'forex', 'future')
+        date: Optional ISO date string (e.g. '2026-05-20'). Defaults to today.
+    
+
+## schwab_get_movers
+
+Get market movers for a given index.
+
+    Args:
+        index: Index to query (e.g. '$DJI', '$SPX', 'NASDAQ', 'NYSE', '$COMPX',
+               'EQUITY_ALL', 'INDEX_ALL', 'OPTION_ALL', 'OPTION_CALL', 'OPTION_PUT',
+               'OTCBB')
+        sort_order: Optional sort order ('PERCENT_CHANGE_UP', 'PERCENT_CHANGE_DOWN',
+                    'VOLUME', 'TRADES')
+        frequency: Optional frequency in minutes (0, 1, 5, 10, 30, 60)
+    
+
+## schwab_get_movers_sp500
+
+Get market movers for the S&P 500 index ($SPX).
+
+    Args:
+        sort_order: Optional sort order ('PERCENT_CHANGE_UP', 'PERCENT_CHANGE_DOWN',
+                    'VOLUME', 'TRADES')
+        frequency: Optional frequency in minutes (0, 1, 5, 10, 30, 60)
+    
+
+## schwab_get_open_option_positions
+
+Get open Schwab option positions with non-zero net quantity.
+
+## schwab_get_open_stock_orders
+
+Get open (cancellable) equity orders for a Schwab account.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+        max_results: Maximum orders to fetch from API before filtering
     
 
 ## schwab_get_order
@@ -442,6 +563,22 @@ Get details for a specific Schwab order.
         order_id: Order ID to retrieve
     
 
+## schwab_get_transaction
+
+Get details for a specific Schwab transaction.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+        transaction_id: Transaction ID to retrieve
+    
+
+## schwab_get_user_preferences
+
+Get Schwab user preferences including account list and streamer info.
+
+    Consolidates account profile, settings, and user profile data.
+    
+
 ## schwab_instrument
 
 Get instrument information for a symbol.
@@ -449,6 +586,10 @@ Get instrument information for a symbol.
     Args:
         symbol: Stock ticker symbol
     
+
+## schwab_option_buy_to_open
+
+Buy an option to open a position (Schwab).
 
 ## schwab_option_chain
 
@@ -480,12 +621,79 @@ Get option expiration dates for a symbol.
         symbol: Stock ticker symbol
     
 
+## schwab_option_sell_to_close
+
+Sell an option to close a position (Schwab).
+
 ## schwab_options_positions
 
 Get current options positions for an account.
 
     Args:
         account_hash: Account hash from schwab_account_numbers
+    
+
+## schwab_order_buy_option_limit
+
+Place a limit buy-to-open order for an option contract.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+        option_symbol: OCC option symbol (e.g. "AAPL  251219C00150000")
+        quantity: Number of contracts to buy
+        price: Limit price as a string (e.g. "5.50")
+    
+
+## schwab_order_option_credit_spread
+
+Place a vertical credit spread option order.
+
+    For CALL: bear call spread. For PUT: bull put spread.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+        option_type: "CALL" or "PUT"
+        short_symbol: OCC symbol for the leg you sell (collects premium)
+        long_symbol: OCC symbol for the hedge/protective leg
+        quantity: Number of spread contracts
+        net_credit: Net credit received as a string (e.g. "2.00")
+    
+
+## schwab_order_option_debit_spread
+
+Place a vertical debit spread option order.
+
+    For CALL: bull call spread. For PUT: bear put spread.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+        option_type: "CALL" or "PUT"
+        long_symbol: OCC symbol for the leg you buy (main directional position)
+        short_symbol: OCC symbol for the hedge/short leg
+        quantity: Number of spread contracts
+        net_debit: Net debit paid as a string (e.g. "3.00")
+    
+
+## schwab_order_sell_option_limit
+
+Place a limit sell-to-close order for an option contract.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+        option_symbol: OCC option symbol (e.g. "AAPL  251219C00150000")
+        quantity: Number of contracts to sell
+        price: Limit price as a string (e.g. "4.00")
+    
+
+## schwab_order_sell_stop
+
+Place a stop sell order for stock.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+        symbol: Stock ticker symbol
+        quantity: Number of shares to sell
+        stop_price: Stop trigger price as a string (e.g. "148.00")
     
 
 ## schwab_orders
@@ -495,6 +703,16 @@ Get orders for a Schwab account.
     Args:
         account_hash: Account hash from schwab_account_numbers
         max_results: Maximum number of orders to return (default: 50)
+    
+
+## schwab_place_order
+
+Place a generic Schwab order using a raw order specification.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+        order_spec: Order specification dict as accepted by the Schwab API
+            (typically produced via schwab order builder helpers)
     
 
 ## schwab_portfolio
@@ -533,6 +751,16 @@ Get current quotes for multiple stock symbols from Schwab.
         symbols: List of stock ticker symbols
     
 
+## schwab_replace_order
+
+Replace (modify) an existing Schwab order.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+        order_id: ID of the order to replace
+        order_spec: New order specification dict (use order builder helpers)
+    
+
 ## schwab_search_instruments
 
 Search for instruments by symbol or name.
@@ -561,10 +789,6 @@ Place a market sell order for stock.
         symbol: Stock ticker symbol
         quantity: Number of shares to sell
     
-
-## schwab_transactions
-
-Get Schwab transactions with optional date/type/symbol filters.
 
 ## schwab_transactions_by_date
 
