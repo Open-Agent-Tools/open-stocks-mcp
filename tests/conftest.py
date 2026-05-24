@@ -105,7 +105,13 @@ def pytest_collection_modifyitems(config: Any, items: list[Any]) -> None:
             if list(item.iter_markers(name="rate_limited")):
                 item.add_marker(skip_rate_limited)
 
-    run_live = config.getoption("--run-live-market", default=False)
+    run_live = False
+    if hasattr(config, "getoption"):
+        try:
+            run_live = config.getoption("--run-live-market", default=False)
+        except (ValueError, AttributeError):
+            pass
+
     env_live = bool(os.environ.get(LIVE_MARKET_ENV_VAR))
     if not (run_live and env_live):
         skip_live = pytest.mark.skip(reason=LIVE_MARKET_SKIP_REASON)
@@ -279,6 +285,18 @@ def expired_token_error() -> Exception:
 def invalid_credentials_error() -> Exception:
     """Deterministic invalid-credentials error used by auth exception tests."""
     return Exception("invalid credentials")
+
+
+@pytest.fixture(autouse=True)
+def reset_tool_state() -> None:
+    """Reset global rate limiter and batcher state between tests."""
+    from open_stocks_mcp.tools.rate_limiter import (
+        reset_batchers,
+        reset_global_rate_limiter,
+    )
+
+    reset_global_rate_limiter()
+    reset_batchers()
 
 
 # Journey-specific fixtures

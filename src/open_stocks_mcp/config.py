@@ -17,6 +17,7 @@ class ConfigError(ValueError):
 _ALLOWED_TOP_LEVEL_KEYS = {
     "server",
     "rate_limits",
+    "batch",
     "cache",
     "feature_flags",
     "retry",
@@ -48,7 +49,7 @@ def _parse_bool(value: Any, field_name: str) -> bool:
         normalized = value.strip().lower()
         if normalized in {"1", "true", "yes", "on"}:
             return True
-        if normalized in {"0", "false", "no", "off"}:
+        if normalized in {"0", "false", "no", "off", ""}:
             return False
     raise ConfigError(f"{field_name} must be a boolean")
 
@@ -126,6 +127,14 @@ class CacheConfig:
     @property
     def ttl_account_seconds(self) -> float:
         return self.account_ttl_seconds
+
+
+@dataclass
+class BatchConfig:
+    """Configuration for request batching."""
+
+    batch_size: int = 10
+    queue_max_wait: float = 0.5
 
 
 @dataclass
@@ -224,6 +233,7 @@ class ServerConfig:
     log_level: str = "INFO"
     monitoring_enabled: bool = True
     rate_limits: RateLimitConfig = field(default_factory=RateLimitConfig)
+    batch: BatchConfig = field(default_factory=BatchConfig)
     feature_flags: FeatureFlagConfig = field(default_factory=FeatureFlagConfig)
     cache: CacheConfig = field(default_factory=CacheConfig)
     retry: RetryConfig | None = None
@@ -257,6 +267,9 @@ def load_config(config_path: Path | str | None = None) -> ServerConfig:
         if isinstance(raw.get("rate_limits", {}), dict)
         else {}
     )
+    batch_config = (
+        raw.get("batch", {}) if isinstance(raw.get("batch", {}), dict) else {}
+    )
     cache = raw.get("cache", {}) if isinstance(raw.get("cache", {}), dict) else {}
     feature_flags = (
         raw.get("feature_flags", {})
@@ -267,6 +280,7 @@ def load_config(config_path: Path | str | None = None) -> ServerConfig:
     for section_name, section_value in (
         ("server", raw.get("server", {})),
         ("rate_limits", raw.get("rate_limits", {})),
+        ("batch", raw.get("batch", {})),
         ("cache", raw.get("cache", {})),
         ("feature_flags", raw.get("feature_flags", {})),
     ):
@@ -359,6 +373,22 @@ def load_config(config_path: Path | str | None = None) -> ServerConfig:
             calls_per_minute=calls_per_minute,
             calls_per_hour=calls_per_hour,
             burst_size=burst_size,
+        ),
+        batch=BatchConfig(
+            batch_size=_parse_int(
+                os.getenv(
+                    "OPEN_STOCKS_MCP_BATCH_SIZE",
+                    str(batch_config.get("batch_size", 10)),
+                ),
+                "batch.batch_size",
+            ),
+            queue_max_wait=_parse_float(
+                os.getenv(
+                    "OPEN_STOCKS_MCP_QUEUE_MAX_WAIT",
+                    str(batch_config.get("queue_max_wait", 0.5)),
+                ),
+                "batch.queue_max_wait",
+            ),
         ),
         feature_flags=FeatureFlagConfig(
             enable_cache=enable_cache,

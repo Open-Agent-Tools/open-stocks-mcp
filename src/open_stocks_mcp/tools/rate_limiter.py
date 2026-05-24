@@ -7,6 +7,7 @@ from collections.abc import Callable, Coroutine
 from typing import Any
 
 from open_stocks_mcp.logging_config import logger
+from open_stocks_mcp.tools.exceptions import RateLimitError
 
 
 class RateLimiter:
@@ -32,6 +33,7 @@ class RateLimiter:
         # Track call timestamps
         self.call_times: deque[float] = deque(maxlen=calls_per_hour)
         self._lock = asyncio.Lock()
+        self._waiters: deque[asyncio.Future[None]] = deque()
 
         # Track per-endpoint limits
         self.endpoint_buckets: dict[str, deque[float]] = defaultdict(
@@ -46,74 +48,79 @@ class RateLimiter:
         endpoint: str | None = None,
         weight: float = 1.0,
         broker: str | None = None,
+        max_wait: float | None = None,
     ) -> None:
         """Acquire permission to make an API call.
 
         Args:
             endpoint: Optional endpoint identifier for per-endpoint limiting
             weight: Weight of this call (some calls may count more)
+            broker: Optional broker identifier
+            max_wait: Maximum time to wait for a slot in seconds
         """
-        async with self._lock:
-            now = time.time()
+        start_time = time.time()
+        deadline = start_time + max_wait if max_wait is not None else None
 
-            # Remove old timestamps (older than 1 hour)
-            cutoff_hour = now - 3600
-            while self.call_times and self.call_times[0] < cutoff_hour:
-                self.call_times.popleft()
+        while True:
+            async with self._lock:
+                now = time.time()
 
-            # Check hourly limit
-            if len(self.call_times) >= self.calls_per_hour:
-                # Calculate wait time
-                oldest_call = self.call_times[0]
-                wait_time = (oldest_call + 3600) - now
-                if wait_time > 0:
-                    logger.warning(
-                        f"Rate limit reached (hourly). Waiting {wait_time:.1f}s"
-                    )
-                    await asyncio.sleep(wait_time)
-                    # Recursive call after wait
-                    await self.acquire(endpoint, weight)
+                # Remove old timestamps (older than 1 hour)
+                cutoff_hour = now - 3600
+                while self.call_times and self.call_times[0] < cutoff_hour:
+                    self.call_times.popleft()
+
+                wait_time = 0.0
+
+                # Check hourly limit
+                if len(self.call_times) >= self.calls_per_hour:
+                    oldest_call = self.call_times[0]
+                    wait_time = max(wait_time, (oldest_call + 3600) - now)
+
+                # Check minute limit
+                cutoff_minute = now - 60
+                minute_calls = [t for t in self.call_times if t > cutoff_minute]
+                if len(minute_calls) >= self.calls_per_minute:
+                    wait_time = max(wait_time, (minute_calls[0] + 60) - now)
+
+                # Check burst limit
+                cutoff_burst = now - 1
+                burst_calls = [t for t in self.call_times if t > cutoff_burst]
+                if len(burst_calls) >= self.burst_size:
+                    wait_time = max(wait_time, (burst_calls[0] + 1) - now)
+
+                if wait_time <= 0:
+                    # Capacity available
+                    for _ in range(int(weight)):
+                        self.call_times.append(now)
+                    if endpoint:
+                        self.endpoint_buckets[endpoint].append(now)
+                    if broker:
+                        self.broker_buckets[broker].append(now)
                     return
 
-            # Check minute limit
-            cutoff_minute = now - 60
-            recent_calls = sum(1 for t in self.call_times if t > cutoff_minute)
+                # Check if we've exceeded max_wait
+                if deadline is not None and (now + wait_time) > deadline:
+                    raise RateLimitError(
+                        f"Rate limit wait time {wait_time:.1f}s exceeds max_wait {max_wait}s"
+                    )
 
-            if recent_calls >= self.calls_per_minute:
-                # Find the oldest call in the last minute
-                minute_calls = [t for t in self.call_times if t > cutoff_minute]
-                if minute_calls:
-                    wait_time = (minute_calls[0] + 60) - now
-                    if wait_time > 0:
-                        logger.warning(
-                            f"Rate limit reached (minute). Waiting {wait_time:.1f}s"
-                        )
-                        await asyncio.sleep(wait_time)
-                        # Recursive call after wait
-                        await self.acquire(endpoint, weight)
-                        return
+            # Need to wait.
+            if wait_time > 0:
+                logger.debug(f"Rate limit reached. Waiting {wait_time:.3f}s")
+                await asyncio.sleep(wait_time)
 
-            # Check burst limit
-            cutoff_burst = now - 1  # 1 second window for burst
-            burst_calls = sum(1 for t in self.call_times if t > cutoff_burst)
+            # Loop again to re-check capacity and potentially wait more or acquire
 
-            if burst_calls >= self.burst_size:
-                wait_time = 1.0 - (
-                    now - max(t for t in self.call_times if t > cutoff_burst)
-                )
-                if wait_time > 0:
-                    logger.debug(f"Burst limit reached. Waiting {wait_time:.3f}s")
-                    await asyncio.sleep(wait_time)
-
-            # Record the call
-            for _ in range(int(weight)):
-                self.call_times.append(now)
-
-            # Track per-endpoint if specified
-            if endpoint:
-                self.endpoint_buckets[endpoint].append(now)
-            if broker:
-                self.broker_buckets[broker].append(now)
+    def reset(self) -> None:
+        """Reset rate limiter state."""
+        self.call_times.clear()
+        self.endpoint_buckets.clear()
+        self.broker_buckets.clear()
+        for waiter in self._waiters:
+            if not waiter.done():
+                waiter.cancel()
+        self._waiters.clear()
 
     def get_stats(self) -> dict[str, Any]:
         """Get current rate limiter statistics.
@@ -208,11 +215,118 @@ class RequestCoordinator:
                 self._in_flight.pop(key, None)
 
 
+class Batcher:
+    """Async batching helper for coalescing multiple requests into one API call."""
+
+    def __init__(
+        self,
+        name: str,
+        batch_size: int = 10,
+        queue_max_wait: float = 0.5,
+    ) -> None:
+        self.name = name
+        self.batch_size = batch_size
+        self.queue_max_wait = queue_max_wait
+        self._queue: list[tuple[str, asyncio.Future[Any]]] = []
+        self._lock = asyncio.Lock()
+        self._flush_task: asyncio.Task[None] | None = None
+
+    async def fetch(
+        self,
+        symbol: str,
+        fetch_many_callable: Callable[
+            [list[str]], dict[str, Any] | Coroutine[Any, Any, dict[str, Any]]
+        ],
+    ) -> Any:
+        """Add a symbol to the batch and wait for the result.
+
+        Args:
+            symbol: The stock symbol to fetch
+            fetch_many_callable: A callable that takes a list of symbols and returns a dict mapping symbols to data
+
+        Returns:
+            The data for the requested symbol
+        """
+        symbol = symbol.upper()
+        waiter = asyncio.get_running_loop().create_future()
+
+        async with self._lock:
+            self._queue.append((symbol, waiter))
+
+            if len(self._queue) >= self.batch_size:
+                # Trigger immediate flush if batch size reached
+                if self._flush_task:
+                    self._flush_task.cancel()
+                await self._flush(fetch_many_callable)
+            elif not self._flush_task:
+                # Start a timer to flush after queue_max_wait
+                self._flush_task = asyncio.create_task(
+                    self._delayed_flush(fetch_many_callable)
+                )
+
+        return await waiter
+
+    async def _delayed_flush(self, fetch_many_callable: Any) -> None:
+        try:
+            await asyncio.sleep(self.queue_max_wait)
+            async with self._lock:
+                await self._flush(fetch_many_callable)
+        except asyncio.CancelledError:
+            pass
+        finally:
+            self._flush_task = None
+
+    async def _flush(self, fetch_many_callable: Any) -> None:
+        if not self._queue:
+            return
+
+        current_batch = self._queue[:]
+        self._queue.clear()
+
+        symbols = [s for s, _ in current_batch]
+
+        try:
+            if asyncio.iscoroutinefunction(fetch_many_callable):
+                results = await fetch_many_callable(symbols)
+            else:
+                results = await asyncio.get_running_loop().run_in_executor(
+                    None, fetch_many_callable, symbols
+                )
+
+            for symbol, waiter in current_batch:
+                if not waiter.done():
+                    waiter.set_result(results.get(symbol))
+        except Exception as exc:
+            for _, waiter in current_batch:
+                if not waiter.done():
+                    waiter.set_exception(exc)
+
+
 # Global rate limiter instance
 _rate_limiter: RateLimiter | None = None
 
 # Global request coordinator instance
 _request_coordinator: RequestCoordinator | None = None
+
+# Global batchers
+_batchers: dict[str, Batcher] = {}
+
+
+def get_batcher(
+    name: str,
+    batch_size: int = 10,
+    queue_max_wait: float = 0.5,
+) -> Batcher:
+    """Get or create a named batcher instance."""
+    if name not in _batchers:
+        _batchers[name] = Batcher(name, batch_size, queue_max_wait)
+    return _batchers[name]
+
+
+def reset_batchers() -> None:
+    """Reset all batcher state for test isolation."""
+    global _batchers
+    _batchers = {}
 
 
 def configure_global_rate_limiter(
