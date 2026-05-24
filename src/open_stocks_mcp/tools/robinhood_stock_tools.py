@@ -25,7 +25,7 @@ _cache_cfg = load_config().cache
 
 async def _fetch_instruments_batch(symbols: list[str]) -> dict[str, Any]:
     """Helper for batching instrument lookups."""
-    instruments = await execute_with_retry(rh.get_instruments_by_symbols, symbols)
+    instruments = await execute_with_retry(rh.get_instruments_by_symbols, symbols) or []
     return {
         inst.get("symbol", "").upper(): inst
         for inst in instruments

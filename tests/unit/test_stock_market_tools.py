@@ -338,6 +338,22 @@ class TestStockMarketTools:
 
     @pytest.mark.journey_market_data
     @pytest.mark.unit
+    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_instruments_by_symbols")
+    @pytest.mark.asyncio
+    async def test_get_instruments_by_symbols_batched_no_data(
+        self, mock_get_instruments: Any
+    ) -> None:
+        """No-data instrument batches should not raise and should return no_data."""
+        mock_get_instruments.return_value = None
+
+        result = await get_instruments_by_symbols(["AAPL", "MSFT"])
+
+        assert "result" in result
+        assert result["result"]["status"] == "no_data"
+        assert "No instrument data found" in result["result"]["message"]
+
+    @pytest.mark.journey_market_data
+    @pytest.mark.unit
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_markets")
     @pytest.mark.asyncio
     async def test_get_market_hours_success(self, mock_markets: Any) -> None:
