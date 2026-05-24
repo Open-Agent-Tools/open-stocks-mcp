@@ -1,6 +1,7 @@
 """Unit tests for monitoring metrics and health thresholds."""
 
 from datetime import datetime, timedelta
+from unittest.mock import AsyncMock
 
 import pytest
 
@@ -170,3 +171,59 @@ async def test_metrics_include_broker_and_account_health() -> None:
         ]
         == 1
     )
+
+
+@pytest.mark.asyncio
+async def test_health_transition_alert_emits_once_for_same_state() -> None:
+    hook = AsyncMock()
+    collector = MetricsCollector(
+        alerts_enabled=True,
+        alert_hooks=[hook],
+        error_rate_degraded_threshold=10.0,
+        error_rate_unhealthy_threshold=25.0,
+    )
+    now = datetime.now()
+    collector.api_calls.extend([(now, "tool", True) for _ in range(20)])
+    collector.errors.extend([(now, "tool", "err") for _ in range(3)])
+
+    await collector.get_health_status()
+    await collector.get_health_status()
+
+    health_events = [
+        call.args[0]
+        for call in hook.await_args_list
+        if call.args and call.args[0].alert_type == "health_transition"
+    ]
+    assert len(health_events) == 1
+    assert health_events[0].status == "degraded"
+
+
+@pytest.mark.asyncio
+async def test_threshold_alerts_fire_only_when_breached() -> None:
+    hook = AsyncMock()
+    collector = MetricsCollector(
+        alerts_enabled=True,
+        alert_hooks=[hook],
+        error_rate_degraded_threshold=10.0,
+        error_rate_unhealthy_threshold=25.0,
+        latency_p95_threshold_ms=100.0,
+    )
+    now = datetime.now()
+    collector.api_calls.extend([(now, "tool", True) for _ in range(20)])
+    collector.response_times.extend([(now, 0.09) for _ in range(20)])
+    await collector.evaluate_alert_conditions()
+    assert hook.await_count == 0
+
+    collector.errors.extend([(now, "tool", "err") for _ in range(3)])
+    collector.response_times.clear()
+    collector.response_times.extend([(now, 0.2) for _ in range(20)])
+    await collector.evaluate_alert_conditions()
+
+    threshold_events = [
+        call.args[0]
+        for call in hook.await_args_list
+        if call.args and call.args[0].alert_type == "threshold_breach"
+    ]
+    assert len(threshold_events) == 2
+    signals = {event.metadata.get("signal") for event in threshold_events}
+    assert signals == {"error_rate_percent", "p95_response_time_ms"}

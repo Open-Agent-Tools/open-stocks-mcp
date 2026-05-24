@@ -4,38 +4,17 @@ import asyncio
 import math
 import time
 from collections import defaultdict, deque
-from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Any, Protocol, runtime_checkable
+from typing import Any
 
+from open_stocks_mcp.alerting import (
+    AlertEvent,
+    AlertHook,
+    AlertManager,
+    AlertSink,
+    WebhookAlertSink,
+)
 from open_stocks_mcp.logging_config import logger
-
-
-@dataclass
-class AlertEvent:
-    """A monitoring alert event emitted when a threshold condition is met."""
-
-    signal: str
-    severity: str
-    message: str
-    timestamp: str = field(default_factory=lambda: datetime.now().isoformat())
-    metadata: dict[str, Any] = field(default_factory=dict)
-
-
-@runtime_checkable
-class AlertSink(Protocol):
-    """Protocol for alert delivery sinks. Implementations must be async-safe."""
-
-    async def send(self, event: AlertEvent) -> None:
-        """Deliver the alert event to the sink destination."""
-        ...
-
-
-class _LogAlertSink:
-    """Default no-op sink that logs events. No external delivery."""
-
-    async def send(self, event: AlertEvent) -> None:
-        logger.warning(f"ALERT [{event.severity}] {event.signal}: {event.message}")
 
 
 class MetricsCollector:
@@ -44,13 +23,14 @@ class MetricsCollector:
     def __init__(
         self,
         window_size_minutes: int = 60,
-        alert_sink: AlertSink | None = None,
         alerts_enabled: bool = True,
         alert_dedup_window_seconds: float = 300.0,
+        alert_hooks: list[AlertHook] | None = None,
+        webhook_url: str | None = None,
         error_rate_degraded_threshold: float = 10.0,
         error_rate_unhealthy_threshold: float = 25.0,
-        avg_response_time_degraded_ms: float = 5000.0,
         avg_response_time_unhealthy_ms: float = 10000.0,
+        latency_p95_threshold_ms: float = 5000.0,
     ):
         """Initialize metrics collector."""
         self.window_size = timedelta(minutes=window_size_minutes)
@@ -78,19 +58,21 @@ class MetricsCollector:
         self._lock = asyncio.Lock()
 
         # Alerting
-        self._alert_sink: AlertSink = (
-            alert_sink if alert_sink is not None else _LogAlertSink()
-        )
         self._alerts_enabled = alerts_enabled
         self._alert_dedup_window = timedelta(seconds=alert_dedup_window_seconds)
+        sinks: list[AlertSink] = [WebhookAlertSink(webhook_url)] if webhook_url else []
+        self._alert_manager = AlertManager(
+            enabled=alerts_enabled, hooks=alert_hooks, sinks=sinks
+        )
         self._error_rate_degraded_threshold = error_rate_degraded_threshold
         self._error_rate_unhealthy_threshold = error_rate_unhealthy_threshold
-        self._avg_response_time_degraded_ms = avg_response_time_degraded_ms
         self._avg_response_time_unhealthy_ms = avg_response_time_unhealthy_ms
+        self._latency_p95_threshold_ms = latency_p95_threshold_ms
         # Maps signal -> timestamp of last emission (for dedup)
         self._last_alert_at: dict[str, datetime] = {}
         # Current active alerts keyed by signal name
         self._active_alerts: dict[str, AlertEvent] = {}
+        self._last_health_status = "healthy"
         # Counter for sink delivery failures
         self.degraded_sink_total = 0
 
@@ -482,6 +464,20 @@ class MetricsCollector:
             health = "degraded" if health == "healthy" else health
             issues.append(f"High response time: {avg_response_time}ms")
 
+        if health != self._last_health_status and health != "healthy":
+            event = AlertEvent(
+                alert_type="health_transition",
+                status=health,
+                message=f"Health transitioned to {health}",
+                metadata={"signal": "health_status"},
+            )
+            try:
+                await self._alert_manager.emit(event)
+            except Exception as exc:
+                self.degraded_sink_total += 1
+                logger.warning(f"Health transition alert failed: {exc}")
+        self._last_health_status = health
+
         return {
             "status": health,
             "issues": issues,
@@ -502,7 +498,7 @@ class MetricsCollector:
         """
         metrics = await self.get_metrics()
         error_rate = metrics["error_rate_percent"]
-        avg_rt_ms = metrics["avg_response_time_ms"]
+        p95_rt_ms = metrics["p95_response_time_ms"]
 
         now = datetime.now()
 
@@ -511,38 +507,46 @@ class MetricsCollector:
         if error_rate > self._error_rate_unhealthy_threshold:
             candidates.append(
                 AlertEvent(
-                    signal="high_error_rate",
-                    severity="unhealthy",
+                    alert_type="threshold_breach",
+                    status="unhealthy",
                     message=f"Critical error rate: {error_rate}%",
-                    metadata={"error_rate_percent": error_rate},
+                    metric_value=error_rate,
+                    threshold_value=self._error_rate_unhealthy_threshold,
+                    metadata={"signal": "error_rate_percent"},
                 )
             )
         elif error_rate > self._error_rate_degraded_threshold:
             candidates.append(
                 AlertEvent(
-                    signal="high_error_rate",
-                    severity="degraded",
+                    alert_type="threshold_breach",
+                    status="degraded",
                     message=f"High error rate: {error_rate}%",
-                    metadata={"error_rate_percent": error_rate},
+                    metric_value=error_rate,
+                    threshold_value=self._error_rate_degraded_threshold,
+                    metadata={"signal": "error_rate_percent"},
                 )
             )
 
-        if avg_rt_ms > self._avg_response_time_unhealthy_ms:
+        if p95_rt_ms > self._avg_response_time_unhealthy_ms:
             candidates.append(
                 AlertEvent(
-                    signal="high_avg_response_time",
-                    severity="unhealthy",
-                    message=f"Critical response time: {avg_rt_ms}ms",
-                    metadata={"avg_response_time_ms": avg_rt_ms},
+                    alert_type="threshold_breach",
+                    status="unhealthy",
+                    message=f"Critical p95 response time: {p95_rt_ms}ms",
+                    metric_value=p95_rt_ms,
+                    threshold_value=self._avg_response_time_unhealthy_ms,
+                    metadata={"signal": "p95_response_time_ms"},
                 )
             )
-        elif avg_rt_ms > self._avg_response_time_degraded_ms:
+        elif p95_rt_ms > self._latency_p95_threshold_ms:
             candidates.append(
                 AlertEvent(
-                    signal="high_avg_response_time",
-                    severity="degraded",
-                    message=f"High response time: {avg_rt_ms}ms",
-                    metadata={"avg_response_time_ms": avg_rt_ms},
+                    alert_type="threshold_breach",
+                    status="degraded",
+                    message=f"High p95 response time: {p95_rt_ms}ms",
+                    metric_value=p95_rt_ms,
+                    threshold_value=self._latency_p95_threshold_ms,
+                    metadata={"signal": "p95_response_time_ms"},
                 )
             )
 
@@ -568,7 +572,7 @@ class MetricsCollector:
             self._last_alert_at[event.signal] = now
 
             try:
-                await self._alert_sink.send(event)
+                await self._alert_manager.emit(event)
             except Exception as exc:
                 self.degraded_sink_total += 1
                 logger.warning(f"Alert sink delivery failed for {event.signal}: {exc}")
@@ -592,11 +596,12 @@ def get_metrics_collector() -> MetricsCollector:
         alerts = load_config().alerts
         _metrics_collector = MetricsCollector(
             alerts_enabled=alerts.enabled,
+            webhook_url=alerts.webhook_url,
             alert_dedup_window_seconds=alerts.dedup_window_seconds,
-            error_rate_degraded_threshold=alerts.error_rate_degraded_threshold,
+            error_rate_degraded_threshold=alerts.error_rate_threshold_percent,
             error_rate_unhealthy_threshold=alerts.error_rate_unhealthy_threshold,
-            avg_response_time_degraded_ms=alerts.avg_response_time_degraded_ms,
             avg_response_time_unhealthy_ms=alerts.avg_response_time_unhealthy_ms,
+            latency_p95_threshold_ms=alerts.latency_p95_threshold_ms,
         )
     return _metrics_collector
 
