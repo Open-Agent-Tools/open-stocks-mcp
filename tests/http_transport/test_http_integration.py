@@ -125,7 +125,7 @@ class TestHTTPIntegration:
         assert root_response.status_code == 200
 
     async def test_mcp_endpoint_accessibility(
-        self, mock_http_client: httpx.AsyncClient
+        self, mock_http_client: httpx.AsyncClient, mcp_server_with_tools: FastMCP
     ) -> None:
         """Test that MCP endpoints are properly mounted and accessible"""
         # Test MCP JSON-RPC endpoint
@@ -133,10 +133,10 @@ class TestHTTPIntegration:
         # Should not be 404 (mounted correctly)
         assert mcp_response.status_code != 404
 
-        # Test SSE endpoint using streaming to avoid hanging
-        async with mock_http_client.stream("GET", "/sse") as response:
-            assert response.status_code != 404
-            # We don't need to read the whole stream
+        # Test SSE route registration without opening the never-ending stream.
+        app = create_http_server(mcp_server_with_tools)
+        route_paths = {getattr(route, "path", None) for route in app.routes}
+        assert "/sse" in route_paths
 
     async def test_concurrent_request_handling(
         self, mock_http_client: httpx.AsyncClient

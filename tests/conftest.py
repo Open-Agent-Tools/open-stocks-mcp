@@ -100,6 +100,9 @@ from tests.integration.live_market_harness import (
     LIVE_MARKET_ENV_VAR,
     LIVE_MARKET_SKIP_REASON,
 )
+from tests.integration.live_market_harness import (
+    live_robinhood_session as live_robinhood_session,
+)
 
 RATE_LIMITED_SKIP_REASON = (
     "rate_limited test; set RUN_RATE_LIMITED=1 or pass '-m rate_limited' to enable"
