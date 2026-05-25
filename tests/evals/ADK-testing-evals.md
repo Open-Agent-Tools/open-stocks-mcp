@@ -331,10 +331,13 @@ Files and tool coverage:
 - `tests/evals/2_mkt_schwab_price_history_test.json` - `schwab_price_history`
 - `tests/evals/2_mkt_schwab_search_instruments_test.json` - `schwab_search_instruments`
 
-Command pattern:
+Run with:
 
 ```bash
+adk eval examples/google_adk_agent tests/evals/2_mkt_stock_ratings_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/2_mkt_stock_earnings_test.json --config_file_path tests/evals/test_config.json
 adk eval examples/google_adk_agent tests/evals/2_mkt_stock_news_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/2_mkt_stock_splits_test.json --config_file_path tests/evals/test_config.json
 ```
 
 ### 7. Creating Custom Evaluation Tests
