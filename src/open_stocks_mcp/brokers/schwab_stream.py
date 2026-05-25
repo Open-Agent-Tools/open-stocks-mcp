@@ -33,6 +33,7 @@ class SchwabStreamManager:
         self._task: asyncio.Task[None] | None = None
         self._handlers: list[Callable[[dict[str, Any]], None]] = []
         self._latest_quotes: dict[str, dict[str, Any]] = {}
+        self._latest_option_quotes: dict[str, dict[str, Any]] = {}
 
     @property
     def is_running(self) -> bool:
@@ -136,14 +137,20 @@ class SchwabStreamManager:
         service = message.get("service")
         content = message.get("content", [])
 
-        if service in ["LEVELONE_EQUITIES", "LEVELONE_OPTIONS"]:
+        if service == "LEVELONE_EQUITIES":
             for item in content:
                 symbol = item.get("key")
                 if symbol:
-                    # Merge update into cache
                     if symbol not in self._latest_quotes:
                         self._latest_quotes[symbol] = {}
                     self._latest_quotes[symbol].update(item)
+        elif service == "LEVELONE_OPTIONS":
+            for item in content:
+                symbol = item.get("key")
+                if symbol:
+                    if symbol not in self._latest_option_quotes:
+                        self._latest_option_quotes[symbol] = {}
+                    self._latest_option_quotes[symbol].update(item)
 
     async def subscribe_quotes(self, symbols: list[str]) -> bool:
         """Subscribe to Level One quotes for symbols."""
@@ -152,7 +159,6 @@ class SchwabStreamManager:
 
         try:
             # Split into equities and options based on symbol format
-            # Schwab option symbols typically contain spaces or follow a specific pattern
             equities = []
             options = []
             for s in symbols:
@@ -163,17 +169,45 @@ class SchwabStreamManager:
                 else:
                     equities.append(s.upper())
 
+            results = []
             if equities:
                 await self.stream_client.level_one_equity_subs(equities)
+                results.append(True)
             if options:
-                await self.stream_client.level_one_option_subs(options)
+                results.append(await self.subscribe_option_quotes(options))
 
             logger.info(f"Subscribed to Schwab quotes: {symbols}")
-            return True
+            return all(results) if results else True
         except Exception as e:
             logger.error(f"Failed to subscribe to Schwab quotes: {e}")
             return False
 
+    async def subscribe_option_quotes(self, symbols: list[str]) -> bool:
+        """Subscribe to Level One option quotes for symbols.
+
+        Args:
+            symbols: List of Schwab option symbols (e.g. 'AAPL  260619C00150000')
+
+        Returns:
+            True if subscription successful, False otherwise
+        """
+        if not self._is_running or not self.stream_client:
+            return False
+
+        try:
+            # Uppercase all symbols to ensure consistency
+            symbols = [s.upper() for s in symbols]
+            await self.stream_client.level_one_option_subs(symbols)
+            logger.info(f"Subscribed to Schwab option quotes: {symbols}")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to subscribe to Schwab option quotes: {e}")
+            return False
+
     def get_latest_quote(self, symbol: str) -> dict[str, Any] | None:
-        """Get latest cached quote for symbol."""
+        """Get latest cached equity quote for symbol."""
         return self._latest_quotes.get(symbol.upper())
+
+    def get_latest_option_quote(self, symbol: str) -> dict[str, Any] | None:
+        """Get latest cached option quote for symbol."""
+        return self._latest_option_quotes.get(symbol.upper())

@@ -1,4 +1,5 @@
-from unittest.mock import MagicMock, patch
+from typing import Any
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -19,36 +20,36 @@ class MockBroker(BaseBroker):
     async def logout(self) -> None:
         pass
 
-    async def get_account_info(self):
+    async def get_account_info(self) -> dict[str, Any]:
         return {}
 
-    async def get_portfolio(self):
+    async def get_portfolio(self) -> dict[str, Any]:
         return {}
 
-    async def get_positions(self):
+    async def get_positions(self) -> dict[str, Any]:
         return {}
 
-    async def get_stock_quote(self, symbol):
+    async def get_stock_quote(self, symbol: str) -> dict[str, Any]:
         return {}
 
-    async def get_stock_price(self, symbol):
+    async def get_stock_price(self, symbol: str) -> dict[str, Any]:
         return {}
 
-    async def order_buy_market(self, symbol, quantity):
+    async def order_buy_market(self, symbol: str, quantity: float) -> dict[str, Any]:
         return {}
 
-    async def order_sell_market(self, symbol, quantity):
+    async def order_sell_market(self, symbol: str, quantity: float) -> dict[str, Any]:
         return {}
 
 
-def test_broker_capabilities_defaults():
+def test_broker_capabilities_defaults() -> None:
     capabilities = BrokerCapabilities()
     assert not capabilities.streaming_quotes
     assert not capabilities.options
     assert not capabilities.crypto
 
 
-def test_base_broker_health_status():
+def test_base_broker_health_status() -> None:
     broker = MockBroker("test_broker")
     broker._auth_info.status = BrokerAuthStatus.AUTHENTICATED
     broker._capabilities.streaming_quotes = True
@@ -62,7 +63,7 @@ def test_base_broker_health_status():
 
 
 @pytest.mark.asyncio
-async def test_schwab_stream_manager_handling():
+async def test_schwab_stream_manager_handling() -> None:
     from open_stocks_mcp.brokers.schwab_stream import SchwabStreamManager
 
     mock_broker = MagicMock()
@@ -76,13 +77,72 @@ async def test_schwab_stream_manager_handling():
 
     manager._handle_message(message)
     quote = manager.get_latest_quote("AAPL")
+    assert quote is not None
     assert quote["1"] == 150.0
     assert quote["2"] == 151.0
 
 
+@pytest.mark.asyncio
+async def test_schwab_stream_manager_option_quote_handling() -> None:
+    from open_stocks_mcp.brokers.schwab_stream import SchwabStreamManager
+
+    mock_broker = MagicMock()
+    manager = SchwabStreamManager(mock_broker)
+
+    # Test option message handling
+    message = {
+        "service": "LEVELONE_OPTIONS",
+        "content": [{"key": "AAPL  260619C00150000", "1": 12.34, "2": 12.55}],
+    }
+
+    manager._handle_message(message)
+    quote = manager.get_latest_option_quote("AAPL  260619C00150000")
+    assert quote is not None
+    assert quote["1"] == 12.34
+    assert quote["2"] == 12.55
+
+    # Verify equity cache is separate
+    assert manager.get_latest_quote("AAPL") is None
+
+
+@pytest.mark.asyncio
+async def test_schwab_stream_manager_subscribe_option_quotes() -> None:
+    from open_stocks_mcp.brokers.schwab_stream import SchwabStreamManager
+
+    mock_broker = MagicMock()
+    manager = SchwabStreamManager(mock_broker)
+    manager._is_running = True
+    manager.stream_client = AsyncMock()
+
+    success = await manager.subscribe_option_quotes(["AAPL  260619C00150000"])
+    assert success is True
+    manager.stream_client.level_one_option_subs.assert_awaited_once_with(
+        ["AAPL  260619C00150000"]
+    )
+
+
+@pytest.mark.asyncio
+async def test_schwab_stream_manager_subscribe_quotes_splitting() -> None:
+    from open_stocks_mcp.brokers.schwab_stream import SchwabStreamManager
+
+    mock_broker = MagicMock()
+    manager = SchwabStreamManager(mock_broker)
+    manager._is_running = True
+    manager.stream_client = AsyncMock()
+
+    symbols = ["AAPL", "AAPL  260619C00150000"]
+    success = await manager.subscribe_quotes(symbols)
+    assert success is True
+
+    manager.stream_client.level_one_equity_subs.assert_awaited_once_with(["AAPL"])
+    manager.stream_client.level_one_option_subs.assert_awaited_once_with(
+        ["AAPL  260619C00150000"]
+    )
+
+
 @patch("schwab.streaming.StreamClient")
 @pytest.mark.asyncio
-async def test_schwab_stream_manager_start(mock_stream_client_class):
+async def test_schwab_stream_manager_start(mock_stream_client_class: MagicMock) -> None:
     from open_stocks_mcp.brokers.schwab_stream import SchwabStreamManager
 
     mock_broker = MagicMock()
@@ -94,7 +154,7 @@ async def test_schwab_stream_manager_start(mock_stream_client_class):
     # Mock login to avoid actual connection
     mock_stream_client = mock_stream_client_class.return_value
 
-    async def async_none():
+    async def async_none() -> None:
         return None
 
     mock_stream_client.login = MagicMock(return_value=async_none())

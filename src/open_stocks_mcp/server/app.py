@@ -190,6 +190,9 @@ from open_stocks_mcp.tools.schwab_portfolio_tools import (
     get_schwab_day_trades,
     get_schwab_open_option_positions,
 )
+from open_stocks_mcp.tools.schwab_streaming_tools import (
+    schwab_stream_option_quotes as _schwab_stream_option_quotes_impl,
+)
 from open_stocks_mcp.tools.schwab_trading_tools import (
     cancel_schwab_order,
     get_schwab_order_by_id,
@@ -1869,6 +1872,17 @@ async def schwab_open_option_orders(
         max_results: Maximum orders to fetch before filtering (default 50)
     """
     return await _schwab_get_open_option_orders_impl(account_hash, max_results)
+
+
+# Schwab Streaming Tools
+@mcp.tool()
+async def schwab_stream_option_quotes(symbols: list[str]) -> dict[str, Any]:
+    """Get real-time option quote snapshots from Schwab streaming.
+
+    Args:
+        symbols: List of Schwab option symbols (e.g. ['AAPL  260619C00150000'])
+    """
+    return await _schwab_stream_option_quotes_impl(symbols)
 
 
 def create_mcp_server(config: ServerConfig | None = None) -> FastMCP:
