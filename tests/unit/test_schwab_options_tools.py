@@ -13,6 +13,7 @@ from open_stocks_mcp.tools.schwab_options_tools import (
     get_schwab_option_positions_detailed,
     get_schwab_options_positions,
     schwab_find_tradable_options,
+    schwab_get_option_orders,
     schwab_option_buy_to_open,
     schwab_option_sell_to_close,
 )
@@ -646,6 +647,7 @@ class TestSchwabOptionsTools:
         assert pos["quote"]["greeks"]["delta"] == 0.65
 
 
+
 @pytest.mark.journey_options
 @pytest.mark.unit
 @pytest.mark.asyncio
@@ -729,3 +731,72 @@ async def test_find_tradable_options_auth_error(mock_get_broker: AsyncMock) -> N
     result = await schwab_find_tradable_options("AAPL")
 
     assert result == error_response
+
+
+@pytest.mark.journey_options
+@pytest.mark.unit
+@pytest.mark.asyncio
+@patch("open_stocks_mcp.tools.schwab_options_tools.get_authenticated_broker_or_error")
+@patch("open_stocks_mcp.tools.schwab_options_tools.execute_broker_request")
+async def test_get_option_orders_filters_option_legs(
+    mock_execute: AsyncMock,
+    mock_get_broker: AsyncMock,
+) -> None:
+    """OPTION-legged orders included, EQUITY-legged excluded."""
+    mock_get_broker.return_value = (MagicMock(), None)
+    mock_execute.return_value = [
+        {
+            "orderId": "opt-1",
+            "status": "FILLED",
+            "orderLegCollection": [
+                {"orderLegType": "OPTION", "instrument": {"assetType": "OPTION"}},
+            ],
+        },
+        {
+            "orderId": "eq-1",
+            "status": "FILLED",
+            "orderLegCollection": [
+                {"orderLegType": "EQUITY", "instrument": {"assetType": "EQUITY"}},
+            ],
+        },
+    ]
+
+    result = await schwab_get_option_orders("acct-hash")
+
+    assert result["result"]["count"] == 1
+    assert result["result"]["orders"][0]["orderId"] == "opt-1"
+
+
+@pytest.mark.journey_options
+@pytest.mark.unit
+@pytest.mark.asyncio
+@patch("open_stocks_mcp.tools.schwab_options_tools.get_authenticated_broker_or_error")
+@patch("open_stocks_mcp.tools.schwab_options_tools.execute_broker_request")
+async def test_get_option_orders_status_filter(
+    mock_execute: AsyncMock,
+    mock_get_broker: AsyncMock,
+) -> None:
+    """status='FILLED' excludes WORKING option orders."""
+    mock_get_broker.return_value = (MagicMock(), None)
+    mock_execute.return_value = [
+        {
+            "orderId": "filled-1",
+            "status": "FILLED",
+            "orderLegCollection": [
+                {"orderLegType": "OPTION", "instrument": {"assetType": "OPTION"}},
+            ],
+        },
+        {
+            "orderId": "working-1",
+            "status": "WORKING",
+            "orderLegCollection": [
+                {"instrument": {"assetType": "OPTION"}},
+            ],
+        },
+    ]
+
+    result = await schwab_get_option_orders("acct-hash", status="FILLED")
+
+    assert result["result"]["count"] == 1
+    assert result["result"]["orders"][0]["orderId"] == "filled-1"
+    assert result["result"]["orders"][0]["status"] == "FILLED"

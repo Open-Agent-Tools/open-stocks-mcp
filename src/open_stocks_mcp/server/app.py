@@ -168,6 +168,7 @@ from open_stocks_mcp.tools.schwab_options_tools import (
 )
 from open_stocks_mcp.tools.schwab_options_tools import (
     schwab_find_tradable_options as _schwab_find_tradable_options_impl,
+    schwab_get_option_orders as _schwab_get_option_orders_impl,
 )
 from open_stocks_mcp.tools.schwab_options_tools import (
     schwab_option_buy_to_open as _schwab_option_buy_to_open_impl,
@@ -1748,6 +1749,22 @@ async def schwab_option_positions_detailed(account_hash: str) -> dict[str, Any]:
         account_hash: Account hash from schwab_account_numbers
     """
     return await get_schwab_option_positions_detailed(account_hash)
+
+
+@mcp.tool()
+async def schwab_option_orders(
+    account_hash: str,
+    max_results: int = 50,
+    status: str | None = None,
+) -> dict[str, Any]:
+    """Get option orders for an account, filtered to OPTION legs only.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+        max_results: Maximum number of orders to retrieve
+        status: Optional status filter (FILLED, WORKING, CANCELED, etc.)
+    """
+    return await _schwab_get_option_orders_impl(account_hash, max_results, status)
 
 
 @mcp.tool()
