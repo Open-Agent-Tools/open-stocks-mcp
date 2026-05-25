@@ -1,4 +1,4 @@
-"""Backward-compatible exports for split Robinhood options tools."""
+"""Split Robinhood options tool modules."""
 
 from open_stocks_mcp.tools.options.chains import (
     find_tradable_options,
