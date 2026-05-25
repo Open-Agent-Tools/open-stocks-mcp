@@ -195,6 +195,17 @@ class TestSchwabOptionsTools:
     @pytest.mark.journey_options
     @pytest.mark.unit
     @pytest.mark.asyncio
+    async def test_get_option_quote_invalid_type(self) -> None:
+        """Test option quote with invalid option type."""
+        result = await schwab_get_option_quote("AAPL", "2024-01-19", 170.0, "INVALID")
+
+        assert result["result"]["status"] == "error"
+        assert "Invalid option_type" in result["result"]["error"]
+        assert "INVALID" in result["result"]["error"]
+
+    @pytest.mark.journey_options
+    @pytest.mark.unit
+    @pytest.mark.asyncio
     @patch(
         "open_stocks_mcp.tools.schwab_options_tools.get_authenticated_broker_or_error"
     )

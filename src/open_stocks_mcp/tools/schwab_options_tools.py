@@ -58,11 +58,11 @@ async def schwab_get_option_quote(
     Returns:
         Dict with option contract data
     """
-    ot_upper = option_type.upper()
+    ot_upper = option_type.strip().upper()
     if ot_upper not in ("CALL", "PUT"):
         return create_error_response(
             ValueError(
-                f"Invalid option_type: {ot_upper}. Must be 'CALL' or 'PUT' for {symbol.upper()} {expiration_date} {strike:.1f}"
+                f"Invalid option_type: '{option_type}'. Must be 'CALL' or 'PUT' (case-insensitive)."
             )
         )
 
@@ -109,20 +109,36 @@ async def schwab_get_option_quote(
 
         # Strike lookup (string form "170.0")
         strike_map = exp_map[target_exp_key]
-        strike_key = f"{strike:.1f}"
+        
+        # Flexible strike lookup: try string formats first, then float comparison
+        target_strike_key = None
+        for k in (f"{strike:.1f}", f"{strike:.2f}", str(int(strike)) if strike == int(strike) else str(strike)):
+            if k in strike_map:
+                target_strike_key = k
+                break
+        
+        if not target_strike_key:
+            # Fallback: iterate and compare as floats
+            for k in strike_map:
+                try:
+                    if abs(float(k) - strike) < 0.001:
+                        target_strike_key = k
+                        break
+                except ValueError:
+                    continue
 
-        if strike_key not in strike_map:
+        if not target_strike_key:
             return create_error_response(
                 ValueError(
-                    f"Option contract not found for {symbol.upper()} {expiration_date} {strike_key} {ot_upper} (Strike not found)"
+                    f"Option contract not found for {symbol.upper()} {expiration_date} {strike} {ot_upper} (Strike not found)"
                 )
             )
 
-        contracts = strike_map[strike_key]
+        contracts = strike_map[target_strike_key]
         if not contracts:
             return create_error_response(
                 ValueError(
-                    f"Option contract not found for {symbol.upper()} {expiration_date} {strike_key} {ot_upper} (Empty contract list)"
+                    f"Option contract not found for {symbol.upper()} {expiration_date} {target_strike_key} {ot_upper} (Empty contract list)"
                 )
             )
 
