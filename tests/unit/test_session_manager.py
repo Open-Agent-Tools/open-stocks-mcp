@@ -341,7 +341,7 @@ def test_interactive_mfa_prompt_uses_original_stderr_when_stderr_is_redirected()
     manager = SessionManager()
 
     fake_stdin = io.StringIO("654321\n")
-    fake_stdin.isatty = lambda: True  # type: ignore[attr-defined]
+    fake_stdin.isatty = lambda: True  # type: ignore[method-assign]
     original_stderr = io.StringIO()
     redirected_stderr = io.StringIO()
 
