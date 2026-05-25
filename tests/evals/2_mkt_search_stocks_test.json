@@ -11,7 +11,7 @@
           "user_content": {
             "parts": [
               {
-                "text": "Search for electric vehicle companies."
+                "text": "Search for Apple stock."
               }
             ],
             "role": "user"
@@ -19,7 +19,7 @@
           "final_response": {
             "parts": [
               {
-                "text": "I'm sorry, I was unable to find any stocks using the tag \"electric vehicles.\" It's possible that the tag is not supported or there are no stocks categorized under that specific tag.\n\nI can search for stocks by other categories if you have another one in mind, or you can try a more general search for a company by name or symbol."
+                "text": "I have found the information for Apple Inc. (AAPL)."
               }
             ],
             "role": "model"
@@ -29,9 +29,9 @@
               {
                 "id": "adk-tool-use-id",
                 "args": {
-                  "tag": "electric vehicles"
+                  "query": "Apple"
                 },
-                "name": "stocks_by_tag"
+                "name": "search_stocks_tool"
               }
             ],
             "intermediate_responses": []
