@@ -340,6 +340,15 @@ adk eval examples/google_adk_agent tests/evals/2_mkt_stock_news_test.json --conf
 adk eval examples/google_adk_agent tests/evals/2_mkt_stock_splits_test.json --config_file_path tests/evals/test_config.json
 ```
 
+Issue #289 market-data additions:
+
+```bash
+adk eval examples/google_adk_agent tests/evals/2_mkt_price_history_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/2_mkt_top_movers_sp500_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/2_mkt_top_100_stocks_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/2_mkt_top_movers_test.json --config_file_path tests/evals/test_config.json
+```
+
 ### 7. Creating Custom Evaluation Tests
 
 #### Test File Structure
