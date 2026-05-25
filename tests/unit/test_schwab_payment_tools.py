@@ -15,7 +15,10 @@ def test_classify_transaction_dividend_returns_dividend():
 
 
 def test_classify_transaction_interest_returns_interest():
-    tx = {"type": "DIVIDEND_OR_INTEREST", "description": "FREE BALANCE INTEREST ADJUSTMENT"}
+    tx = {
+        "type": "DIVIDEND_OR_INTEREST",
+        "description": "FREE BALANCE INTEREST ADJUSTMENT",
+    }
     assert _classify_transaction(tx) == "interest"
 
 
@@ -43,9 +46,17 @@ async def test_schwab_get_dividends_success(mock_to_thread, mock_get_broker):
 
     # Mock transactions
     mock_to_thread.return_value = [
-        {"type": "DIVIDEND_OR_INTEREST", "description": "QUALIFIED DIVIDEND", "netAmount": 1.50},
+        {
+            "type": "DIVIDEND_OR_INTEREST",
+            "description": "QUALIFIED DIVIDEND",
+            "netAmount": 1.50,
+        },
         {"type": "DIVIDEND_OR_INTEREST", "description": "DIVIDEND", "netAmount": 2.50},
-        {"type": "DIVIDEND_OR_INTEREST", "description": "FREE BALANCE INTEREST ADJUSTMENT", "netAmount": 0.05},
+        {
+            "type": "DIVIDEND_OR_INTEREST",
+            "description": "FREE BALANCE INTEREST ADJUSTMENT",
+            "netAmount": 0.05,
+        },
         {"type": "TRADE", "description": "Bought AAPL", "netAmount": 100.0},
     ]
 
@@ -62,7 +73,9 @@ async def test_schwab_get_dividends_success(mock_to_thread, mock_get_broker):
 @pytest.mark.asyncio
 @patch("open_stocks_mcp.tools.schwab_payment_tools.get_authenticated_broker_or_error")
 @patch("open_stocks_mcp.tools.schwab_payment_tools.asyncio.to_thread")
-async def test_schwab_get_dividends_passes_dividend_or_interest_type_filter(mock_to_thread, mock_get_broker):
+async def test_schwab_get_dividends_passes_dividend_or_interest_type_filter(
+    mock_to_thread, mock_get_broker
+):
     broker = MagicMock()
     mock_get_broker.return_value = (broker, None)
     mock_to_thread.return_value = []
@@ -77,12 +90,16 @@ async def test_schwab_get_dividends_passes_dividend_or_interest_type_filter(mock
 @pytest.mark.asyncio
 @patch("open_stocks_mcp.tools.schwab_payment_tools.get_authenticated_broker_or_error")
 @patch("open_stocks_mcp.tools.schwab_payment_tools.asyncio.to_thread")
-async def test_schwab_get_dividends_passes_date_filters(mock_to_thread, mock_get_broker):
+async def test_schwab_get_dividends_passes_date_filters(
+    mock_to_thread, mock_get_broker
+):
     broker = MagicMock()
     mock_get_broker.return_value = (broker, None)
     mock_to_thread.return_value = []
 
-    await schwab_get_dividends("hash123", start_date="2026-04-01", end_date="2026-04-30")
+    await schwab_get_dividends(
+        "hash123", start_date="2026-04-01", end_date="2026-04-30"
+    )
 
     mock_to_thread.assert_called_once()
     _, kwargs = mock_to_thread.call_args
@@ -110,7 +127,10 @@ async def test_schwab_get_dividends_empty_list(mock_to_thread, mock_get_broker):
 @patch("open_stocks_mcp.tools.schwab_payment_tools.get_authenticated_broker_or_error")
 @patch("open_stocks_mcp.tools.schwab_payment_tools.asyncio.to_thread")
 async def test_schwab_get_dividends_auth_error(mock_to_thread, mock_get_broker):
-    mock_get_broker.return_value = (None, {"result": {"status": "error", "error": "Auth failed"}})
+    mock_get_broker.return_value = (
+        None,
+        {"result": {"status": "error", "error": "Auth failed"}},
+    )
 
     result = await schwab_get_dividends("hash123")
 
