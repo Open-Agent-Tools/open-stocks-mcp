@@ -163,6 +163,7 @@ from open_stocks_mcp.tools.schwab_options_tools import (
     get_schwab_option_chain,
     get_schwab_option_chain_by_expiration,
     get_schwab_option_expirations,
+    get_schwab_option_positions_detailed,
     get_schwab_options_positions,
 )
 from open_stocks_mcp.tools.schwab_options_tools import (
@@ -1737,6 +1738,16 @@ async def schwab_options_positions(account_hash: str) -> dict[str, Any]:
         account_hash: Account hash from schwab_account_numbers
     """
     return await get_schwab_options_positions(account_hash)
+
+
+@mcp.tool()
+async def schwab_option_positions_detailed(account_hash: str) -> dict[str, Any]:
+    """Get options positions enriched with live quote data (bid/ask/last/mark/greeks).
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+    """
+    return await get_schwab_option_positions_detailed(account_hash)
 
 
 @mcp.tool()

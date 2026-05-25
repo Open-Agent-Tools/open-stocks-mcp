@@ -248,6 +248,137 @@ async def get_schwab_options_positions(account_hash: str) -> dict[str, Any]:
 
 
 @handle_schwab_errors
+async def get_schwab_option_positions_detailed(
+    account_hash: str,
+) -> dict[str, Any]:
+    """Get options positions enriched with live quote data from option chains.
+
+    Args:
+        account_hash: Account hash from get_schwab_account_numbers()
+
+    Returns:
+        Dict with enriched options positions including bid/ask/last/mark/greeks
+    """
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", f"get detailed option positions for {account_hash}"
+    )
+    if error:
+        return error
+
+    try:
+
+        def _get_account() -> Any:
+            response = broker.client.get_account(
+                account_hash, fields=Client.Account.Fields.POSITIONS
+            )
+            return response.json()
+
+        account_data = await execute_broker_request(_get_account, retry_safe=True)
+
+        securities_account = account_data.get("securitiesAccount", {})
+        all_positions = securities_account.get("positions", [])
+
+        option_positions = [
+            p
+            for p in all_positions
+            if p.get("instrument", {}).get("assetType") == "OPTION"
+        ]
+
+        if not option_positions:
+            return create_success_response(
+                {"positions": [], "count": 0, "enrichment_success_rate": "0%"}
+            )
+
+        underlyings = {
+            p["instrument"]["underlyingSymbol"]
+            for p in option_positions
+            if p.get("instrument", {}).get("underlyingSymbol")
+        }
+
+        chain_cache: dict[str, Any] = {}
+        for underlying in underlyings:
+            try:
+
+                def _get_chain(sym: str = underlying) -> Any:
+                    response = broker.client.get_option_chain(
+                        sym.upper(), include_underlying_quote=False
+                    )
+                    return response.json()
+
+                chain_cache[underlying] = await execute_broker_request(
+                    _get_chain, retry_safe=True
+                )
+            except Exception:
+                logger.warning(f"Failed to fetch option chain for {underlying}")
+
+        enriched: list[dict[str, Any]] = []
+        enriched_count = 0
+
+        for position in option_positions:
+            instrument = position.get("instrument", {})
+            pos_symbol = instrument.get("symbol", "")
+            underlying = instrument.get("underlyingSymbol", "")
+            put_call = instrument.get("putCall", "")
+
+            pos_dict: dict[str, Any] = {
+                "symbol": pos_symbol,
+                "underlying_symbol": underlying,
+                "option_type": put_call,
+                "strike_price": instrument.get("strikePrice"),
+                "expiration_date": instrument.get("expirationDate"),
+                "quantity": position.get("longQuantity", 0)
+                + position.get("shortQuantity", 0),
+                "average_price": position.get("averagePrice"),
+                "market_value": position.get("marketValue"),
+                "current_day_pl": position.get("currentDayProfitLoss"),
+                "quote": None,
+            }
+
+            chain = chain_cache.get(underlying)
+            if chain:
+                exp_map_key = (
+                    "callExpDateMap" if put_call == "CALL" else "putExpDateMap"
+                )
+                exp_map = chain.get(exp_map_key, {})
+                matched = False
+                for _exp_date, strikes in exp_map.items():
+                    for _strike, contracts in strikes.items():
+                        for contract in contracts:
+                            if contract.get("symbol") == pos_symbol:
+                                pos_dict["quote"] = {
+                                    "bid": contract.get("bid"),
+                                    "ask": contract.get("ask"),
+                                    "last": contract.get("last"),
+                                    "mark": contract.get("mark"),
+                                    "greeks": contract.get("greeks"),
+                                }
+                                enriched_count += 1
+                                matched = True
+                                break
+                        if matched:
+                            break
+                    if matched:
+                        break
+
+            enriched.append(pos_dict)
+
+        total = len(enriched)
+        rate = f"{round(enriched_count / total * 100)}%" if total > 0 else "0%"
+
+        return create_success_response(
+            {
+                "positions": enriched,
+                "count": total,
+                "enrichment_success_rate": rate,
+            }
+        )
+
+    except Exception as e:
+        logger.error(f"Error getting Schwab detailed option positions: {e}")
+        return create_error_response(e)
+
+
+@handle_schwab_errors
 async def schwab_option_buy_to_open(
     account_hash: str,
     symbol: str,

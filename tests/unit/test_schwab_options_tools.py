@@ -10,6 +10,7 @@ from open_stocks_mcp.tools.schwab_options_tools import (
     get_schwab_option_chain,
     get_schwab_option_chain_by_expiration,
     get_schwab_option_expirations,
+    get_schwab_option_positions_detailed,
     get_schwab_options_positions,
     schwab_find_tradable_options,
     schwab_option_buy_to_open,
@@ -530,6 +531,119 @@ class TestSchwabOptionsTools:
                 "HASH", "AAPL", 1, "CALL", 150.0, "2026-06-19"
             )
             assert result == {"result": {"status": "order_placed"}}
+
+    @pytest.mark.journey_options
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    @patch(
+        "open_stocks_mcp.tools.schwab_options_tools.get_authenticated_broker_or_error"
+    )
+    @patch("open_stocks_mcp.tools.schwab_options_tools.execute_broker_request")
+    @patch("open_stocks_mcp.tools.schwab_options_tools.Client")
+    async def test_get_option_positions_detailed_no_positions(
+        self,
+        mock_client: MagicMock,
+        mock_execute: AsyncMock,
+        mock_get_broker: AsyncMock,
+    ) -> None:
+        mock_broker = MagicMock()
+        mock_get_broker.return_value = (mock_broker, None)
+        mock_client.Account.Fields.POSITIONS = "positions"
+        mock_execute.return_value = {"securitiesAccount": {"positions": []}}
+
+        result = await get_schwab_option_positions_detailed("abc123")
+
+        assert result["result"]["positions"] == []
+        assert result["result"]["count"] == 0
+        assert result["result"]["enrichment_success_rate"] == "0%"
+
+    @pytest.mark.journey_options
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    @patch(
+        "open_stocks_mcp.tools.schwab_options_tools.get_authenticated_broker_or_error"
+    )
+    @patch("open_stocks_mcp.tools.schwab_options_tools.execute_broker_request")
+    @patch("open_stocks_mcp.tools.schwab_options_tools.Client")
+    async def test_get_option_positions_detailed_enriches_with_quote(
+        self,
+        mock_client: MagicMock,
+        mock_execute: AsyncMock,
+        mock_get_broker: AsyncMock,
+    ) -> None:
+        mock_broker = MagicMock()
+        mock_get_broker.return_value = (mock_broker, None)
+        mock_client.Account.Fields.POSITIONS = "positions"
+
+        positions_response = {
+            "securitiesAccount": {
+                "positions": [
+                    {
+                        "shortQuantity": 0.0,
+                        "averagePrice": 6.50,
+                        "currentDayProfitLoss": 50.0,
+                        "longQuantity": 1.0,
+                        "instrument": {
+                            "assetType": "OPTION",
+                            "symbol": "AAPL  240119C00170000",
+                            "underlyingSymbol": "AAPL",
+                            "putCall": "CALL",
+                            "strikePrice": 170.0,
+                            "expirationDate": "2024-01-19",
+                        },
+                        "marketValue": 700.0,
+                    },
+                    {
+                        "shortQuantity": 0.0,
+                        "averagePrice": 150.0,
+                        "longQuantity": 10.0,
+                        "instrument": {
+                            "assetType": "EQUITY",
+                            "symbol": "AAPL",
+                        },
+                        "marketValue": 1750.0,
+                    },
+                ]
+            }
+        }
+
+        chain_response = {
+            "status": "SUCCESS",
+            "symbol": "AAPL",
+            "callExpDateMap": {
+                "2024-01-19:5": {
+                    "170.0": [
+                        {
+                            "symbol": "AAPL  240119C00170000",
+                            "bid": 6.50,
+                            "ask": 6.55,
+                            "last": 6.52,
+                            "mark": 6.525,
+                            "greeks": {
+                                "delta": 0.65,
+                                "gamma": 0.03,
+                                "theta": -0.05,
+                                "vega": 0.12,
+                            },
+                        }
+                    ]
+                }
+            },
+            "putExpDateMap": {},
+        }
+
+        mock_execute.side_effect = [positions_response, chain_response]
+
+        result = await get_schwab_option_positions_detailed("abc123")
+
+        assert result["result"]["count"] == 1
+        assert result["result"]["enrichment_success_rate"] == "100%"
+        pos = result["result"]["positions"][0]
+        assert pos["quote"]["bid"] == 6.50
+        assert pos["quote"]["ask"] == 6.55
+        assert pos["quote"]["last"] == 6.52
+        assert pos["quote"]["mark"] == 6.525
+        assert pos["quote"]["greeks"]["delta"] == 0.65
 
 
 @pytest.mark.journey_options
