@@ -29,6 +29,11 @@ from open_stocks_mcp.server.tool_helpers import (
 # Cross-Broker Tools
 from open_stocks_mcp.tools.broker_comparison_tools import get_broker_comparison
 from open_stocks_mcp.tools.cross_broker_tools import get_aggregated_portfolio
+from open_stocks_mcp.tools.market.earnings import (
+    get_stock_earnings,
+    get_stock_events,
+    get_stock_splits,
+)
 from open_stocks_mcp.tools.market.movers import (
     get_stocks_by_tag,
     get_top_100,
@@ -76,10 +81,7 @@ from open_stocks_mcp.tools.robinhood_dividend_tools import (
     get_total_dividends,
 )
 from open_stocks_mcp.tools.robinhood_market_data_tools import (
-    get_stock_earnings,
-    get_stock_events,
     get_stock_level2_data,
-    get_stock_splits,
 )
 from open_stocks_mcp.tools.robinhood_order_tools import (
     get_options_orders,
