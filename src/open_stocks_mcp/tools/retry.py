@@ -60,9 +60,9 @@ async def execute_with_retry(
         return await coordinator.execute(coalesce_key, _call)
 
     from open_stocks_mcp.brokers.registry import get_broker_registry
+    from open_stocks_mcp.brokers.session_state import get_session_manager
     from open_stocks_mcp.tools.circuit_breaker import get_broker_circuit_breaker
     from open_stocks_mcp.tools.rate_limiter import get_rate_limiter
-    from open_stocks_mcp.tools.session_manager import get_session_manager
 
     last_exception = None
     retry_config = load_config().retry

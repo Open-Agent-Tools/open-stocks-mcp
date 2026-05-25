@@ -112,7 +112,7 @@ async def test_execute_with_retry_records_failures_and_blocks_fast() -> None:
 
     with (
         patch(
-            "open_stocks_mcp.tools.session_manager.get_session_manager",
+            "open_stocks_mcp.brokers.session_state.get_session_manager",
             return_value=mock_session_manager,
         ),
         patch("open_stocks_mcp.tools.rate_limiter.get_rate_limiter", return_value=None),
@@ -126,7 +126,7 @@ async def test_execute_with_retry_records_failures_and_blocks_fast() -> None:
 
     with (
         patch(
-            "open_stocks_mcp.tools.session_manager.get_session_manager",
+            "open_stocks_mcp.brokers.session_state.get_session_manager",
             return_value=mock_session_manager,
         ),
         patch("open_stocks_mcp.tools.rate_limiter.get_rate_limiter", return_value=None),

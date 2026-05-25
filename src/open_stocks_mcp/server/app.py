@@ -13,6 +13,7 @@ from open_stocks_mcp.brokers.auth_coordinator import attempt_broker_logins
 from open_stocks_mcp.brokers.registry import get_broker_registry
 from open_stocks_mcp.brokers.robinhood import RobinhoodBroker
 from open_stocks_mcp.brokers.schwab import SchwabBroker
+from open_stocks_mcp.brokers.session_state import get_session_manager
 from open_stocks_mcp.config import ServerConfig, load_config
 from open_stocks_mcp.logging_config import logger, setup_logging
 from open_stocks_mcp.server.tool_helpers import (
@@ -222,7 +223,6 @@ from open_stocks_mcp.tools.schwab_trading_tools import (
 from open_stocks_mcp.tools.schwab_trading_tools import (
     schwab_replace_order as _schwab_replace_order,
 )
-from open_stocks_mcp.tools.session_manager import get_session_manager
 from open_stocks_mcp.tools.unified_watchlist_tools import (
     add_symbols_to_unified_watchlist,
     get_unified_watchlist_by_name,

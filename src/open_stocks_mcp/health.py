@@ -8,9 +8,9 @@ from typing import Any
 
 from open_stocks_mcp.brokers.base import BrokerAuthStatus
 from open_stocks_mcp.brokers.registry import BrokerRegistry, get_broker_registry
+from open_stocks_mcp.brokers.session_state import SessionManager, get_session_manager
 from open_stocks_mcp.config import load_config
 from open_stocks_mcp.monitoring import MetricsCollector, get_metrics_collector
-from open_stocks_mcp.tools.session_manager import SessionManager, get_session_manager
 
 
 class ComponentStatus(Enum):

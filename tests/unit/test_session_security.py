@@ -8,7 +8,7 @@ from unittest.mock import patch
 import pytest
 from cryptography.fernet import Fernet
 
-from open_stocks_mcp.tools.session_manager import SessionManager
+from open_stocks_mcp.brokers.session_state import SessionManager
 
 
 @pytest.fixture()
@@ -21,7 +21,7 @@ def tmp_tokens_dir(tmp_path: Path) -> Path:
 def manager(tmp_tokens_dir: Path) -> Generator[SessionManager, None, None]:
     """SessionManager with home directory patched to a temp location."""
     with patch(
-        "open_stocks_mcp.tools.session_manager.Path.home",
+        "open_stocks_mcp.brokers.session_pickle.Path.home",
         return_value=tmp_tokens_dir.parent,
     ):
         yield SessionManager()
@@ -195,7 +195,7 @@ class TestLoginPickleReencryption:
             return_value = login_result
 
         with patch(
-            "open_stocks_mcp.tools.session_manager.rh.login",
+            "open_stocks_mcp.brokers.session_mfa.rh.login",
             return_value=return_value,
             side_effect=side_effect,
         ):

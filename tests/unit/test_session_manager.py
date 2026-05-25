@@ -10,8 +10,8 @@ from unittest.mock import patch
 
 import pytest
 
-from open_stocks_mcp.tools import session_manager as session_manager_module
-from open_stocks_mcp.tools.session_manager import SessionManager
+from open_stocks_mcp.brokers import session_state as session_manager_module
+from open_stocks_mcp.brokers.session_state import SessionManager
 
 pytestmark = pytest.mark.unit
 
@@ -51,7 +51,9 @@ def test_clear_pickle_file_success_when_file_exists(tmp_path: Path) -> None:
     pickle_path = tmp_path / "robinhood.pickle"
     pickle_path.write_text("session")
 
-    with patch.object(manager, "_get_pickle_file_path", return_value=pickle_path):
+    with patch.object(
+        manager._pickle, "_get_pickle_file_path", return_value=pickle_path
+    ):
         assert manager._clear_pickle_file() is True
 
     assert not pickle_path.exists()
@@ -61,7 +63,9 @@ def test_clear_pickle_file_success_when_file_missing(tmp_path: Path) -> None:
     manager = SessionManager()
     pickle_path = tmp_path / "robinhood.pickle"
 
-    with patch.object(manager, "_get_pickle_file_path", return_value=pickle_path):
+    with patch.object(
+        manager._pickle, "_get_pickle_file_path", return_value=pickle_path
+    ):
         assert manager._clear_pickle_file() is True
 
 
@@ -71,7 +75,9 @@ def test_clear_pickle_file_false_when_unlink_raises(tmp_path: Path) -> None:
     pickle_path.write_text("session")
 
     with (
-        patch.object(manager, "_get_pickle_file_path", return_value=pickle_path),
+        patch.object(
+            manager._pickle, "_get_pickle_file_path", return_value=pickle_path
+        ),
         patch.object(Path, "unlink", side_effect=PermissionError("denied")),
     ):
         assert manager._clear_pickle_file() is False
@@ -124,7 +130,7 @@ async def test_authenticate_success_with_login_and_profile() -> None:
     with (
         patch.object(manager, "_login_with_device_verification", return_value=True),
         patch(
-            "open_stocks_mcp.tools.session_manager.rh.load_user_profile",
+            "open_stocks_mcp.brokers.session_state.rh.load_user_profile",
             return_value={"id": "123"},
         ),
     ):
@@ -156,7 +162,7 @@ async def test_authenticate_false_when_profile_missing() -> None:
     with (
         patch.object(manager, "_login_with_device_verification", return_value=True),
         patch(
-            "open_stocks_mcp.tools.session_manager.rh.load_user_profile",
+            "open_stocks_mcp.brokers.session_state.rh.load_user_profile",
             return_value=None,
         ),
     ):
@@ -186,7 +192,7 @@ def test_login_with_device_verification_success_restores_input() -> None:
     manager = SessionManager()
     original_input = builtins.input
 
-    with patch("open_stocks_mcp.tools.session_manager.rh.login", return_value=True):
+    with patch("open_stocks_mcp.brokers.session_mfa.rh.login", return_value=True):
         result = manager._login_with_device_verification("user", "pass")
 
     assert result is True
@@ -203,9 +209,7 @@ def test_login_with_device_verification_mfa_prompt_returns_false_and_restores_in
         _ = store_session
         return bool(builtins.input("Enter verification code: "))
 
-    with patch(
-        "open_stocks_mcp.tools.session_manager.rh.login", side_effect=fake_login
-    ):
+    with patch("open_stocks_mcp.brokers.session_mfa.rh.login", side_effect=fake_login):
         result = manager._login_with_device_verification("user", "pass")
 
     assert result is False
@@ -219,7 +223,7 @@ def test_login_with_device_verification_invalid_credentials_exception_restores_i
     original_input = builtins.input
 
     with patch(
-        "open_stocks_mcp.tools.session_manager.rh.login",
+        "open_stocks_mcp.brokers.session_mfa.rh.login",
         side_effect=RuntimeError("invalid credentials"),
     ):
         result = manager._login_with_device_verification("user", "pass")
@@ -236,7 +240,7 @@ async def test_logout_clears_session_state() -> None:
     manager.last_successful_call = datetime.now()
     manager._failed_login_attempts = 2
 
-    with patch("open_stocks_mcp.tools.session_manager.rh.logout"):
+    with patch("open_stocks_mcp.brokers.session_state.rh.logout"):
         await manager.logout()
 
     assert manager._is_authenticated is False
@@ -255,7 +259,7 @@ async def test_logout_reraises_exception_and_still_clears_state() -> None:
 
     with (
         patch(
-            "open_stocks_mcp.tools.session_manager.rh.logout",
+            "open_stocks_mcp.brokers.session_state.rh.logout",
             side_effect=RuntimeError("logout failure"),
         ),
         pytest.raises(RuntimeError, match="logout failure"),
@@ -383,10 +387,10 @@ def test_ensure_authenticated_handles_invalid_credentials_login_failure() -> Non
 
     with (
         patch(
-            "open_stocks_mcp.tools.session_manager.rh.login",
+            "open_stocks_mcp.brokers.session_mfa.rh.login",
             side_effect=Exception("invalid credentials"),
         ),
-        patch("open_stocks_mcp.tools.session_manager.rh.load_user_profile"),
+        patch("open_stocks_mcp.brokers.session_state.rh.load_user_profile"),
     ):
         result = asyncio.run(manager.ensure_authenticated())
 

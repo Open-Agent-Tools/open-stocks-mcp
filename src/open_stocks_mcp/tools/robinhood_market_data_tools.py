@@ -4,6 +4,7 @@ from typing import Any
 
 import robin_stocks.robinhood as rh
 
+from open_stocks_mcp.brokers.session_state import get_session_manager
 from open_stocks_mcp.logging_config import logger
 from open_stocks_mcp.tools.error_handling import (
     create_error_response,
@@ -15,7 +16,6 @@ from open_stocks_mcp.tools.error_handling import (
     validate_symbol,
 )
 from open_stocks_mcp.tools.rate_limiter import get_rate_limiter
-from open_stocks_mcp.tools.session_manager import get_session_manager
 
 
 @handle_robin_stocks_errors
