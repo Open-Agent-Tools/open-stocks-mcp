@@ -8,6 +8,7 @@ from open_stocks_mcp.tools.schwab_payment_tools import (
     schwab_get_dividends,
     schwab_get_dividends_by_symbol,
     schwab_get_interest_payments,
+    schwab_get_stock_loan_payments,
 )
 
 
@@ -303,6 +304,131 @@ async def test_schwab_get_interest_payments_auth_error(mock_to_thread, mock_get_
     )
 
     result = await schwab_get_interest_payments("hash123")
+
+    assert result["result"]["status"] == "error"
+    assert result["result"]["error"] == "Auth failed"
+    mock_to_thread.assert_not_called()
+
+
+# --- schwab_get_stock_loan_payments tests ---
+
+
+@pytest.mark.unit
+@pytest.mark.journey_account
+@pytest.mark.asyncio
+@patch("open_stocks_mcp.tools.schwab_payment_tools.get_authenticated_broker_or_error")
+@patch("open_stocks_mcp.tools.schwab_payment_tools.asyncio.to_thread")
+async def test_schwab_get_stock_loan_payments_success(mock_to_thread, mock_get_broker):
+    broker = MagicMock()
+    mock_get_broker.return_value = (broker, None)
+
+    mock_to_thread.return_value = [
+        {
+            "type": "JOURNAL",
+            "description": "SECURITIES LENDING REVENUE",
+            "netAmount": 3.25,
+        },
+        {
+            "type": "JOURNAL",
+            "description": "SECURITIES LENDING REVENUE",
+            "netAmount": 1.75,
+        },
+    ]
+
+    result = await schwab_get_stock_loan_payments("hash123")
+
+    assert result["result"]["status"] == "success"
+    assert len(result["result"]["loan_payments"]) == 2
+    assert result["result"]["total_amount"] == "5.00"
+    assert result["result"]["count"] == 2
+    assert result["result"]["enrolled"] is True
+
+
+@pytest.mark.unit
+@pytest.mark.journey_account
+@pytest.mark.asyncio
+@patch("open_stocks_mcp.tools.schwab_payment_tools.get_authenticated_broker_or_error")
+@patch("open_stocks_mcp.tools.schwab_payment_tools.asyncio.to_thread")
+async def test_schwab_get_stock_loan_payments_passes_journal_type_filter(
+    mock_to_thread, mock_get_broker
+):
+    broker = MagicMock()
+    mock_get_broker.return_value = (broker, None)
+    mock_to_thread.return_value = []
+
+    await schwab_get_stock_loan_payments("hash123")
+
+    mock_to_thread.assert_called_once()
+    _, kwargs = mock_to_thread.call_args
+    assert kwargs["transaction_types"] == ["JOURNAL"]
+
+
+@pytest.mark.unit
+@pytest.mark.journey_account
+@pytest.mark.asyncio
+@patch("open_stocks_mcp.tools.schwab_payment_tools.get_authenticated_broker_or_error")
+@patch("open_stocks_mcp.tools.schwab_payment_tools.asyncio.to_thread")
+async def test_schwab_get_stock_loan_payments_filters_non_loan_journals(
+    mock_to_thread, mock_get_broker
+):
+    broker = MagicMock()
+    mock_get_broker.return_value = (broker, None)
+
+    mock_to_thread.return_value = [
+        {
+            "type": "JOURNAL",
+            "description": "SECURITIES LENDING REVENUE",
+            "netAmount": 2.00,
+        },
+        {
+            "type": "JOURNAL",
+            "description": "WIRE ADJUSTMENT",
+            "netAmount": 500.00,
+        },
+    ]
+
+    result = await schwab_get_stock_loan_payments("hash123")
+
+    assert result["result"]["status"] == "success"
+    assert len(result["result"]["loan_payments"]) == 1
+    assert result["result"]["loan_payments"][0]["description"] == "SECURITIES LENDING REVENUE"
+    assert result["result"]["total_amount"] == "2.00"
+    assert result["result"]["enrolled"] is True
+
+
+@pytest.mark.unit
+@pytest.mark.journey_account
+@pytest.mark.asyncio
+@patch("open_stocks_mcp.tools.schwab_payment_tools.get_authenticated_broker_or_error")
+@patch("open_stocks_mcp.tools.schwab_payment_tools.asyncio.to_thread")
+async def test_schwab_get_stock_loan_payments_empty_returns_not_enrolled(
+    mock_to_thread, mock_get_broker
+):
+    broker = MagicMock()
+    mock_get_broker.return_value = (broker, None)
+    mock_to_thread.return_value = []
+
+    result = await schwab_get_stock_loan_payments("hash123")
+
+    assert result["result"]["status"] == "success"
+    assert result["result"]["loan_payments"] == []
+    assert result["result"]["total_amount"] == "0.00"
+    assert result["result"]["count"] == 0
+    assert result["result"]["enrolled"] is False
+
+
+@pytest.mark.unit
+@pytest.mark.journey_account
+@pytest.mark.asyncio
+@patch("open_stocks_mcp.tools.schwab_payment_tools.get_authenticated_broker_or_error")
+@patch("open_stocks_mcp.tools.schwab_payment_tools.asyncio.to_thread")
+async def test_schwab_get_stock_loan_payments_auth_error(mock_to_thread, mock_get_broker):
+    mock_get_broker.return_value = (
+        None,
+        {"result": {"status": "error", "error": "Auth failed"}},
+    )
+
+    result = await schwab_get_stock_loan_payments("hash123")
 
     assert result["result"]["status"] == "error"
     assert result["result"]["error"] == "Auth failed"
