@@ -167,6 +167,7 @@ from open_stocks_mcp.tools.schwab_options_tools import (
 )
 from open_stocks_mcp.tools.schwab_options_tools import (
     schwab_find_tradable_options as _schwab_find_tradable_options_impl,
+    schwab_get_open_option_orders as _schwab_get_open_option_orders_impl,
 )
 from open_stocks_mcp.tools.schwab_options_tools import (
     schwab_option_buy_to_open as _schwab_option_buy_to_open_impl,
@@ -1817,6 +1818,23 @@ async def schwab_get_all_option_positions() -> dict[str, Any]:
 async def schwab_get_open_option_positions() -> dict[str, Any]:
     """Get open Schwab option positions with non-zero net quantity."""
     return await get_schwab_open_option_positions()
+
+
+@mcp.tool()
+async def schwab_open_option_orders(
+    account_hash: str, max_results: int = 50
+) -> dict[str, Any]:
+    """Get open option orders for a Schwab account.
+
+    Returns only orders with at least one option leg and a working/open status
+    (WORKING, PENDING_ACTIVATION, QUEUED, ACCEPTED, AWAITING_CONDITION,
+    AWAITING_MANUAL_REVIEW, AWAITING_PARENT_ORDER).
+
+    Args:
+        account_hash: Account hash from get_schwab_account_numbers()
+        max_results: Maximum orders to fetch before filtering (default 50)
+    """
+    return await _schwab_get_open_option_orders_impl(account_hash, max_results)
 
 
 def create_mcp_server(config: ServerConfig | None = None) -> FastMCP:
