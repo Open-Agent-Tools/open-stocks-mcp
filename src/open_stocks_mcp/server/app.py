@@ -34,6 +34,16 @@ from open_stocks_mcp.tools.market.movers import (
     get_top_movers,
     get_top_movers_sp500,
 )
+from open_stocks_mcp.tools.options import (
+    find_tradable_options,
+    get_aggregate_positions,
+    get_all_option_positions,
+    get_open_option_positions,
+    get_open_option_positions_with_details,
+    get_option_historicals,
+    get_option_market_data,
+    get_options_chains,
+)
 from open_stocks_mcp.tools.rate_limiter import configure_global_rate_limiter
 from open_stocks_mcp.tools.robinhood_account_features_tools import (
     get_account_features,
@@ -69,18 +79,6 @@ from open_stocks_mcp.tools.robinhood_market_data_tools import (
     get_stock_news,
     get_stock_ratings,
     get_stock_splits,
-)
-
-# Phase 3 Tools
-from open_stocks_mcp.tools.robinhood_options_tools import (
-    find_tradable_options,
-    get_aggregate_positions,
-    get_all_option_positions,
-    get_open_option_positions,
-    get_open_option_positions_with_details,
-    get_option_historicals,
-    get_option_market_data,
-    get_options_chains,
 )
 from open_stocks_mcp.tools.robinhood_order_tools import (
     get_options_orders,
