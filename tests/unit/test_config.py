@@ -28,7 +28,6 @@ cache:
   max_size: 2048
 feature_flags:
   enable_cache: false
-  enable_circuit_breaker: true
 """.strip()
     )
 
@@ -43,7 +42,6 @@ feature_flags:
     assert cfg.cache.ttl_account_seconds == 33
     assert cfg.cache.max_size == 2048
     assert cfg.feature_flags.enable_cache is False
-    assert cfg.feature_flags.enable_circuit_breaker is True
 
 
 @pytest.mark.unit
@@ -67,7 +65,6 @@ cache:
   max_size: 7
 feature_flags:
   enable_cache: true
-  enable_circuit_breaker: false
 """.strip()
     )
 
@@ -80,7 +77,6 @@ feature_flags:
     monkeypatch.setenv("CACHE_TTL_ACCOUNT_SECONDS", "35")
     monkeypatch.setenv("CACHE_MAX_SIZE", "300")
     monkeypatch.setenv("ENABLE_CACHE", "false")
-    monkeypatch.setenv("ENABLE_CIRCUIT_BREAKER", "true")
 
     cfg = load_config(config_path=path)
 
@@ -93,7 +89,6 @@ feature_flags:
     assert cfg.cache.ttl_account_seconds == 35
     assert cfg.cache.max_size == 300
     assert cfg.feature_flags.enable_cache is False
-    assert cfg.feature_flags.enable_circuit_breaker is True
 
 
 @pytest.mark.unit
@@ -150,7 +145,6 @@ def test_missing_file_uses_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
         "CACHE_TTL_ACCOUNT_SECONDS",
         "CACHE_MAX_SIZE",
         "ENABLE_CACHE",
-        "ENABLE_CIRCUIT_BREAKER",
     ):
         monkeypatch.delenv(var, raising=False)
 
@@ -165,7 +159,6 @@ def test_missing_file_uses_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
     assert cfg.cache.ttl_account_seconds > 0
     assert cfg.cache.max_size > 0
     assert cfg.feature_flags.enable_cache is True
-    assert cfg.feature_flags.enable_circuit_breaker is False
 
 
 @pytest.mark.unit

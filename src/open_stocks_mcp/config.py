@@ -167,7 +167,6 @@ class FeatureFlagConfig:
     """Feature flags for optional behavior."""
 
     enable_cache: bool = True
-    enable_circuit_breaker: bool = False
 
 
 @dataclass
@@ -282,8 +281,6 @@ class ServerConfig:
     def is_feature_enabled(self, flag_name: str) -> bool:
         if flag_name == "enable_cache":
             return self.feature_flags.enable_cache
-        if flag_name == "enable_circuit_breaker":
-            return self.feature_flags.enable_circuit_breaker
 
         definition = self.feature_flag_definitions.get(flag_name)
         if definition is None:
@@ -343,7 +340,7 @@ def load_config(config_path: Path | str | None = None) -> ServerConfig:
 
     feature_flag_definitions: dict[str, FeatureFlagDefinition] = {}
     for flag_name, flag_value in feature_flags.items():
-        if flag_name in {"enable_cache", "enable_circuit_breaker"}:
+        if flag_name == "enable_cache":
             continue
         if isinstance(flag_value, bool):
             feature_flag_definitions[flag_name] = FeatureFlagDefinition(
@@ -440,13 +437,6 @@ def load_config(config_path: Path | str | None = None) -> ServerConfig:
         os.getenv("ENABLE_CACHE", str(feature_flags.get("enable_cache", True))),
         "ENABLE_CACHE",
     )
-    enable_circuit_breaker = _parse_bool(
-        os.getenv(
-            "ENABLE_CIRCUIT_BREAKER",
-            str(feature_flags.get("enable_circuit_breaker", False)),
-        ),
-        "ENABLE_CIRCUIT_BREAKER",
-    )
 
     monitoring_enabled = _parse_bool(
         os.getenv("MONITORING_ENABLED", "true"),
@@ -483,7 +473,6 @@ def load_config(config_path: Path | str | None = None) -> ServerConfig:
         ),
         feature_flags=FeatureFlagConfig(
             enable_cache=enable_cache,
-            enable_circuit_breaker=enable_circuit_breaker,
         ),
         cache=CacheConfig(
             enabled=cache_enabled,
