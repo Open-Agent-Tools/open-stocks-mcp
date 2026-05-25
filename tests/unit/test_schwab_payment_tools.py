@@ -6,6 +6,7 @@ import pytest
 from open_stocks_mcp.tools.schwab_payment_tools import (
     _classify_transaction,
     schwab_get_dividends,
+    schwab_get_dividends_by_symbol,
 )
 
 
@@ -137,3 +138,83 @@ async def test_schwab_get_dividends_auth_error(mock_to_thread, mock_get_broker):
     assert result["result"]["status"] == "error"
     assert result["result"]["error"] == "Auth failed"
     mock_to_thread.assert_not_called()
+
+
+@pytest.mark.asyncio
+@patch("open_stocks_mcp.tools.schwab_payment_tools.get_authenticated_broker_or_error")
+@patch("open_stocks_mcp.tools.schwab_payment_tools.asyncio.to_thread")
+async def test_schwab_get_dividends_by_symbol_passes_symbol_to_client(
+    mock_to_thread, mock_get_broker
+):
+    broker = MagicMock()
+    mock_get_broker.return_value = (broker, None)
+    mock_to_thread.return_value = []
+
+    await schwab_get_dividends_by_symbol("abc123", "AAPL")
+
+    mock_to_thread.assert_called_once()
+    _, kwargs = mock_to_thread.call_args
+    assert kwargs["symbol"] == "AAPL"
+    assert kwargs["transaction_types"] == ["DIVIDEND_OR_INTEREST"]
+
+
+@pytest.mark.asyncio
+@patch("open_stocks_mcp.tools.schwab_payment_tools.get_authenticated_broker_or_error")
+@patch("open_stocks_mcp.tools.schwab_payment_tools.asyncio.to_thread")
+async def test_schwab_get_dividends_by_symbol_returns_symbol_in_result(
+    mock_to_thread, mock_get_broker
+):
+    broker = MagicMock()
+    mock_get_broker.return_value = (broker, None)
+    mock_to_thread.return_value = []
+
+    result = await schwab_get_dividends_by_symbol("abc123", "AAPL")
+
+    assert result["result"]["symbol"] == "AAPL"
+
+
+@pytest.mark.asyncio
+@patch("open_stocks_mcp.tools.schwab_payment_tools.get_authenticated_broker_or_error")
+@patch("open_stocks_mcp.tools.schwab_payment_tools.asyncio.to_thread")
+async def test_schwab_get_dividends_by_symbol_filters_classification_to_dividend_only(
+    mock_to_thread, mock_get_broker
+):
+    broker = MagicMock()
+    mock_get_broker.return_value = (broker, None)
+    mock_to_thread.return_value = [
+        {
+            "type": "DIVIDEND_OR_INTEREST",
+            "description": "QUALIFIED DIVIDEND",
+            "netAmount": 1.50,
+            "symbol": "AAPL",
+        },
+        {
+            "type": "DIVIDEND_OR_INTEREST",
+            "description": "FREE BALANCE INTEREST ADJUSTMENT",
+            "netAmount": 0.05,
+            "symbol": "AAPL",
+        },
+    ]
+
+    result = await schwab_get_dividends_by_symbol("abc123", "AAPL")
+
+    assert result["result"]["count"] == 1
+    assert len(result["result"]["dividends"]) == 1
+    assert result["result"]["dividends"][0]["description"] == "QUALIFIED DIVIDEND"
+
+
+@pytest.mark.asyncio
+@patch("open_stocks_mcp.tools.schwab_payment_tools.get_authenticated_broker_or_error")
+@patch("open_stocks_mcp.tools.schwab_payment_tools.asyncio.to_thread")
+async def test_schwab_get_dividends_by_symbol_uppercases_symbol(
+    mock_to_thread, mock_get_broker
+):
+    broker = MagicMock()
+    mock_get_broker.return_value = (broker, None)
+    mock_to_thread.return_value = []
+
+    result = await schwab_get_dividends_by_symbol("abc123", "aapl")
+
+    _, kwargs = mock_to_thread.call_args
+    assert kwargs["symbol"] == "AAPL"
+    assert result["result"]["symbol"] == "AAPL"

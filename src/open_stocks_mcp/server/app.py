@@ -179,6 +179,9 @@ from open_stocks_mcp.tools.schwab_options_tools import (
 from open_stocks_mcp.tools.schwab_payment_tools import (
     schwab_get_dividends as _schwab_get_dividends_impl,
 )
+from open_stocks_mcp.tools.schwab_payment_tools import (
+    schwab_get_dividends_by_symbol as _schwab_get_dividends_by_symbol_impl,
+)
 from open_stocks_mcp.tools.schwab_portfolio_tools import (
     get_schwab_aggregate_positions,
     get_schwab_all_option_positions,
@@ -1511,6 +1514,26 @@ async def schwab_get_dividends(
         end_date: Optional end date (YYYY-MM-DD)
     """
     return await _schwab_get_dividends_impl(account_hash, start_date, end_date)
+
+
+@mcp.tool()
+async def schwab_get_dividends_by_symbol(
+    account_hash: str,
+    symbol: str,
+    start_date: str | None = None,
+    end_date: str | None = None,
+) -> dict[str, Any]:
+    """Get dividend payments for a specific symbol in a Schwab account.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+        symbol: Stock symbol to filter dividends by (case-insensitive)
+        start_date: Optional start date (YYYY-MM-DD)
+        end_date: Optional end date (YYYY-MM-DD)
+    """
+    return await _schwab_get_dividends_by_symbol_impl(
+        account_hash, symbol, start_date, end_date
+    )
 
 
 @mcp.tool()
