@@ -166,6 +166,9 @@ from open_stocks_mcp.tools.schwab_options_tools import (
     get_schwab_options_positions,
 )
 from open_stocks_mcp.tools.schwab_options_tools import (
+    schwab_find_tradable_options as _schwab_find_tradable_options_impl,
+)
+from open_stocks_mcp.tools.schwab_options_tools import (
     schwab_option_buy_to_open as _schwab_option_buy_to_open_impl,
 )
 from open_stocks_mcp.tools.schwab_options_tools import (
@@ -1763,6 +1766,26 @@ async def schwab_option_sell_to_close(
     """Sell an option to close a position (Schwab)."""
     return await _schwab_option_sell_to_close_impl(
         account_hash, symbol, quantity, option_type, strike, expiration
+    )
+
+
+@mcp.tool()
+async def schwab_find_tradable_options(
+    symbol: str,
+    expiration_date: str | None = None,
+    option_type: str | None = None,
+    strike: float | None = None,
+) -> dict[str, Any]:
+    """Find tradable option contracts filtered by expiration, type, and strike.
+
+    Args:
+        symbol: Stock ticker symbol
+        expiration_date: Filter to contracts expiring on this date (YYYY-MM-DD)
+        option_type: 'call' or 'put'
+        strike: Strike price to filter on
+    """
+    return await _schwab_find_tradable_options_impl(
+        symbol, expiration_date, option_type, strike
     )
 
 

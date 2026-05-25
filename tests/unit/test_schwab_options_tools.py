@@ -11,6 +11,7 @@ from open_stocks_mcp.tools.schwab_options_tools import (
     get_schwab_option_chain_by_expiration,
     get_schwab_option_expirations,
     get_schwab_options_positions,
+    schwab_find_tradable_options,
     schwab_option_buy_to_open,
     schwab_option_sell_to_close,
 )
@@ -529,3 +530,88 @@ class TestSchwabOptionsTools:
                 "HASH", "AAPL", 1, "CALL", 150.0, "2026-06-19"
             )
             assert result == {"result": {"status": "order_placed"}}
+
+
+@pytest.mark.journey_options
+@pytest.mark.unit
+@pytest.mark.asyncio
+@patch("open_stocks_mcp.tools.schwab_options_tools.get_authenticated_broker_or_error")
+@patch("open_stocks_mcp.tools.schwab_options_tools.execute_broker_request")
+async def test_find_tradable_options_filters_by_type_and_expiration(
+    mock_execute: AsyncMock,
+    mock_get_broker: AsyncMock,
+) -> None:
+    """Filtering by call type and expiration returns only matching contracts."""
+    mock_broker = MagicMock()
+    mock_get_broker.return_value = (mock_broker, None)
+
+    # Synthetic chain with calls and puts; only the AAPL_011924C170 call at 2024-01-19
+    # should survive the filter for option_type="call", expiration_date="2024-01-19",
+    # strike=170.0.  The put at the same expiration and the call at a different
+    # expiration must be excluded.
+    mock_execute.return_value = {
+        "callExpDateMap": {
+            "2024-01-19:30": {
+                "170.0": [
+                    {
+                        "putCall": "CALL",
+                        "symbol": "AAPL_011924C170",
+                        "bid": 6.50,
+                        "ask": 6.55,
+                        "strikePrice": 170.0,
+                    }
+                ]
+            },
+            "2024-02-16:48": {
+                "170.0": [
+                    {
+                        "putCall": "CALL",
+                        "symbol": "AAPL_021624C170",
+                        "bid": 8.00,
+                        "ask": 8.10,
+                        "strikePrice": 170.0,
+                    }
+                ]
+            },
+        },
+        "putExpDateMap": {
+            "2024-01-19:30": {
+                "170.0": [
+                    {
+                        "putCall": "PUT",
+                        "symbol": "AAPL_011924P170",
+                        "bid": 2.50,
+                        "ask": 2.55,
+                        "strikePrice": 170.0,
+                    }
+                ]
+            }
+        },
+    }
+
+    result = await schwab_find_tradable_options(
+        "AAPL", expiration_date="2024-01-19", option_type="call", strike=170.0
+    )
+
+    assert "result" in result
+    data = result["result"]
+    assert data["total_found"] == 1
+    assert len(data["options"]) == 1
+    assert data["options"][0]["symbol"] == "AAPL_011924C170"
+    assert data["filters"]["option_type"] == "call"
+    assert data["filters"]["expiration_date"] == "2024-01-19"
+    assert data["filters"]["strike"] == 170.0
+
+
+@pytest.mark.journey_options
+@pytest.mark.unit
+@pytest.mark.asyncio
+@patch("open_stocks_mcp.tools.schwab_options_tools.get_authenticated_broker_or_error")
+async def test_find_tradable_options_auth_error(mock_get_broker: AsyncMock) -> None:
+    """Auth error payload is returned unchanged."""
+    error_response = {"result": {"error": "Not authenticated", "status": "error"}}
+    mock_get_broker.return_value = (None, error_response)
+
+    result = await schwab_find_tradable_options("AAPL")
+
+    assert result == error_response
