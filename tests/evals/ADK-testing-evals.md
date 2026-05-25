@@ -177,7 +177,7 @@ These scenarios are read-only and must not place orders, cancel orders, buy, sel
 
 - `tests/evals/2_mkt_stock_price_test.json` — exercises `stock_price` to retrieve a current stock price snapshot; run `adk eval examples/google_adk_agent tests/evals/2_mkt_stock_price_test.json --config_file_path tests/evals/test_config.json`.
 - `tests/evals/2_mkt_stock_info_test.json` — exercises `stock_info` to retrieve company profile and market metadata; run `adk eval examples/google_adk_agent tests/evals/2_mkt_stock_info_test.json --config_file_path tests/evals/test_config.json`.
-- `tests/evals/2_mkt_search_stocks_test.json` — exercises `stocks_by_tag` to discover stocks by market tag or category; run `adk eval examples/google_adk_agent tests/evals/2_mkt_search_stocks_test.json --config_file_path tests/evals/test_config.json`.
+- `tests/evals/2_mkt_search_stocks_test.json` — exercises `search_stocks` to search for stocks by symbol or company name; run `adk eval examples/google_adk_agent tests/evals/2_mkt_search_stocks_test.json --config_file_path tests/evals/test_config.json`.
 - `tests/evals/2_mkt_market_hours_test.json` — exercises `market_hours` to inspect exchange schedules and current market status; run `adk eval examples/google_adk_agent tests/evals/2_mkt_market_hours_test.json --config_file_path tests/evals/test_config.json`.
 - `tests/evals/2_mkt_price_history_test.json` — exercises `price_history` to retrieve recent OHLC and volume data for a symbol; run `adk eval examples/google_adk_agent tests/evals/2_mkt_price_history_test.json --config_file_path tests/evals/test_config.json`.
 - `tests/evals/2_mkt_top_movers_sp500_test.json` — exercises `top_movers_sp500` to list major S&P 500 market movers; run `adk eval examples/google_adk_agent tests/evals/2_mkt_top_movers_sp500_test.json --config_file_path tests/evals/test_config.json`.
@@ -253,9 +253,9 @@ adk eval examples/google_adk_agent tests/evals/9_adv_broker_status_test.json --c
 Evaluations for Schwab-specific tools. These typically require live Schwab OAuth credentials and a running MCP server.
 
 - `tests/evals/1_acc_schwab_account_numbers_test.json` — exercises `schwab_account_numbers`.
-- Schwab quote evaluation — exercises `schwab_quote`.
-- Schwab price history evaluation — exercises `schwab_price_history`.
-- Schwab search instruments evaluation — exercises `schwab_search_instruments`.
+- `tests/evals/2_mkt_schwab_quote_test.json` — exercises `schwab_quote`.
+- `tests/evals/2_mkt_schwab_price_history_test.json` — exercises `schwab_price_history`.
+- `tests/evals/2_mkt_schwab_search_instruments_test.json` — exercises `schwab_search_instruments`.
 - `tests/evals/8_opt_schwab_option_chain_test.json` — exercises `schwab_option_chain`.
 - `tests/evals/8_opt_schwab_option_expirations_test.json` — exercises `schwab_option_expirations`.
 - `tests/evals/5_ord_schwab_orders_test.json` — exercises `schwab_orders` (requires `account_hash`).
