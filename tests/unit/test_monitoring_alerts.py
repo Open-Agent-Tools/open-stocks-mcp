@@ -57,7 +57,7 @@ class TestAlertTriggerEvaluation:
 
         assert len(sink.calls) == 1
         event = sink.calls[0]
-        assert event.signal == "high_error_rate"
+        assert event.signal == "error_rate_percent"
         assert event.severity in ("degraded", "unhealthy")
 
     @pytest.mark.asyncio
@@ -74,7 +74,7 @@ class TestAlertTriggerEvaluation:
 
         assert len(sink.calls) == 1
         event = sink.calls[0]
-        assert event.signal == "high_avg_response_time"
+        assert event.signal == "p95_response_time_ms"
         assert event.severity == "unhealthy"
 
     @pytest.mark.asyncio
@@ -140,7 +140,7 @@ class TestAlertDeduplication:
             await collector.evaluate_alert_conditions()
 
         # Only one alert should have been emitted for the same signal
-        error_rate_alerts = [e for e in sink.calls if e.signal == "high_error_rate"]
+        error_rate_alerts = [e for e in sink.calls if e.signal == "error_rate_percent"]
         assert len(error_rate_alerts) == 1
 
     @pytest.mark.asyncio
@@ -158,12 +158,12 @@ class TestAlertDeduplication:
         collector.errors.extend([(now, "tool", "err")] * 10)
         collector.response_times.extend([(now, 0.1)] * 10)
         await collector.evaluate_alert_conditions()
-        first_count = len([e for e in sink.calls if e.signal == "high_error_rate"])
+        first_count = len([e for e in sink.calls if e.signal == "error_rate_percent"])
         assert first_count == 1
 
         # Second trigger after dedup window expires (window=0 so immediate)
         await collector.evaluate_alert_conditions()
-        second_count = len([e for e in sink.calls if e.signal == "high_error_rate"])
+        second_count = len([e for e in sink.calls if e.signal == "error_rate_percent"])
         assert second_count == 2
 
 
@@ -183,7 +183,8 @@ class TestSinkErrorHandling:
         # Should not raise
         await collector.evaluate_alert_conditions()
 
-        assert collector.degraded_sink_total > 0
+        assert sink.calls_attempted > 0
+        assert sink.degraded_sink_total > 0
 
     @pytest.mark.asyncio
     async def test_sink_failure_does_not_propagate(self) -> None:
