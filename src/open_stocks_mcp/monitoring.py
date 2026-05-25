@@ -12,6 +12,7 @@ from open_stocks_mcp.alerting import (
     AlertHook,
     AlertManager,
     AlertSink,
+    LogAlertSink,
     WebhookAlertSink,
 )
 from open_stocks_mcp.logging_config import logger
@@ -26,6 +27,7 @@ class MetricsCollector:
         alerts_enabled: bool = True,
         alert_dedup_window_seconds: float = 300.0,
         alert_hooks: list[AlertHook] | None = None,
+        alert_sink: AlertSink | None = None,
         webhook_url: str | None = None,
         error_rate_degraded_threshold: float = 10.0,
         error_rate_unhealthy_threshold: float = 25.0,
@@ -60,7 +62,11 @@ class MetricsCollector:
         # Alerting
         self._alerts_enabled = alerts_enabled
         self._alert_dedup_window = timedelta(seconds=alert_dedup_window_seconds)
-        sinks: list[AlertSink] = [WebhookAlertSink(webhook_url)] if webhook_url else []
+        sinks: list[AlertSink] = [LogAlertSink()]
+        if alert_sink is not None:
+            sinks.append(alert_sink)
+        if webhook_url:
+            sinks.append(WebhookAlertSink(webhook_url))
         self._alert_manager = AlertManager(
             enabled=alerts_enabled, hooks=alert_hooks, sinks=sinks
         )

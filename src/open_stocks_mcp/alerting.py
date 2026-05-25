@@ -77,6 +77,13 @@ class WebhookAlertSink:
             logger.error(f"Unexpected error sending webhook alert: {exc}")
 
 
+class LogAlertSink:
+    """Default sink that keeps alerts visible in server logs."""
+
+    async def send(self, event: AlertEvent) -> None:
+        logger.warning(f"Alert emitted: {event.as_dict()}")
+
+
 class AlertManager:
     """Dispatch alerts to hooks and sinks with fail-open behavior."""
 
