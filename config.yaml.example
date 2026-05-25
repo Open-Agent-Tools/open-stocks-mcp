@@ -23,7 +23,6 @@ cache:
 
 feature_flags:
   enable_cache: true
-  enable_circuit_breaker: false
   brokers.robinhood:
     default: true
     environments:

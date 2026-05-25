@@ -272,7 +272,7 @@ Environment variables always win over YAML values, including:
 - `MCP_SERVER_NAME`, `LOG_LEVEL`
 - `RATE_LIMIT_CALLS_PER_MINUTE`, `RATE_LIMIT_CALLS_PER_HOUR`, `RATE_LIMIT_BURST_SIZE`
 - `CACHE_TTL_MARKET_SECONDS`, `CACHE_TTL_ACCOUNT_SECONDS`, `CACHE_MAX_SIZE`
-- `ENABLE_CACHE`, `ENABLE_CIRCUIT_BREAKER`
+- `ENABLE_CACHE`
 
 Feature flags support safe defaults plus per-environment overrides:
 
