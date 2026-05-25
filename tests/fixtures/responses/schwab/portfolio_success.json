@@ -1,0 +1,1 @@
+{"securitiesAccount":{"accountNumber":"12345678","type":"MARGIN","positions":[{"longQuantity":10.0,"instrument":{"symbol":"AAPL"},"marketValue":1500.0}]}}

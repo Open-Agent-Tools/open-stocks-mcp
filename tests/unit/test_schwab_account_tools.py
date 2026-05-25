@@ -60,14 +60,14 @@ class TestSchwabAccountTools:
     async def test_get_account_numbers_auth_error(
         self,
         mock_get_broker: AsyncMock,
-        broker_auth_error_payload: dict[str, Any],
+        mock_schwab_auth_error: dict[str, Any],
     ) -> None:
         """Test account numbers when authentication fails."""
-        mock_get_broker.return_value = (None, broker_auth_error_payload)
+        mock_get_broker.return_value = (None, mock_schwab_auth_error)
 
         result = await get_schwab_account_numbers()
 
-        assert result == broker_auth_error_payload
+        assert result == mock_schwab_auth_error
 
     @pytest.mark.journey_account
     @pytest.mark.unit
@@ -140,7 +140,7 @@ class TestSchwabAccountTools:
         mock_client: MagicMock,
         mock_to_thread: AsyncMock,
         mock_get_broker: AsyncMock,
-        schwab_account_payload: dict[str, Any],
+        mock_schwab_portfolio: dict[str, Any],
     ) -> None:
         """Test successful portfolio retrieval."""
         # Mock broker
@@ -150,7 +150,7 @@ class TestSchwabAccountTools:
         # Mock Client.Account.Fields
         mock_client.Account.Fields.POSITIONS = "positions"
 
-        mock_to_thread.return_value = schwab_account_payload
+        mock_to_thread.return_value = mock_schwab_portfolio
 
         result = await get_schwab_portfolio("abc123")
 
