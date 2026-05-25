@@ -28,6 +28,12 @@ from open_stocks_mcp.server.tool_helpers import (
 # Cross-Broker Tools
 from open_stocks_mcp.tools.broker_comparison_tools import get_broker_comparison
 from open_stocks_mcp.tools.cross_broker_tools import get_aggregated_portfolio
+from open_stocks_mcp.tools.market.movers import (
+    get_stocks_by_tag,
+    get_top_100,
+    get_top_movers,
+    get_top_movers_sp500,
+)
 from open_stocks_mcp.tools.rate_limiter import configure_global_rate_limiter
 from open_stocks_mcp.tools.robinhood_account_features_tools import (
     get_account_features,
@@ -63,10 +69,6 @@ from open_stocks_mcp.tools.robinhood_market_data_tools import (
     get_stock_news,
     get_stock_ratings,
     get_stock_splits,
-    get_stocks_by_tag,
-    get_top_100,
-    get_top_movers,
-    get_top_movers_sp500,
 )
 
 # Phase 3 Tools
