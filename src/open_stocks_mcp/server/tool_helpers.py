@@ -10,13 +10,13 @@ from typing import Any
 from mcp.server.fastmcp import FastMCP
 
 from open_stocks_mcp.brokers.registry import get_broker_registry
+from open_stocks_mcp.brokers.session_state import get_session_manager
 from open_stocks_mcp.health import get_health_service
 from open_stocks_mcp.logging_config import logger
 from open_stocks_mcp.monitoring import get_metrics_collector
 from open_stocks_mcp.tools.circuit_breaker import get_broker_circuit_breaker
 from open_stocks_mcp.tools.rate_limiter import get_rate_limiter
 from open_stocks_mcp.tools.robinhood_tools import list_available_tools
-from open_stocks_mcp.tools.session_manager import get_session_manager
 
 
 async def get_list_tools_data(mcp: FastMCP) -> dict[str, Any]:

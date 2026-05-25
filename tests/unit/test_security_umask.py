@@ -4,8 +4,8 @@ from unittest.mock import patch
 import pytest
 
 from open_stocks_mcp.brokers.schwab import SchwabBroker
+from open_stocks_mcp.brokers.session_state import SessionManager
 from open_stocks_mcp.logging_config import setup_logging
-from open_stocks_mcp.tools.session_manager import SessionManager
 
 
 def test_schwab_tokens_directory_permissions(tmp_path):

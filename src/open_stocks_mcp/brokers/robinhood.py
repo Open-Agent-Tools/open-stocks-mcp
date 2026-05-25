@@ -5,9 +5,9 @@ from typing import Any
 
 from open_stocks_mcp.brokers.base import BaseBroker, BrokerAuthStatus
 from open_stocks_mcp.brokers.request_policy import install_robinhood_request_timeout
+from open_stocks_mcp.brokers.session_state import SessionManager
 from open_stocks_mcp.config import get_config
 from open_stocks_mcp.logging_config import logger
-from open_stocks_mcp.tools.session_manager import SessionManager
 
 
 class RobinhoodBroker(BaseBroker):

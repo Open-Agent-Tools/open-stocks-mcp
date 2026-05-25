@@ -10,9 +10,9 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 import pytest
 from mcp.server.fastmcp import FastMCP
 
+from open_stocks_mcp.brokers import session_state as session_manager_module
 from open_stocks_mcp.server.app import mcp as production_mcp
 from open_stocks_mcp.tools import rate_limiter
-from open_stocks_mcp.tools import session_manager as session_manager_module
 from open_stocks_mcp.tools.error_handling import (
     APIError,
     AuthenticationError,
@@ -413,7 +413,7 @@ def retry_patch(monkeypatch: pytest.MonkeyPatch) -> dict[str, Any]:
     sleep_mock = AsyncMock()
 
     monkeypatch.setattr(
-        "open_stocks_mcp.tools.session_manager.get_session_manager",
+        "open_stocks_mcp.brokers.session_state.get_session_manager",
         lambda: fake_session,
     )
     monkeypatch.setattr(
@@ -503,7 +503,7 @@ async def test_execute_with_retry_blocks_auth_retry_when_pickle_clear_failures_p
 
     with (
         patch(
-            "open_stocks_mcp.tools.session_manager.get_session_manager",
+            "open_stocks_mcp.brokers.session_state.get_session_manager",
             return_value=mock_session_manager,
         ),
         patch("open_stocks_mcp.tools.rate_limiter.get_rate_limiter", return_value=None),
@@ -527,7 +527,7 @@ async def test_execute_with_retry_attempts_reauth_when_not_blocked() -> None:
 
     with (
         patch(
-            "open_stocks_mcp.tools.session_manager.get_session_manager",
+            "open_stocks_mcp.brokers.session_state.get_session_manager",
             return_value=mock_session_manager,
         ),
         patch("open_stocks_mcp.tools.rate_limiter.get_rate_limiter", return_value=None),
@@ -576,7 +576,7 @@ async def test_execute_with_retry_uses_registry_single_flight_for_auth_refresh()
 
     with (
         patch(
-            "open_stocks_mcp.tools.session_manager.get_session_manager",
+            "open_stocks_mcp.brokers.session_state.get_session_manager",
             return_value=session,
         ),
         patch("open_stocks_mcp.tools.rate_limiter.get_rate_limiter", return_value=None),
