@@ -226,6 +226,21 @@ class TestToolRegistration:
             assert tool_name in tool_names, f"Tool {tool_name} not registered"
 
     @pytest.mark.asyncio
+    async def test_schwab_transaction_tools_are_registered(self) -> None:
+        """Test that Schwab transaction tools are registered."""
+        tools_list = await mcp.list_tools()
+        tool_names = [tool.name for tool in tools_list]
+
+        expected_tools = [
+            "schwab_transactions",
+            "schwab_transactions_by_date",
+            "schwab_get_transaction",
+        ]
+
+        for tool_name in expected_tools:
+            assert tool_name in tool_names, f"Tool {tool_name} not registered"
+
+    @pytest.mark.asyncio
     async def test_account_info_tool_callable(self) -> None:
         """Test that account_info tool is callable."""
         tools_list = await mcp.list_tools()

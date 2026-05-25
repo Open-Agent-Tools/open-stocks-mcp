@@ -1449,6 +1449,7 @@ async def schwab_get_order(account_hash: str, order_id: str) -> dict[str, Any]:
     return await get_schwab_order_by_id(account_hash, order_id)
 
 
+@mcp.tool()
 async def schwab_transactions(
     account_hash: str,
     start_date: str | None = None,
