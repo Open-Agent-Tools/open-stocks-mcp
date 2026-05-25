@@ -379,5 +379,3 @@ examples/kubernetes/secret.yaml
 .foreman/
 .agents/
 .beads/
-timelapse-runs/
-foreman.yaml
