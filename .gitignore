@@ -380,3 +380,4 @@ examples/kubernetes/secret.yaml
 .agents/
 .beads/
 timelapse-runs/
+foreman.yaml
