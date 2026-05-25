@@ -122,6 +122,60 @@ async def test_schwab_stream_manager_subscribe_option_quotes() -> None:
 
 
 @pytest.mark.asyncio
+async def test_schwab_stream_manager_handles_level2_by_venue() -> None:
+    from open_stocks_mcp.brokers.schwab_stream import SchwabStreamManager
+
+    mock_broker = MagicMock()
+    manager = SchwabStreamManager(mock_broker)
+
+    manager._handle_message(
+        {
+            "service": "NASDAQ_BOOK",
+            "content": [
+                {"SYMBOL": "AAPL", "BOOK_TIME": 111, "BIDS": [{"p": 1}], "ASKS": []}
+            ],
+        }
+    )
+    manager._handle_message(
+        {
+            "service": "NYSE_BOOK",
+            "content": [
+                {"SYMBOL": "AAPL", "BOOK_TIME": 222, "BIDS": [], "ASKS": [{"p": 2}]}
+            ],
+        }
+    )
+
+    nasdaq_book = manager.get_latest_level2("AAPL", "nasdaq")
+    nyse_book = manager.get_latest_level2("AAPL", "nyse")
+    assert nasdaq_book is not None
+    assert nyse_book is not None
+    assert nasdaq_book["service"] == "NASDAQ_BOOK"
+    assert nyse_book["service"] == "NYSE_BOOK"
+    assert nasdaq_book["book_time"] == 111
+    assert nyse_book["book_time"] == 222
+
+
+@pytest.mark.asyncio
+async def test_schwab_stream_manager_subscribe_level2() -> None:
+    from open_stocks_mcp.brokers.schwab_stream import SchwabStreamManager
+
+    mock_broker = MagicMock()
+    manager = SchwabStreamManager(mock_broker)
+    manager._is_running = True
+    manager.stream_client = AsyncMock()
+
+    success_nasdaq = await manager.subscribe_level2("AAPL", "nasdaq")
+    success_nyse = await manager.subscribe_level2("AAPL", "nyse")
+    unsupported = await manager.subscribe_level2("AAPL", "arca")
+
+    assert success_nasdaq is True
+    assert success_nyse is True
+    assert unsupported is False
+    manager.stream_client.nasdaq_book_subs.assert_awaited_once_with(["AAPL"])
+    manager.stream_client.nyse_book_subs.assert_awaited_once_with(["AAPL"])
+
+
+@pytest.mark.asyncio
 async def test_schwab_stream_manager_subscribe_quotes_splitting() -> None:
     from open_stocks_mcp.brokers.schwab_stream import SchwabStreamManager
 

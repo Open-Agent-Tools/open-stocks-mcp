@@ -34,6 +34,7 @@ class SchwabStreamManager:
         self._handlers: list[Callable[[dict[str, Any]], None]] = []
         self._latest_quotes: dict[str, dict[str, Any]] = {}
         self._latest_option_quotes: dict[str, dict[str, Any]] = {}
+        self._latest_level2_books: dict[str, dict[str, Any]] = {}
         self._latest_activity: list[dict[str, Any]] = []
 
     @property
@@ -72,10 +73,12 @@ class SchwabStreamManager:
                     except Exception as e:
                         logger.error(f"Error in Schwab stream custom handler: {e}")
 
-            # Register handlers for Level One data and account activity
+            # Register handlers for Level One, Level 2 and account activity
             assert self.stream_client is not None
             self.stream_client.add_level_one_equity_handler(_core_handler)
             self.stream_client.add_level_one_option_handler(_core_handler)
+            self.stream_client.add_nasdaq_book_handler(_core_handler)
+            self.stream_client.add_nyse_book_handler(_core_handler)
             self.stream_client.add_account_activity_handler(_core_handler)
 
             await self.stream_client.login()
@@ -153,6 +156,20 @@ class SchwabStreamManager:
                     if symbol not in self._latest_option_quotes:
                         self._latest_option_quotes[symbol] = {}
                     self._latest_option_quotes[symbol].update(item)
+        elif service in {"NASDAQ_BOOK", "NYSE_BOOK"}:
+            for item in content:
+                symbol = item.get("SYMBOL")
+                if not symbol:
+                    continue
+                symbol_upper = symbol.upper()
+                cache_key = f"{symbol_upper}:{service}"
+                self._latest_level2_books[cache_key] = {
+                    "symbol": symbol_upper,
+                    "service": service,
+                    "book_time": item.get("BOOK_TIME"),
+                    "bids": item.get("BIDS", []),
+                    "asks": item.get("ASKS", []),
+                }
         elif service == "ACCT_ACTIVITY":
             for item in content:
                 self._latest_activity.append(item)
@@ -240,3 +257,31 @@ class SchwabStreamManager:
     def get_latest_option_quote(self, symbol: str) -> dict[str, Any] | None:
         """Get latest cached option quote for symbol."""
         return self._latest_option_quotes.get(symbol.upper())
+
+    async def subscribe_level2(self, symbol: str, venue: str = "nasdaq") -> bool:
+        """Subscribe to Level 2 order-book stream for a symbol."""
+        if not self._is_running or not self.stream_client:
+            return False
+
+        symbol_upper = symbol.upper()
+        venue_lower = venue.lower()
+
+        try:
+            if venue_lower == "nasdaq":
+                await self.stream_client.nasdaq_book_subs([symbol_upper])
+                return True
+            if venue_lower == "nyse":
+                await self.stream_client.nyse_book_subs([symbol_upper])
+                return True
+            return False
+        except Exception as e:
+            logger.error(
+                f"Failed to subscribe Level 2 for {symbol_upper} on {venue_lower}: {e}"
+            )
+            return False
+
+    def get_latest_level2(self, symbol: str, venue: str = "nasdaq") -> dict[str, Any] | None:
+        """Get latest cached Level 2 book snapshot for symbol and venue."""
+        service = "NASDAQ_BOOK" if venue.lower() == "nasdaq" else "NYSE_BOOK"
+        cache_key = f"{symbol.upper()}:{service}"
+        return self._latest_level2_books.get(cache_key)

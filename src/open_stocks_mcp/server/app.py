@@ -199,6 +199,9 @@ from open_stocks_mcp.tools.schwab_streaming_tools import (
     schwab_stream_account_activity as _schwab_stream_account_activity_impl,
 )
 from open_stocks_mcp.tools.schwab_streaming_tools import (
+    schwab_stream_level2 as _schwab_stream_level2_impl,
+)
+from open_stocks_mcp.tools.schwab_streaming_tools import (
     schwab_stream_option_quotes as _schwab_stream_option_quotes_impl,
 )
 from open_stocks_mcp.tools.schwab_trading_tools import (
@@ -1896,6 +1899,8 @@ async def schwab_open_option_orders(
         max_results: Maximum orders to fetch before filtering (default 50)
     """
     return await _schwab_get_open_option_orders_impl(account_hash, max_results)
+
+
 # Schwab Streaming Tools
 @mcp.tool()
 async def schwab_stream_option_quotes(symbols: list[str]) -> dict[str, Any]:
@@ -1905,6 +1910,12 @@ async def schwab_stream_option_quotes(symbols: list[str]) -> dict[str, Any]:
         symbols: List of Schwab option symbols (e.g. ['AAPL  260619C00150000'])
     """
     return await _schwab_stream_option_quotes_impl(symbols)
+
+
+@mcp.tool()
+async def schwab_stream_level2(symbol: str, venue: str = "nasdaq") -> dict[str, Any]:
+    """Get a Level 2 snapshot from Schwab streaming cache for a symbol."""
+    return await _schwab_stream_level2_impl(symbol, venue)
 
 
 @mcp.tool()

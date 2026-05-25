@@ -299,6 +299,7 @@ class TestToolRegistration:
         tools_list = await mcp.list_tools()
         tool_names = [tool.name for tool in tools_list]
         assert "schwab_stream_option_quotes" in tool_names
+        assert "schwab_stream_level2" in tool_names
         assert "schwab_stream_account_activity" in tool_names
 
     @pytest.mark.asyncio
