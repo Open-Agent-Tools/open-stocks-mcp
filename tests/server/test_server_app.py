@@ -144,6 +144,13 @@ class TestToolRegistration:
     """Test that all tools are properly registered."""
 
     @pytest.mark.asyncio
+    async def test_schwab_option_quote_tool_is_registered(self) -> None:
+        """Test that the schwab_option_quote tool is registered."""
+        tools_list = await mcp.list_tools()
+        tool_names = [tool.name for tool in tools_list]
+        assert "schwab_option_quote" in tool_names
+
+    @pytest.mark.asyncio
     async def test_tools_are_registered(self) -> None:
         """Test that all expected tools are registered on the mcp server."""
         # Get the list of registered tools via list_tools method

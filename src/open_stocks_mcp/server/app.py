@@ -163,6 +163,7 @@ from open_stocks_mcp.tools.schwab_options_tools import (
     get_schwab_option_expirations,
     get_schwab_option_positions_detailed,
     get_schwab_options_positions,
+    schwab_get_option_quote,
 )
 from open_stocks_mcp.tools.schwab_options_tools import (
     schwab_find_tradable_options as _schwab_find_tradable_options_impl,
@@ -1681,6 +1682,21 @@ async def schwab_replace_order(
 
 
 # Schwab Options Tools
+@mcp.tool()
+async def schwab_option_quote(
+    symbol: str, expiration_date: str, strike: float, option_type: str
+) -> dict[str, Any]:
+    """Get a single option contract quote for a Schwab symbol.
+
+    Args:
+        symbol: Stock ticker symbol (e.g., 'AAPL')
+        expiration_date: Expiration date in YYYY-MM-DD format
+        strike: Strike price
+        option_type: 'CALL' or 'PUT'
+    """
+    return await schwab_get_option_quote(symbol, expiration_date, strike, option_type)
+
+
 @mcp.tool()
 async def schwab_option_chain(
     symbol: str,

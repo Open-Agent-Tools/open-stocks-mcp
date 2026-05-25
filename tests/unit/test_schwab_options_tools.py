@@ -14,6 +14,7 @@ from open_stocks_mcp.tools.schwab_options_tools import (
     get_schwab_options_positions,
     schwab_find_tradable_options,
     schwab_get_open_option_orders,
+    schwab_get_option_quote,
     schwab_option_buy_to_open,
     schwab_option_sell_to_close,
 )
@@ -105,6 +106,91 @@ async def test_schwab_option_order_wrappers_preserve_auth_error_response() -> No
 
 class TestSchwabOptionsTools:
     """Test Schwab options tools with mocked responses."""
+
+    @pytest.mark.journey_options
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    @patch(
+        "open_stocks_mcp.tools.schwab_options_tools.get_authenticated_broker_or_error"
+    )
+    @patch("open_stocks_mcp.tools.schwab_options_tools.execute_broker_request")
+    @patch("open_stocks_mcp.tools.schwab_options_tools.Client")
+    async def test_get_option_quote_returns_contract(
+        self,
+        mock_client: MagicMock,
+        mock_execute: AsyncMock,
+        mock_get_broker: AsyncMock,
+    ) -> None:
+        """Test successful option quote retrieval."""
+        mock_broker = MagicMock()
+        mock_get_broker.return_value = (mock_broker, None)
+
+        mock_client.Options.ContractType.CALL = "CALL"
+
+        # Mock chain response
+        mock_execute.return_value = {
+            "symbol": "AAPL",
+            "status": "SUCCESS",
+            "callExpDateMap": {
+                "2024-01-19:7": {
+                    "170.0": [
+                        {
+                            "putCall": "CALL",
+                            "symbol": "AAPL  240119C00170000",
+                            "bid": 6.5,
+                            "ask": 6.55,
+                            "last": 6.52,
+                            "delta": 0.54,
+                            "gamma": 0.03,
+                            "theta": -0.08,
+                            "vega": 0.12,
+                            "volatility": 0.22,
+                            "openInterest": 1234,
+                            "totalVolume": 56,
+                        }
+                    ]
+                }
+            },
+        }
+
+        result = await schwab_get_option_quote("AAPL", "2024-01-19", 170.0, "CALL")
+
+        assert "result" in result
+        assert result["result"]["bid"] == 6.5
+        assert result["result"]["ask"] == 6.55
+        assert result["result"]["putCall"] == "CALL"
+
+    @pytest.mark.journey_options
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    @patch(
+        "open_stocks_mcp.tools.schwab_options_tools.get_authenticated_broker_or_error"
+    )
+    @patch("open_stocks_mcp.tools.schwab_options_tools.execute_broker_request")
+    @patch("open_stocks_mcp.tools.schwab_options_tools.Client")
+    async def test_get_option_quote_not_found(
+        self,
+        mock_client: MagicMock,
+        mock_execute: AsyncMock,
+        mock_get_broker: AsyncMock,
+    ) -> None:
+        """Test option quote when contract is not found."""
+        mock_broker = MagicMock()
+        mock_get_broker.return_value = (mock_broker, None)
+
+        mock_client.Options.ContractType.CALL = "CALL"
+
+        # Empty chain
+        mock_execute.return_value = {
+            "symbol": "AAPL",
+            "status": "SUCCESS",
+            "callExpDateMap": {},
+        }
+
+        result = await schwab_get_option_quote("AAPL", "2024-01-19", 170.0, "CALL")
+
+        assert result["result"]["status"] == "error"
+        assert "not found" in result["result"]["error"]
 
     @pytest.mark.journey_options
     @pytest.mark.unit

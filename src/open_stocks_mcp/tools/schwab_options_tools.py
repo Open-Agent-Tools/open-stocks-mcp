@@ -41,6 +41,99 @@ def _has_option_leg(order: dict[str, Any]) -> bool:
 
 
 @handle_schwab_errors
+async def schwab_get_option_quote(
+    symbol: str,
+    expiration_date: str,
+    strike: float,
+    option_type: str,
+) -> dict[str, Any]:
+    """Get a single option contract quote.
+
+    Args:
+        symbol: Stock ticker symbol
+        expiration_date: Expiration date (YYYY-MM-DD)
+        strike: Strike price
+        option_type: 'CALL' or 'PUT'
+
+    Returns:
+        Dict with option contract data
+    """
+    ot_upper = option_type.upper()
+    if ot_upper not in ("CALL", "PUT"):
+        return create_error_response(
+            ValueError(
+                f"Invalid option_type: {ot_upper}. Must be 'CALL' or 'PUT' for {symbol.upper()} {expiration_date} {strike:.1f}"
+            )
+        )
+
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", f"get option quote for {symbol}"
+    )
+    if error:
+        return error
+
+    try:
+        contract_type = (
+            Client.Options.ContractType.CALL
+            if ot_upper == "CALL"
+            else Client.Options.ContractType.PUT
+        )
+
+        def _get_option_chain() -> Any:
+            response = broker.client.get_option_chain(
+                symbol.upper(),
+                contract_type=contract_type,
+                include_underlying_quote=False,
+            )
+            return response.json()
+
+        chain_data = await execute_broker_request(_get_option_chain, retry_safe=True)
+
+        # Select the correct map based on option type
+        exp_map_key = "callExpDateMap" if ot_upper == "CALL" else "putExpDateMap"
+        exp_map = chain_data.get(exp_map_key, {})
+
+        # Expiration lookup (prefix match for YYYY-MM-DD:N)
+        target_exp_key = None
+        for key in exp_map:
+            if key.startswith(expiration_date):
+                target_exp_key = key
+                break
+
+        if not target_exp_key:
+            return create_error_response(
+                ValueError(
+                    f"Option contract not found for {symbol.upper()} {expiration_date} {strike:.1f} {ot_upper} (Expiration not found)"
+                )
+            )
+
+        # Strike lookup (string form "170.0")
+        strike_map = exp_map[target_exp_key]
+        strike_key = f"{strike:.1f}"
+
+        if strike_key not in strike_map:
+            return create_error_response(
+                ValueError(
+                    f"Option contract not found for {symbol.upper()} {expiration_date} {strike_key} {ot_upper} (Strike not found)"
+                )
+            )
+
+        contracts = strike_map[strike_key]
+        if not contracts:
+            return create_error_response(
+                ValueError(
+                    f"Option contract not found for {symbol.upper()} {expiration_date} {strike_key} {ot_upper} (Empty contract list)"
+                )
+            )
+
+        return create_success_response(contracts[0])
+
+    except Exception as e:
+        logger.error(f"Error getting Schwab option quote for {symbol}: {e}")
+        return create_error_response(e)
+
+
+@handle_schwab_errors
 async def get_schwab_option_chain(
     symbol: str,
     contract_type: str | None = None,
