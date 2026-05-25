@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-import yaml
+import yaml  # type: ignore[import-untyped]
 
 
 class ConfigError(ValueError):
@@ -111,7 +111,11 @@ def _discover_config_path(explicit_path: Path | None) -> Path | None:
     if explicit_path is not None:
         return explicit_path
 
-    for env_var in ("OPEN_STOCKS_CONFIG", "OPEN_STOCKS_CONFIG_FILE", "OPEN_STOCKS_MCP_CONFIG"):
+    for env_var in (
+        "OPEN_STOCKS_CONFIG",
+        "OPEN_STOCKS_CONFIG_FILE",
+        "OPEN_STOCKS_MCP_CONFIG",
+    ):
         env_path = os.getenv(env_var)
         if env_path:
             return Path(env_path)
@@ -602,14 +606,22 @@ def load_config(config_path: Path | str | None = None) -> ServerConfig:
         schwab_api_key=(
             os.getenv("SCHWAB_API_KEY")
             or str(
-                (brokers.get("schwab", {}) if isinstance(brokers.get("schwab"), dict) else {}).get("api_key", "")
+                (
+                    brokers.get("schwab", {})
+                    if isinstance(brokers.get("schwab"), dict)
+                    else {}
+                ).get("api_key", "")
             )
             or None
         ),
         schwab_app_secret=(
             os.getenv("SCHWAB_APP_SECRET")
             or str(
-                (brokers.get("schwab", {}) if isinstance(brokers.get("schwab"), dict) else {}).get("app_secret", "")
+                (
+                    brokers.get("schwab", {})
+                    if isinstance(brokers.get("schwab"), dict)
+                    else {}
+                ).get("app_secret", "")
             )
             or None
         ),

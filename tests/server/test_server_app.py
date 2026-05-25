@@ -315,15 +315,17 @@ def test_create_mcp_server_applies_rate_limiter_from_config() -> None:
 async def test_setup_brokers_skips_robinhood_when_flag_disabled() -> None:
     mock_registry = MagicMock()
     config = MagicMock()
-    config.is_feature_enabled.side_effect = (
-        lambda name: {"brokers.robinhood": False, "brokers.schwab": False}.get(name, False)
-    )
+    config.is_feature_enabled.side_effect = lambda name: {
+        "brokers.robinhood": False,
+        "brokers.schwab": False,
+    }.get(name, False)
     config.schwab_api_key = None
     config.schwab_app_secret = None
 
     with (
         patch(
-            "open_stocks_mcp.server.app.get_broker_registry", AsyncMock(return_value=mock_registry)
+            "open_stocks_mcp.server.app.get_broker_registry",
+            AsyncMock(return_value=mock_registry),
         ),
         patch("open_stocks_mcp.server.app.attempt_broker_logins", AsyncMock()),
     ):
@@ -336,15 +338,17 @@ async def test_setup_brokers_skips_robinhood_when_flag_disabled() -> None:
 async def test_setup_brokers_registers_robinhood_when_flag_enabled() -> None:
     mock_registry = MagicMock()
     config = MagicMock()
-    config.is_feature_enabled.side_effect = (
-        lambda name: {"brokers.robinhood": True, "brokers.schwab": False}.get(name, False)
-    )
+    config.is_feature_enabled.side_effect = lambda name: {
+        "brokers.robinhood": True,
+        "brokers.schwab": False,
+    }.get(name, False)
     config.schwab_api_key = None
     config.schwab_app_secret = None
 
     with (
         patch(
-            "open_stocks_mcp.server.app.get_broker_registry", AsyncMock(return_value=mock_registry)
+            "open_stocks_mcp.server.app.get_broker_registry",
+            AsyncMock(return_value=mock_registry),
         ),
         patch("open_stocks_mcp.server.app.attempt_broker_logins", AsyncMock()),
         patch("open_stocks_mcp.server.app.RobinhoodBroker", MagicMock()),
@@ -358,15 +362,17 @@ async def test_setup_brokers_registers_robinhood_when_flag_enabled() -> None:
 async def test_setup_brokers_registers_schwab_when_enabled_and_configured() -> None:
     mock_registry = MagicMock()
     config = MagicMock()
-    config.is_feature_enabled.side_effect = (
-        lambda name: {"brokers.robinhood": False, "brokers.schwab": True}.get(name, False)
-    )
+    config.is_feature_enabled.side_effect = lambda name: {
+        "brokers.robinhood": False,
+        "brokers.schwab": True,
+    }.get(name, False)
     config.schwab_api_key = "key"
     config.schwab_app_secret = "secret"
 
     with (
         patch(
-            "open_stocks_mcp.server.app.get_broker_registry", AsyncMock(return_value=mock_registry)
+            "open_stocks_mcp.server.app.get_broker_registry",
+            AsyncMock(return_value=mock_registry),
         ),
         patch("open_stocks_mcp.server.app.attempt_broker_logins", AsyncMock()),
         patch("open_stocks_mcp.server.app.SchwabBroker", MagicMock()),
