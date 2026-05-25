@@ -608,3 +608,81 @@ class TestGetAggregatedPortfolio:
         assert data["aggregated"]["total_market_value"] == 0.0
         assert data["aggregated"]["positions"] == []
         assert data["partial_failure"] is False
+
+    @pytest.mark.asyncio
+    @pytest.mark.unit
+    @pytest.mark.journey_portfolio
+    async def test_one_broker_exception_does_not_block_others(self):
+        """Exception in one broker's collector records an error status but allows others to succeed."""
+        mock_registry = MagicMock()
+        mock_registry.list_brokers.return_value = ["robinhood", "schwab"]
+
+        rh_broker = MockBroker("robinhood", authenticated=True)
+        schwab_broker = MockBroker("schwab", authenticated=True)
+        mock_registry.get_broker.side_effect = lambda name: (
+            rh_broker if name == "robinhood" else schwab_broker
+        )
+
+        # Robinhood raises an exception during portfolio collection
+        rh_portfolio = AsyncMock(side_effect=RuntimeError("rh boom"))
+
+        # Schwab returns valid data with one MSFT position
+        schwab_accounts = AsyncMock(
+            return_value={
+                "result": {
+                    "accounts": [
+                        {
+                            "securitiesAccount": {
+                                "currentBalances": {
+                                    "liquidationValue": 5000.0,
+                                    "buyingPower": 2000.0,
+                                },
+                                "positions": [
+                                    {
+                                        "instrument": {"symbol": "MSFT"},
+                                        "longQuantity": 5,
+                                        "averagePrice": 300.0,
+                                        "marketValue": 1750.0,
+                                    }
+                                ],
+                            }
+                        }
+                    ],
+                    "count": 1,
+                    "status": "success",
+                }
+            }
+        )
+
+        with (
+            patch(
+                "open_stocks_mcp.tools.cross_broker_tools.get_broker_registry",
+                return_value=mock_registry,
+            ),
+            patch(
+                "open_stocks_mcp.tools.cross_broker_tools.get_portfolio",
+                rh_portfolio,
+            ),
+            patch(
+                "open_stocks_mcp.tools.cross_broker_tools.get_schwab_accounts",
+                schwab_accounts,
+            ),
+        ):
+            result = await get_aggregated_portfolio()
+
+        data = result["result"]
+
+        # Robinhood should show as error
+        assert data["brokers"]["robinhood"]["status"] == "error"
+        assert "rh boom" in data["brokers"]["robinhood"]["error"]
+
+        # Schwab should still be available
+        assert data["brokers"]["schwab"]["status"] == "available"
+
+        # Aggregated data should include Schwab's MSFT position
+        symbols = {p["symbol"] for p in data["aggregated"]["positions"]}
+        assert "MSFT" in symbols
+
+        # Robinhood should be in unavailable_brokers and partial_failure should be True
+        assert "robinhood" in data["unavailable_brokers"]
+        assert data["partial_failure"] is True
