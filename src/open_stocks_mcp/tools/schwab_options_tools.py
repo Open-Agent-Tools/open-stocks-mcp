@@ -322,6 +322,100 @@ async def schwab_option_buy_to_open(
 
 
 @handle_schwab_errors
+async def schwab_find_tradable_options(
+    symbol: str,
+    expiration_date: str | None = None,
+    option_type: str | None = None,
+    strike: float | None = None,
+) -> dict[str, Any]:
+    """Find tradable option contracts filtered by expiration, type, and strike.
+
+    Args:
+        symbol: Stock ticker symbol
+        expiration_date: Filter to contracts expiring on this date (YYYY-MM-DD)
+        option_type: 'call' or 'put'
+        strike: Strike price to filter on
+
+    Returns:
+        Dict with matching options list, total_found count, and applied filters
+    """
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", f"find tradable options for {symbol}"
+    )
+    if error:
+        return error
+
+    try:
+        valid_option_types = {"call", "put"}
+        if option_type is not None and option_type.lower() not in valid_option_types:
+            return create_error_response(
+                ValueError(
+                    f"Invalid option_type '{option_type}'. Valid options: {sorted(valid_option_types)}"
+                )
+            )
+
+        # Map to Schwab SDK contract type enum so the API call is scoped when possible
+        contract_type_map = {
+            "call": Client.Options.ContractType.CALL,
+            "put": Client.Options.ContractType.PUT,
+        }
+        ct = contract_type_map.get(option_type.lower()) if option_type else None
+
+        expiry_dt = None
+        if expiration_date:
+            expiry_dt = date.fromisoformat(expiration_date)
+
+        def _get_option_chain() -> Any:
+            response = broker.client.get_option_chain(
+                symbol.upper(),
+                contract_type=ct,
+                from_date=expiry_dt,
+                to_date=expiry_dt,
+            )
+            return response.json()
+
+        chain_data = await execute_broker_request(_get_option_chain, retry_safe=True)
+
+        # Flatten callExpDateMap and putExpDateMap into a single list of contracts
+        options: list[dict[str, Any]] = []
+
+        maps_to_scan: list[tuple[str, dict[str, Any]]] = []
+        if option_type is None or option_type.lower() == "call":
+            maps_to_scan.append(("call", chain_data.get("callExpDateMap", {})))
+        if option_type is None or option_type.lower() == "put":
+            maps_to_scan.append(("put", chain_data.get("putExpDateMap", {})))
+
+        for _side, exp_map in maps_to_scan:
+            for exp_key, strikes_map in exp_map.items():
+                # Schwab keys may carry a DTE suffix: "YYYY-MM-DD:DTE"
+                exp_prefix = exp_key.split(":")[0]
+                if expiration_date and exp_prefix != expiration_date:
+                    continue
+
+                for strike_key, contracts in strikes_map.items():
+                    if strike is not None and float(strike_key) != strike:
+                        continue
+                    options.extend(contracts)
+
+        return create_success_response(
+            {
+                "options": options,
+                "total_found": len(options),
+                "filters": {
+                    "symbol": symbol.upper(),
+                    "expiration_date": expiration_date,
+                    "option_type": option_type,
+                    "strike": strike,
+                },
+            }
+        )
+
+    except Exception as e:
+        logger.error(f"Error finding tradable options for {symbol}: {e}")
+        return create_error_response(e)
+
+
+@handle_schwab_errors
 async def schwab_option_sell_to_close(
     account_hash: str,
     symbol: str,
