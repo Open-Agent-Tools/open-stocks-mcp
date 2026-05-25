@@ -155,7 +155,10 @@ async def test_authenticate_false_when_profile_missing() -> None:
 
     with (
         patch.object(manager, "_login_with_device_verification", return_value=True),
-        patch("open_stocks_mcp.tools.session_manager.rh.load_user_profile", return_value=None),
+        patch(
+            "open_stocks_mcp.tools.session_manager.rh.load_user_profile",
+            return_value=None,
+        ),
     ):
         result = await manager._authenticate()
 
@@ -190,7 +193,9 @@ def test_login_with_device_verification_success_restores_input() -> None:
     assert builtins.input is original_input
 
 
-def test_login_with_device_verification_mfa_prompt_returns_false_and_restores_input() -> None:
+def test_login_with_device_verification_mfa_prompt_returns_false_and_restores_input() -> (
+    None
+):
     manager = SessionManager()
     original_input = builtins.input
 
@@ -198,14 +203,18 @@ def test_login_with_device_verification_mfa_prompt_returns_false_and_restores_in
         _ = store_session
         return bool(builtins.input("Enter verification code: "))
 
-    with patch("open_stocks_mcp.tools.session_manager.rh.login", side_effect=fake_login):
+    with patch(
+        "open_stocks_mcp.tools.session_manager.rh.login", side_effect=fake_login
+    ):
         result = manager._login_with_device_verification("user", "pass")
 
     assert result is False
     assert builtins.input is original_input
 
 
-def test_login_with_device_verification_invalid_credentials_exception_restores_input() -> None:
+def test_login_with_device_verification_invalid_credentials_exception_restores_input() -> (
+    None
+):
     manager = SessionManager()
     original_input = builtins.input
 
@@ -326,11 +335,13 @@ async def test_ensure_authenticated_concurrent_calls_only_authenticate_once() ->
     assert call_count == 1
 
 
-def test_interactive_mfa_prompt_uses_original_stderr_when_stderr_is_redirected() -> None:
+def test_interactive_mfa_prompt_uses_original_stderr_when_stderr_is_redirected() -> (
+    None
+):
     manager = SessionManager()
 
     fake_stdin = io.StringIO("654321\n")
-    fake_stdin.isatty = lambda: True  # type: ignore[attr-defined]
+    fake_stdin.isatty = lambda: True  # type: ignore[method-assign]
     original_stderr = io.StringIO()
     redirected_stderr = io.StringIO()
 
@@ -350,7 +361,9 @@ def test_interactive_mfa_prompt_uses_original_stderr_when_stderr_is_redirected()
 
 @pytest.mark.journey_account
 @pytest.mark.exception_test
-def test_ensure_authenticated_handles_expired_session_without_unhandled_exception() -> None:
+def test_ensure_authenticated_handles_expired_session_without_unhandled_exception() -> (
+    None
+):
     manager = SessionManager(session_timeout_hours=0)
     manager.set_credentials("user", "pass")
     manager._is_authenticated = True

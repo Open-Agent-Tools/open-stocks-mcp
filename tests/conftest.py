@@ -1,5 +1,7 @@
 """Shared pytest fixtures for open-stocks-mcp tests."""
 
+pytest_plugins = ["tests.integration.live_market_harness"]
+
 import contextlib
 import copy
 import json

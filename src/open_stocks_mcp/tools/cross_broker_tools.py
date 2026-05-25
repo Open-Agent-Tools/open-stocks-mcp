@@ -156,7 +156,10 @@ async def get_aggregated_portfolio() -> dict[str, Any]:
         elif name == "schwab":
             coros.append(_collect_schwab_data(name))
         else:
-            async def _collect_unknown(broker_name: str) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+
+            async def _collect_unknown(
+                broker_name: str,
+            ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
                 logger.warning(f"No aggregation collector for broker: {broker_name}")
                 return {}, []
 

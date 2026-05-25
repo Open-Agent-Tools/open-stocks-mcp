@@ -667,7 +667,9 @@ class TestSchwabTradingTools:
         }
 
         with patch.object(
-            server_app, "place_schwab_order", new=AsyncMock(return_value=expected_payload)
+            server_app,
+            "place_schwab_order",
+            new=AsyncMock(return_value=expected_payload),
         ) as mock_place:
             result = await server_app.schwab_place_order(account_hash, order_spec)
 
