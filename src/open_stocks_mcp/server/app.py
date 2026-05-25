@@ -167,6 +167,8 @@ from open_stocks_mcp.tools.schwab_options_tools import (
 )
 from open_stocks_mcp.tools.schwab_options_tools import (
     schwab_find_tradable_options as _schwab_find_tradable_options_impl,
+)
+from open_stocks_mcp.tools.schwab_options_tools import (
     schwab_get_open_option_orders as _schwab_get_open_option_orders_impl,
 )
 from open_stocks_mcp.tools.schwab_options_tools import (
