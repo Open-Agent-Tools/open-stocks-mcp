@@ -13,6 +13,7 @@ from open_stocks_mcp.tools.schwab_options_tools import (
     get_schwab_option_positions_detailed,
     get_schwab_options_positions,
     schwab_find_tradable_options,
+    schwab_get_open_option_orders,
     schwab_option_buy_to_open,
     schwab_option_sell_to_close,
 )
@@ -729,3 +730,59 @@ async def test_find_tradable_options_auth_error(mock_get_broker: AsyncMock) -> N
     result = await schwab_find_tradable_options("AAPL")
 
     assert result == error_response
+
+
+@pytest.mark.journey_options
+@pytest.mark.unit
+@pytest.mark.asyncio
+@patch("open_stocks_mcp.tools.schwab_options_tools.get_authenticated_broker_or_error")
+@patch("open_stocks_mcp.tools.schwab_options_tools.execute_broker_request")
+async def test_get_open_option_orders_filters_to_working_status(
+    mock_execute: AsyncMock,
+    mock_get_broker: AsyncMock,
+) -> None:
+    """Only OPTION-legged orders in an open status should be returned."""
+    mock_broker = MagicMock()
+    mock_get_broker.return_value = (mock_broker, None)
+
+    mock_execute.return_value = [
+        # OPTION + WORKING → included
+        {
+            "status": "WORKING",
+            "orderLegCollection": [
+                {
+                    "orderLegType": "OPTION",
+                    "instrument": {"assetType": "OPTION", "symbol": "AAPL_011924C170"},
+                }
+            ],
+        },
+        # OPTION + FILLED → excluded (closed status)
+        {
+            "status": "FILLED",
+            "orderLegCollection": [
+                {
+                    "orderLegType": "OPTION",
+                    "instrument": {"assetType": "OPTION"},
+                }
+            ],
+        },
+        # EQUITY + WORKING → excluded (no option leg)
+        {
+            "status": "WORKING",
+            "orderLegCollection": [
+                {
+                    "orderLegType": "EQUITY",
+                    "instrument": {"assetType": "EQUITY", "symbol": "AAPL"},
+                }
+            ],
+        },
+    ]
+
+    result = await schwab_get_open_option_orders("abc123")
+
+    assert "result" in result
+    assert result["result"]["count"] == 1
+    orders = result["result"]["orders"]
+    assert len(orders) == 1
+    assert orders[0]["status"] == "WORKING"
+    assert orders[0]["orderLegCollection"][0]["orderLegType"] == "OPTION"

@@ -17,6 +17,28 @@ from open_stocks_mcp.tools.error_handling import (
     handle_schwab_errors,
 )
 
+_OPEN_OPTION_STATUSES = frozenset(
+    {
+        "WORKING",
+        "PENDING_ACTIVATION",
+        "QUEUED",
+        "ACCEPTED",
+        "AWAITING_CONDITION",
+        "AWAITING_MANUAL_REVIEW",
+        "AWAITING_PARENT_ORDER",
+    }
+)
+
+
+def _has_option_leg(order: dict[str, Any]) -> bool:
+    """Return True when any leg of the order is an option instrument."""
+    legs = order.get("orderLegCollection", [])
+    return any(
+        leg.get("orderLegType") == "OPTION"
+        or leg.get("instrument", {}).get("assetType") == "OPTION"
+        for leg in legs
+    )
+
 
 @handle_schwab_errors
 async def get_schwab_option_chain(
@@ -615,4 +637,53 @@ async def schwab_option_sell_to_close(
 
     except Exception as e:
         logger.error(f"Error placing Schwab option sell order: {e}")
+        return create_error_response(e)
+
+
+@handle_schwab_errors
+async def schwab_get_open_option_orders(
+    account_hash: str, max_results: int = 50
+) -> dict[str, Any]:
+    """Get open option orders for a Schwab account.
+
+    Filters to orders that have at least one option leg and are in a working/open
+    status set (WORKING, PENDING_ACTIVATION, QUEUED, ACCEPTED, AWAITING_CONDITION,
+    AWAITING_MANUAL_REVIEW, AWAITING_PARENT_ORDER).
+
+    Args:
+        account_hash: Account hash from get_schwab_account_numbers()
+        max_results: Maximum number of orders to fetch before filtering (default 50)
+
+    Returns:
+        Dict with filtered option orders and count
+    """
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", f"get open option orders for {account_hash}"
+    )
+    if error:
+        return error
+
+    try:
+
+        def _get_orders() -> Any:
+            response = broker.client.get_orders_for_account(
+                account_hash, max_results=max_results
+            )
+            return response.json()
+
+        orders_data = await execute_broker_request(_get_orders, retry_safe=True)
+        all_orders = orders_data if isinstance(orders_data, list) else []
+
+        open_option_orders = [
+            o
+            for o in all_orders
+            if _has_option_leg(o) and o.get("status") in _OPEN_OPTION_STATUSES
+        ]
+
+        return create_success_response(
+            {"orders": open_option_orders, "count": len(open_option_orders)}
+        )
+
+    except Exception as e:
+        logger.error(f"Error getting Schwab open option orders for {account_hash}: {e}")
         return create_error_response(e)
