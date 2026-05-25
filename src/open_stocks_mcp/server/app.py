@@ -182,6 +182,7 @@ from open_stocks_mcp.tools.schwab_payment_tools import (
 )
 from open_stocks_mcp.tools.schwab_payment_tools import (
     schwab_get_dividends_by_symbol as _schwab_get_dividends_by_symbol_impl,
+    schwab_get_interest_payments as _schwab_get_interest_payments_impl,
 )
 from open_stocks_mcp.tools.schwab_portfolio_tools import (
     get_schwab_aggregate_positions,
@@ -1534,6 +1535,22 @@ async def schwab_get_dividends_by_symbol(
     return await _schwab_get_dividends_by_symbol_impl(
         account_hash, symbol, start_date, end_date
     )
+
+
+@mcp.tool()
+async def schwab_get_interest_payments(
+    account_hash: str,
+    start_date: str | None = None,
+    end_date: str | None = None,
+) -> dict[str, Any]:
+    """Get interest payments for a Schwab account.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+        start_date: Optional start date (YYYY-MM-DD)
+        end_date: Optional end date (YYYY-MM-DD)
+    """
+    return await _schwab_get_interest_payments_impl(account_hash, start_date, end_date)
 
 
 @mcp.tool()
