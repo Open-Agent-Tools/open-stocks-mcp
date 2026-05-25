@@ -4,17 +4,20 @@ from __future__ import annotations
 
 from typing import Any
 
-DOCS_HEADER = "# Open Stocks MCP Tool Reference"
+DOCS_HEADER = "# Open Stocks MCP — Tool Reference"
 
 
 def _serialize_tools(tools: list[Any]) -> dict[str, Any]:
     serialized_tools: list[dict[str, Any]] = []
     for tool in sorted(tools, key=lambda item: item.name):
+        input_schema = getattr(tool, "inputSchema", {})
+        if hasattr(input_schema, "model_dump"):
+            input_schema = input_schema.model_dump()
         serialized_tools.append(
             {
                 "name": tool.name,
                 "description": tool.description or "",
-                "inputSchema": getattr(tool, "inputSchema", {}) or {},
+                "inputSchema": input_schema or {},
             }
         )
     return {"result": {"tools": serialized_tools, "count": len(serialized_tools)}}
@@ -62,7 +65,9 @@ def build_tool_openapi_paths(payload: dict[str, Any]) -> dict[str, Any]:
                 "operationId": f"mcp_tool_{tool['name']}",
                 "requestBody": {
                     "required": False,
-                    "content": {"application/json": {"schema": tool["inputSchema"]}},
+                    "content": {
+                        "application/json": {"schema": tool.get("inputSchema", {})}
+                    },
                 },
                 "responses": {
                     "200": {

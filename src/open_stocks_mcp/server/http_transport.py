@@ -501,11 +501,16 @@ def create_http_server(
     async def tools_docs() -> dict[str, Any]:
         """Return MCP tool docs metadata from the live registry."""
         try:
-            return await build_tool_docs_payload(mcp_server)
+            payload = await build_tool_docs_payload(mcp_server)
+            tools = [
+                {"name": t["name"], "description": t["description"]}
+                for t in payload["result"]["tools"]
+            ]
+            return {"result": {"tools": tools, "count": payload["result"]["count"]}}
         except Exception as e:
             logger.error(f"Failed to generate tool docs payload: {e}")
             raise HTTPException(
-                status_code=500, detail="Failed to generate tool docs"
+                status_code=500, detail="Failed to build tool docs"
             ) from e
 
     @app.get("/metrics")

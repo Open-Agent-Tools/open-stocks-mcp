@@ -43,7 +43,7 @@ async def test_markdown_contains_count_and_headings_for_all_tools() -> None:
     payload = await build_tool_docs_payload(mcp)
     markdown = render_tool_docs_markdown(payload)
 
-    assert markdown.startswith("# Open Stocks MCP Tool Reference")
+    assert markdown.startswith("# Open Stocks MCP — Tool Reference")
     assert f"Total tools: {payload['result']['count']}" in markdown
     for tool in payload["result"]["tools"]:
         assert f"## {tool['name']}" in markdown
