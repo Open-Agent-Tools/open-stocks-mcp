@@ -12,6 +12,12 @@ from open_stocks_mcp.tools.market.movers import (
 from open_stocks_mcp.tools.market.movers import (
     get_top_movers_sp500 as movers_get_top_movers_sp500,
 )
+from open_stocks_mcp.tools.market.ratings import (
+    get_stock_ratings as ratings_get_stock_ratings,
+)
+from open_stocks_mcp.tools.robinhood_market_data_tools import (
+    get_stock_ratings as legacy_get_stock_ratings,
+)
 from open_stocks_mcp.tools.robinhood_market_data_tools import (
     get_stocks_by_tag as legacy_get_stocks_by_tag,
 )
@@ -40,3 +46,6 @@ class TestMarketDataModuleSplit:
 
     def test_get_stocks_by_tag_identity(self) -> None:
         assert legacy_get_stocks_by_tag is movers_get_stocks_by_tag
+
+    def test_get_stock_ratings_identity(self) -> None:
+        assert legacy_get_stock_ratings is ratings_get_stock_ratings
