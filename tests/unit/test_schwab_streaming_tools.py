@@ -3,7 +3,10 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from open_stocks_mcp.tools.schwab_streaming_tools import schwab_stream_option_quotes
+from open_stocks_mcp.tools.schwab_streaming_tools import (
+    schwab_stream_account_activity,
+    schwab_stream_option_quotes,
+)
 
 
 @pytest.mark.asyncio
@@ -73,3 +76,64 @@ async def test_schwab_stream_option_quotes_unavailable(
     assert result["result"]["status"] == "stream_unavailable"
     assert result["result"]["reason"] == expected_reason
     assert result["result"]["symbols"] == ["AAPL  260619C00150000"]
+
+
+@pytest.mark.asyncio
+async def test_schwab_stream_account_activity_returns_cached_events() -> None:
+    mock_broker = MagicMock()
+    mock_broker.get_health_status.return_value = {
+        "capabilities": {"streaming_quotes": True}
+    }
+    mock_broker.stream_manager.is_running = True
+    mock_broker.stream_manager.subscribe_account_activity = AsyncMock(return_value=True)
+    mock_broker.stream_manager.get_latest_activity.return_value = [
+        {"key": "ACT001", "1": "OrderEntryRequest"}
+    ]
+
+    with patch(
+        "open_stocks_mcp.tools.schwab_streaming_tools.get_authenticated_broker_or_error",
+        AsyncMock(return_value=(mock_broker, None)),
+    ):
+        result = await schwab_stream_account_activity()
+
+    assert result["result"]["status"] == "success"
+    assert result["result"]["events"] == [{"key": "ACT001", "1": "OrderEntryRequest"}]
+    assert result["result"]["count"] == 1
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "capability, manager_exists, is_running, sub_success, expected_reason",
+    [
+        (False, True, True, True, "streaming capability disabled"),
+        (True, False, True, True, "stream manager unavailable"),
+        (True, True, True, False, "account activity subscription failed"),
+    ],
+)
+async def test_schwab_stream_account_activity_unavailable(
+    capability: bool,
+    manager_exists: bool,
+    is_running: bool,
+    sub_success: bool,
+    expected_reason: str,
+) -> None:
+    mock_broker = MagicMock()
+    mock_broker.get_health_status.return_value = {
+        "capabilities": {"streaming_quotes": capability}
+    }
+    if not manager_exists:
+        mock_broker.stream_manager = None
+    else:
+        mock_broker.stream_manager.is_running = is_running
+        mock_broker.stream_manager.subscribe_account_activity = AsyncMock(
+            return_value=sub_success
+        )
+
+    with patch(
+        "open_stocks_mcp.tools.schwab_streaming_tools.get_authenticated_broker_or_error",
+        AsyncMock(return_value=(mock_broker, None)),
+    ):
+        result = await schwab_stream_account_activity()
+
+    assert result["result"]["status"] == "stream_unavailable"
+    assert result["result"]["reason"] == expected_reason

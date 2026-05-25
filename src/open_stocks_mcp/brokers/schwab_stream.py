@@ -34,6 +34,7 @@ class SchwabStreamManager:
         self._handlers: list[Callable[[dict[str, Any]], None]] = []
         self._latest_quotes: dict[str, dict[str, Any]] = {}
         self._latest_option_quotes: dict[str, dict[str, Any]] = {}
+        self._latest_activity: list[dict[str, Any]] = []
 
     @property
     def is_running(self) -> bool:
@@ -71,10 +72,11 @@ class SchwabStreamManager:
                     except Exception as e:
                         logger.error(f"Error in Schwab stream custom handler: {e}")
 
-            # Register handlers for Level One data
+            # Register handlers for Level One data and account activity
             assert self.stream_client is not None
             self.stream_client.add_level_one_equity_handler(_core_handler)
             self.stream_client.add_level_one_option_handler(_core_handler)
+            self.stream_client.add_account_activity_handler(_core_handler)
 
             await self.stream_client.login()
             self._is_running = True
@@ -151,6 +153,12 @@ class SchwabStreamManager:
                     if symbol not in self._latest_option_quotes:
                         self._latest_option_quotes[symbol] = {}
                     self._latest_option_quotes[symbol].update(item)
+        elif service == "ACCT_ACTIVITY":
+            for item in content:
+                self._latest_activity.append(item)
+            # Cap to most recent 100 entries to bound memory
+            if len(self._latest_activity) > 100:
+                self._latest_activity = self._latest_activity[-100:]
 
     async def subscribe_quotes(self, symbols: list[str]) -> bool:
         """Subscribe to Level One quotes for symbols."""
@@ -203,6 +211,27 @@ class SchwabStreamManager:
         except Exception as e:
             logger.error(f"Failed to subscribe to Schwab option quotes: {e}")
             return False
+
+    async def subscribe_account_activity(self) -> bool:
+        """Subscribe to account activity stream.
+
+        Returns:
+            True if subscription successful, False otherwise
+        """
+        if not self._is_running or not self.stream_client:
+            return False
+
+        try:
+            await self.stream_client.account_activity_sub()
+            logger.info("Subscribed to Schwab account activity stream")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to subscribe to Schwab account activity: {e}")
+            return False
+
+    def get_latest_activity(self) -> list[dict[str, Any]]:
+        """Get latest cached account activity events."""
+        return list(self._latest_activity)
 
     def get_latest_quote(self, symbol: str) -> dict[str, Any] | None:
         """Get latest cached equity quote for symbol."""

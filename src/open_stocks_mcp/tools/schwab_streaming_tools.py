@@ -87,3 +87,51 @@ async def schwab_stream_option_quotes(symbols: list[str]) -> dict[str, Any]:
             "count": len(quotes),
         }
     )
+
+
+async def schwab_stream_account_activity() -> dict[str, Any]:
+    """Get latest account activity events from Schwab streaming."""
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", "stream account activity"
+    )
+    if error:
+        return error
+
+    # Check streaming capability
+    health = broker.get_health_status()
+    if not health.get("capabilities", {}).get("streaming_quotes"):
+        return create_success_response(
+            {
+                "status": "stream_unavailable",
+                "reason": "streaming capability disabled",
+            }
+        )
+
+    # Check stream manager readiness
+    manager = getattr(broker, "stream_manager", None)
+    if manager is None:
+        return create_success_response(
+            {
+                "status": "stream_unavailable",
+                "reason": "stream manager unavailable",
+            }
+        )
+
+    # Subscribe to account activity
+    sub_success = await manager.subscribe_account_activity()
+    if not sub_success:
+        return create_success_response(
+            {
+                "status": "stream_unavailable",
+                "reason": "account activity subscription failed",
+            }
+        )
+
+    events = manager.get_latest_activity()
+    return create_success_response(
+        {
+            "status": "success",
+            "events": events,
+            "count": len(events),
+        }
+    )
