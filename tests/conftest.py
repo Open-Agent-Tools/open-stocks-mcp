@@ -2,14 +2,84 @@
 
 pytest_plugins = ["tests.integration.live_market_harness"]
 
+import asyncio
 import contextlib
 import copy
 import json
 import os
 import sys
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock
+
+from open_stocks_mcp.brokers.base import BaseBroker, BrokerAuthStatus
+
+
+class MockBroker(BaseBroker):
+    """Shared mock broker for unit tests. Supports auth_delay and logout count."""
+
+    def __init__(
+        self,
+        name: str,
+        should_auth_succeed: bool = True,
+        auth_delay: float = 0,
+        configured: bool = True,
+    ):
+        super().__init__(name)
+        self._should_auth_succeed = should_auth_succeed
+        self._auth_delay = auth_delay
+        self._auth_call_count = 0
+        self._logout_call_count = 0
+
+        if configured:
+            self._auth_info.status = BrokerAuthStatus.NOT_AUTHENTICATED
+        else:
+            self._auth_info.status = BrokerAuthStatus.NOT_CONFIGURED
+
+    async def authenticate(self) -> bool:
+        self._auth_call_count += 1
+        if self._auth_delay > 0:
+            await asyncio.sleep(self._auth_delay)
+
+        self._auth_info.last_auth_attempt = datetime.now()
+
+        if self._should_auth_succeed:
+            self._auth_info.status = BrokerAuthStatus.AUTHENTICATED
+            self._auth_info.last_successful_auth = datetime.now()
+            return True
+        else:
+            self._auth_info.status = BrokerAuthStatus.AUTH_FAILED
+            self._auth_info.error_message = "Mock authentication failed"
+            return False
+
+    async def is_authenticated(self) -> bool:
+        return self._auth_info.status == BrokerAuthStatus.AUTHENTICATED
+
+    async def logout(self) -> None:
+        self._logout_call_count += 1
+        self._auth_info.status = BrokerAuthStatus.NOT_AUTHENTICATED
+
+    async def get_account_info(self) -> dict[str, Any]:
+        return {"result": {"mock": "account"}}
+
+    async def get_portfolio(self) -> dict[str, Any]:
+        return {"result": {"mock": "portfolio"}}
+
+    async def get_positions(self) -> dict[str, Any]:
+        return {"result": {"mock": "positions"}}
+
+    async def get_stock_quote(self, symbol: str) -> dict[str, Any]:
+        return {"result": {"price": 100}}
+
+    async def get_stock_price(self, symbol: str) -> dict[str, Any]:
+        return {"result": {"price": 100}}
+
+    async def order_buy_market(self, symbol: str, quantity: float) -> dict[str, Any]:
+        return {"result": {"order": "buy"}}
+
+    async def order_sell_market(self, symbol: str, quantity: float) -> dict[str, Any]:
+        return {"result": {"order": "sell"}}
 
 try:
     import pytest_asyncio  # noqa: F401
