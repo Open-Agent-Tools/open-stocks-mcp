@@ -18,7 +18,12 @@ from open_stocks_mcp.logging_config import logger
 class SessionManager:
     """Manages Robin Stocks authentication session lifecycle."""
 
-    def __init__(self, session_timeout_hours: int = 23, max_failed_attempts: int = 3):
+    def __init__(
+        self,
+        session_timeout_hours: int = 23,
+        max_failed_attempts: int = 3,
+        pickle_manager: SessionPickleManager | None = None,
+    ) -> None:
         self.session_timeout_hours = session_timeout_hours
         self.max_failed_attempts = max_failed_attempts
         self.login_time: datetime | None = None
@@ -28,7 +33,7 @@ class SessionManager:
         self._lock = asyncio.Lock()
         self._is_authenticated = False
         self._failed_login_attempts = 0
-        self._pickle = SessionPickleManager()
+        self._pickle = pickle_manager or SessionPickleManager()
 
     def set_credentials(self, username: str, password: str) -> None:
         self.username = username
@@ -224,7 +229,7 @@ class SessionManager:
                 self.login_time = None
                 self.last_successful_call = None
                 self._failed_login_attempts = 0
-                self._pickle._consecutive_pickle_clear_failures = 0
+                self._pickle.reset_clear_failures()
 
     def clear_session_cache(self) -> bool:
         return self._clear_pickle_file()
