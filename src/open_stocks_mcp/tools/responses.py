@@ -45,20 +45,6 @@ def handle_robin_stocks_errors(func: F) -> F:
     return cast(F, wrapper)
 
 
-def handle_robin_stocks_sync_errors(func: F) -> F:
-    """Decorator to handle Robin Stocks API errors for sync functions."""
-
-    @functools.wraps(func)
-    def wrapper(*args: Any, **kwargs: Any) -> Any:
-        context = f"in {func.__name__}"
-        try:
-            return func(*args, **kwargs)
-        except Exception as e:
-            return create_error_response(e, context)
-
-    return cast(F, wrapper)
-
-
 def handle_schwab_errors(func: F) -> F:
     """Decorator to handle Schwab API errors consistently."""
 

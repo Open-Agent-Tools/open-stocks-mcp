@@ -245,6 +245,8 @@ async def test_schwab_stream_manager_level2_handling() -> None:
 
     mock_broker = MagicMock()
     manager = SchwabStreamManager(mock_broker)
+    manager._is_running = True
+    manager.stream_client = AsyncMock()
 
     # Test NASDAQ_BOOK message handling
     nasdaq_message = {
@@ -279,7 +281,7 @@ async def test_schwab_stream_manager_level2_handling() -> None:
     }
 
     manager._handle_message(nyse_message)
-    book = manager.get_latest_level2("IBM", "nyse")
+    book = manager.get_latest_level2("IBM", venue="nyse")
     assert book is not None
     assert book["symbol"] == "IBM"
     assert book["bids"][0]["PRICE"] == 130.0
