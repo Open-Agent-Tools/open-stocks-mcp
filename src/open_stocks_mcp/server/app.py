@@ -86,17 +86,6 @@ from open_stocks_mcp.tools.robinhood_order_tools import (
     get_options_orders,
     get_stock_orders,
 )
-from open_stocks_mcp.tools.robinhood_stock_tools import (
-    find_instrument_data,
-    get_instruments_by_symbols,
-    get_market_hours,
-    get_price_history,
-    get_pricebook_by_symbol,
-    get_stock_info,
-    get_stock_price,
-    get_stock_quote_by_id,
-    search_stocks,
-)
 
 # Phase 7: Trading Capabilities Tools
 from open_stocks_mcp.tools.robinhood_trading_tools import (
@@ -254,6 +243,17 @@ from open_stocks_mcp.tools.schwab_trading_tools import (
     schwab_replace_order as _schwab_replace_order,
 )
 from open_stocks_mcp.tools.session_manager import get_session_manager
+from open_stocks_mcp.tools.stocks import (
+    find_instrument_data,
+    get_instruments_by_symbols,
+    get_market_hours,
+    get_price_history,
+    get_pricebook_by_symbol,
+    get_stock_info,
+    get_stock_price,
+    get_stock_quote_by_id,
+    search_stocks,
+)
 from open_stocks_mcp.tools.unified_watchlist_tools import (
     add_symbols_to_unified_watchlist,
     get_unified_watchlist_by_name,

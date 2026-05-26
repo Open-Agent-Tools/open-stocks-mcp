@@ -22,7 +22,7 @@ def test_get_stock_price_aapl(live_robinhood_session: object) -> None:
 
     assert_live_market_read_only("get_stock_price")
 
-    from open_stocks_mcp.tools.robinhood_stock_tools import get_stock_price
+    from open_stocks_mcp.tools.stocks.quote import get_stock_price
 
     result = asyncio.get_event_loop().run_until_complete(get_stock_price("AAPL"))
     assert isinstance(result, dict), "Response must be a dict"

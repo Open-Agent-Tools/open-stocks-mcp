@@ -314,7 +314,7 @@ class TestToolIntegration:
     @pytest.mark.journey_market_data
     @pytest.mark.asyncio
     @patch(
-        "open_stocks_mcp.tools.robinhood_stock_tools.rh.get_quotes",
+        "open_stocks_mcp.tools.stocks.quote.rh.get_quotes",
         return_value=[
             {
                 "previous_close": "100.00",
@@ -326,13 +326,13 @@ class TestToolIntegration:
         ],
     )
     @patch(
-        "open_stocks_mcp.tools.robinhood_stock_tools.rh.get_latest_price",
+        "open_stocks_mcp.tools.stocks.quote.rh.get_latest_price",
         return_value=["101.00"],
     )
     async def test_get_stock_price_uses_cache(
         self, mock_price: Any, mock_quote: Any
     ) -> None:
-        from open_stocks_mcp.tools.robinhood_stock_tools import get_stock_price
+        from open_stocks_mcp.tools.stocks.quote import get_stock_price
 
         first = await get_stock_price("AAPL")
         second = await get_stock_price("AAPL")
@@ -351,7 +351,7 @@ class TestToolIntegration:
     @pytest.mark.journey_market_data
     @pytest.mark.asyncio
     @patch(
-        "open_stocks_mcp.tools.robinhood_stock_tools.rh.get_quotes",
+        "open_stocks_mcp.tools.stocks.quote.rh.get_quotes",
         return_value=[
             {
                 "previous_close": "100.00",
@@ -363,19 +363,20 @@ class TestToolIntegration:
         ],
     )
     @patch(
-        "open_stocks_mcp.tools.robinhood_stock_tools.rh.get_latest_price",
+        "open_stocks_mcp.tools.stocks.quote.rh.get_latest_price",
         return_value=["101.00"],
     )
     async def test_get_stock_price_refetches_after_ttl(
         self, mock_price: Any, mock_quote: Any
     ) -> None:
-        from open_stocks_mcp.tools import cache, robinhood_stock_tools
+        from open_stocks_mcp.tools import cache
+        from open_stocks_mcp.tools.stocks import quote as stock_quote_mod
 
         # Replace the real clock for the wrapped cache entry
         clock = {"value": time.monotonic()}
         cache.clear_caches()
 
-        original = robinhood_stock_tools.get_stock_price
+        original = stock_quote_mod.get_stock_price
         # Walk past every existing decorator down to the raw coroutine, so the
         # fresh test wrapper isn't shadowed by the production cache.
         raw = original
@@ -386,16 +387,16 @@ class TestToolIntegration:
         )(raw)
 
         try:
-            robinhood_stock_tools.get_stock_price = rewrapped  # type: ignore[assignment]
-            await robinhood_stock_tools.get_stock_price("AAPL")
-            await robinhood_stock_tools.get_stock_price("AAPL")
+            stock_quote_mod.get_stock_price = rewrapped  # type: ignore[assignment]
+            await stock_quote_mod.get_stock_price("AAPL")
+            await stock_quote_mod.get_stock_price("AAPL")
             assert mock_price.call_count == 1
 
             clock["value"] += 10
-            await robinhood_stock_tools.get_stock_price("AAPL")
+            await stock_quote_mod.get_stock_price("AAPL")
             assert mock_price.call_count == 2
         finally:
-            robinhood_stock_tools.get_stock_price = original  # type: ignore[assignment]
+            stock_quote_mod.get_stock_price = original  # type: ignore[assignment]
 
     @pytest.mark.unit
     @pytest.mark.journey_portfolio
@@ -424,11 +425,8 @@ class TestToolIntegration:
     async def test_tool_decorators_use_configured_lru_strategy(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        from open_stocks_mcp.tools import (
-            cache,
-            robinhood_account_tools,
-            robinhood_stock_tools,
-        )
+        from open_stocks_mcp.tools import cache, robinhood_account_tools
+        from open_stocks_mcp.tools.stocks import quote as stock_quote_mod
 
         try:
             with monkeypatch.context() as env:
@@ -437,12 +435,12 @@ class TestToolIntegration:
                 env.setenv("CACHE_ACCOUNT_TTL", "0")
                 cache.clear_caches()
 
-                stock_tools = importlib.reload(robinhood_stock_tools)
+                reloaded_quote = importlib.reload(stock_quote_mod)
                 account_tools = importlib.reload(robinhood_account_tools)
 
                 with (
                     patch.object(
-                        stock_tools.rh,
+                        reloaded_quote.rh,
                         "get_quotes",
                         return_value=[
                             {
@@ -455,7 +453,7 @@ class TestToolIntegration:
                         ],
                     ) as mock_quote,
                     patch.object(
-                        stock_tools.rh,
+                        reloaded_quote.rh,
                         "get_latest_price",
                         return_value=["101.00"],
                     ) as mock_price,
@@ -469,8 +467,8 @@ class TestToolIntegration:
                         },
                     ) as mock_portfolio,
                 ):
-                    await stock_tools.get_stock_price("AAPL")
-                    await stock_tools.get_stock_price("AAPL")
+                    await reloaded_quote.get_stock_price("AAPL")
+                    await reloaded_quote.get_stock_price("AAPL")
                     await account_tools.get_portfolio()
                     await account_tools.get_portfolio()
 
@@ -479,7 +477,7 @@ class TestToolIntegration:
                 assert mock_portfolio.call_count == 1
         finally:
             cache.clear_caches()
-            importlib.reload(robinhood_stock_tools)
+            importlib.reload(stock_quote_mod)
             importlib.reload(robinhood_account_tools)
 
     @pytest.mark.unit
@@ -494,7 +492,7 @@ class TestToolIntegration:
         },
     )
     @patch(
-        "open_stocks_mcp.tools.robinhood_stock_tools.rh.get_quotes",
+        "open_stocks_mcp.tools.stocks.quote.rh.get_quotes",
         return_value=[
             {
                 "previous_close": "100.00",
@@ -506,7 +504,7 @@ class TestToolIntegration:
         ],
     )
     @patch(
-        "open_stocks_mcp.tools.robinhood_stock_tools.rh.get_latest_price",
+        "open_stocks_mcp.tools.stocks.quote.rh.get_latest_price",
         return_value=["101.00"],
     )
     async def test_metrics_record_per_tool_cache_names(
@@ -514,7 +512,7 @@ class TestToolIntegration:
     ) -> None:
         from open_stocks_mcp.monitoring import get_metrics_collector
         from open_stocks_mcp.tools.robinhood_account_tools import get_portfolio
-        from open_stocks_mcp.tools.robinhood_stock_tools import get_stock_price
+        from open_stocks_mcp.tools.stocks.quote import get_stock_price
 
         await get_stock_price("AAPL")
         await get_stock_price("AAPL")
