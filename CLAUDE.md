@@ -147,7 +147,7 @@ ROBINHOOD_PASSWORD="password"
 ## Current Development Status
 
 ### Completed (v0.6.4)
-- ✅ **Phases 0-7**: 146 MCP tools with complete trading functionality (4 deprecated)
+- ✅ **Phases 0-7**: MCP tools with complete trading functionality (see [Tool Reference](docs/MCP_TOOLS_REFERENCE.md) for current count)
 - ✅ **Enhanced Options Tools**: New `get_open_option_positions_with_details()` with call/put enrichment
 - ✅ **Journey Testing**: 11 user journey categories for organized testing
 - ✅ **HTTP Transport**: Server-Sent Events (SSE), default port 3000
@@ -226,7 +226,7 @@ if isinstance(order_result, dict) and 'non_field_errors' in order_result:
 - **Advanced Error Handling**: Granular recovery and circuit breaker patterns
 - **Performance Optimization**: Caching strategies and request batching
 - **Enhanced Monitoring**: OpenTelemetry integration and health checks
-- **Test Coverage**: Complete ADK evaluations for all 79 tools
+- **Test Coverage**: Complete ADK evaluations for all tools (see [Tool Reference](docs/MCP_TOOLS_REFERENCE.md))
 
 ## Important Notes
 

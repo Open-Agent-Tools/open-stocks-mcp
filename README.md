@@ -5,12 +5,12 @@ An MCP (Model Context Protocol) server providing access to stock market data and
 ## Features
 
 **🚀 Current Status: v0.7.0-dev - Multi-Broker Support (Robinhood + Schwab)**
-- ✅ **146 MCP tools** total - 88 Robinhood + 58 Schwab (4 deprecated)
+- ✅ **MCP tools** across Robinhood + Schwab (see [Tool Reference](docs/MCP_TOOLS_REFERENCE.md) for current breakdown)
 - ✅ **Multi-broker architecture** - Support for Robinhood and Charles Schwab
 - ✅ **Complete trading functionality** - stocks, options, order management
 - ✅ **Live trading validated** - Robinhood stock and options trading tested with real orders
 - ✅ **Production-ready** - HTTP transport, Docker support, comprehensive testing
-- ✅ **Schwab integration complete** - OAuth authentication, 58 tools ready for testing
+- ✅ **Schwab integration complete** - OAuth authentication, tools ready for testing (see [Tool Reference](docs/MCP_TOOLS_REFERENCE.md))
 - 🔧 **Account details fixed** - Real financial data instead of N/A values
 
 ## Installation
@@ -151,17 +151,17 @@ Reference docs and runnable examples:
 
 ### 🏦 Multi-Broker Support
 
-**Robinhood Tools (88 tools)**:
+**Robinhood Tools**:
 - All existing Robinhood functionality maintained
 - No breaking changes to existing API
 
-**Schwab Tools (58 tools)**:
-- Account & Portfolio (11 tools) - account numbers, balances, positions, day trades
-- Market Data (9 tools) - quotes, price history, instrument search, market hours, movers
-- Trading (15 tools) - market/limit buy/sell, order management, transactions
-- Options (16 tools) - chains, expirations, positions, buy/sell, spreads, cancellation
-- Streaming (3 tools) - real-time account activity, options quotes, and level2 snapshot
-- Dividends/Income (4 tools) - dividends, dividends by symbol, interest payments, stock loan payments
+**Schwab Tools**:
+- Account & Portfolio - account numbers, balances, positions, day trades
+- Market Data - quotes, price history, instrument search, market hours, movers
+- Trading - market/limit buy/sell, order management, transactions
+- Options - chains, expirations, positions, buy/sell, spreads, cancellation
+- Streaming - real-time account activity, options quotes, and level2 snapshot
+- Dividends/Income - dividends, dividends by symbol, interest payments, stock loan payments
 
 All Schwab tools use `schwab_` prefix (e.g., `schwab_get_portfolio`, `schwab_buy_stock_market`).
 
@@ -169,55 +169,55 @@ All Schwab tools use `schwab_` prefix (e.g., `schwab_get_portfolio`, `schwab_buy
 
 ### Robinhood Tools by Category
 
-### Account & Portfolio (15 tools)
+### Account & Portfolio
 - Account information and details
 - Portfolio positions and holdings
 - Day trading metrics and history
 - Stock and options order history
 
-### Market Data (12 tools)
+### Market Data
 - Real-time stock quotes and fundamentals
 - Market movers and top performers
 - Sector analysis and market trends
 - Historical price data
 
-### Options Trading (15 tools)
+### Options Trading
 - Options chains and market data
 - Position aggregation and analysis
 - Historical options data
 - Options instrument search
 
-### Watchlists & Profiles (8 tools) ✅ Watchlist Management Tested
+### Watchlists & Profiles ✅ Watchlist Management Tested
 - **Watchlist management** - All 5 tools working (add/remove symbols tested with AMC)
 - User profile and settings
 - Investment preferences
 - Account features
 
-### Market Research (10 tools)
+### Market Research
 - Earnings data and analysis
 - Stock ratings and news
 - Dividend information
 - Corporate actions and splits
 
-### Analytics & Monitoring (5 tools)
+### Analytics & Monitoring
 - Portfolio analytics
 - Performance metrics
 - Server health monitoring
 - Interest and loan payments
 
-### Notifications (12 tools)
+### Notifications
 - Account notifications
 - Margin calls and interest
 - Subscription management
 - Referral tracking
 
-### Advanced Instruments (4 tools)
+### Advanced Instruments
 - Multi-symbol instrument lookup
 - Enhanced search capabilities
 - Level II market data (Gold required)
 - Direct instrument access
 
-### Trading Capabilities (15 tools)
+### Trading Capabilities
 **Stock Orders (✅ Live Tested):**
 - ✅ Market orders - Buy/sell tested with XOM and AMC
 - ✅ Limit orders - Buy/sell tested with XOM ($106) and AMC ($3)
@@ -312,7 +312,7 @@ MCP_HTTP_URL="http://localhost:3001/mcp" adk eval examples/google_adk_agent test
 
 **Completed in v0.7.0-dev:**
 - ✅ **Multi-broker architecture** - Abstract broker layer supporting multiple brokers
-- ✅ **Schwab integration** - 58 tools across account, market data, trading, options, streaming, and dividends/income
+- ✅ **Schwab integration** - tools across account, market data, trading, options, streaming, and dividends/income (see [Tool Reference](docs/MCP_TOOLS_REFERENCE.md))
 - ✅ **OAuth authentication** - Schwab OAuth 2.0 flow with automatic token refresh
 - ✅ **Graceful degradation** - Server starts even if broker authentication fails
 - ✅ **Backward compatibility** - All Robinhood tools unchanged, no breaking changes
