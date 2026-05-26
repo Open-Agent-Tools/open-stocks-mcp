@@ -258,9 +258,13 @@ class TestGetAuthenticatedBrokerOrError:
             result_broker, error = await get_authenticated_broker_or_error("test")
 
         assert result_broker is None
-        assert error is not None
-        assert "result" in error
-        assert "error" in error["result"]
+        assert error["result"] == {
+            "error": "Test authentication failed: Mock authentication failed",
+            "status": "broker_unavailable",
+            "broker": "test",
+            "auth_status": "auth_failed",
+            "requires_setup": False,
+        }
 
     @pytest.mark.asyncio
     async def test_get_nonexistent_broker(self, fresh_registry):
@@ -274,7 +278,12 @@ class TestGetAuthenticatedBrokerOrError:
             )
 
         assert result_broker is None
-        assert error is not None
+        assert error == {
+            "result": {
+                "error": "Broker not found: nonexistent",
+                "status": "broker_not_found",
+            }
+        }
 
     @pytest.mark.asyncio
     async def test_operation_parameter_in_error(self, fresh_registry):
