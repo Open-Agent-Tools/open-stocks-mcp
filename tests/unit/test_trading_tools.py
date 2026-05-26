@@ -6,6 +6,8 @@ Focuses on the most regression-prone behaviors documented in CLAUDE.md:
 - exception branches propagate cleanly
 """
 
+import ast
+from pathlib import Path
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -38,6 +40,65 @@ MOCK_ORDER = {
     "state": "confirmed",
     "created_at": "2024-01-01T00:00:00Z",
 }
+
+
+def assert_decorator_error_response(
+    result: dict[str, dict[str, object]], function_name: str
+) -> None:
+    """Assert unexpected exceptions are handled by the shared decorator."""
+    payload = result["result"]
+    assert payload["status"] == "error"
+    assert "error_type" in payload
+    assert payload["context"] == f"in {function_name}"
+
+
+def _returns_create_success_error_response(handler: ast.ExceptHandler) -> bool:
+    for node in ast.walk(handler):
+        if not isinstance(node, ast.Return):
+            continue
+        value = node.value
+        if not (
+            isinstance(value, ast.Call)
+            and isinstance(value.func, ast.Name)
+            and value.func.id == "create_success_response"
+            and value.args
+            and isinstance(value.args[0], ast.Dict)
+        ):
+            continue
+
+        keys = {
+            key.value
+            for key in value.args[0].keys
+            if isinstance(key, ast.Constant) and isinstance(key.value, str)
+        }
+        if {"error", "status"} <= keys:
+            return True
+    return False
+
+
+def test_trading_tools_do_not_keep_local_exception_response_boilerplate() -> None:
+    module_path = (
+        Path(__file__).parents[2]
+        / "src"
+        / "open_stocks_mcp"
+        / "tools"
+        / "robinhood_trading_tools.py"
+    )
+    tree = ast.parse(module_path.read_text())
+
+    offenders = []
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.ExceptHandler):
+            continue
+        if not (
+            isinstance(node.type, ast.Name)
+            and node.type.id == "Exception"
+            and _returns_create_success_error_response(node)
+        ):
+            continue
+        offenders.append(node.lineno)
+
+    assert offenders == []
 
 
 # ---------------------------------------------------------------------------
@@ -95,7 +156,7 @@ class TestOrderBuyMarket:
     @pytest.mark.asyncio
     @patch("open_stocks_mcp.tools.robinhood_trading_tools.execute_with_retry")
     async def test_order_placement_exception(self, mock_execute: AsyncMock) -> None:
-        """Exception during order placement returns error response."""
+        """Exception during order placement returns decorator error response."""
         mock_execute.side_effect = [
             MOCK_QUOTE,
             MOCK_ACCOUNT,
@@ -104,8 +165,7 @@ class TestOrderBuyMarket:
 
         result = await order_buy_market("AAPL", 5)
 
-        assert "error" in result["result"]
-        assert result["result"]["status"] == "error"
+        assert_decorator_error_response(result, "order_buy_market")
 
     @pytest.mark.journey_trading
     @pytest.mark.unit
@@ -218,13 +278,12 @@ class TestOrderSellMarket:
     @pytest.mark.asyncio
     @patch("open_stocks_mcp.tools.robinhood_trading_tools.execute_with_retry")
     async def test_order_placement_exception(self, mock_execute: AsyncMock) -> None:
-        """Exception during order placement returns error response."""
+        """Exception during order placement returns decorator error response."""
         mock_execute.side_effect = [MOCK_POSITION, Exception("Timeout")]
 
         result = await order_sell_market("AAPL", 5)
 
-        assert "error" in result["result"]
-        assert result["result"]["status"] == "error"
+        assert_decorator_error_response(result, "order_sell_market")
 
     @pytest.mark.journey_trading
     @pytest.mark.unit
@@ -355,12 +414,12 @@ class TestOrderBuyLimit:
     @pytest.mark.asyncio
     @patch("open_stocks_mcp.tools.robinhood_trading_tools.execute_with_retry")
     async def test_order_placement_exception(self, mock_execute: AsyncMock) -> None:
-        """Exception during limit order placement returns error."""
+        """Exception during limit order placement returns decorator error."""
         mock_execute.side_effect = [MOCK_QUOTE, MOCK_ACCOUNT, Exception("API down")]
 
         result = await order_buy_limit("AAPL", 5, 140.00)
 
-        assert result["result"]["status"] == "error"
+        assert_decorator_error_response(result, "order_buy_limit")
 
 
 # ---------------------------------------------------------------------------
@@ -430,12 +489,12 @@ class TestOrderSellLimit:
     @pytest.mark.asyncio
     @patch("open_stocks_mcp.tools.robinhood_trading_tools.execute_with_retry")
     async def test_order_placement_exception(self, mock_execute: AsyncMock) -> None:
-        """Exception during limit sell placement returns error."""
+        """Exception during limit sell placement returns decorator error."""
         mock_execute.side_effect = [MOCK_POSITION, Exception("Connection reset")]
 
         result = await order_sell_limit("AAPL", 5, 160.00)
 
-        assert result["result"]["status"] == "error"
+        assert_decorator_error_response(result, "order_sell_limit")
 
 
 # ---------------------------------------------------------------------------
@@ -611,12 +670,12 @@ class TestCancelAllStockOrders:
     @pytest.mark.asyncio
     @patch("open_stocks_mcp.tools.robinhood_trading_tools.execute_with_retry")
     async def test_fetch_exception_returns_error(self, mock_execute: AsyncMock) -> None:
-        """Exception while fetching open orders returns error."""
+        """Exception while fetching open orders returns decorator error."""
         mock_execute.side_effect = Exception("Auth expired")
 
         result = await cancel_all_stock_orders()
 
-        assert result["result"]["status"] == "error"
+        assert_decorator_error_response(result, "cancel_all_stock_orders")
 
 
 # ---------------------------------------------------------------------------
@@ -688,6 +747,20 @@ class TestGetOpenOrders:
         result = await get_all_open_stock_orders()
 
         assert "result" in result
+
+    @pytest.mark.journey_trading
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    @patch("open_stocks_mcp.tools.robinhood_trading_tools.execute_with_retry")
+    async def test_get_stock_orders_fetch_exception_returns_error(
+        self, mock_execute: AsyncMock
+    ) -> None:
+        """Exception while fetching stock orders returns decorator error."""
+        mock_execute.side_effect = Exception("Service unavailable")
+
+        result = await get_all_open_stock_orders()
+
+        assert_decorator_error_response(result, "get_all_open_stock_orders")
 
     @pytest.mark.journey_trading
     @pytest.mark.unit
