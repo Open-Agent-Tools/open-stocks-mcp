@@ -1,6 +1,5 @@
 """Unit tests for authentication coordinator."""
 
-from datetime import datetime
 from unittest.mock import patch
 
 import pytest
@@ -10,77 +9,9 @@ from open_stocks_mcp.brokers.auth_coordinator import (
     create_unauthenticated_tool_response,
     get_authenticated_broker_or_error,
 )
-from open_stocks_mcp.brokers.base import BaseBroker, BrokerAuthStatus
+from open_stocks_mcp.brokers.base import BrokerAuthStatus
 from open_stocks_mcp.brokers.registry import BrokerRegistry
-
-
-class MockBroker(BaseBroker):
-    """Mock broker for testing coordinator."""
-
-    def __init__(
-        self,
-        name: str,
-        should_auth_succeed: bool = True,
-        auth_delay: float = 0,
-        configured: bool = True,
-    ):
-        super().__init__(name)
-        self._should_auth_succeed = should_auth_succeed
-        self._auth_delay = auth_delay
-        self._auth_call_count = 0
-
-        # Set configured status
-        if configured:
-            self._auth_info.status = BrokerAuthStatus.NOT_AUTHENTICATED
-        else:
-            self._auth_info.status = BrokerAuthStatus.NOT_CONFIGURED
-
-    async def authenticate(self) -> bool:
-        """Mock authentication with optional delay."""
-        import asyncio
-
-        self._auth_call_count += 1
-        if self._auth_delay > 0:
-            await asyncio.sleep(self._auth_delay)
-
-        self._auth_info.last_auth_attempt = datetime.now()
-
-        if self._should_auth_succeed:
-            self._auth_info.status = BrokerAuthStatus.AUTHENTICATED
-            self._auth_info.last_successful_auth = datetime.now()
-            return True
-        else:
-            self._auth_info.status = BrokerAuthStatus.AUTH_FAILED
-            self._auth_info.error_message = "Mock authentication failed"
-            return False
-
-    async def is_authenticated(self) -> bool:
-        return self._auth_info.status == BrokerAuthStatus.AUTHENTICATED
-
-    async def logout(self) -> None:
-        self._auth_info.status = BrokerAuthStatus.NOT_AUTHENTICATED
-
-    # Required abstract method implementations
-    async def get_account_info(self):
-        return {"result": {"mock": "account"}}
-
-    async def get_portfolio(self):
-        return {"result": {"mock": "portfolio"}}
-
-    async def get_positions(self):
-        return {"result": {"mock": "positions"}}
-
-    async def get_stock_quote(self, symbol: str):
-        return {"result": {"price": 100}}
-
-    async def get_stock_price(self, symbol: str):
-        return {"result": {"price": 100}}
-
-    async def order_buy_market(self, symbol: str, quantity: float):
-        return {"result": {"order": "buy"}}
-
-    async def order_sell_market(self, symbol: str, quantity: float):
-        return {"result": {"order": "sell"}}
+from tests.conftest import MockBroker
 
 
 @pytest.fixture

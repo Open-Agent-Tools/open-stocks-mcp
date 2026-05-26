@@ -1,11 +1,9 @@
 """Unit tests for broker registry management."""
 
 import asyncio
-from datetime import datetime
 
 import pytest
 
-from open_stocks_mcp.brokers.base import BaseBroker, BrokerAuthStatus
 from open_stocks_mcp.brokers.registry import (
     BrokerRegistry,
     RegistryNotInitializedError,
@@ -13,67 +11,7 @@ from open_stocks_mcp.brokers.registry import (
     get_broker_registry_sync,
 )
 from open_stocks_mcp.monitoring import MetricsCollector
-
-
-class MockBroker(BaseBroker):
-    """Mock broker for testing registry."""
-
-    def __init__(
-        self, name: str, should_auth_succeed: bool = True, configured: bool = True
-    ):
-        super().__init__(name)
-        self._should_auth_succeed = should_auth_succeed
-        self._auth_call_count = 0
-        self._logout_call_count = 0
-
-        # Set configured status
-        if configured:
-            self._auth_info.status = BrokerAuthStatus.NOT_AUTHENTICATED
-        else:
-            self._auth_info.status = BrokerAuthStatus.NOT_CONFIGURED
-
-    async def authenticate(self) -> bool:
-        """Mock authentication."""
-        self._auth_call_count += 1
-        self._auth_info.last_auth_attempt = datetime.now()
-
-        if self._should_auth_succeed:
-            self._auth_info.status = BrokerAuthStatus.AUTHENTICATED
-            self._auth_info.last_successful_auth = datetime.now()
-            return True
-        else:
-            self._auth_info.status = BrokerAuthStatus.AUTH_FAILED
-            self._auth_info.error_message = "Mock auth failed"
-            return False
-
-    async def is_authenticated(self) -> bool:
-        return self._auth_info.status == BrokerAuthStatus.AUTHENTICATED
-
-    async def logout(self) -> None:
-        self._logout_call_count += 1
-        self._auth_info.status = BrokerAuthStatus.NOT_AUTHENTICATED
-
-    # Required abstract method implementations
-    async def get_account_info(self):
-        return {"result": {"mock": "account"}}
-
-    async def get_portfolio(self):
-        return {"result": {"mock": "portfolio"}}
-
-    async def get_positions(self):
-        return {"result": {"mock": "positions"}}
-
-    async def get_stock_quote(self, symbol: str):
-        return {"result": {"price": 100}}
-
-    async def get_stock_price(self, symbol: str):
-        return {"result": {"price": 100}}
-
-    async def order_buy_market(self, symbol: str, quantity: float):
-        return {"result": {"order": "buy"}}
-
-    async def order_sell_market(self, symbol: str, quantity: float):
-        return {"result": {"order": "sell"}}
+from tests.conftest import MockBroker
 
 
 class TestBrokerRegistry:
