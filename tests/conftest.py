@@ -284,6 +284,24 @@ def schwab_balances_payload() -> dict[str, Any]:
 
 
 @pytest.fixture
+def schwab_margin_call_balances_payload() -> dict[str, Any]:
+    """Representative Schwab balances payload with an active margin call."""
+    return broker_payloads.schwab_margin_call_balances_payload()
+
+
+@pytest.fixture
+def schwab_no_margin_call_balances_payload() -> dict[str, Any]:
+    """Representative Schwab balances payload with no margin call."""
+    return broker_payloads.schwab_no_margin_call_balances_payload()
+
+
+@pytest.fixture
+def schwab_margin_interest_transactions_payload() -> list[dict[str, Any]]:
+    """Representative Schwab transactions including margin interest charges."""
+    return broker_payloads.schwab_margin_interest_transactions_payload()
+
+
+@pytest.fixture
 def schwab_user_preferences_payload() -> dict[str, Any]:
     """Representative Schwab user preferences payload."""
     return broker_payloads.schwab_user_preferences_payload()

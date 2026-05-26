@@ -148,6 +148,12 @@ from open_stocks_mcp.tools.schwab_account_tools import (
     get_schwab_portfolio,
     get_schwab_user_preferences,
 )
+from open_stocks_mcp.tools.schwab_account_tools import (
+    schwab_check_margin_status as schwab_check_margin_status_impl,
+)
+from open_stocks_mcp.tools.schwab_account_tools import (
+    schwab_get_margin_interest as schwab_get_margin_interest_impl,
+)
 from open_stocks_mcp.tools.schwab_market_tools import (
     get_schwab_instrument,
     get_schwab_instrument_by_cusip,
@@ -1186,6 +1192,20 @@ async def schwab_account_balances(account_hash: str) -> dict[str, Any]:
         account_hash: Account hash from schwab_account_numbers
     """
     return await get_schwab_account_balances(account_hash)
+
+
+@mcp.tool()
+async def schwab_check_margin_status(account_hash: str) -> dict[str, Any]:
+    """Derive margin-call status from Schwab account balances."""
+    return await schwab_check_margin_status_impl(account_hash)
+
+
+@mcp.tool()
+async def schwab_get_margin_interest(
+    account_hash: str, start_date: str | None = None, end_date: str | None = None
+) -> dict[str, Any]:
+    """Get Schwab margin-interest charges from transaction history."""
+    return await schwab_get_margin_interest_impl(account_hash, start_date, end_date)
 
 
 @mcp.tool()
