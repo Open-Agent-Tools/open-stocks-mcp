@@ -5,12 +5,12 @@ An MCP (Model Context Protocol) server providing access to stock market data and
 ## Features
 
 **🚀 Current Status: v0.7.0-dev - Multi-Broker Support (Robinhood + Schwab)**
-- ✅ **122 MCP tools** total - 87 Robinhood + 35 Schwab (4 deprecated)
+- ✅ **146 MCP tools** total - 88 Robinhood + 58 Schwab (4 deprecated)
 - ✅ **Multi-broker architecture** - Support for Robinhood and Charles Schwab
 - ✅ **Complete trading functionality** - stocks, options, order management
 - ✅ **Live trading validated** - Robinhood stock and options trading tested with real orders
 - ✅ **Production-ready** - HTTP transport, Docker support, comprehensive testing
-- ✅ **Schwab integration complete** - OAuth authentication, 35 tools ready for testing
+- ✅ **Schwab integration complete** - OAuth authentication, 58 tools ready for testing
 - 🔧 **Account details fixed** - Real financial data instead of N/A values
 
 ## Installation
@@ -151,15 +151,17 @@ Reference docs and runnable examples:
 
 ### 🏦 Multi-Broker Support
 
-**Robinhood Tools (87 tools)**:
+**Robinhood Tools (88 tools)**:
 - All existing Robinhood functionality maintained
 - No breaking changes to existing API
 
-**Schwab Tools (35 tools)**:
-- Account & Portfolio (11 tools) - account numbers, balances, positions
-- Market Data (5 tools) - quotes, price history, instrument search
-- Trading (11 tools) - market/limit buy/sell, order management, transactions
-- Options (8 tools) - chains, expirations, positions, buy/sell
+**Schwab Tools (58 tools)**:
+- Account & Portfolio (11 tools) - account numbers, balances, positions, day trades
+- Market Data (9 tools) - quotes, price history, instrument search, market hours, movers
+- Trading (15 tools) - market/limit buy/sell, order management, transactions
+- Options (16 tools) - chains, expirations, positions, buy/sell, spreads, cancellation
+- Streaming (3 tools) - real-time account activity, options quotes, and level2 snapshot
+- Dividends/Income (4 tools) - dividends, dividends by symbol, interest payments, stock loan payments
 
 All Schwab tools use `schwab_` prefix (e.g., `schwab_get_portfolio`, `schwab_buy_stock_market`).
 
@@ -310,7 +312,7 @@ MCP_HTTP_URL="http://localhost:3001/mcp" adk eval examples/google_adk_agent test
 
 **Completed in v0.7.0-dev:**
 - ✅ **Multi-broker architecture** - Abstract broker layer supporting multiple brokers
-- ✅ **Schwab integration** - 35 tools across account, market data, trading, and options
+- ✅ **Schwab integration** - 58 tools across account, market data, trading, options, streaming, and dividends/income
 - ✅ **OAuth authentication** - Schwab OAuth 2.0 flow with automatic token refresh
 - ✅ **Graceful degradation** - Server starts even if broker authentication fails
 - ✅ **Backward compatibility** - All Robinhood tools unchanged, no breaking changes
