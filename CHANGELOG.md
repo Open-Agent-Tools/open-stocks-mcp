@@ -2,6 +2,15 @@
 
 All notable changes to the Open Stocks MCP project will be documented in this file.
 
+## [0.6.5] - 2026-05-18
+
+### Changed
+- Bumped version to 0.6.5
+- Code cleanup for release (release cleanup)
+- Updated all dependencies to latest versions
+- Added open source community infrastructure
+- Code quality improvements and QA documentation
+
 ## [0.6.4] - 2025-09-10
 
 ### Enhanced
