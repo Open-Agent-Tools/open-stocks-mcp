@@ -71,9 +71,7 @@ class TestFernetKeyManagement:
         key2 = manager._get_or_create_fernet_key()
         assert key1 == key2
 
-    def test_valid_fernet_key_generated(
-        self, manager: SessionPickleManager
-    ) -> None:
+    def test_valid_fernet_key_generated(self, manager: SessionPickleManager) -> None:
         key = manager._get_or_create_fernet_key()
         # Fernet key must be usable — if it's invalid Fernet() raises ValueError
         fernet = Fernet(key)
@@ -206,8 +204,7 @@ class TestLoginPickleReencryption:
             session_manager._pickle = manager
 
             assert (
-                session_manager._login_with_device_verification("user", "pass")
-                is False
+                session_manager._login_with_device_verification("user", "pass") is False
             )
 
         assert not pickle_path.exists()
