@@ -160,17 +160,6 @@ async def schwab_get_dividends_by_symbol(
         dividends = []
         total_amount = Decimal("0.00")
 
-            symbol=normalized_symbol,
-        )
-
-        transactions = response.json() if hasattr(response, "json") else response
-
-        if not isinstance(transactions, list):
-            transactions = []
-
-        dividends = []
-        total_amount = Decimal("0.00")
-
         for tx in transactions:
             if _classify_transaction(tx) == "dividend":
                 dividends.append(tx)

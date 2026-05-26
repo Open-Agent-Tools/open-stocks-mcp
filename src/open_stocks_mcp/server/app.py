@@ -182,6 +182,8 @@ from open_stocks_mcp.tools.schwab_payment_tools import (
 )
 from open_stocks_mcp.tools.schwab_payment_tools import (
     schwab_get_dividends_by_symbol as _schwab_get_dividends_by_symbol_impl,
+)
+from open_stocks_mcp.tools.schwab_payment_tools import (
     schwab_get_interest_payments as _schwab_get_interest_payments_impl,
 )
 from open_stocks_mcp.tools.schwab_portfolio_tools import (
