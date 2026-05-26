@@ -80,8 +80,6 @@ class SchwabStreamManager:
             self.stream_client.add_nasdaq_book_handler(_core_handler)
             self.stream_client.add_nyse_book_handler(_core_handler)
             self.stream_client.add_account_activity_handler(_core_handler)
-            self.stream_client.add_nasdaq_book_handler(_core_handler)
-            self.stream_client.add_nyse_book_handler(_core_handler)
 
             await self.stream_client.login()
             self._is_running = True
@@ -275,7 +273,9 @@ class SchwabStreamManager:
             logger.info(f"Subscribed to Schwab Level 2 ({venue}): {symbol}")
             return True
         except Exception as e:
-            logger.error(f"Failed to subscribe to Schwab Level 2 ({venue}) for {symbol}: {e}")
+            logger.error(
+                f"Failed to subscribe to Schwab Level 2 ({venue}) for {symbol}: {e}"
+            )
             return False
 
     def get_latest_activity(self) -> list[dict[str, Any]]:
@@ -290,9 +290,6 @@ class SchwabStreamManager:
         """Get latest cached option quote for symbol."""
         return self._latest_option_quotes.get(symbol.upper())
 
-    def get_latest_level2(self, symbol: str) -> dict[str, Any] | None:
-        """Get latest cached Level 2 book for symbol."""
-        return self._latest_level2_books.get(symbol.upper())
     def get_latest_level2(
         self, symbol: str, venue: str = "nasdaq"
     ) -> dict[str, Any] | None:

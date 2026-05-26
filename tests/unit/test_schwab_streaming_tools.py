@@ -249,8 +249,26 @@ async def test_schwab_stream_level2_success() -> None:
     "symbol,venue,capability,manager_exists,is_running,sub_success,snapshot,expected_reason",
     [
         ("AAPL", "arca", True, True, True, True, {"x": 1}, "unsupported venue"),
-        ("AAPL", "nasdaq", False, True, True, True, {"x": 1}, "streaming capability disabled"),
-        ("AAPL", "nasdaq", True, False, True, True, {"x": 1}, "stream manager unavailable"),
+        (
+            "AAPL",
+            "nasdaq",
+            False,
+            True,
+            True,
+            True,
+            {"x": 1},
+            "streaming capability disabled",
+        ),
+        (
+            "AAPL",
+            "nasdaq",
+            True,
+            False,
+            True,
+            True,
+            {"x": 1},
+            "stream manager unavailable",
+        ),
         ("AAPL", "nasdaq", True, True, False, True, {"x": 1}, "stream manager stopped"),
         ("AAPL", "nasdaq", True, True, True, False, {"x": 1}, "subscription failed"),
         ("AAPL", "nasdaq", True, True, True, True, None, "no snapshot available"),
@@ -272,7 +290,9 @@ async def test_schwab_stream_level2_unavailable(
     }
     if manager_exists:
         mock_broker.stream_manager.is_running = is_running
-        mock_broker.stream_manager.subscribe_level2 = AsyncMock(return_value=sub_success)
+        mock_broker.stream_manager.subscribe_level2 = AsyncMock(
+            return_value=sub_success
+        )
         mock_broker.stream_manager.get_latest_level2.return_value = snapshot
     else:
         mock_broker.stream_manager = None

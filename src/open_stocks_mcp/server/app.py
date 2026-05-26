@@ -1571,7 +1571,9 @@ async def schwab_get_stock_loan_payments(
         start_date: Optional start date (YYYY-MM-DD)
         end_date: Optional end date (YYYY-MM-DD)
     """
-    return await _schwab_get_stock_loan_payments_impl(account_hash, start_date, end_date)
+    return await _schwab_get_stock_loan_payments_impl(
+        account_hash, start_date, end_date
+    )
 
 
 @mcp.tool()
@@ -1964,6 +1966,7 @@ async def schwab_stream_option_quotes(symbols: list[str]) -> dict[str, Any]:
 
 
 @mcp.tool()
+<<<<<<< HEAD
 async def schwab_stream_quotes(symbols: list[str]) -> dict[str, Any]:
     """Get real-time equity quote snapshots from Schwab streaming.
 
@@ -1980,10 +1983,11 @@ async def schwab_stream_level2(symbol: str, venue: str = "nasdaq") -> dict[str, 
 
 
 @mcp.tool()
+=======
+>>>>>>> af859be (chore: automated code-quality cleanup)
 async def schwab_stream_account_activity() -> dict[str, Any]:
     """Get latest account activity events from Schwab streaming."""
     return await _schwab_stream_account_activity_impl()
-
 
 
 def create_mcp_server(config: ServerConfig | None = None) -> FastMCP:

@@ -441,7 +441,9 @@ class TestSchwabMarginTools:
 
         assert result["result"]["charges_count"] == 2
         assert result["result"]["total_charges"] == pytest.approx(20.75)
-        descriptions = [txn["description"] for txn in result["result"]["interest_charges"]]
+        descriptions = [
+            txn["description"] for txn in result["result"]["interest_charges"]
+        ]
         assert "QUALIFIED DIVIDEND" not in descriptions
         for txn in result["result"]["interest_charges"]:
             assert "transactionId" in txn

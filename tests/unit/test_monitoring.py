@@ -243,8 +243,11 @@ async def test_alert_dedup_cleanup_avoids_memory_growth() -> None:
     # Map should be empty since 1s > 0.1s
     assert "test_signal" not in collector._last_alert_at
 
+
 @pytest.mark.asyncio
-async def test_monitored_tool_wraps_exception_with_explicit_cause_and_records_metric() -> None:
+async def test_monitored_tool_wraps_exception_with_explicit_cause_and_records_metric() -> (
+    None
+):
     metrics = MetricsCollector(window_size_minutes=1)
     tool = MonitoredTool("failing_tool")
     tool.metrics = metrics
