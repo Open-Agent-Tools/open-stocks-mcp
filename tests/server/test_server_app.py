@@ -266,6 +266,13 @@ class TestToolRegistration:
         assert "schwab_open_option_orders" in tool_names
 
     @pytest.mark.asyncio
+    async def test_schwab_streaming_tools_are_registered(self) -> None:
+        """Test that Schwab streaming tools are registered."""
+        tools_list = await mcp.list_tools()
+        tool_names = [tool.name for tool in tools_list]
+        assert "schwab_stream_option_quotes" in tool_names
+
+    @pytest.mark.asyncio
     async def test_account_info_tool_callable(self) -> None:
         """Test that account_info tool is callable."""
         tools_list = await mcp.list_tools()
