@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from open_stocks_mcp.monitoring import MetricsCollector
+from open_stocks_mcp.monitoring import MetricsCollector, MonitoredTool
 
 
 @pytest.mark.asyncio
@@ -242,3 +242,25 @@ async def test_alert_dedup_cleanup_avoids_memory_growth() -> None:
 
     # Map should be empty since 1s > 0.1s
     assert "test_signal" not in collector._last_alert_at
+
+@pytest.mark.asyncio
+async def test_monitored_tool_wraps_exception_with_explicit_cause_and_records_metric() -> None:
+    metrics = MetricsCollector(window_size_minutes=1)
+    tool = MonitoredTool("failing_tool")
+    tool.metrics = metrics
+
+    @tool
+    async def failing_func():
+        raise ValueError("boom")
+
+    with pytest.raises(RuntimeError) as exc_info:
+        await failing_func()
+
+    assert "Monitored tool failing_tool failed" in str(exc_info.value)
+    assert isinstance(exc_info.value.__cause__, ValueError)
+    assert str(exc_info.value.__cause__) == "boom"
+
+    stats = await metrics.get_metrics()
+    assert stats["calls_in_window"] == 1
+    assert stats["total_errors"] == 1
+    assert stats["error_types"]["ValueError"] == 1

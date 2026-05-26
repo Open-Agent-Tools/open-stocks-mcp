@@ -674,7 +674,7 @@ class MonitoredTool:
 
             except Exception as e:
                 error_type = type(e).__name__
-                raise
+                raise RuntimeError(f"Monitored tool {self.tool_name} failed") from e
 
             finally:
                 duration = time.time() - start_time
