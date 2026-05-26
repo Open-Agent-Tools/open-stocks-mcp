@@ -237,6 +237,31 @@ class TestDecorators:
         )
         assert inspect.iscoroutinefunction(sample_decorated) is True
 
+    @pytest.mark.asyncio
+    async def test_decorators_preserve_typed_annotations_runtime(self) -> None:
+        async def typed_func(symbol: str, count: int = 1) -> str:
+            return f"{symbol} {count}"
+
+        decorated = handle_robin_stocks_errors(typed_func)
+        sig = inspect.signature(decorated)
+        assert sig.parameters["symbol"].annotation is str
+        assert sig.parameters["count"].annotation is int
+        # functools.wraps preserves the original return annotation at runtime
+        assert sig.return_annotation is str
+
+    def test_sync_decorator_preserves_typed_annotations_runtime(self) -> None:
+        def sync_typed_func(symbol: str, count: int = 1) -> str:
+            return f"{symbol} {count}"
+
+        from open_stocks_mcp.tools.responses import handle_robin_stocks_sync_errors
+
+        decorated = handle_robin_stocks_sync_errors(sync_typed_func)
+        sig = inspect.signature(decorated)
+        assert sig.parameters["symbol"].annotation is str
+        assert sig.parameters["count"].annotation is int
+        # functools.wraps preserves the original return annotation at runtime
+        assert sig.return_annotation is str
+
 
 @pytest.mark.asyncio
 async def test_handle_robin_stocks_errors_async_behavior_and_metadata() -> None:
