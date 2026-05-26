@@ -243,5 +243,3 @@ async def find_tradable_options(
             "status": "success",
         }
     }
-
-

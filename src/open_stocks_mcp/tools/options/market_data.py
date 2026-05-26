@@ -228,5 +228,3 @@ async def get_option_historicals(
             "status": "success",
         }
     }
-
-

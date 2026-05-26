@@ -48,9 +48,7 @@ class TestMarketTools:
 
     @pytest.mark.journey_market_data
     @pytest.mark.unit
-    @patch(
-        "open_stocks_mcp.tools.market.movers.rh.get_all_stocks_from_market_tag"
-    )
+    @patch("open_stocks_mcp.tools.market.movers.rh.get_all_stocks_from_market_tag")
     @pytest.mark.asyncio
     async def test_get_stocks_by_tag_success(
         self, mock_stocks: Any, mock_robinhood_market_tag: list[dict[str, Any]]
