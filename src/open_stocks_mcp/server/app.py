@@ -129,13 +129,6 @@ from open_stocks_mcp.tools.robinhood_user_profile_tools import (
     get_security_profile,
     get_user_profile,
 )
-from open_stocks_mcp.tools.robinhood_watchlist_tools import (
-    add_symbols_to_watchlist,
-    get_all_watchlists,
-    get_watchlist_by_name,
-    get_watchlist_performance,
-    remove_symbols_from_watchlist,
-)
 
 # Schwab Tools
 from open_stocks_mcp.tools.schwab_account_tools import (
@@ -266,6 +259,15 @@ from open_stocks_mcp.tools.unified_watchlist_tools import (
     get_unified_watchlist_by_name,
     get_unified_watchlists,
     remove_symbols_from_unified_watchlist,
+)
+from open_stocks_mcp.tools.watchlists.read import (
+    get_all_watchlists,
+    get_watchlist_by_name,
+    get_watchlist_performance,
+)
+from open_stocks_mcp.tools.watchlists.write import (
+    add_symbols_to_watchlist,
+    remove_symbols_from_watchlist,
 )
 from open_stocks_mcp.tracing import (
     instrument_mcp_tool_calls,

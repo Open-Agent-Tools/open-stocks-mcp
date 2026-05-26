@@ -4,16 +4,16 @@ from typing import Any
 
 from open_stocks_mcp.brokers.registry import get_broker_registry
 from open_stocks_mcp.tools.responses import create_success_response
-from open_stocks_mcp.tools.robinhood_watchlist_tools import (
-    add_symbols_to_watchlist as add_rh_symbols,
-)
-from open_stocks_mcp.tools.robinhood_watchlist_tools import (
+from open_stocks_mcp.tools.watchlists.read import (
     get_all_watchlists as get_rh_watchlists,
 )
-from open_stocks_mcp.tools.robinhood_watchlist_tools import (
+from open_stocks_mcp.tools.watchlists.read import (
     get_watchlist_by_name as get_rh_watchlist_by_name,
 )
-from open_stocks_mcp.tools.robinhood_watchlist_tools import (
+from open_stocks_mcp.tools.watchlists.write import (
+    add_symbols_to_watchlist as add_rh_symbols,
+)
+from open_stocks_mcp.tools.watchlists.write import (
     remove_symbols_from_watchlist as remove_rh_symbols,
 )
 
