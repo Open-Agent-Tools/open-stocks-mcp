@@ -379,4 +379,3 @@ examples/kubernetes/secret.yaml
 .foreman/
 .agents/
 .beads/
-foreman.yaml
