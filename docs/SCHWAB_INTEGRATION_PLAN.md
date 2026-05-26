@@ -65,7 +65,6 @@ src/open_stocks_mcp/
 │   ├── robinhood_account_tools.py           # 4 tools
 │   ├── robinhood_account_features_tools.py  # 7 tools
 │   ├── robinhood_advanced_portfolio_tools.py # 3 tools
-│   ├── robinhood_crypto_tools.py            # 3 tools (Schwab won't support)
 │   ├── robinhood_dividend_tools.py          # 5 tools
 │   ├── robinhood_market_data_tools.py       # 9 tools
 │   ├── robinhood_options_tools.py           # 8 tools
@@ -827,10 +826,8 @@ class BrokerAuthenticationError(BrokerError):
 
 ### Robinhood-Only Tools (≈10 tools)
 
-**Crypto** (3 tools):
-- `get_crypto_positions`
-- `get_crypto_quote`
-- `order_buy_crypto`
+**Crypto**:
+- Crypto trading and positions are Robinhood-only and out of scope for Schwab parity.
 
 **Robinhood-Specific** (7 tools):
 - `get_referrals`

@@ -69,7 +69,7 @@
 ---
 
 ## Out of Scope
-- Crypto tools (`get_crypto_*()` functions)
+- Crypto trading tools
 - Banking tools (`get_bank_*()` functions, ACH transfers)
 - Deposit/withdrawal functionality
 - Account modification tools

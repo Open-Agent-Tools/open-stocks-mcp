@@ -187,15 +187,13 @@
 
 ---
 
-## Cryptocurrency Tools (3 tools)
+## Cryptocurrency Limitation
 
-| Robinhood Tool | Schwab Status | Schwab Tool/Method | Notes |
+| Robinhood Capability | Schwab Status | Schwab Tool/Method | Notes |
 |----------------|---------------|-------------------|-------|
-| `get_crypto_positions` | ❌ Not Available | N/A | Schwab doesn't support crypto |
-| `get_crypto_quote` | ❌ Not Available | N/A | No crypto trading |
-| `order_buy_crypto` | ❌ Not Available | N/A | No crypto trading |
+| Cryptocurrency trading & positions | ❌ Not Available | N/A | Schwab doesn't support crypto |
 
-**Summary**: 3 Robinhood tools → 0 Schwab tools
+**Summary**: No Robinhood crypto trading parity on Schwab
 
 **Note**: Schwab does not offer cryptocurrency trading
 

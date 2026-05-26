@@ -1,35 +1,35 @@
-"""Unit tests for robinhood_crypto_tools — ensures stubs raise, not silently return."""
+"""Unit tests guarding against accidental crypto tool surface reintroduction."""
+
+import importlib.util
+from pathlib import Path
 
 import pytest
 
-from open_stocks_mcp.tools.robinhood_crypto_tools import get_crypto_positions
+
+@pytest.mark.unit
+@pytest.mark.journey_system
+def test_crypto_placeholder_module_is_absent() -> None:
+    # Anchor to the project root to avoid false positives if run from a subdirectory
+    project_root = Path(__file__).parent.parent.parent
+    crypto_module_path = project_root / "src/open_stocks_mcp/tools/robinhood_crypto_tools.py"
+
+    assert not crypto_module_path.exists(), (
+        f"Crypto placeholder module must stay deleted at {crypto_module_path}"
+    )
+
+    # Idiomatic check for module absence
+    spec = importlib.util.find_spec("open_stocks_mcp.tools.robinhood_crypto_tools")
+    assert spec is None, "robinhood_crypto_tools should not be importable"
 
 
-class TestCryptoPositionsStub:
-    """get_crypto_positions must raise NotImplementedError, not return not_implemented."""
+@pytest.mark.unit
+@pytest.mark.journey_system
+def test_server_does_not_import_crypto_placeholder_module() -> None:
+    project_root = Path(__file__).parent.parent.parent
+    server_app_path = project_root / "src/open_stocks_mcp/server/app.py"
+    assert server_app_path.exists(), f"server/app.py must exist at {server_app_path}"
 
-    @pytest.mark.unit
-    @pytest.mark.journey_system
-    @pytest.mark.asyncio
-    async def test_raises_not_implemented(self) -> None:
-        with pytest.raises(
-            NotImplementedError, match="Crypto positions are not yet implemented"
-        ):
-            await get_crypto_positions()
-
-    @pytest.mark.unit
-    @pytest.mark.journey_system
-    @pytest.mark.asyncio
-    async def test_is_not_registered_as_mcp_tool(self) -> None:
-        """Confirm crypto_tools is not imported by the server module."""
-        import open_stocks_mcp.server.app as app_module
-
-        app_src = app_module.__file__
-        assert app_src is not None
-
-        with open(app_src) as fh:
-            src = fh.read()
-
-        assert "robinhood_crypto_tools" not in src, (
-            "robinhood_crypto_tools should not be imported in server/app.py"
-        )
+    source = server_app_path.read_text(encoding="utf-8")
+    assert "robinhood_crypto_tools" not in source, (
+        "Crypto placeholder module should not be imported in server/app.py"
+    )
