@@ -133,7 +133,9 @@ async def test_schwab_stream_quotes_unavailable(
         mock_broker.stream_manager = None
     else:
         mock_broker.stream_manager.is_running = is_running
-        mock_broker.stream_manager.subscribe_quotes = AsyncMock(return_value=sub_success)
+        mock_broker.stream_manager.subscribe_quotes = AsyncMock(
+            return_value=sub_success
+        )
         mock_broker.stream_manager.get_latest_quote.return_value = cached_quote
 
     with patch(

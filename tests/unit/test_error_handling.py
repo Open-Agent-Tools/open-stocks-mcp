@@ -26,7 +26,6 @@ from open_stocks_mcp.tools.error_handling import (
     create_success_response,
     execute_with_retry,
     handle_robin_stocks_errors,
-    handle_robin_stocks_sync_errors,
     handle_schwab_errors,
     log_api_call,
     sanitize_api_response,
@@ -204,42 +203,6 @@ class TestDecorators:
         )
         assert inspect.iscoroutinefunction(decorated) is True
 
-    def test_handle_robin_stocks_sync_errors_returns_value_on_success(self) -> None:
-        def echo(x: str) -> str:
-            return x
-
-        decorated = handle_robin_stocks_sync_errors(echo)
-        assert decorated("AAPL") == "AAPL"
-
-    def test_handle_robin_stocks_sync_errors_classifies_exception(self) -> None:
-        def boom() -> dict[str, Any]:
-            raise RuntimeError("rate limit hit")
-
-        decorated = handle_robin_stocks_sync_errors(boom)
-        assert decorated() == {
-            "result": {
-                "error": "Rate limit exceeded",
-                "error_type": "rate_limit",
-                "status": "error",
-                "context": "in boom",
-            }
-        }
-
-    def test_handle_robin_stocks_sync_errors_preserves_signature_and_coroutine(
-        self,
-    ) -> None:
-        def sample(symbol: str, span: str = "day") -> dict[str, str]:
-            return {"symbol": symbol, "span": span}
-
-        decorated = handle_robin_stocks_sync_errors(sample)
-        assert cast(Any, decorated).__wrapped__ is sample
-        assert decorated.__name__ == "sample"
-        assert (
-            inspect.signature(decorated).parameters
-            == inspect.signature(sample).parameters
-        )
-        assert inspect.iscoroutinefunction(decorated) is False
-
     @pytest.mark.asyncio
     async def test_handle_schwab_errors_behaves_like_robin_stocks_variant(
         self,
@@ -297,35 +260,6 @@ async def test_handle_robin_stocks_errors_classifies_exception() -> None:
 
     decorated = handle_robin_stocks_errors(boom)
     assert await decorated() == {
-        "result": {
-            "error": "Rate limit exceeded",
-            "error_type": "rate_limit",
-            "status": "error",
-            "context": "in boom",
-        }
-    }
-
-
-def test_handle_robin_stocks_sync_errors_behavior_and_metadata() -> None:
-    def sample(symbol: str, span: str = "day") -> dict[str, str]:
-        return {"symbol": symbol, "span": span}
-
-    decorated = handle_robin_stocks_sync_errors(sample)
-    assert decorated("AAPL") == {"symbol": "AAPL", "span": "day"}
-    assert getattr(decorated, "__wrapped__", None) is sample
-    assert decorated.__name__ == "sample"
-    assert (
-        inspect.signature(decorated).parameters == inspect.signature(sample).parameters
-    )
-    assert inspect.iscoroutinefunction(decorated) is False
-
-
-def test_handle_robin_stocks_sync_errors_classifies_exception() -> None:
-    def boom() -> dict[str, Any]:
-        raise RuntimeError("rate limit hit")
-
-    decorated = handle_robin_stocks_sync_errors(boom)
-    assert decorated() == {
         "result": {
             "error": "Rate limit exceeded",
             "error_type": "rate_limit",
