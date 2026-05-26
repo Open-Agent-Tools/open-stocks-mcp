@@ -1896,6 +1896,8 @@ async def schwab_open_option_orders(
         max_results: Maximum orders to fetch before filtering (default 50)
     """
     return await _schwab_get_open_option_orders_impl(account_hash, max_results)
+
+
 # Schwab Streaming Tools
 @mcp.tool()
 async def schwab_stream_option_quotes(symbols: list[str]) -> dict[str, Any]:
