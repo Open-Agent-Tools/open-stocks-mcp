@@ -16,8 +16,8 @@ from open_stocks_mcp.tools.broker_utils import (
 from open_stocks_mcp.tools.error_handling import (
     create_error_response,
     create_success_response,
-    handle_schwab_errors,
 )
+from open_stocks_mcp.tools.schwab.error_handling import handle_schwab_errors
 
 
 def _to_float(value: Any) -> float:
