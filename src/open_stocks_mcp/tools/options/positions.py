@@ -77,7 +77,6 @@ async def get_aggregate_positions() -> dict[str, Any]:
     # Get aggregated positions
     positions_data = await execute_with_retry(
         rh.options.get_aggregate_positions,
-        max_retries=3,
     )
 
     if not positions_data:
@@ -173,7 +172,6 @@ async def get_all_option_positions() -> dict[str, Any]:
     # Get all option positions
     positions_data = await execute_with_retry(
         rh.options.get_all_option_positions,
-        max_retries=3,
     )
 
     if not positions_data:
@@ -278,7 +276,6 @@ async def get_open_option_positions() -> dict[str, Any]:
     # Get open option positions
     positions_data = await execute_with_retry(
         rh.options.get_open_option_positions,
-        max_retries=3,
     )
 
     if not positions_data:
@@ -379,7 +376,6 @@ async def get_open_option_positions_with_details() -> dict[str, Any]:
     # Step 1: Get base open option positions
     positions_data = await execute_with_retry(
         rh.options.get_open_option_positions,
-        max_retries=3,
     )
 
     if not positions_data:

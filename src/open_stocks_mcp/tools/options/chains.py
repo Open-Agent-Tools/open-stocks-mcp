@@ -82,7 +82,7 @@ async def get_options_chains(symbol: str) -> dict[str, Any]:
         return {"result": {"error": "Symbol is required", "status": "error"}}
 
     # Get option chains data
-    chains_data = await execute_with_retry(rh.options.get_chains, symbol, max_retries=3)
+    chains_data = await execute_with_retry(rh.options.get_chains, symbol)
 
     if not chains_data:
         logger.warning(f"No option chains found for {symbol}")
@@ -193,7 +193,6 @@ async def find_tradable_options(
             symbol,
             expiration_date,
             option_type,
-            max_retries=3,
         )
     except AttributeError:
         # Fallback: try alternative API function names
@@ -202,7 +201,6 @@ async def find_tradable_options(
                 rh.get_option_contracts_by_ticker,
                 symbol,
                 expiration_date,
-                max_retries=3,
             )
         except AttributeError:
             logger.error("Could not find correct Robin Stocks options API function")
