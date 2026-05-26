@@ -134,7 +134,7 @@ docs/
 
 ---
 
-## Schwab Tools (24 Total)
+## Schwab Tools (27 Total)
 
 ### Account Tools (5)
 1. `schwab_account_numbers()` - Get account numbers and hashes
@@ -150,7 +150,7 @@ docs/
 9. `schwab_instrument(symbol)` - Get instrument details
 10. `schwab_search_instruments(query)` - Search for instruments
 
-### Trading Tools (8)
+### Trading Tools (11)
 11. `schwab_buy_stock_market(account_hash, symbol, quantity)` - Market buy
 12. `schwab_sell_stock_market(account_hash, symbol, quantity)` - Market sell
 13. `schwab_buy_stock_limit(account_hash, symbol, quantity, price)` - Limit buy
@@ -159,14 +159,17 @@ docs/
 16. `schwab_cancel_order(account_hash, order_id)` - Cancel order
 17. `schwab_order_details(account_hash, order_id)` - Get order details
 18. `schwab_place_order(account_hash, order_spec)` - Generic order placement
+19. `schwab_get_transaction(account_hash, transaction_id)` - Get a single transaction by ID
+20. `schwab_get_transactions(account_hash, ...)` - Get filtered transaction history
+21. `schwab_get_transactions_by_date(account_hash, start_date, end_date, ...)` - Get transaction history for a required date range
 
 ### Options Tools (6)
-19. `schwab_option_chain(symbol, ...)` - Get options chain
-20. `schwab_option_chain_by_dates(symbol, from_date, to_date, ...)` - Filter by expiration
-21. `schwab_option_expirations(symbol)` - Get expiration dates
-22. `schwab_option_positions(account_hash)` - Get options positions
-23. `schwab_option_buy_to_open(account_hash, symbol, quantity, ...)` - Buy option
-24. `schwab_option_sell_to_close(account_hash, symbol, quantity, ...)` - Sell option
+22. `schwab_option_chain(symbol, ...)` - Get options chain
+23. `schwab_option_chain_by_dates(symbol, from_date, to_date, ...)` - Filter by expiration
+24. `schwab_option_expirations(symbol)` - Get expiration dates
+25. `schwab_option_positions(account_hash)` - Get options positions
+26. `schwab_option_buy_to_open(account_hash, symbol, quantity, ...)` - Buy option
+27. `schwab_option_sell_to_close(account_hash, symbol, quantity, ...)` - Sell option
 
 ---
 
