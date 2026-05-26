@@ -25,8 +25,14 @@ cache:
   ttl_account_seconds: 60
   max_size: 1024
 
+circuit_breaker:
+  enabled: true
+  failure_threshold: 5
+  recovery_timeout_seconds: 60.0
+
 feature_flags:
   enable_cache: true
+  enable_circuit_breaker: true
   brokers.robinhood:
     default: true
     environments:
