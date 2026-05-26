@@ -88,6 +88,30 @@ pytest -m "journey_market_data or journey_research"
 pytest -m "journey_account or journey_portfolio or journey_market_data or journey_research or journey_notifications or journey_system"  # read-only journeys
 ```
 
+### Schwab live journey tests
+
+Schwab live journey tests cover account discovery, market data, options chains, and
+read-only order/transaction queries. They require:
+
+- `SCHWAB_API_KEY` — Schwab API key from developer.schwab.com
+- `SCHWAB_APP_SECRET` — Schwab app secret from developer.schwab.com
+- A pre-created token at `SCHWAB_TOKEN_PATH` (default: `~/.tokens/schwab_token.json`).
+  Run interactive authentication once in a terminal before using these tests in pytest.
+- `OPEN_STOCKS_RUN_LIVE_MARKET=1` environment variable
+- `--run-live-market` CLI flag
+
+These tests **never** place or cancel orders; trading coverage is limited to read-only
+order/transaction queries. The `assert_live_schwab_read_only` guard in the harness
+enforces this boundary and is covered by non-live unit tests in
+`tests/integration/test_live_market_harness.py`.
+
+```bash
+# Run all Schwab live journey tests
+OPEN_STOCKS_RUN_LIVE_MARKET=1 RUN_RATE_LIMITED=1 ENABLED_BROKERS=schwab \
+    uv run pytest tests/integration/test_schwab_live_journeys.py \
+    -m "live_market and auth_required and rate_limited" --run-live-market -q
+```
+
 ---
 
 ## Applying Markers to New Tests
