@@ -1,6 +1,6 @@
 # Open Stocks MCP — Tool Reference
 
-Total tools: 149
+Total tools: 150
 
 ## account_details
 
@@ -870,12 +870,7 @@ Get latest account activity events from Schwab streaming.
 
 ## schwab_stream_level2
 
-Get real-time Level 2 order-book snapshot from Schwab streaming.
-
-    Args:
-        symbol: Ticker symbol (e.g. 'AAPL')
-        venue: 'nasdaq' or 'nyse' (default: 'nasdaq')
-
+Get a Level 2 snapshot from Schwab streaming cache for a symbol.
 
 ## schwab_stream_option_quotes
 
@@ -883,6 +878,14 @@ Get real-time option quote snapshots from Schwab streaming.
 
     Args:
         symbols: List of Schwab option symbols (e.g. ['AAPL  260619C00150000'])
+
+
+## schwab_stream_quotes
+
+Get real-time equity quote snapshots from Schwab streaming.
+
+    Args:
+        symbols: List of equity ticker symbols.
 
 
 ## schwab_transactions
