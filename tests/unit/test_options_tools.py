@@ -92,9 +92,7 @@ class TestOptionsChains:
 class TestFindOptions:
     """Test find tradable options functionality."""
 
-    @patch(
-        "open_stocks_mcp.tools.options.chains.rh.find_options_by_expiration"
-    )
+    @patch("open_stocks_mcp.tools.options.chains.rh.find_options_by_expiration")
     @pytest.mark.journey_options
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -125,9 +123,7 @@ class TestFindOptions:
         assert len(result["result"]["options"]) == 2
         assert result["result"]["status"] == "success"
 
-    @patch(
-        "open_stocks_mcp.tools.options.chains.rh.find_options_by_expiration"
-    )
+    @patch("open_stocks_mcp.tools.options.chains.rh.find_options_by_expiration")
     @pytest.mark.journey_options
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -316,9 +312,7 @@ class TestOptionHistoricals:
 class TestOptionPositions:
     """Test option positions retrieval."""
 
-    @patch(
-        "open_stocks_mcp.tools.options.positions.rh.options.get_aggregate_positions"
-    )
+    @patch("open_stocks_mcp.tools.options.positions.rh.options.get_aggregate_positions")
     @pytest.mark.journey_options
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -354,9 +348,7 @@ class TestOptionPositions:
         assert result["result"]["total_contracts"] == 2
         assert result["result"]["status"] == "success"
 
-    @patch(
-        "open_stocks_mcp.tools.options.positions.rh.options.get_aggregate_positions"
-    )
+    @patch("open_stocks_mcp.tools.options.positions.rh.options.get_aggregate_positions")
     @pytest.mark.journey_options
     @pytest.mark.unit
     @pytest.mark.asyncio

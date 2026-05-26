@@ -268,14 +268,9 @@ async def get_stocks_by_tag(tag: str) -> dict[str, Any]:
     stocks_data = await execute_with_retry(rh.get_all_stocks_from_market_tag, tag)
 
     if not stocks_data or stocks_data == [None]:
-        return create_no_data_response(
-            f"No stocks found for tag: {tag}", {"tag": tag}
-        )
+        return create_no_data_response(f"No stocks found for tag: {tag}", {"tag": tag})
 
     # Filter out None values and ensure we have valid data
     stocks = [stock for stock in stocks_data if stock is not None]
 
-    return create_success_response(
-        {"tag": tag, "stocks": stocks, "count": len(stocks)}
-    )
-
+    return create_success_response({"tag": tag, "stocks": stocks, "count": len(stocks)})
