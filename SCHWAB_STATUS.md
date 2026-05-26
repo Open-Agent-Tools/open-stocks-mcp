@@ -1,6 +1,6 @@
 # Schwab Integration Status
 
-**Version**: v0.7.0-dev
+**Version**: 0.6.5
 **Branch**: main (merged from feature/schwab-integration)
 **Date**: 2025-10-06
 **Status**: ✅ **IMPLEMENTATION COMPLETE** - 🔒 **BLOCKED BY API CREDENTIALS**
@@ -30,6 +30,17 @@ The broader comparison-roadmap target (67 parity tools plus 9 Schwab bonus tools
 - #127 Schwab transaction history bonus tools
 
 Roadmap deferral and not-applicable scope decisions are tracked in #201 and mirrored in `docs/TOOL_COMPARISON_ROBINHOOD_VS_SCHWAB.md`.
+
+## Deferred and Not-Applicable Robinhood Categories
+
+This section captures the non-parity categories for Schwab and mirrors the canonical decisions in `docs/TOOL_COMPARISON_ROBINHOOD_VS_SCHWAB.md#decisions`.
+
+- **Watchlists** — **Deferred**: Schwab has no watchlist API endpoint; recommended workaround is client-managed JSON storage.
+- **Cryptocurrency** — **Not Applicable**: Schwab does not expose crypto trading in this MCP broker surface.
+- **Earnings / News / Ratings / Events / Splits** — **Deferred**: these research endpoints are not in Schwab and require third-party integration for future coverage.
+- **Robinhood-specific features (referrals, subscriptions, Gold, account features)** — **Not Applicable**: these are Robinhood platform concepts without Schwab equivalents.
+- **Historical options pricing (`get_option_historicals`)** — **Deferred**: Schwab does not expose historical options pricing data.
+- **Streaming expansion** — **Tracked Elsewhere**: tracked under issue #199 and broker-capability baseline work.
 
 ---
 

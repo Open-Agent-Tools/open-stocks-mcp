@@ -451,12 +451,29 @@ The current implementation remains a 24-tool Schwab core. The broader parity roa
 
 ## Decisions
 
-- Watchlists: deferred to client-side storage patterns; no Schwab-native watchlist API is available.
-- Missing research data (earnings, ratings, news, events, splits): deferred to a future third-party integration; we will not add a transparent Schwab fallback that implies this data exists in Schwab.
-- Historical options pricing: unavailable in the Schwab API; this remains a documented gap unless a new external data source is added.
-- Cryptocurrency tools: not applicable to Schwab scope because Schwab does not expose crypto trading in this MCP surface.
-- Robinhood-specific referrals, subscriptions, and account-feature flags: not applicable to Schwab scope.
-- Streaming exposure: tracked through broker capability baseline work and the dedicated Schwab streaming expansion issue #199.
+### Watchlists
+- **Status**: Deferred
+- **Rationale**: Schwab does not expose a watchlist endpoint; the current workaround is client-side JSON storage (local file or database).
+
+### Cryptocurrency
+- **Status**: Not Applicable
+- **Rationale**: Schwab does not support cryptocurrency trading in this broker surface.
+
+### Earnings / News / Ratings / Events / Splits
+- **Status**: Deferred
+- **Rationale**: Schwab does not provide these research endpoints; future coverage requires third-party data integration rather than a misleading Schwab fallback.
+
+### Robinhood-Specific Platform Features (Referrals / Subscriptions / Gold / Account Features)
+- **Status**: Not Applicable
+- **Rationale**: These capabilities are Robinhood platform features with no Schwab analog.
+
+### Historical Options Pricing (`get_option_historicals`)
+- **Status**: Deferred
+- **Rationale**: Schwab does not provide historical options pricing data; this remains a documented gap unless an external data source is added.
+
+### Streaming Expansion
+- **Status**: Tracked Elsewhere
+- **Rationale**: Streaming expansion is tracked under issue #199 and broker capability baseline work, not treated as a deferred no-equivalent gap in this issue.
 
 ## Conclusion
 
