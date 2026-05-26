@@ -80,6 +80,8 @@ class SchwabStreamManager:
             self.stream_client.add_nasdaq_book_handler(_core_handler)
             self.stream_client.add_nyse_book_handler(_core_handler)
             self.stream_client.add_account_activity_handler(_core_handler)
+            self.stream_client.add_nasdaq_book_handler(_core_handler)
+            self.stream_client.add_nyse_book_handler(_core_handler)
 
             await self.stream_client.login()
             self._is_running = True
@@ -156,9 +158,10 @@ class SchwabStreamManager:
                     if symbol not in self._latest_option_quotes:
                         self._latest_option_quotes[symbol] = {}
                     self._latest_option_quotes[symbol].update(item)
-        elif service in {"NASDAQ_BOOK", "NYSE_BOOK"}:
+        elif service in ("NASDAQ_BOOK", "NYSE_BOOK"):
             for item in content:
-                symbol = item.get("SYMBOL")
+                # Level 2 messages might use 'SYMBOL' or 'key'
+                symbol = item.get("SYMBOL") or item.get("key")
                 if not symbol:
                     continue
                 symbol_upper = symbol.upper()
@@ -246,6 +249,35 @@ class SchwabStreamManager:
             logger.error(f"Failed to subscribe to Schwab account activity: {e}")
             return False
 
+    async def subscribe_level2(self, symbol: str, venue: str = "nasdaq") -> bool:
+        """Subscribe to Level 2 order book for a symbol.
+
+        Args:
+            symbol: Ticker symbol
+            venue: 'nasdaq' or 'nyse'
+
+        Returns:
+            True if subscription successful, False otherwise
+        """
+        if not self._is_running or not self.stream_client:
+            return False
+
+        try:
+            symbol = symbol.upper()
+            if venue.lower() == "nasdaq":
+                await self.stream_client.nasdaq_book_subs([symbol])
+            elif venue.lower() == "nyse":
+                await self.stream_client.nyse_book_subs([symbol])
+            else:
+                logger.error(f"Unsupported Level 2 venue: {venue}")
+                return False
+
+            logger.info(f"Subscribed to Schwab Level 2 ({venue}): {symbol}")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to subscribe to Schwab Level 2 ({venue}) for {symbol}: {e}")
+            return False
+
     def get_latest_activity(self) -> list[dict[str, Any]]:
         """Get latest cached account activity events."""
         return list(self._latest_activity)
@@ -258,29 +290,12 @@ class SchwabStreamManager:
         """Get latest cached option quote for symbol."""
         return self._latest_option_quotes.get(symbol.upper())
 
-    async def subscribe_level2(self, symbol: str, venue: str = "nasdaq") -> bool:
-        """Subscribe to Level 2 order-book stream for a symbol."""
-        if not self._is_running or not self.stream_client:
-            return False
-
-        symbol_upper = symbol.upper()
-        venue_lower = venue.lower()
-
-        try:
-            if venue_lower == "nasdaq":
-                await self.stream_client.nasdaq_book_subs([symbol_upper])
-                return True
-            if venue_lower == "nyse":
-                await self.stream_client.nyse_book_subs([symbol_upper])
-                return True
-            return False
-        except Exception as e:
-            logger.error(
-                f"Failed to subscribe Level 2 for {symbol_upper} on {venue_lower}: {e}"
-            )
-            return False
-
-    def get_latest_level2(self, symbol: str, venue: str = "nasdaq") -> dict[str, Any] | None:
+    def get_latest_level2(self, symbol: str) -> dict[str, Any] | None:
+        """Get latest cached Level 2 book for symbol."""
+        return self._latest_level2_books.get(symbol.upper())
+    def get_latest_level2(
+        self, symbol: str, venue: str = "nasdaq"
+    ) -> dict[str, Any] | None:
         """Get latest cached Level 2 book snapshot for symbol and venue."""
         service = "NASDAQ_BOOK" if venue.lower() == "nasdaq" else "NYSE_BOOK"
         cache_key = f"{symbol.upper()}:{service}"
