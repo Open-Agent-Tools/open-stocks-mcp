@@ -20,8 +20,9 @@ RUN groupadd --gid 1001 mcp && \
 WORKDIR /usr/src/app
 
 # Install the open-stocks-mcp package from PyPI
-# Use the latest version with HTTP transport support
-RUN pip install --no-cache-dir --upgrade open-stocks-mcp
+# Use a pinned version matching the current project release
+ARG OPEN_STOCKS_MCP_VERSION=0.6.5
+RUN pip install --no-cache-dir --upgrade open-stocks-mcp==${OPEN_STOCKS_MCP_VERSION}
 
 # Verify that the package and its dependencies are installed correctly
 RUN pip check && \
