@@ -115,7 +115,9 @@ async def remove_symbols_from_watchlist(
     try:
         from functools import partial
 
-        delete_with_name = partial(rh.delete_symbols_from_watchlist, name=watchlist_name)
+        delete_with_name = partial(
+            rh.delete_symbols_from_watchlist, name=watchlist_name
+        )
         result = await execute_with_retry(
             delete_with_name,
             formatted_symbols,

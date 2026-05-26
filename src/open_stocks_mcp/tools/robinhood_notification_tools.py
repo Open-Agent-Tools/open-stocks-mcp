@@ -1,4 +1,5 @@
 """Robinhood account feature tools."""
+
 from typing import Any
 
 import robin_stocks.robinhood as rh
@@ -96,6 +97,7 @@ async def get_notifications(count: int | None = 20) -> dict[str, Any]:
             "status": "success",
         }
     }
+
 
 @handle_robin_stocks_errors
 async def get_latest_notification() -> dict[str, Any]:

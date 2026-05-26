@@ -268,7 +268,9 @@ async def get_watchlist_performance(watchlist_name: str) -> dict[str, Any]:
             )
 
     total_symbols = len(symbols_list)
-    avg_change_percent = total_change_percent / total_symbols if total_symbols > 0 else 0
+    avg_change_percent = (
+        total_change_percent / total_symbols if total_symbols > 0 else 0
+    )
 
     logger.info(
         f"Performance analysis complete for '{watchlist_name}': {gainers} gainers, {losers} losers"

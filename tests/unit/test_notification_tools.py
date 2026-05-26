@@ -668,9 +668,15 @@ class TestReferrals:
 class TestAccountFeatures:
     """Test account features functionality."""
 
-    @patch("open_stocks_mcp.tools.robinhood_account_feature_summary_tools.get_referrals")
-    @patch("open_stocks_mcp.tools.robinhood_account_feature_summary_tools.get_notifications")
-    @patch("open_stocks_mcp.tools.robinhood_account_feature_summary_tools.get_margin_interest")
+    @patch(
+        "open_stocks_mcp.tools.robinhood_account_feature_summary_tools.get_referrals"
+    )
+    @patch(
+        "open_stocks_mcp.tools.robinhood_account_feature_summary_tools.get_notifications"
+    )
+    @patch(
+        "open_stocks_mcp.tools.robinhood_account_feature_summary_tools.get_margin_interest"
+    )
     @patch(
         "open_stocks_mcp.tools.robinhood_account_feature_summary_tools.get_subscription_fees"
     )
@@ -743,9 +749,15 @@ class TestAccountFeatures:
 
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
-    @patch("open_stocks_mcp.tools.robinhood_account_feature_summary_tools.get_referrals")
-    @patch("open_stocks_mcp.tools.robinhood_account_feature_summary_tools.get_notifications")
-    @patch("open_stocks_mcp.tools.robinhood_account_feature_summary_tools.get_margin_interest")
+    @patch(
+        "open_stocks_mcp.tools.robinhood_account_feature_summary_tools.get_referrals"
+    )
+    @patch(
+        "open_stocks_mcp.tools.robinhood_account_feature_summary_tools.get_notifications"
+    )
+    @patch(
+        "open_stocks_mcp.tools.robinhood_account_feature_summary_tools.get_margin_interest"
+    )
     @patch(
         "open_stocks_mcp.tools.robinhood_account_feature_summary_tools.get_subscription_fees"
     )

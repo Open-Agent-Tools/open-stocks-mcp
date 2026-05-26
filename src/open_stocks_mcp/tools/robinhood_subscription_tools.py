@@ -1,4 +1,5 @@
 """Robinhood account feature tools."""
+
 import contextlib
 from typing import Any
 
