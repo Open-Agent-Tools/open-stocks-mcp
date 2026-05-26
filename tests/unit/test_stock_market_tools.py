@@ -337,6 +337,45 @@ class TestStockMarketTools:
         assert result["result"]["status"] == "no_data"
         assert "No instrument data found" in result["result"]["message"]
 
+    @pytest.mark.unit
+    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_fundamentals")
+    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_instruments_by_symbols")
+    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_name_by_symbol")
+    @pytest.mark.asyncio
+    async def test_get_stock_info_batched(
+        self,
+        mock_get_name: Any,
+        mock_get_instruments: Any,
+        mock_get_fundamentals: Any,
+        robinhood_instrument_payload: dict[str, Any],
+        robinhood_fundamentals_payload: dict[str, Any],
+    ) -> None:
+        """Concurrent get_stock_info calls should batch their instrument lookups."""
+        mock_get_fundamentals.return_value = [robinhood_fundamentals_payload]
+        mock_get_name.return_value = "Mock Name"
+
+        def inst_side_effect(symbols):
+            return [
+                {**robinhood_instrument_payload, "symbol": s}
+                for s in (symbols if isinstance(symbols, list) else [symbols])
+            ]
+
+        mock_get_instruments.side_effect = inst_side_effect
+
+        results = await asyncio.gather(
+            get_stock_info("AAPL"),
+            get_stock_info("MSFT"),
+        )
+
+        assert len(results) == 2
+        assert results[0]["result"]["symbol"] == "AAPL"
+        assert results[1]["result"]["symbol"] == "MSFT"
+
+        # Verify only ONE instrument API call was made for both symbols
+        assert mock_get_instruments.call_count == 1
+        called_symbols = mock_get_instruments.call_args[0][0]
+        assert set(called_symbols) == {"AAPL", "MSFT"}
+
     @pytest.mark.journey_market_data
     @pytest.mark.unit
     @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_markets")

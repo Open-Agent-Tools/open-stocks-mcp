@@ -16,6 +16,10 @@ rate_limits:
   calls_per_hour: 1000
   burst_size: 5
 
+batch:
+  batch_size: 10
+  queue_max_wait: 0.5
+
 cache:
   ttl_market_seconds: 15
   ttl_account_seconds: 60
