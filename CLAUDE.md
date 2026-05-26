@@ -8,7 +8,7 @@ Project guidance for Claude Code when working with the Open Stocks MCP server.
 - **Current Version**: v0.6.5 with enhanced authentication and session management
 - **Framework**: FastMCP for simplified MCP development
 - **API**: Robin Stocks for market data and trading
-- **Transport**: HTTP with Server-Sent Events (SSE) on port 3001
+- **Transport**: HTTP with Server-Sent Events (SSE), configurable via `--port` (default 3000)
 - **Docker**: Production-ready with persistent session/log storage
 
 ## Quick Reference
@@ -150,7 +150,7 @@ ROBINHOOD_PASSWORD="password"
 - ✅ **Phases 0-7**: 122 MCP tools with complete trading functionality (4 deprecated)
 - ✅ **Enhanced Options Tools**: New `get_open_option_positions_with_details()` with call/put enrichment
 - ✅ **Journey Testing**: 11 user journey categories for organized testing
-- ✅ **HTTP Transport**: Server-Sent Events (SSE) on port 3001
+- ✅ **HTTP Transport**: Server-Sent Events (SSE), default port 3000
 - ✅ **Docker Infrastructure**: Persistent volumes for sessions and logs
 - ✅ **Test Coverage**: Comprehensive test suite with journey-based markers
 - ✅ **Type Safety**: Zero MyPy errors maintained across codebase
@@ -231,7 +231,7 @@ if isinstance(order_result, dict) and 'non_field_errors' in order_result:
 ## Important Notes
 
 - **Use UV for dependencies** - Project uses UV package manager  
-- **HTTP transport default** - Server runs on port 3001 (not 3000)
+- **HTTP transport default** - Server defaults to port 3000; use `--port 3001` to override
 - **Docker persistent volumes** - Session tokens and logs survive restarts
 - **Async patterns required** - Robin Stocks is sync, tools are async
 - **JSON responses mandatory** - All tools return `{"result": data}` format
