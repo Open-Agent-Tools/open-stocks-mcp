@@ -151,7 +151,7 @@ Reference docs and runnable examples:
 
 ### 🏦 Multi-Broker Support
 
-**Robinhood Tools (87 tools)**:
+**Robinhood Tools (88 tools)**:
 - All existing Robinhood functionality maintained
 - No breaking changes to existing API
 
