@@ -216,6 +216,11 @@ class SessionManager:
         return info
 
     async def logout(self) -> None:
+        """Logout and clear session.
+
+        Robin Stocks logout exceptions are logged and re-raised. Local
+        session state is reset in the finally block even when logout raises.
+        """
         async with self._lock:
             try:
                 loop = asyncio.get_event_loop()

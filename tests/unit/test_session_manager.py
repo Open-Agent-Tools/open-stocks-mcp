@@ -306,6 +306,18 @@ async def test_logout_reraises_exception_and_still_clears_state() -> None:
     assert manager._failed_login_attempts == 0
 
 
+def test_logout_docstring_contract() -> None:
+    """Assert that logout() documents its fail-hard and finally-cleanup contract."""
+    doc = SessionManager.logout.__doc__
+    assert doc is not None
+    # Contract: Exceptions are logged and re-raised
+    assert "logged" in doc.lower()
+    assert "re-raised" in doc.lower()
+    # Contract: Session state is reset in finally block
+    assert "finally" in doc.lower()
+    assert "session state" in doc.lower()
+
+
 @pytest.mark.asyncio
 async def test_refresh_session_reauthenticates() -> None:
     manager = SessionManager()
