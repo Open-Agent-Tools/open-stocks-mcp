@@ -58,6 +58,34 @@ class TestSimpleRateLimiter:
         limiter2 = get_rate_limiter()
         assert limiter is limiter2
 
+    @pytest.mark.unit
+    def test_rate_limiter_constants_defined_and_used(self) -> None:
+        """Verify that rate limiter constants are exported and used as defaults."""
+        from open_stocks_mcp.tools.rate_limiter import (
+            BURST_WINDOW_SECONDS,
+            DEFAULT_BURST_SIZE,
+            DEFAULT_CALLS_PER_HOUR,
+            DEFAULT_CALLS_PER_MINUTE,
+            SECONDS_PER_HOUR,
+            SECONDS_PER_MINUTE,
+            reset_global_rate_limiter,
+        )
+
+        # Check values
+        assert SECONDS_PER_MINUTE == 60
+        assert SECONDS_PER_HOUR == 3600
+        assert BURST_WINDOW_SECONDS == 1
+        assert DEFAULT_CALLS_PER_MINUTE == 30
+        assert DEFAULT_CALLS_PER_HOUR == 1000
+        assert DEFAULT_BURST_SIZE == 5
+
+        # Reset and check get_rate_limiter defaults
+        reset_global_rate_limiter()
+        limiter = get_rate_limiter()
+        assert limiter.calls_per_minute == DEFAULT_CALLS_PER_MINUTE
+        assert limiter.calls_per_hour == DEFAULT_CALLS_PER_HOUR
+        assert limiter.burst_size == DEFAULT_BURST_SIZE
+
     @patch("open_stocks_mcp.tools.rate_limiter.time.time")
     @patch("open_stocks_mcp.tools.rate_limiter.asyncio.sleep")
     @pytest.mark.journey_system
