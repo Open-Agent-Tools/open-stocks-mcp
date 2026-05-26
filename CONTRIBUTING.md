@@ -43,6 +43,13 @@ The default pytest configuration skips live market and performance tests. Rate-l
 | Trading journey | `uv run pytest -m "journey_trading"` |
 | Integration tests | `uv run pytest tests/integration/ -m integration` |
 | Rate-limited live tests | `RUN_RATE_LIMITED=1 uv run pytest -m rate_limited` |
+| Schwab live journeys | `OPEN_STOCKS_RUN_LIVE_MARKET=1 RUN_RATE_LIMITED=1 ENABLED_BROKERS=schwab uv run pytest tests/integration/test_schwab_live_journeys.py -m "live_market and auth_required and rate_limited" --run-live-market -q` |
+
+The Schwab live journey tests require `SCHWAB_API_KEY`, `SCHWAB_APP_SECRET`, and a
+pre-created OAuth token at `SCHWAB_TOKEN_PATH` (default: `~/.tokens/schwab_token.json`).
+Run interactive authentication from the terminal once before using these tests in pytest.
+They never place or cancel orders; trading coverage is read-only. See
+[docs/TEST_MARKERS.md](docs/TEST_MARKERS.md) for the full Schwab marker requirements.
 
 VS Code Test Explorer uses `python.testing.pytestArgs` from `.vscode/settings.json`, so it discovers `tests/` and then applies the project-level marker defaults from `pyproject.toml`.
 
