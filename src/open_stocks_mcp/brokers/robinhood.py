@@ -13,7 +13,7 @@ from open_stocks_mcp.tools.robinhood_account_tools import (
     get_portfolio,
     get_positions,
 )
-from open_stocks_mcp.tools.robinhood_trading_tools import (
+from open_stocks_mcp.tools.trading.orders_stock import (
     order_buy_market,
     order_sell_market,
 )

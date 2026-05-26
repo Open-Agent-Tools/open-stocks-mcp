@@ -20,6 +20,8 @@ from open_stocks_mcp.tools.robinhood_trading_tools import (
     cancel_stock_order,
     get_all_open_option_orders,
     get_all_open_stock_orders,
+)
+from open_stocks_mcp.tools.trading.orders_stock import (
     order_buy_limit,
     order_buy_market,
     order_buy_stop_loss,
@@ -77,26 +79,25 @@ def _returns_create_success_error_response(handler: ast.ExceptHandler) -> bool:
 
 
 def test_trading_tools_do_not_keep_local_exception_response_boilerplate() -> None:
-    module_path = (
-        Path(__file__).parents[2]
-        / "src"
-        / "open_stocks_mcp"
-        / "tools"
-        / "robinhood_trading_tools.py"
-    )
-    tree = ast.parse(module_path.read_text())
+    tools_dir = Path(__file__).parents[2] / "src" / "open_stocks_mcp" / "tools"
+    files_to_check = [
+        tools_dir / "robinhood_trading_tools.py",
+        tools_dir / "trading" / "orders_stock.py",
+    ]
 
     offenders = []
-    for node in ast.walk(tree):
-        if not isinstance(node, ast.ExceptHandler):
-            continue
-        if not (
-            isinstance(node.type, ast.Name)
-            and node.type.id == "Exception"
-            and _returns_create_success_error_response(node)
-        ):
-            continue
-        offenders.append(node.lineno)
+    for file_path in files_to_check:
+        tree = ast.parse(file_path.read_text())
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.ExceptHandler):
+                continue
+            if not (
+                isinstance(node.type, ast.Name)
+                and node.type.id == "Exception"
+                and _returns_create_success_error_response(node)
+            ):
+                continue
+            offenders.append(f"{file_path.name}:{node.lineno}")
 
     assert offenders == []
 
@@ -112,7 +113,7 @@ class TestOrderBuyMarket:
     @pytest.mark.journey_trading
     @pytest.mark.unit
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.robinhood_trading_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.trading.orders_stock.execute_with_retry")
     async def test_success_passes_timeinforce_gfd(
         self, mock_execute: AsyncMock
     ) -> None:
@@ -137,7 +138,7 @@ class TestOrderBuyMarket:
     @pytest.mark.journey_trading
     @pytest.mark.unit
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.robinhood_trading_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.trading.orders_stock.execute_with_retry")
     async def test_non_field_errors_returned_as_error(
         self, mock_execute: AsyncMock
     ) -> None:
@@ -154,7 +155,7 @@ class TestOrderBuyMarket:
     @pytest.mark.journey_trading
     @pytest.mark.unit
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.robinhood_trading_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.trading.orders_stock.execute_with_retry")
     async def test_order_placement_exception(self, mock_execute: AsyncMock) -> None:
         """Exception during order placement returns decorator error response."""
         mock_execute.side_effect = [
@@ -190,7 +191,7 @@ class TestOrderBuyMarket:
     @pytest.mark.journey_trading
     @pytest.mark.unit
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.robinhood_trading_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.trading.orders_stock.execute_with_retry")
     async def test_symbol_not_found_returns_error(
         self, mock_execute: AsyncMock
     ) -> None:
@@ -205,7 +206,7 @@ class TestOrderBuyMarket:
     @pytest.mark.journey_trading
     @pytest.mark.unit
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.robinhood_trading_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.trading.orders_stock.execute_with_retry")
     async def test_insufficient_buying_power_returns_error(
         self, mock_execute: AsyncMock
     ) -> None:
@@ -234,7 +235,7 @@ class TestOrderSellMarket:
     @pytest.mark.journey_trading
     @pytest.mark.unit
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.robinhood_trading_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.trading.orders_stock.execute_with_retry")
     async def test_success_passes_timeinforce_gfd(
         self, mock_execute: AsyncMock
     ) -> None:
@@ -259,7 +260,7 @@ class TestOrderSellMarket:
     @pytest.mark.journey_trading
     @pytest.mark.unit
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.robinhood_trading_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.trading.orders_stock.execute_with_retry")
     async def test_non_field_errors_returned_as_error(
         self, mock_execute: AsyncMock
     ) -> None:
@@ -276,7 +277,7 @@ class TestOrderSellMarket:
     @pytest.mark.journey_trading
     @pytest.mark.unit
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.robinhood_trading_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.trading.orders_stock.execute_with_retry")
     async def test_order_placement_exception(self, mock_execute: AsyncMock) -> None:
         """Exception during order placement returns decorator error response."""
         mock_execute.side_effect = [MOCK_POSITION, Exception("Timeout")]
@@ -307,7 +308,7 @@ class TestOrderSellMarket:
     @pytest.mark.journey_trading
     @pytest.mark.unit
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.robinhood_trading_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.trading.orders_stock.execute_with_retry")
     async def test_no_position_returns_error(self, mock_execute: AsyncMock) -> None:
         """Selling with no open position returns error without placing order."""
         mock_execute.return_value = []  # empty positions
@@ -321,7 +322,7 @@ class TestOrderSellMarket:
     @pytest.mark.journey_trading
     @pytest.mark.unit
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.robinhood_trading_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.trading.orders_stock.execute_with_retry")
     async def test_insufficient_shares_returns_error(
         self, mock_execute: AsyncMock
     ) -> None:
@@ -345,7 +346,7 @@ class TestOrderBuyLimit:
     @pytest.mark.journey_trading
     @pytest.mark.unit
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.robinhood_trading_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.trading.orders_stock.execute_with_retry")
     async def test_success(self, mock_execute: AsyncMock) -> None:
         """Limit buy order succeeds with valid inputs."""
         mock_execute.side_effect = [MOCK_QUOTE, MOCK_ACCOUNT, MOCK_ORDER]
@@ -379,7 +380,7 @@ class TestOrderBuyLimit:
     @pytest.mark.journey_trading
     @pytest.mark.unit
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.robinhood_trading_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.trading.orders_stock.execute_with_retry")
     async def test_limit_price_too_high_returns_error(
         self, mock_execute: AsyncMock
     ) -> None:
@@ -395,7 +396,7 @@ class TestOrderBuyLimit:
     @pytest.mark.journey_trading
     @pytest.mark.unit
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.robinhood_trading_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.trading.orders_stock.execute_with_retry")
     async def test_non_field_errors_returned_as_error(
         self, mock_execute: AsyncMock
     ) -> None:
@@ -412,7 +413,7 @@ class TestOrderBuyLimit:
     @pytest.mark.journey_trading
     @pytest.mark.unit
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.robinhood_trading_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.trading.orders_stock.execute_with_retry")
     async def test_order_placement_exception(self, mock_execute: AsyncMock) -> None:
         """Exception during limit order placement returns decorator error."""
         mock_execute.side_effect = [MOCK_QUOTE, MOCK_ACCOUNT, Exception("API down")]
@@ -433,7 +434,7 @@ class TestOrderSellLimit:
     @pytest.mark.journey_trading
     @pytest.mark.unit
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.robinhood_trading_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.trading.orders_stock.execute_with_retry")
     async def test_success(self, mock_execute: AsyncMock) -> None:
         """Limit sell order succeeds with valid inputs."""
         mock_execute.side_effect = [MOCK_POSITION, MOCK_ORDER]
@@ -458,7 +459,7 @@ class TestOrderSellLimit:
     @pytest.mark.journey_trading
     @pytest.mark.unit
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.robinhood_trading_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.trading.orders_stock.execute_with_retry")
     async def test_no_position_returns_error(self, mock_execute: AsyncMock) -> None:
         """Limit sell with no open position returns error."""
         mock_execute.return_value = []
@@ -471,7 +472,7 @@ class TestOrderSellLimit:
     @pytest.mark.journey_trading
     @pytest.mark.unit
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.robinhood_trading_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.trading.orders_stock.execute_with_retry")
     async def test_non_field_errors_returned_as_error(
         self, mock_execute: AsyncMock
     ) -> None:
@@ -487,7 +488,7 @@ class TestOrderSellLimit:
     @pytest.mark.journey_trading
     @pytest.mark.unit
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.robinhood_trading_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.trading.orders_stock.execute_with_retry")
     async def test_order_placement_exception(self, mock_execute: AsyncMock) -> None:
         """Exception during limit sell placement returns decorator error."""
         mock_execute.side_effect = [MOCK_POSITION, Exception("Connection reset")]
@@ -518,7 +519,7 @@ class TestOrderStopLoss:
     @pytest.mark.journey_trading
     @pytest.mark.unit
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.robinhood_trading_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.trading.orders_stock.execute_with_retry")
     async def test_buy_stop_loss_below_current_price_rejected(
         self, mock_execute: AsyncMock
     ) -> None:
@@ -533,7 +534,7 @@ class TestOrderStopLoss:
     @pytest.mark.journey_trading
     @pytest.mark.unit
     @pytest.mark.asyncio
-    @patch("open_stocks_mcp.tools.robinhood_trading_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.trading.orders_stock.execute_with_retry")
     async def test_buy_stop_loss_success(self, mock_execute: AsyncMock) -> None:
         """Valid stop buy order succeeds."""
         mock_execute.side_effect = [
