@@ -519,8 +519,8 @@ class TestMCPIntegration:
         data = response.json()
         assert data["jsonrpc"] == "2.0"
         assert data["id"] == 1
-        assert data["error"]["code"] == -32600
-        assert "read-only mode" in data["error"]["message"].lower()
+        assert data["error"]["code"] == -32001
+        assert "not permitted" in data["error"]["message"].lower()
 
     @pytest.mark.anyio
     async def test_mcp_endpoint_allows_read_only_tools_by_default(

@@ -649,11 +649,8 @@ def create_http_server(
                             {
                                 "jsonrpc": "2.0",
                                 "error": {
-                                    "code": -32600,
-                                    "message": (
-                                        "Tool is not allowed in read-only mode. "
-                                        "Enable --allow-trading to permit mutating tools."
-                                    ),
+                                    "code": -32001,
+                                    "message": "Tool call not permitted",
                                 },
                                 "id": request_id,
                             },
@@ -661,7 +658,7 @@ def create_http_server(
                             method=method,
                             request_id=request_id,
                             outcome="error",
-                            error_code=-32600,
+                            error_code=-32001,
                             error_type="forbidden_tool",
                         )
 
