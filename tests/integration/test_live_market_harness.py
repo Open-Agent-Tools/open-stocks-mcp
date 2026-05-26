@@ -202,3 +202,19 @@ class TestSchwabReadOnlyGuard:
         """schwab_option_sell_to_close places an option order and is prohibited."""
         with pytest.raises(ValueError, match="schwab_option_sell_to_close"):
             assert_live_schwab_read_only("schwab_option_sell_to_close")
+
+    @pytest.mark.parametrize(
+        "tool_name",
+        [
+            "schwab_buy_stock_market",
+            "schwab_sell_stock_market",
+            "schwab_buy_stock_limit",
+            "schwab_sell_stock_limit",
+            "schwab_place_order",
+            "schwab_cancel_order",
+        ],
+    )
+    def test_rejects_public_schwab_mcp_trading_tools(self, tool_name: str) -> None:
+        """Public MCP order placement and cancellation tools are prohibited."""
+        with pytest.raises(ValueError, match=tool_name):
+            assert_live_schwab_read_only(tool_name)

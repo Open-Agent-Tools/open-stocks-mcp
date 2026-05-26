@@ -42,7 +42,12 @@ _PROHIBITED_PREFIXES = ("order_", "cancel_")
 _SCHWAB_PROHIBITED_TOOLS = frozenset(
     {
         "schwab_buy_market",
+        "schwab_buy_stock_market",
+        "schwab_buy_stock_limit",
+        "schwab_cancel_order",
         "schwab_sell_market",
+        "schwab_sell_stock_market",
+        "schwab_sell_stock_limit",
         "schwab_buy_limit",
         "schwab_sell_limit",
         "cancel_schwab_order",
@@ -58,6 +63,7 @@ _SCHWAB_PROHIBITED_TOOLS = frozenset(
         "schwab_order_sell_option_limit",
         "schwab_replace_order",
         "place_schwab_order",
+        "schwab_place_order",
     }
 )
 
