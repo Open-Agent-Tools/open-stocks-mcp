@@ -35,6 +35,7 @@ from open_stocks_mcp.tools.market.movers import (
     get_top_movers,
     get_top_movers_sp500,
 )
+from open_stocks_mcp.tools.market.news import get_stock_news
 from open_stocks_mcp.tools.market.ratings import get_stock_ratings
 from open_stocks_mcp.tools.options import (
     find_tradable_options,
@@ -78,7 +79,6 @@ from open_stocks_mcp.tools.robinhood_market_data_tools import (
     get_stock_earnings,
     get_stock_events,
     get_stock_level2_data,
-    get_stock_news,
     get_stock_splits,
 )
 from open_stocks_mcp.tools.robinhood_order_tools import (
