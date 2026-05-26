@@ -21,7 +21,7 @@ This setup uses a production-ready approach:
 ### 1. Choose Your Setup
 
 **Production (Recommended):**
-Uses the published PyPI package (v0.5.5 with full trading support):
+Uses the published PyPI package (v0.6.5 with full trading support):
 ```bash
 docker-compose up
 ```
@@ -101,7 +101,7 @@ INFO -   - Health Check: http://0.0.0.0:3001/health
 
 Run the server using Docker Compose:
 
-**Production (Recommended - v0.5.5 with trading support):**
+**Production (Recommended - v0.6.5 with trading support):**
 ```bash
 # Foreground (see logs)
 docker-compose up
@@ -182,7 +182,7 @@ This script automatically:
 ```bash
 # Health check endpoint
 curl http://localhost:3001/health
-# Returns: {"status":"healthy","version":"0.5.5","transport":"http"}
+# Returns: {"status":"healthy","version":"0.6.5","transport":"http"}
 
 # Server information
 curl http://localhost:3001/
@@ -303,7 +303,7 @@ Adjust these in `docker-compose.yml` based on your needs.
 
 ## Version Information
 
-**Current Release: v0.5.5**
+**Current Release: v0.6.5**
 - ✅ HTTP transport with Server-Sent Events (SSE)
 - ✅ FastAPI-based server with comprehensive middleware
 - ✅ Security headers and CORS support
@@ -314,7 +314,7 @@ Adjust these in `docker-compose.yml` based on your needs.
 - ✅ Full backward compatibility with STDIO transport
 
 **Container Image:**
-- **Production**: Uses PyPI package `open-stocks-mcp==0.5.5`
+- **Production**: Uses PyPI package `open-stocks-mcp==0.6.5`
 - **Development**: Built from source with latest features
 - **Base**: Python 3.11-slim for security and performance
 
@@ -322,7 +322,7 @@ Adjust these in `docker-compose.yml` based on your needs.
 - ✅ **Market Orders**: `buy_stock_market` tested with XOM
 - ✅ **Limit Orders**: `buy_stock_limit` tested with XOM at $95
 - ✅ **Order Cancellation**: Both individual and bulk cancellation tested
-- ✅ **API Reliability**: Fixed critical trading API bugs in v0.5.5
+- ✅ **API Reliability**: Fixed critical trading API bugs in v0.6.5
 - ✅ **Safety Features**: Robinhood safety mechanisms working (market → limit conversion)
 
 ## Security Features
