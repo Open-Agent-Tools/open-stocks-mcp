@@ -419,3 +419,29 @@ class TestOtherRobinhoodDelegations:
 
         mock_tool.assert_awaited_once_with("GOOGL")
         assert result == expected
+
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    async def test_order_buy_market_delegates(self, broker: RobinhoodBroker) -> None:
+        expected = {"result": {"status": "success"}}
+        with patch(
+            "open_stocks_mcp.brokers.robinhood.order_buy_market",
+            new=AsyncMock(return_value=expected),
+        ) as mock_tool:
+            result = await broker.order_buy_market("AAPL", 1)
+
+        mock_tool.assert_awaited_once_with("AAPL", 1)
+        assert result == expected
+
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    async def test_order_sell_market_delegates(self, broker: RobinhoodBroker) -> None:
+        expected = {"result": {"status": "success"}}
+        with patch(
+            "open_stocks_mcp.brokers.robinhood.order_sell_market",
+            new=AsyncMock(return_value=expected),
+        ) as mock_tool:
+            result = await broker.order_sell_market("AAPL", 1)
+
+        mock_tool.assert_awaited_once_with("AAPL", 1)
+        assert result == expected
