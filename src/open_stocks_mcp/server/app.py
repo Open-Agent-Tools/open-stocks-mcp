@@ -192,6 +192,9 @@ from open_stocks_mcp.tools.schwab_payment_tools import (
 from open_stocks_mcp.tools.schwab_payment_tools import (
     schwab_get_stock_loan_payments as _schwab_get_stock_loan_payments_impl,
 )
+from open_stocks_mcp.tools.schwab_payment_tools import (
+    schwab_get_total_dividends as _schwab_get_total_dividends_impl,
+)
 from open_stocks_mcp.tools.schwab_portfolio_tools import (
     get_schwab_aggregate_positions,
     get_schwab_all_option_positions,
@@ -1599,6 +1602,23 @@ async def schwab_get_interest_payments(
         end_date: Optional end date (YYYY-MM-DD)
     """
     return await _schwab_get_interest_payments_impl(account_hash, start_date, end_date)
+
+
+@mcp.tool()
+async def schwab_get_total_dividends(
+    account_hash: str,
+    start_date: str | None = None,
+    end_date: str | None = None,
+) -> dict[str, Any]:
+    """Get aggregate dividend totals with year grouping for a Schwab account.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+        start_date: Optional start date (YYYY-MM-DD). Schwab enforces a 60-day
+            default lookback; pass an explicit start_date for older history.
+        end_date: Optional end date (YYYY-MM-DD)
+    """
+    return await _schwab_get_total_dividends_impl(account_hash, start_date, end_date)
 
 
 @mcp.tool()
