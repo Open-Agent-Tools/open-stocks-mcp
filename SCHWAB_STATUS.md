@@ -1,6 +1,6 @@
 # Schwab Integration Status
 
-**Version**: 0.6.5
+**Version**: v0.6.5
 **Branch**: main (merged from feature/schwab-integration)
 **Date**: 2025-10-06
 **Status**: ✅ **IMPLEMENTATION COMPLETE** - 🔒 **BLOCKED BY API CREDENTIALS**
