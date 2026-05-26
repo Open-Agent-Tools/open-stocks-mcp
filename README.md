@@ -4,7 +4,7 @@ An MCP (Model Context Protocol) server providing access to stock market data and
 
 ## Features
 
-**🚀 Current Status: v0.7.0-dev - Multi-Broker Support (Robinhood + Schwab)**
+**🚀 Current Status: v0.6.5 - Multi-Broker Support (Robinhood + Schwab)**
 - ✅ **MCP tools** across Robinhood + Schwab (see [Tool Reference](docs/MCP_TOOLS_REFERENCE.md) for current breakdown)
 - ✅ **Multi-broker architecture** - Support for Robinhood and Charles Schwab
 - ✅ **Complete trading functionality** - stocks, options, order management
