@@ -6,7 +6,11 @@ from unittest.mock import patch
 
 import pytest
 
-from open_stocks_mcp.tools.rate_limiter import RateLimiter, get_rate_limiter
+from open_stocks_mcp.tools.rate_limiter import (
+    RateLimiter,
+    get_rate_limiter,
+    rate_limited_call,
+)
 
 
 class TestSimpleRateLimiter:
@@ -395,3 +399,25 @@ class TestRequestCoordinator:
         c1 = get_request_coordinator()
         c2 = get_request_coordinator()
         assert c1 is c2
+
+
+@pytest.mark.journey_system
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_rate_limited_call_runs_sync_function_without_deprecated_loop(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fake_acquire(_endpoint: str | None = None) -> None:
+        return None
+
+    monkeypatch.setattr(get_rate_limiter(), "acquire", fake_acquire)
+    monkeypatch.setattr(
+        "open_stocks_mcp.tools.rate_limiter.asyncio.get_event_loop",
+        lambda: (_ for _ in ()).throw(AssertionError("deprecated loop lookup")),
+    )
+
+    def add(a: int, b: int) -> int:
+        return a + b
+
+    result = await rate_limited_call(add, 2, 3)
+    assert result == 5

@@ -24,7 +24,7 @@ def test_get_stock_price_aapl(live_robinhood_session: object) -> None:
 
     from open_stocks_mcp.tools.stocks.quote import get_stock_price
 
-    result = asyncio.get_event_loop().run_until_complete(get_stock_price("AAPL"))
+    result = asyncio.run(get_stock_price("AAPL"))
     assert isinstance(result, dict), "Response must be a dict"
     assert "result" in result, "Response must contain a 'result' key"
     assert isinstance(result["result"], dict), "'result' value must be a dict"

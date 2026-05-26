@@ -129,3 +129,16 @@ def test_dependency_floors_and_pre_commit_revisions() -> None:
     repo_revs = {repo["repo"]: repo["rev"] for repo in pre_commit["repos"]}
     assert repo_revs["https://github.com/astral-sh/ruff-pre-commit"] == "v0.15.14"
     assert repo_revs["https://github.com/pre-commit/pre-commit-hooks"] == "v6.0.0"
+
+
+@pytest.mark.unit
+def test_production_code_avoids_deprecated_asyncio_get_event_loop() -> None:
+    offenders: list[str] = []
+    for path in (ROOT / "src").rglob("*.py"):
+        if "asyncio.get_event_loop(" in path.read_text(encoding="utf-8"):
+            offenders.append(str(path.relative_to(ROOT)))
+
+    assert offenders == [], (
+        "Deprecated asyncio.get_event_loop() found in production code: "
+        + ", ".join(offenders)
+    )
