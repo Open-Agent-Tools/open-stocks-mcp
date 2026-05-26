@@ -4,6 +4,7 @@ from typing import Any
 
 import robin_stocks.robinhood as rh
 
+from open_stocks_mcp.brokers.session_state import get_session_manager
 from open_stocks_mcp.tools.error_handling import (
     create_error_response,
     create_no_data_response,
@@ -13,7 +14,6 @@ from open_stocks_mcp.tools.error_handling import (
     log_api_call,
 )
 from open_stocks_mcp.tools.rate_limiter import get_rate_limiter
-from open_stocks_mcp.tools.session_manager import get_session_manager
 
 
 @handle_robin_stocks_errors
@@ -268,14 +268,9 @@ async def get_stocks_by_tag(tag: str) -> dict[str, Any]:
     stocks_data = await execute_with_retry(rh.get_all_stocks_from_market_tag, tag)
 
     if not stocks_data or stocks_data == [None]:
-        return create_no_data_response(
-            f"No stocks found for tag: {tag}", {"tag": tag}
-        )
+        return create_no_data_response(f"No stocks found for tag: {tag}", {"tag": tag})
 
     # Filter out None values and ensure we have valid data
     stocks = [stock for stock in stocks_data if stock is not None]
 
-    return create_success_response(
-        {"tag": tag, "stocks": stocks, "count": len(stocks)}
-    )
-
+    return create_success_response({"tag": tag, "stocks": stocks, "count": len(stocks)})
