@@ -82,6 +82,115 @@ class TestSimpleRateLimiter:
     @pytest.mark.journey_system
     @pytest.mark.unit
     @pytest.mark.asyncio
+    async def test_hourly_limit_waits_until_oldest_hour_entry_expires(
+        self, mock_sleep: Any, mock_time: Any
+    ) -> None:
+        """Hourly limit waits are based on the oldest call in the hour window."""
+        current_time: dict[str, float] = {"value": 3000.0}
+
+        async def fake_sleep(duration: float) -> None:
+            current_time["value"] += duration + 0.001
+
+        mock_time.side_effect = lambda: current_time["value"]
+        mock_sleep.side_effect = fake_sleep
+
+        limiter = RateLimiter(calls_per_minute=10, calls_per_hour=2, burst_size=10)
+        limiter.call_times.extend([1000.0, 2000.0])
+
+        await asyncio.wait_for(limiter.acquire(), timeout=1)
+
+        mock_sleep.assert_awaited_once()
+        assert mock_sleep.await_args.args[0] == pytest.approx(1600.0)
+        assert list(limiter.call_times) == pytest.approx([2000.0, 4600.001])
+
+    @patch("open_stocks_mcp.tools.rate_limiter.time.time")
+    @patch("open_stocks_mcp.tools.rate_limiter.asyncio.sleep")
+    @pytest.mark.journey_system
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    async def test_burst_limit_sleeps_without_real_delay(
+        self, mock_sleep: Any, mock_time: Any
+    ) -> None:
+        """Burst overflow waits for the oldest burst-window call to expire."""
+        current_time: dict[str, float] = {"value": 1000.0}
+
+        async def fake_sleep(duration: float) -> None:
+            current_time["value"] += duration + 0.001
+
+        mock_time.side_effect = lambda: current_time["value"]
+        mock_sleep.side_effect = fake_sleep
+
+        limiter = RateLimiter(calls_per_minute=10, calls_per_hour=100, burst_size=2)
+        limiter.call_times.extend([999.3, 999.6])
+
+        await asyncio.wait_for(limiter.acquire(), timeout=1)
+
+        mock_sleep.assert_awaited_once()
+        sleep_duration = mock_sleep.await_args.args[0]
+        assert 0 < sleep_duration < 1
+        assert sleep_duration == pytest.approx(0.3)
+        assert len(limiter.call_times) == 3
+
+    @patch("open_stocks_mcp.tools.rate_limiter.time.time")
+    @patch("open_stocks_mcp.tools.rate_limiter.asyncio.sleep")
+    @pytest.mark.journey_system
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    async def test_acquire_prunes_minute_and_hour_windows(
+        self, mock_sleep: Any, mock_time: Any
+    ) -> None:
+        """Expired hourly entries are pruned and minute stats reset after 60s."""
+        mock_time.return_value = 5000.0
+        mock_sleep.return_value = None
+
+        limiter = RateLimiter(calls_per_minute=2, calls_per_hour=5, burst_size=5)
+        limiter.call_times.extend([1000.0, 4939.0])
+
+        await limiter.acquire()
+
+        mock_sleep.assert_not_awaited()
+        assert 1000.0 not in limiter.call_times
+        assert list(limiter.call_times) == [4939.0, 5000.0]
+
+        stats = limiter.get_stats()
+        assert stats["calls_last_minute"] == 1
+        assert stats["calls_last_hour"] == 2
+
+    @patch("open_stocks_mcp.tools.rate_limiter.time.time")
+    @patch("open_stocks_mcp.tools.rate_limiter.asyncio.sleep")
+    @pytest.mark.journey_system
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    async def test_concurrent_acquire_serializes_under_lock_contention(
+        self, mock_sleep: Any, mock_time: Any
+    ) -> None:
+        """Concurrent acquires complete and record one call per successful task."""
+        current_time: dict[str, float] = {"value": 1000.0}
+
+        def fake_time() -> float:
+            current_time["value"] += 0.001
+            return current_time["value"]
+
+        mock_time.side_effect = fake_time
+        mock_sleep.return_value = None
+
+        limiter = RateLimiter(calls_per_minute=100, calls_per_hour=100, burst_size=100)
+        acquire_count = 8
+
+        await asyncio.wait_for(
+            asyncio.gather(*(limiter.acquire() for _ in range(acquire_count))),
+            timeout=1,
+        )
+
+        mock_sleep.assert_not_awaited()
+        assert len(limiter.call_times) == acquire_count
+        assert list(limiter.call_times) == sorted(limiter.call_times)
+
+    @patch("open_stocks_mcp.tools.rate_limiter.time.time")
+    @patch("open_stocks_mcp.tools.rate_limiter.asyncio.sleep")
+    @pytest.mark.journey_system
+    @pytest.mark.unit
+    @pytest.mark.asyncio
     async def test_get_stats_includes_endpoint_and_broker_usage(
         self, mock_sleep: Any, mock_time: Any
     ) -> None:
