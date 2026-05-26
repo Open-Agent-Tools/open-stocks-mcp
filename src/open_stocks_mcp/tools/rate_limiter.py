@@ -9,6 +9,13 @@ from typing import Any
 from open_stocks_mcp.logging_config import logger
 from open_stocks_mcp.tools.exceptions import RateLimitError
 
+SECONDS_PER_MINUTE = 60
+SECONDS_PER_HOUR = 3600
+BURST_WINDOW_SECONDS = 1
+DEFAULT_CALLS_PER_MINUTE = 30
+DEFAULT_CALLS_PER_HOUR = 1000
+DEFAULT_BURST_SIZE = 5
+
 
 class RateLimiter:
     """Rate limiter for API calls using token bucket algorithm."""
@@ -66,7 +73,7 @@ class RateLimiter:
                 now = time.time()
 
                 # Remove old timestamps (older than 1 hour)
-                cutoff_hour = now - 3600
+                cutoff_hour = now - SECONDS_PER_HOUR
                 while self.call_times and self.call_times[0] < cutoff_hour:
                     self.call_times.popleft()
 
@@ -75,19 +82,23 @@ class RateLimiter:
                 # Check hourly limit
                 if len(self.call_times) >= self.calls_per_hour:
                     oldest_call = self.call_times[0]
-                    wait_time = max(wait_time, (oldest_call + 3600) - now)
+                    wait_time = max(wait_time, (oldest_call + SECONDS_PER_HOUR) - now)
 
                 # Check minute limit
-                cutoff_minute = now - 60
+                cutoff_minute = now - SECONDS_PER_MINUTE
                 minute_calls = [t for t in self.call_times if t > cutoff_minute]
                 if len(minute_calls) >= self.calls_per_minute:
-                    wait_time = max(wait_time, (minute_calls[0] + 60) - now)
+                    wait_time = max(
+                        wait_time, (minute_calls[0] + SECONDS_PER_MINUTE) - now
+                    )
 
                 # Check burst limit
-                cutoff_burst = now - 1
+                cutoff_burst = now - BURST_WINDOW_SECONDS
                 burst_calls = [t for t in self.call_times if t > cutoff_burst]
                 if len(burst_calls) >= self.burst_size:
-                    wait_time = max(wait_time, (burst_calls[0] + 1) - now)
+                    wait_time = max(
+                        wait_time, (burst_calls[0] + BURST_WINDOW_SECONDS) - now
+                    )
 
                 if wait_time <= 0:
                     # Capacity available
@@ -131,7 +142,7 @@ class RateLimiter:
         now = time.time()
 
         # Calculate current usage
-        cutoff_minute = now - 60
+        cutoff_minute = now - SECONDS_PER_MINUTE
 
         calls_last_minute = sum(1 for t in self.call_times if t > cutoff_minute)
         calls_last_hour = len(self.call_times)
@@ -147,14 +158,18 @@ class RateLimiter:
             "endpoint_usage": {
                 endpoint: {
                     "calls_last_minute": sum(1 for t in bucket if t > cutoff_minute),
-                    "calls_last_hour": sum(1 for t in bucket if t > now - 3600),
+                    "calls_last_hour": sum(
+                        1 for t in bucket if t > now - SECONDS_PER_HOUR
+                    ),
                 }
                 for endpoint, bucket in self.endpoint_buckets.items()
             },
             "broker_usage": {
                 broker: {
                     "calls_last_minute": sum(1 for t in bucket if t > cutoff_minute),
-                    "calls_last_hour": sum(1 for t in bucket if t > now - 3600),
+                    "calls_last_hour": sum(
+                        1 for t in bucket if t > now - SECONDS_PER_HOUR
+                    ),
                 }
                 for broker, bucket in self.broker_buckets.items()
             },
@@ -360,9 +375,9 @@ def get_rate_limiter() -> RateLimiter:
     if _rate_limiter is None:
         # Initialize with conservative defaults
         _rate_limiter = RateLimiter(
-            calls_per_minute=30,  # Conservative: ~0.5 calls/second
-            calls_per_hour=1000,  # Conservative hourly limit
-            burst_size=5,  # Allow small bursts
+            calls_per_minute=DEFAULT_CALLS_PER_MINUTE,
+            calls_per_hour=DEFAULT_CALLS_PER_HOUR,
+            burst_size=DEFAULT_BURST_SIZE,
         )
     return _rate_limiter
 
