@@ -7,7 +7,6 @@ from open_stocks_mcp.logging_config import logger
 from open_stocks_mcp.tools.responses import create_success_response
 from open_stocks_mcp.tools.robinhood_account_tools import get_portfolio, get_positions
 from open_stocks_mcp.tools.robinhood_order_tools import get_stock_orders
-from open_stocks_mcp.tools.robinhood_stock_tools import get_stock_price
 from open_stocks_mcp.tools.schwab_account_tools import (
     get_schwab_account_balances,
     get_schwab_account_numbers,
@@ -15,6 +14,7 @@ from open_stocks_mcp.tools.schwab_account_tools import (
 )
 from open_stocks_mcp.tools.schwab_market_tools import get_schwab_quote
 from open_stocks_mcp.tools.schwab_trading_tools import get_schwab_orders
+from open_stocks_mcp.tools.stocks.quote import get_stock_price
 
 
 def _safe_float(value: Any, default: float = 0.0) -> float:

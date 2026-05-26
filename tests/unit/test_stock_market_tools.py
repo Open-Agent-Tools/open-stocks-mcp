@@ -9,7 +9,8 @@ import pytest
 
 from open_stocks_mcp.config import reset_cache_config
 from open_stocks_mcp.tools.cache import clear_all_caches
-from open_stocks_mcp.tools.robinhood_stock_tools import (
+from open_stocks_mcp.tools.robinhood_tools import list_available_tools
+from open_stocks_mcp.tools.stocks import (
     find_instrument_data,
     get_instruments_by_symbols,
     get_market_hours,
@@ -20,7 +21,6 @@ from open_stocks_mcp.tools.robinhood_stock_tools import (
     get_stock_quote_by_id,
     search_stocks,
 )
-from open_stocks_mcp.tools.robinhood_tools import list_available_tools
 
 
 @pytest.fixture(autouse=True)
@@ -37,8 +37,8 @@ class TestStockMarketTools:
 
     @pytest.mark.journey_market_data
     @pytest.mark.unit
-    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_quotes")
-    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_latest_price")
+    @patch("open_stocks_mcp.tools.stocks.quote.rh.get_quotes")
+    @patch("open_stocks_mcp.tools.stocks.quote.rh.get_latest_price")
     @pytest.mark.asyncio
     async def test_get_stock_price_success(
         self,
@@ -64,8 +64,8 @@ class TestStockMarketTools:
 
     @pytest.mark.journey_market_data
     @pytest.mark.unit
-    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_quotes")
-    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_latest_price")
+    @patch("open_stocks_mcp.tools.stocks.quote.rh.get_quotes")
+    @patch("open_stocks_mcp.tools.stocks.quote.rh.get_latest_price")
     @pytest.mark.asyncio
     async def test_get_stock_price_cached(
         self,
@@ -92,8 +92,8 @@ class TestStockMarketTools:
 
     @pytest.mark.journey_market_data
     @pytest.mark.unit
-    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_quotes")
-    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_latest_price")
+    @patch("open_stocks_mcp.tools.stocks.quote.rh.get_quotes")
+    @patch("open_stocks_mcp.tools.stocks.quote.rh.get_latest_price")
     @pytest.mark.asyncio
     async def test_get_stock_price_cache_disabled(
         self,
@@ -121,8 +121,8 @@ class TestStockMarketTools:
 
     @pytest.mark.journey_market_data
     @pytest.mark.unit
-    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_quotes")
-    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_latest_price")
+    @patch("open_stocks_mcp.tools.stocks.quote.rh.get_quotes")
+    @patch("open_stocks_mcp.tools.stocks.quote.rh.get_latest_price")
     @pytest.mark.asyncio
     async def test_get_stock_price_coalesces_concurrent_calls(
         self,
@@ -155,8 +155,8 @@ class TestStockMarketTools:
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @pytest.mark.journey_market_data
     @pytest.mark.unit
-    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_quotes")
-    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_latest_price")
+    @patch("open_stocks_mcp.tools.stocks.quote.rh.get_quotes")
+    @patch("open_stocks_mcp.tools.stocks.quote.rh.get_latest_price")
     @pytest.mark.asyncio
     async def test_get_stock_price_no_data(
         self, mock_latest_price: Any, mock_quotes: Any
@@ -186,9 +186,9 @@ class TestStockMarketTools:
 
     @pytest.mark.journey_market_data
     @pytest.mark.unit
-    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_name_by_symbol")
-    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_instruments_by_symbols")
-    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_fundamentals")
+    @patch("open_stocks_mcp.tools.stocks.fundamentals.rh.get_name_by_symbol")
+    @patch("open_stocks_mcp.tools.stocks.instruments.rh.get_instruments_by_symbols")
+    @patch("open_stocks_mcp.tools.stocks.fundamentals.rh.get_fundamentals")
     @pytest.mark.asyncio
     async def test_get_stock_info_success(
         self,
@@ -219,8 +219,8 @@ class TestStockMarketTools:
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @pytest.mark.journey_market_data
     @pytest.mark.unit
-    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_instruments_by_symbols")
-    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_fundamentals")
+    @patch("open_stocks_mcp.tools.stocks.instruments.rh.get_instruments_by_symbols")
+    @patch("open_stocks_mcp.tools.stocks.fundamentals.rh.get_fundamentals")
     @pytest.mark.asyncio
     async def test_get_stock_info_no_data(
         self, mock_fundamentals: Any, mock_instruments: Any
@@ -237,7 +237,7 @@ class TestStockMarketTools:
 
     @pytest.mark.journey_market_data
     @pytest.mark.unit
-    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.find_instrument_data")
+    @patch("open_stocks_mcp.tools.stocks.instruments.rh.find_instrument_data")
     @pytest.mark.asyncio
     async def test_search_stocks_success(
         self,
@@ -260,7 +260,7 @@ class TestStockMarketTools:
 
     @pytest.mark.journey_market_data
     @pytest.mark.unit
-    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.find_instrument_data")
+    @patch("open_stocks_mcp.tools.stocks.instruments.rh.find_instrument_data")
     @pytest.mark.asyncio
     async def test_search_stocks_no_results(self, mock_find_instrument: Any) -> None:
         """Test stock search with no results."""
@@ -288,7 +288,7 @@ class TestStockMarketTools:
 
     @pytest.mark.journey_market_data
     @pytest.mark.unit
-    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_instruments_by_symbols")
+    @patch("open_stocks_mcp.tools.stocks.instruments.rh.get_instruments_by_symbols")
     @pytest.mark.asyncio
     async def test_get_instruments_by_symbols_batched(
         self, mock_get_instruments: Any, robinhood_instrument_payload: dict[str, Any]
@@ -323,7 +323,7 @@ class TestStockMarketTools:
 
     @pytest.mark.journey_market_data
     @pytest.mark.unit
-    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_instruments_by_symbols")
+    @patch("open_stocks_mcp.tools.stocks.instruments.rh.get_instruments_by_symbols")
     @pytest.mark.asyncio
     async def test_get_instruments_by_symbols_batched_no_data(
         self, mock_get_instruments: Any
@@ -338,9 +338,9 @@ class TestStockMarketTools:
         assert "No instrument data found" in result["result"]["message"]
 
     @pytest.mark.unit
-    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_fundamentals")
-    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_instruments_by_symbols")
-    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_name_by_symbol")
+    @patch("open_stocks_mcp.tools.stocks.fundamentals.rh.get_fundamentals")
+    @patch("open_stocks_mcp.tools.stocks.instruments.rh.get_instruments_by_symbols")
+    @patch("open_stocks_mcp.tools.stocks.fundamentals.rh.get_name_by_symbol")
     @pytest.mark.asyncio
     async def test_get_stock_info_batched(
         self,
@@ -378,7 +378,7 @@ class TestStockMarketTools:
 
     @pytest.mark.journey_market_data
     @pytest.mark.unit
-    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_markets")
+    @patch("open_stocks_mcp.tools.stocks.fundamentals.rh.get_markets")
     @pytest.mark.asyncio
     async def test_get_market_hours_success(
         self, mock_markets: Any, mock_robinhood_market_hours: list[dict[str, Any]]
@@ -399,7 +399,7 @@ class TestStockMarketTools:
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @pytest.mark.journey_market_data
     @pytest.mark.unit
-    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_markets")
+    @patch("open_stocks_mcp.tools.stocks.fundamentals.rh.get_markets")
     @pytest.mark.asyncio
     async def test_get_market_hours_no_data(self, mock_markets: Any) -> None:
         """Test market hours when no data is available."""
@@ -413,7 +413,7 @@ class TestStockMarketTools:
 
     @pytest.mark.journey_market_data
     @pytest.mark.unit
-    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_stock_historicals")
+    @patch("open_stocks_mcp.tools.stocks.history.rh.get_stock_historicals")
     @pytest.mark.asyncio
     async def test_get_price_history_success(
         self, mock_historicals: Any, mock_robinhood_price_history: list[dict[str, Any]]
@@ -437,7 +437,7 @@ class TestStockMarketTools:
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @pytest.mark.journey_market_data
     @pytest.mark.unit
-    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_stock_historicals")
+    @patch("open_stocks_mcp.tools.stocks.history.rh.get_stock_historicals")
     @pytest.mark.asyncio
     async def test_get_price_history_no_data(self, mock_historicals: Any) -> None:
         """Test price history when no data is available."""
@@ -645,7 +645,7 @@ class TestAdvancedInstrumentTools:
 
     @pytest.mark.journey_market_data
     @pytest.mark.unit
-    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_instruments_by_symbols")
+    @patch("open_stocks_mcp.tools.stocks.instruments.rh.get_instruments_by_symbols")
     @pytest.mark.asyncio
     async def test_get_instruments_by_symbols_success(
         self,
@@ -689,7 +689,7 @@ class TestAdvancedInstrumentTools:
 
     @pytest.mark.journey_market_data
     @pytest.mark.unit
-    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.find_instrument_data")
+    @patch("open_stocks_mcp.tools.stocks.instruments.rh.find_instrument_data")
     @pytest.mark.asyncio
     async def test_find_instrument_data_success(
         self,
@@ -720,7 +720,7 @@ class TestAdvancedInstrumentTools:
 
     @pytest.mark.journey_market_data
     @pytest.mark.unit
-    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_stock_quote_by_id")
+    @patch("open_stocks_mcp.tools.stocks.quote.rh.get_stock_quote_by_id")
     @pytest.mark.asyncio
     async def test_get_stock_quote_by_id_success(
         self,
@@ -759,7 +759,7 @@ class TestAdvancedInstrumentTools:
 
     @pytest.mark.journey_market_data
     @pytest.mark.unit
-    @patch("open_stocks_mcp.tools.robinhood_stock_tools.rh.get_pricebook_by_symbol")
+    @patch("open_stocks_mcp.tools.stocks.quote.rh.get_pricebook_by_symbol")
     @pytest.mark.asyncio
     async def test_get_pricebook_by_symbol_success(
         self, mock_get_pricebook: Any

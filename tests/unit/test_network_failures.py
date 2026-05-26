@@ -5,8 +5,8 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from open_stocks_mcp.tools.robinhood_stock_tools import get_stock_price
 from open_stocks_mcp.tools.schwab_market_tools import get_schwab_quote
+from open_stocks_mcp.tools.stocks.quote import get_stock_price
 
 pytestmark = [
     pytest.mark.unit,
@@ -18,7 +18,7 @@ pytestmark = [
 @pytest.mark.asyncio
 async def test_robinhood_stock_price_timeout_returns_structured_error() -> None:
     with patch(
-        "open_stocks_mcp.tools.robinhood_stock_tools.execute_with_retry",
+        "open_stocks_mcp.tools.stocks.quote.execute_with_retry",
         new=AsyncMock(side_effect=TimeoutError("request timeout")),
     ):
         result = await get_stock_price("AAPL")
