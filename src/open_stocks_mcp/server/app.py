@@ -99,19 +99,21 @@ from open_stocks_mcp.tools.robinhood_trading_tools import (
     cancel_stock_order,
     get_all_open_option_orders,
     get_all_open_stock_orders,
-    # order_buy_fractional_by_price,  # DEPRECATED
-    order_buy_limit,
-    order_buy_market,
     order_buy_option_limit,
-    # order_buy_stop_loss,  # DEPRECATED
-    # order_buy_trailing_stop,  # DEPRECATED
     order_option_credit_spread,
     order_option_debit_spread,
+    order_sell_option_limit,
+)
+from open_stocks_mcp.tools.trading.orders_stock import (
+    order_buy_fractional_by_price,
+    order_buy_limit,
+    order_buy_market,
+    order_buy_stop_loss,
+    order_buy_trailing_stop,
     order_sell_limit,
     order_sell_market,
-    order_sell_option_limit,
     order_sell_stop_loss,
-    # order_sell_trailing_stop,  # DEPRECATED
+    order_sell_trailing_stop,
 )
 from open_stocks_mcp.tools.robinhood_user_profile_tools import (
     get_account_profile,
