@@ -9,6 +9,9 @@ from open_stocks_mcp.tools.market.earnings import (
 from open_stocks_mcp.tools.market.earnings import (
     get_stock_splits as earnings_get_stock_splits,
 )
+from open_stocks_mcp.tools.market.level2 import (
+    get_stock_level2_data as level2_get_stock_level2_data,
+)
 from open_stocks_mcp.tools.market.movers import (
     get_stocks_by_tag as movers_get_stocks_by_tag,
 )
@@ -28,16 +31,19 @@ from open_stocks_mcp.tools.market.ratings import (
     get_stock_ratings as ratings_get_stock_ratings,
 )
 from open_stocks_mcp.tools.robinhood_market_data_tools import (
-    get_stock_news as legacy_get_stock_news,
-)
-from open_stocks_mcp.tools.robinhood_market_data_tools import (
-    get_stock_ratings as legacy_get_stock_ratings,
-)
-from open_stocks_mcp.tools.robinhood_market_data_tools import (
     get_stock_earnings as legacy_get_stock_earnings,
 )
 from open_stocks_mcp.tools.robinhood_market_data_tools import (
     get_stock_events as legacy_get_stock_events,
+)
+from open_stocks_mcp.tools.robinhood_market_data_tools import (
+    get_stock_level2_data as legacy_get_stock_level2_data,
+)
+from open_stocks_mcp.tools.robinhood_market_data_tools import (
+    get_stock_news as legacy_get_stock_news,
+)
+from open_stocks_mcp.tools.robinhood_market_data_tools import (
+    get_stock_ratings as legacy_get_stock_ratings,
 )
 from open_stocks_mcp.tools.robinhood_market_data_tools import (
     get_stock_splits as legacy_get_stock_splits,
@@ -85,3 +91,6 @@ class TestMarketDataModuleSplit:
 
     def test_get_stock_events_identity(self) -> None:
         assert legacy_get_stock_events is earnings_get_stock_events
+
+    def test_get_stock_level2_data_identity(self) -> None:
+        assert legacy_get_stock_level2_data is level2_get_stock_level2_data
