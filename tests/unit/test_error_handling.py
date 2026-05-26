@@ -31,7 +31,6 @@ from open_stocks_mcp.tools.error_handling import (
     log_api_call,
     sanitize_api_response,
     validate_period,
-    validate_span,
     validate_symbol,
 )
 
@@ -759,18 +758,6 @@ def test_validate_period_valid(period: str) -> None:
 @pytest.mark.parametrize("period", ["hour", "decade", "", "DAY"])
 def test_validate_period_invalid(period: str) -> None:
     assert validate_period(period) is False
-
-
-@pytest.mark.parametrize(
-    "span", ["day", "week", "month", "3month", "year", "5year", "all"]
-)
-def test_validate_span_valid(span: str) -> None:
-    assert validate_span(span) is True
-
-
-@pytest.mark.parametrize("span", ["hour", "decade", "", "DAY"])
-def test_validate_span_invalid(span: str) -> None:
-    assert validate_span(span) is False
 
 
 def test_sanitize_api_response_redacts_recursive_values() -> None:

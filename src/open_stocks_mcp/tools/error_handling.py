@@ -27,7 +27,6 @@ from open_stocks_mcp.tools.responses import (
 from open_stocks_mcp.tools.retry import execute_with_retry
 from open_stocks_mcp.tools.validation import (
     validate_period,
-    validate_span,
     validate_symbol,
 )
 
@@ -50,6 +49,5 @@ __all__ = [
     "log_api_call",
     "sanitize_api_response",
     "validate_period",
-    "validate_span",
     "validate_symbol",
 ]
