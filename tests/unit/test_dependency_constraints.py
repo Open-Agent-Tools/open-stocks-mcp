@@ -27,3 +27,10 @@ def test_broker_and_http_dependencies_use_compatible_release_pins() -> None:
     assert dependencies["schwab-py"] == "schwab-py~=1.5.0"
     assert dependencies["fastapi"] == "fastapi~=0.128.0"
     assert dependencies["uvicorn"] == "uvicorn~=0.40.0"
+
+
+@pytest.mark.unit
+def test_cachetools_dependency_floor_targets_v7() -> None:
+    dependencies = _project_dependencies()
+
+    assert dependencies["cachetools"] == "cachetools>=7.1.0"
