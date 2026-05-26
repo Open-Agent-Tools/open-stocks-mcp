@@ -416,6 +416,16 @@ class TestBrokerRegistry:
 class TestBrokerRegistrySingleton:
     """Test get_broker_registry singleton pattern."""
 
+    def test_package_reexports_registry_not_initialized_error(self):
+        """Test package export includes RegistryNotInitializedError identity."""
+        import open_stocks_mcp.brokers as broker_exports
+
+        assert (
+            broker_exports.RegistryNotInitializedError
+            is RegistryNotInitializedError
+        )
+        assert "RegistryNotInitializedError" in broker_exports.__all__
+
     @pytest.mark.asyncio
     async def test_get_broker_registry_returns_instance(self):
         """Test get_broker_registry returns BrokerRegistry instance."""
