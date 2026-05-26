@@ -10,82 +10,6 @@ from open_stocks_mcp.tools.error_handling import (
 )
 
 
-async def schwab_stream_level2(symbol: str, venue: str = "nasdaq") -> dict[str, Any]:
-    """Get real-time Level 2 order-book snapshot from Schwab streaming.
-
-    Args:
-        symbol: Ticker symbol (e.g. 'AAPL')
-        venue: 'nasdaq' or 'nyse' (default: 'nasdaq')
-    """
-    broker, error = await get_authenticated_broker_or_error(
-        "schwab", f"stream Level 2 book for {symbol}"
-    )
-    if error:
-        return error
-
-    # Check streaming capability
-    health = broker.get_health_status()
-    if not health.get("capabilities", {}).get("streaming_quotes"):
-        return create_success_response(
-            {
-                "status": "stream_unavailable",
-                "symbol": symbol,
-                "reason": "streaming capability disabled",
-            }
-        )
-
-    # Check stream manager readiness
-    manager = getattr(broker, "stream_manager", None)
-    if manager is None:
-        return create_success_response(
-            {
-                "status": "stream_unavailable",
-                "symbol": symbol,
-                "reason": "stream manager unavailable",
-            }
-        )
-
-    if not manager.is_running:
-        return create_success_response(
-            {
-                "status": "stream_unavailable",
-                "symbol": symbol,
-                "reason": "stream manager stopped",
-            }
-        )
-
-    # Subscribe to Level 2
-    sub_success = await manager.subscribe_level2(symbol, venue)
-    if not sub_success:
-        return create_success_response(
-            {
-                "status": "stream_unavailable",
-                "symbol": symbol,
-                "reason": "Level 2 subscription failed",
-            }
-        )
-
-    # Retrieve cached snapshot
-    snapshot = manager.get_latest_level2(symbol)
-    if not snapshot:
-        return create_success_response(
-            {
-                "status": "stream_unavailable",
-                "symbol": symbol,
-                "reason": "no cached Level 2 snapshot",
-            }
-        )
-
-    return create_success_response(
-        {
-            "status": "success",
-            "symbol": symbol.upper(),
-            "venue": venue.lower(),
-            "snapshot": snapshot,
-        }
-    )
-
-
 async def schwab_stream_option_quotes(symbols: list[str]) -> dict[str, Any]:
     """Get real-time option quote snapshots from Schwab streaming.
 
@@ -153,6 +77,81 @@ async def schwab_stream_option_quotes(symbols: list[str]) -> dict[str, Any]:
                 "status": "stream_unavailable",
                 "symbols": symbols,
                 "reason": "no cached option quote snapshot",
+            }
+        )
+
+    return create_success_response(
+        {
+            "status": "success",
+            "quotes": quotes,
+            "count": len(quotes),
+        }
+    )
+
+
+async def schwab_stream_quotes(symbols: list[str]) -> dict[str, Any]:
+    """Get real-time equity quote snapshots from Schwab streaming.
+
+    Args:
+        symbols: List of equity ticker symbols (e.g. ['AAPL', 'MSFT'])
+    """
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", "stream equity quotes"
+    )
+    if error:
+        return error
+
+    health = broker.get_health_status()
+    if not health.get("capabilities", {}).get("streaming_quotes"):
+        return create_success_response(
+            {
+                "status": "stream_unavailable",
+                "symbols": symbols,
+                "reason": "streaming capability disabled",
+            }
+        )
+
+    manager = getattr(broker, "stream_manager", None)
+    if manager is None:
+        return create_success_response(
+            {
+                "status": "stream_unavailable",
+                "symbols": symbols,
+                "reason": "stream manager unavailable",
+            }
+        )
+
+    if not manager.is_running:
+        return create_success_response(
+            {
+                "status": "stream_unavailable",
+                "symbols": symbols,
+                "reason": "stream manager stopped",
+            }
+        )
+
+    sub_success = await manager.subscribe_quotes(symbols)
+    if not sub_success:
+        return create_success_response(
+            {
+                "status": "stream_unavailable",
+                "symbols": symbols,
+                "reason": "equity quote subscription failed",
+            }
+        )
+
+    quotes = {}
+    for symbol in symbols:
+        quote = manager.get_latest_quote(symbol)
+        if quote:
+            quotes[symbol] = quote
+
+    if not quotes:
+        return create_success_response(
+            {
+                "status": "stream_unavailable",
+                "symbols": symbols,
+                "reason": "no cached equity quote snapshot",
             }
         )
 
