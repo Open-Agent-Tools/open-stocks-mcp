@@ -11,7 +11,9 @@ import pytest
 def test_crypto_placeholder_module_is_absent() -> None:
     # Anchor to the project root to avoid false positives if run from a subdirectory
     project_root = Path(__file__).parent.parent.parent
-    crypto_module_path = project_root / "src/open_stocks_mcp/tools/robinhood_crypto_tools.py"
+    crypto_module_path = (
+        project_root / "src/open_stocks_mcp/tools/robinhood_crypto_tools.py"
+    )
 
     assert not crypto_module_path.exists(), (
         f"Crypto placeholder module must stay deleted at {crypto_module_path}"

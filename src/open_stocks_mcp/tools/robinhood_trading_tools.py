@@ -1560,9 +1560,7 @@ async def get_all_open_stock_orders() -> dict[str, Any]:
         symbol = "N/A"
         if instrument_url:
             try:
-                symbol = await execute_with_retry(
-                    rh.get_symbol_by_url, instrument_url
-                )
+                symbol = await execute_with_retry(rh.get_symbol_by_url, instrument_url)
             except Exception as e:
                 logger.warning(
                     f"Failed to get symbol for instrument {instrument_url}: {e}"

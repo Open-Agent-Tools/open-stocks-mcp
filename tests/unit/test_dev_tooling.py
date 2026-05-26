@@ -83,11 +83,14 @@ def test_schwab_status_version_matches_pyproject() -> None:
 
 @pytest.mark.unit
 def test_mypy_dev_tooling_targets_2_1_0() -> None:
-    pyproject_data = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    pyproject_data = tomllib.loads(
+        (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    )
 
-    assert MYPY_DEV_REQUIREMENT in pyproject_data["project"]["optional-dependencies"][
-        "dev"
-    ]
+    assert (
+        MYPY_DEV_REQUIREMENT
+        in pyproject_data["project"]["optional-dependencies"]["dev"]
+    )
     assert MYPY_DEV_REQUIREMENT in pyproject_data["dependency-groups"]["dev"]
 
     pre_commit = _load_yaml(ROOT / ".pre-commit-config.yaml")

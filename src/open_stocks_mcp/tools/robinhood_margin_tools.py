@@ -1,4 +1,5 @@
 """Robinhood account feature tools."""
+
 import contextlib
 from typing import Any
 
@@ -95,6 +96,7 @@ async def get_margin_calls() -> dict[str, Any]:
             "status": "success",
         }
     }
+
 
 @handle_robin_stocks_errors
 async def get_margin_interest() -> dict[str, Any]:

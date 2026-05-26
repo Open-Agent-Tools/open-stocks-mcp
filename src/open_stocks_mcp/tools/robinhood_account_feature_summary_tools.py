@@ -1,4 +1,5 @@
 """Robinhood account feature tools."""
+
 from typing import Any
 
 from open_stocks_mcp.logging_config import logger
