@@ -5,22 +5,26 @@ from unittest.mock import patch
 
 import pytest
 
-from open_stocks_mcp.tools.robinhood_account_features_tools import (
+from open_stocks_mcp.tools.robinhood_account_feature_summary_tools import (
     get_account_features,
-    get_latest_notification,
+)
+from open_stocks_mcp.tools.robinhood_margin_tools import (
     get_margin_calls,
     get_margin_interest,
-    get_notifications,
-    get_referrals,
-    get_subscription_fees,
 )
+from open_stocks_mcp.tools.robinhood_notification_tools import (
+    get_latest_notification,
+    get_notifications,
+)
+from open_stocks_mcp.tools.robinhood_referral_tools import get_referrals
+from open_stocks_mcp.tools.robinhood_subscription_tools import get_subscription_fees
 from open_stocks_mcp.tools.robinhood_user_profile_tools import get_account_settings
 
 
 class TestNotifications:
     """Test notifications functionality."""
 
-    @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.robinhood_notification_tools.execute_with_retry")
     @pytest.mark.journey_notifications
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -68,7 +72,7 @@ class TestNotifications:
 
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
-    @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.robinhood_notification_tools.execute_with_retry")
     @pytest.mark.journey_notifications
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -87,7 +91,7 @@ class TestNotifications:
         assert result["result"]["status"] == "no_data"
         assert "No notifications found" in result["result"]["message"]
 
-    @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.robinhood_notification_tools.execute_with_retry")
     @pytest.mark.journey_notifications
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -105,7 +109,7 @@ class TestNotifications:
         assert result["result"]["notifications"] == []
         assert result["result"]["status"] == "no_data"
 
-    @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.robinhood_notification_tools.execute_with_retry")
     @pytest.mark.journey_notifications
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -126,7 +130,7 @@ class TestNotifications:
         assert len(result["result"]["notifications"]) == 5
         assert result["result"]["status"] == "success"
 
-    @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.robinhood_notification_tools.execute_with_retry")
     @pytest.mark.journey_notifications
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -154,7 +158,7 @@ class TestNotifications:
 class TestLatestNotification:
     """Test latest notification functionality."""
 
-    @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.robinhood_notification_tools.execute_with_retry")
     @pytest.mark.journey_notifications
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -182,7 +186,7 @@ class TestLatestNotification:
 
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
-    @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.robinhood_notification_tools.execute_with_retry")
     @pytest.mark.journey_notifications
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -204,7 +208,7 @@ class TestLatestNotification:
 class TestMarginCalls:
     """Test margin calls functionality."""
 
-    @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.robinhood_margin_tools.execute_with_retry")
     @pytest.mark.journey_notifications
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -239,7 +243,7 @@ class TestMarginCalls:
 
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
-    @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.robinhood_margin_tools.execute_with_retry")
     @pytest.mark.journey_notifications
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -257,7 +261,7 @@ class TestMarginCalls:
         assert result["result"]["status"] == "no_data"
         assert "No margin calls found" in result["result"]["message"]
 
-    @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.robinhood_margin_tools.execute_with_retry")
     @pytest.mark.journey_notifications
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -292,7 +296,7 @@ class TestMarginCalls:
 
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
-    @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.robinhood_margin_tools.execute_with_retry")
     @pytest.mark.journey_notifications
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -330,7 +334,7 @@ class TestMarginCalls:
 class TestMarginInterest:
     """Test margin interest functionality."""
 
-    @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.robinhood_margin_tools.execute_with_retry")
     @pytest.mark.journey_notifications
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -370,7 +374,7 @@ class TestMarginInterest:
 
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
-    @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.robinhood_margin_tools.execute_with_retry")
     @pytest.mark.journey_notifications
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -392,7 +396,7 @@ class TestMarginInterest:
 
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
-    @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.robinhood_margin_tools.execute_with_retry")
     @pytest.mark.journey_notifications
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -425,7 +429,7 @@ class TestMarginInterest:
 class TestSubscriptionFees:
     """Test subscription fees functionality."""
 
-    @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.robinhood_subscription_tools.execute_with_retry")
     @pytest.mark.journey_notifications
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -466,7 +470,7 @@ class TestSubscriptionFees:
 
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
-    @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.robinhood_subscription_tools.execute_with_retry")
     @pytest.mark.journey_notifications
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -487,7 +491,7 @@ class TestSubscriptionFees:
         assert result["result"]["status"] == "no_data"
         assert "No subscription fees found" in result["result"]["message"]
 
-    @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.robinhood_subscription_tools.execute_with_retry")
     @pytest.mark.journey_notifications
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -517,7 +521,7 @@ class TestSubscriptionFees:
 class TestReferrals:
     """Test referrals functionality."""
 
-    @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.robinhood_referral_tools.execute_with_retry")
     @pytest.mark.journey_notifications
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -565,7 +569,7 @@ class TestReferrals:
         assert len(result["result"]["referrals"]) == 3
         assert result["result"]["status"] == "success"
 
-    @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.robinhood_referral_tools.execute_with_retry")
     @pytest.mark.journey_notifications
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -603,7 +607,7 @@ class TestReferrals:
 
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
-    @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.robinhood_referral_tools.execute_with_retry")
     @pytest.mark.journey_notifications
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -624,7 +628,7 @@ class TestReferrals:
 
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
-    @patch("open_stocks_mcp.tools.robinhood_account_features_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.robinhood_referral_tools.execute_with_retry")
     @pytest.mark.journey_notifications
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -664,11 +668,11 @@ class TestReferrals:
 class TestAccountFeatures:
     """Test account features functionality."""
 
-    @patch("open_stocks_mcp.tools.robinhood_account_features_tools.get_referrals")
-    @patch("open_stocks_mcp.tools.robinhood_account_features_tools.get_notifications")
-    @patch("open_stocks_mcp.tools.robinhood_account_features_tools.get_margin_interest")
+    @patch("open_stocks_mcp.tools.robinhood_account_feature_summary_tools.get_referrals")
+    @patch("open_stocks_mcp.tools.robinhood_account_feature_summary_tools.get_notifications")
+    @patch("open_stocks_mcp.tools.robinhood_account_feature_summary_tools.get_margin_interest")
     @patch(
-        "open_stocks_mcp.tools.robinhood_account_features_tools.get_subscription_fees"
+        "open_stocks_mcp.tools.robinhood_account_feature_summary_tools.get_subscription_fees"
     )
     @pytest.mark.journey_notifications
     @pytest.mark.unit
@@ -739,11 +743,11 @@ class TestAccountFeatures:
 
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
-    @patch("open_stocks_mcp.tools.robinhood_account_features_tools.get_referrals")
-    @patch("open_stocks_mcp.tools.robinhood_account_features_tools.get_notifications")
-    @patch("open_stocks_mcp.tools.robinhood_account_features_tools.get_margin_interest")
+    @patch("open_stocks_mcp.tools.robinhood_account_feature_summary_tools.get_referrals")
+    @patch("open_stocks_mcp.tools.robinhood_account_feature_summary_tools.get_notifications")
+    @patch("open_stocks_mcp.tools.robinhood_account_feature_summary_tools.get_margin_interest")
     @patch(
-        "open_stocks_mcp.tools.robinhood_account_features_tools.get_subscription_fees"
+        "open_stocks_mcp.tools.robinhood_account_feature_summary_tools.get_subscription_fees"
     )
     @pytest.mark.journey_notifications
     @pytest.mark.unit

@@ -55,14 +55,8 @@ from open_stocks_mcp.tools.options.market_data import (
     get_option_market_data,
 )
 from open_stocks_mcp.tools.rate_limiter import configure_global_rate_limiter
-from open_stocks_mcp.tools.robinhood_account_features_tools import (
+from open_stocks_mcp.tools.robinhood_account_feature_summary_tools import (
     get_account_features,
-    get_latest_notification,
-    get_margin_calls,
-    get_margin_interest,
-    get_notifications,
-    get_referrals,
-    get_subscription_fees,
 )
 from open_stocks_mcp.tools.robinhood_account_tools import (
     get_account_details,
@@ -82,10 +76,31 @@ from open_stocks_mcp.tools.robinhood_dividend_tools import (
     get_stock_loan_payments,
     get_total_dividends,
 )
+from open_stocks_mcp.tools.robinhood_margin_tools import (
+    get_margin_calls,
+    get_margin_interest,
+)
+from open_stocks_mcp.tools.robinhood_notification_tools import (
+    get_latest_notification,
+    get_notifications,
+)
 from open_stocks_mcp.tools.robinhood_order_tools import (
     get_options_orders,
     get_stock_orders,
 )
+from open_stocks_mcp.tools.robinhood_referral_tools import get_referrals
+from open_stocks_mcp.tools.robinhood_stock_tools import (
+    find_instrument_data,
+    get_instruments_by_symbols,
+    get_market_hours,
+    get_price_history,
+    get_pricebook_by_symbol,
+    get_stock_info,
+    get_stock_price,
+    get_stock_quote_by_id,
+    search_stocks,
+)
+from open_stocks_mcp.tools.robinhood_subscription_tools import get_subscription_fees
 
 # Phase 7: Trading Capabilities Tools
 from open_stocks_mcp.tools.robinhood_trading_tools import (
