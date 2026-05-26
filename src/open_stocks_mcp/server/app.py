@@ -13,7 +13,6 @@ from open_stocks_mcp.brokers.auth_coordinator import attempt_broker_logins
 from open_stocks_mcp.brokers.registry import get_broker_registry
 from open_stocks_mcp.brokers.robinhood import RobinhoodBroker
 from open_stocks_mcp.brokers.schwab import SchwabBroker
-from open_stocks_mcp.brokers.session_state import get_session_manager
 from open_stocks_mcp.config import ServerConfig, load_config
 from open_stocks_mcp.logging_config import logger, setup_logging
 from open_stocks_mcp.server.tool_helpers import (
@@ -164,14 +163,10 @@ from open_stocks_mcp.tools.schwab_options_tools import (
     get_schwab_option_chain,
     get_schwab_option_chain_by_expiration,
     get_schwab_option_expirations,
-    get_schwab_option_positions_detailed,
     get_schwab_options_positions,
 )
 from open_stocks_mcp.tools.schwab_options_tools import (
     schwab_find_tradable_options as _schwab_find_tradable_options_impl,
-)
-from open_stocks_mcp.tools.schwab_options_tools import (
-    schwab_get_open_option_orders as _schwab_get_open_option_orders_impl,
 )
 from open_stocks_mcp.tools.schwab_options_tools import (
     schwab_option_buy_to_open as _schwab_option_buy_to_open_impl,
@@ -187,6 +182,9 @@ from open_stocks_mcp.tools.schwab_payment_tools import (
 )
 from open_stocks_mcp.tools.schwab_payment_tools import (
     schwab_get_interest_payments as _schwab_get_interest_payments_impl,
+)
+from open_stocks_mcp.tools.schwab_payment_tools import (
+    schwab_get_stock_loan_payments as _schwab_get_stock_loan_payments_impl,
 )
 from open_stocks_mcp.tools.schwab_portfolio_tools import (
     get_schwab_aggregate_positions,
@@ -244,6 +242,7 @@ from open_stocks_mcp.tools.schwab_trading_tools import (
 from open_stocks_mcp.tools.schwab_trading_tools import (
     schwab_replace_order as _schwab_replace_order,
 )
+from open_stocks_mcp.tools.session_manager import get_session_manager
 from open_stocks_mcp.tools.unified_watchlist_tools import (
     add_symbols_to_unified_watchlist,
     get_unified_watchlist_by_name,
@@ -1528,6 +1527,22 @@ async def schwab_get_dividends(
 
 
 @mcp.tool()
+async def schwab_get_stock_loan_payments(
+    account_hash: str,
+    start_date: str | None = None,
+    end_date: str | None = None,
+) -> dict[str, Any]:
+    """Get stock loan (securities lending) payments for a Schwab account.
+
+    Args:
+        account_hash: Account hash from schwab_account_numbers
+        start_date: Optional start date (YYYY-MM-DD)
+        end_date: Optional end date (YYYY-MM-DD)
+    """
+    return await _schwab_get_stock_loan_payments_impl(account_hash, start_date, end_date)
+
+
+@mcp.tool()
 async def schwab_get_dividends_by_symbol(
     account_hash: str,
     symbol: str,
@@ -1792,16 +1807,6 @@ async def schwab_options_positions(account_hash: str) -> dict[str, Any]:
 
 
 @mcp.tool()
-async def schwab_option_positions_detailed(account_hash: str) -> dict[str, Any]:
-    """Get options positions enriched with live quote data (bid/ask/last/mark/greeks).
-
-    Args:
-        account_hash: Account hash from schwab_account_numbers
-    """
-    return await get_schwab_option_positions_detailed(account_hash)
-
-
-@mcp.tool()
 async def schwab_option_buy_to_open(
     account_hash: str,
     symbol: str,
@@ -1913,6 +1918,7 @@ async def schwab_stream_option_quotes(symbols: list[str]) -> dict[str, Any]:
 async def schwab_stream_account_activity() -> dict[str, Any]:
     """Get latest account activity events from Schwab streaming."""
     return await _schwab_stream_account_activity_impl()
+
 
 
 def create_mcp_server(config: ServerConfig | None = None) -> FastMCP:

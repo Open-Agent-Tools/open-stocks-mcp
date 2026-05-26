@@ -111,6 +111,73 @@ async def schwab_get_dividends(
 
 
 @handle_schwab_errors
+async def schwab_get_stock_loan_payments(
+    account_hash: str,
+    start_date: str | None = None,
+    end_date: str | None = None,
+) -> dict[str, Any]:
+    """Get stock loan (securities lending) payments for a Schwab account.
+
+    Args:
+        account_hash: Account hash from get_schwab_account_numbers()
+        start_date: Optional start date (YYYY-MM-DD)
+        end_date: Optional end date (YYYY-MM-DD)
+
+    Returns:
+        Dict with list of loan payments, total amount, and enrollment status
+    """
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", f"get stock loan payments for {account_hash}"
+    )
+    if error:
+        return error
+
+    try:
+        parsed_start_date = (
+            datetime.date.fromisoformat(start_date) if start_date is not None else None
+        )
+        parsed_end_date = (
+            datetime.date.fromisoformat(end_date) if end_date is not None else None
+        )
+
+        response = await asyncio.to_thread(
+            broker.client.get_transactions,
+            account_hash,
+            start_date=parsed_start_date,
+            end_date=parsed_end_date,
+            transaction_types=["JOURNAL"],
+            symbol=None,
+        )
+
+        transactions = response.json() if hasattr(response, "json") else response
+
+        if not isinstance(transactions, list):
+            transactions = []
+
+        loan_payments = []
+        total_amount = Decimal("0.00")
+
+        for tx in transactions:
+            if _classify_transaction(tx) == "stock_loan":
+                loan_payments.append(tx)
+                net_amount = tx.get("netAmount", 0)
+                total_amount += Decimal(str(net_amount))
+
+        return create_success_response(
+            {
+                "loan_payments": loan_payments,
+                "total_amount": str(total_amount.quantize(Decimal("0.01"))),
+                "count": len(loan_payments),
+                "enrolled": len(loan_payments) > 0,
+            }
+        )
+
+    except Exception as e:
+        logger.error(f"Error getting Schwab stock loan payments for {account_hash}: {e}")
+        return create_error_response(e)
+
+
+@handle_schwab_errors
 async def schwab_get_dividends_by_symbol(
     account_hash: str,
     symbol: str,
