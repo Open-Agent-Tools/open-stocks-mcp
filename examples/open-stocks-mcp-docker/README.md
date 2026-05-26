@@ -93,7 +93,7 @@ INFO -   - Health Check: http://0.0.0.0:3001/health
 - ✅ Container status shows `healthy`
 - ✅ Logs show "Login successful with device verification"
 - ✅ Logs show "Starting HTTP MCP server on 0.0.0.0:3001"
-- ✅ Session file created at `./data/tokens/robinhood.pickle` (persistent)
+- ✅ Session token persisted in the Docker-managed `mcp_tokens` volume
 - ✅ Log file created at `./data/logs/open_stocks_mcp.log` (persistent)
 - ✅ Health check responds: `curl http://localhost:3001/health`
 
@@ -278,20 +278,22 @@ docker-compose logs --since="1h"
 
 ### Persistent Storage
 
-The Docker setup includes persistent volumes to preserve data across container restarts:
+The Docker setup uses two persistent volumes:
 
-```
-data/
-├── tokens/     # Robinhood session tokens (robinhood.pickle)
-└── logs/       # Application logs (open_stocks_mcp.log)
-```
+| Volume | Location | Type | Contents |
+|--------|----------|------|----------|
+| `mcp_tokens` | `/home/mcp/.tokens` | Docker-managed named volume | Robinhood session tokens |
+| `mcp_logs` | `/home/mcp/.local/state/mcp-servers/logs` | Host bind mount (`./data/logs/`) | Application logs |
 
 **Benefits:**
 - **Session persistence**: Avoid re-authentication after container restarts
+- **Secure token storage**: Tokens live in a Docker-managed volume with owner-only permissions, not on the host filesystem
 - **Log retention**: Keep application logs for debugging and monitoring
-- **Data safety**: Protect against data loss during updates
 
-**Security Note**: The `data/` directory contains sensitive authentication tokens and should never be committed to version control.
+To force re-authentication (e.g. after a credential change), remove the token volume:
+```bash
+docker-compose down -v
+```
 
 ### Resource Limits
 
