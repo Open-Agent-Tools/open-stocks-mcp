@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+import tomllib
 from pathlib import Path
 from typing import Any
 
@@ -54,3 +55,16 @@ def test_contributing_guide_exists_and_mentions_debugging_recipes() -> None:
         ".vscode/launch.json",
     ):
         assert expected in content
+
+
+@pytest.mark.unit
+def test_schwab_status_version_matches_pyproject() -> None:
+    pyproject = ROOT / "pyproject.toml"
+    schwab_status = ROOT / "SCHWAB_STATUS.md"
+
+    pyproject_data = tomllib.loads(pyproject.read_text(encoding="utf-8"))
+    version = pyproject_data["project"]["version"]
+    expected = f"**Version**: v{version}"
+
+    content = schwab_status.read_text(encoding="utf-8")
+    assert expected in content
