@@ -4,9 +4,15 @@ This directory contains host-backed persistent data for the Open Stocks MCP serv
 
 - **logs/**: Application logs and debugging information
 
-Robinhood session tokens are stored in the Docker-managed `mcp_tokens` named
-volume (not on the host filesystem). Run `docker-compose down -v` to remove
-all volumes and force re-authentication.
+Broker tokens are stored in the Docker-managed `mcp_tokens` named volume
+(mounted at `/home/mcp/.tokens` inside the container):
+
+- **robinhood.pickle** — Robinhood session token (pickle format)
+- **schwab_token.json** — Schwab OAuth token (JSON, written after first-run browser flow)
+
+Both files contain sensitive authentication material. Run
+`docker-compose down -v` to remove all volumes and force re-authentication
+for both brokers.
 
 ## Security Note
 Never commit the contents of these directories to version control.

@@ -1,0 +1,19 @@
+# Both-broker Docker configuration for Open Stocks MCP
+#
+# Enables Robinhood and Schwab broker feature flags.
+# Secrets (passwords, API keys) stay in .env — not in this file.
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.both-brokers.yml up
+
+environment: docker
+
+feature_flags:
+  brokers.robinhood:
+    default: true
+    environments:
+      docker: true
+  brokers.schwab:
+    default: true
+    environments:
+      docker: true

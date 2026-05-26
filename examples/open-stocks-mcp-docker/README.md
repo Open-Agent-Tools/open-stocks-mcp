@@ -20,10 +20,16 @@ This setup uses a production-ready approach:
 
 ### 1. Choose Your Setup
 
-**Production (Recommended):**
+**Robinhood Only (Default):**
 Uses the published PyPI package (v0.6.5 with full trading support):
 ```bash
 docker-compose up
+```
+
+**Both Brokers (Robinhood + Schwab):**
+Adds Schwab via a compose override that mounts `config.both-brokers.yaml`:
+```bash
+docker compose -f docker-compose.yml -f docker-compose.both-brokers.yml up
 ```
 
 **Development (Latest Features):**
@@ -97,11 +103,70 @@ INFO -   - Health Check: http://0.0.0.0:3001/health
 - ✅ Log file created at `./data/logs/open_stocks_mcp.log` (persistent)
 - ✅ Health check responds: `curl http://localhost:3001/health`
 
-### 5. Start the Server
+### 5. Both Brokers Setup (Robinhood + Schwab)
+
+To run with both brokers, you need the compose override and Schwab credentials:
+
+```bash
+# 1. Add Schwab credentials to your .env (alongside existing Robinhood creds)
+#    SCHWAB_API_KEY=your_api_key_here
+#    SCHWAB_APP_SECRET=your_app_secret_here
+#    SCHWAB_CALLBACK_URL=https://127.0.0.1:8182/
+#    SCHWAB_TOKEN_PATH=/home/mcp/.tokens/schwab_token.json
+
+# 2. Start with both-broker compose override
+docker compose -f docker-compose.yml -f docker-compose.both-brokers.yml up
+```
+
+The override mounts `config.both-brokers.yaml` into the container, which enables
+the `brokers.schwab` feature flag via the runtime config loader. Without this
+override, Schwab env vars alone will not activate the Schwab broker.
+
+#### Schwab OAuth First-Run Setup
+
+Schwab uses browser-based OAuth 2.0 authentication. The first-run flow **cannot
+complete in a fully detached container** because it requires a browser redirect to
+the callback URL:
+
+1. Run the container in the foreground so you can see the OAuth prompt:
+   ```bash
+   docker compose -f docker-compose.yml -f docker-compose.both-brokers.yml up
+   ```
+2. When the Schwab broker starts, it will attempt OAuth. Follow the URL printed
+   in the logs to authorize in your browser.
+3. Ensure the `SCHWAB_CALLBACK_URL` (default `https://127.0.0.1:8182/`) is
+   reachable from your browser so the token exchange completes.
+4. Once authorized, the token is saved to `./data/tokens/schwab_token.json`
+   (via the `/home/mcp/.tokens` volume) and persists across container restarts.
+5. The token auto-refreshes for ~7 days. After that, repeat the browser flow.
+
+After the first successful OAuth, you can run detached:
+```bash
+docker compose -f docker-compose.yml -f docker-compose.both-brokers.yml up -d
+```
+
+#### Verify Both Brokers
+
+Call `broker_status` through the MCP JSON-RPC endpoint to confirm both brokers:
+
+```bash
+curl -sS -X POST http://localhost:3001/mcp \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $MCP_API_KEY" \
+  -d '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"broker_status","arguments":{}},"id":1}'
+```
+
+The response includes a status entry for each configured broker:
+- `"robinhood"`: `"authenticated"`, `"failed"`, or `"not_configured"`
+- `"schwab"`: `"authenticated"`, `"failed"`, or `"not_configured"`
+
+Both should show `"authenticated"` after successful credential setup.
+
+### 6. Start the Server
 
 Run the server using Docker Compose:
 
-**Production (Recommended - v0.6.5 with trading support):**
+**Robinhood Only (v0.6.5 with trading support):**
 ```bash
 # Foreground (see logs)
 docker-compose up
@@ -119,7 +184,16 @@ docker-compose -f docker-compose.dev.yml up
 docker-compose -f docker-compose.dev.yml up -d
 ```
 
-### 6. Verify Server Health
+**Both Brokers:**
+```bash
+# Foreground (see logs — required for Schwab first-run OAuth)
+docker compose -f docker-compose.yml -f docker-compose.both-brokers.yml up
+
+# Background (after Schwab OAuth token is persisted)
+docker compose -f docker-compose.yml -f docker-compose.both-brokers.yml up -d
+```
+
+### 7. Verify Server Health
 
 Check that the server is running properly:
 
@@ -273,8 +347,13 @@ docker-compose logs --since="1h"
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `ROBINHOOD_USERNAME` | Yes | Your Robinhood account username |
-| `ROBINHOOD_PASSWORD` | Yes | Your Robinhood account password |
+| `ROBINHOOD_USERNAME` | For Robinhood | Your Robinhood account username |
+| `ROBINHOOD_PASSWORD` | For Robinhood | Your Robinhood account password |
+| `SCHWAB_API_KEY` | For Schwab | Schwab API key from developer.schwab.com |
+| `SCHWAB_APP_SECRET` | For Schwab | Schwab app secret from developer.schwab.com |
+| `SCHWAB_CALLBACK_URL` | No | OAuth callback URL (default: `https://127.0.0.1:8182/`) |
+| `SCHWAB_TOKEN_PATH` | No | Token storage path (default: `/home/mcp/.tokens/schwab_token.json`) |
+| `MCP_API_KEY` | Yes | Protects `/mcp` endpoint when bound to `0.0.0.0` |
 
 ### Persistent Storage
 
@@ -282,7 +361,7 @@ The Docker setup uses two persistent volumes:
 
 | Volume | Location | Type | Contents |
 |--------|----------|------|----------|
-| `mcp_tokens` | `/home/mcp/.tokens` | Docker-managed named volume | Robinhood session tokens |
+| `mcp_tokens` | `/home/mcp/.tokens` | Docker-managed named volume | Robinhood session tokens and Schwab OAuth tokens |
 | `mcp_logs` | `/home/mcp/.local/state/mcp-servers/logs` | Host bind mount (`./data/logs/`) | Application logs |
 
 **Benefits:**
