@@ -1,4 +1,4 @@
-"""Backward-compat shim — real implementations live in tools.stocks subpackage."""
+"""Backward-compat shim - real implementations live in tools.stocks subpackage."""
 
 from open_stocks_mcp.tools.stocks import (  # noqa: F401
     _fetch_instruments_batch,

@@ -195,9 +195,11 @@ class SessionManager:
             "is_valid": self.is_session_valid(),
             "username": self.username,
             "login_time": self.login_time.isoformat() if self.login_time else None,
-            "last_successful_call": self.last_successful_call.isoformat()
-            if self.last_successful_call
-            else None,
+            "last_successful_call": (
+                self.last_successful_call.isoformat()
+                if self.last_successful_call
+                else None
+            ),
             "session_timeout_hours": self.session_timeout_hours,
             "failed_login_attempts": self._failed_login_attempts,
             "max_failed_attempts": self.max_failed_attempts,

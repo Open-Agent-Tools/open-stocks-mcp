@@ -220,9 +220,9 @@ async def get_option_historicals(
             "interval": interval,
             "span": span,
             "historicals": historical_data,
-            "total_data_points": len(historical_data)
-            if isinstance(historical_data, list)
-            else 1,
+            "total_data_points": (
+                len(historical_data) if isinstance(historical_data, list) else 1
+            ),
             "status": "success",
         }
     }

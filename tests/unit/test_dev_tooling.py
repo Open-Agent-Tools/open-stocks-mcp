@@ -69,6 +69,20 @@ def test_contributing_guide_exists_and_mentions_debugging_recipes() -> None:
 
 
 @pytest.mark.unit
+def test_dev_dependency_black_requires_26_x() -> None:
+    pyproject = ROOT / "pyproject.toml"
+    data = tomllib.loads(pyproject.read_text(encoding="utf-8"))
+    dev_deps: list[str] = data.get("dependency-groups", {}).get("dev", [])
+    black_entry = next(
+        (d for d in dev_deps if isinstance(d, str) and d.startswith("black")), None
+    )
+    assert black_entry is not None, "black not found in [dependency-groups].dev"
+    assert black_entry.startswith("black>=26."), (
+        f"Expected black>=26.x in [dependency-groups].dev, got: {black_entry!r}"
+    )
+
+
+@pytest.mark.unit
 def test_schwab_status_version_matches_pyproject() -> None:
     pyproject = ROOT / "pyproject.toml"
     schwab_status = ROOT / "SCHWAB_STATUS.md"

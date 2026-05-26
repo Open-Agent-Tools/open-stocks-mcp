@@ -1828,7 +1828,7 @@ provides-extras = ["dev", "docs", "tracing"]
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "black", specifier = ">=25.0.0" },
+    { name = "black", specifier = ">=26.0.0" },
     { name = "httpx", specifier = ">=0.28.1" },
     { name = "mypy", specifier = ">=2.1.0" },
     { name = "nbformat", specifier = ">=5.10" },

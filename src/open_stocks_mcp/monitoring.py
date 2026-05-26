@@ -277,11 +277,11 @@ class MetricsCollector:
                 tool_stats[tool] = {
                     "calls": total,
                     "success_rate": (successful / total * 100.0) if total > 0 else 0.0,
-                    "calls_per_minute": round(
-                        total / (self.window_size.total_seconds() / 60), 2
-                    )
-                    if total > 0
-                    else 0.0,
+                    "calls_per_minute": (
+                        round(total / (self.window_size.total_seconds() / 60), 2)
+                        if total > 0
+                        else 0.0
+                    ),
                     "p50_response_time_ms": round(
                         self._percentile(durations, 0.50) * 1000, 2
                     ),
