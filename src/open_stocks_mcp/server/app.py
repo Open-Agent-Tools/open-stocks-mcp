@@ -1956,6 +1956,12 @@ async def schwab_open_option_orders(
 
 # Schwab Streaming Tools
 @mcp.tool()
+async def schwab_stream_level2(symbol: str, venue: str = "nasdaq") -> dict[str, Any]:
+    """Get a Level 2 snapshot from Schwab streaming cache for a symbol."""
+    return await _schwab_stream_level2_impl(symbol, venue)
+
+
+@mcp.tool()
 async def schwab_stream_option_quotes(symbols: list[str]) -> dict[str, Any]:
     """Get real-time option quote snapshots from Schwab streaming.
 
@@ -1973,12 +1979,6 @@ async def schwab_stream_quotes(symbols: list[str]) -> dict[str, Any]:
         symbols: List of equity ticker symbols.
     """
     return await _schwab_stream_quotes_impl(symbols)
-
-
-@mcp.tool()
-async def schwab_stream_level2(symbol: str, venue: str = "nasdaq") -> dict[str, Any]:
-    """Get a Level 2 snapshot from Schwab streaming cache for a symbol."""
-    return await _schwab_stream_level2_impl(symbol, venue)
 
 
 @mcp.tool()
