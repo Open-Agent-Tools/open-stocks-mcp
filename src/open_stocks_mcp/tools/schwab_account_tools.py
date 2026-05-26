@@ -323,7 +323,9 @@ async def schwab_get_margin_interest(
                 account_hash,
                 start_date=parsed_start_date,
                 end_date=parsed_end_date,
-                transaction_types=[Client.Transactions.TransactionType.DIVIDEND_OR_INTEREST],
+                transaction_types=[
+                    Client.Transactions.TransactionType.DIVIDEND_OR_INTEREST
+                ],
             )
             return response.json()
 

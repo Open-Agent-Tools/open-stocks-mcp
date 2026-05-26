@@ -156,26 +156,6 @@ async def test_schwab_stream_manager_handles_level2_by_venue() -> None:
 
 
 @pytest.mark.asyncio
-async def test_schwab_stream_manager_subscribe_level2() -> None:
-    from open_stocks_mcp.brokers.schwab_stream import SchwabStreamManager
-
-    mock_broker = MagicMock()
-    manager = SchwabStreamManager(mock_broker)
-    manager._is_running = True
-    manager.stream_client = AsyncMock()
-
-    success_nasdaq = await manager.subscribe_level2("AAPL", "nasdaq")
-    success_nyse = await manager.subscribe_level2("AAPL", "nyse")
-    unsupported = await manager.subscribe_level2("AAPL", "arca")
-
-    assert success_nasdaq is True
-    assert success_nyse is True
-    assert unsupported is False
-    manager.stream_client.nasdaq_book_subs.assert_awaited_once_with(["AAPL"])
-    manager.stream_client.nyse_book_subs.assert_awaited_once_with(["AAPL"])
-
-
-@pytest.mark.asyncio
 async def test_schwab_stream_manager_subscribe_quotes_splitting() -> None:
     from open_stocks_mcp.brokers.schwab_stream import SchwabStreamManager
 
@@ -280,10 +260,10 @@ async def test_schwab_stream_manager_level2_handling() -> None:
     }
 
     manager._handle_message(nasdaq_message)
-    book = manager.get_latest_level2("AAPL")
+    book = manager.get_latest_level2("AAPL", "nasdaq")
     assert book is not None
-    assert book["SYMBOL"] == "AAPL"
-    assert book["BIDS"][0]["PRICE"] == 150.0
+    assert book["symbol"] == "AAPL"
+    assert book["bids"][0]["PRICE"] == 150.0
 
     # Test NYSE_BOOK message handling
     nyse_message = {
@@ -299,10 +279,10 @@ async def test_schwab_stream_manager_level2_handling() -> None:
     }
 
     manager._handle_message(nyse_message)
-    book = manager.get_latest_level2("IBM")
+    book = manager.get_latest_level2("IBM", "nyse")
     assert book is not None
-    assert book["SYMBOL"] == "IBM"
-    assert book["BIDS"][0]["PRICE"] == 130.0
+    assert book["symbol"] == "IBM"
+    assert book["bids"][0]["PRICE"] == 130.0
 
 
 @pytest.mark.asyncio

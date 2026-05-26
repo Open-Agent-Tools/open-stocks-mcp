@@ -87,17 +87,19 @@ async def get_stock_price(symbol: str) -> dict[str, Any]:
     change_percent = (change / previous_close * 100) if previous_close else 0.0
 
     logger.info(f"Successfully retrieved stock price for {symbol}")
-    return create_success_response({
-        "symbol": symbol,
-        "price": current_price,
-        "change": round(change, 2),
-        "change_percent": round(change_percent, 2),
-        "previous_close": previous_close,
-        "volume": int(quote.get("volume", 0)),
-        "ask_price": float(quote.get("ask_price", 0)),
-        "bid_price": float(quote.get("bid_price", 0)),
-        "last_trade_price": float(quote.get("last_trade_price", 0)),
-    })
+    return create_success_response(
+        {
+            "symbol": symbol,
+            "price": current_price,
+            "change": round(change, 2),
+            "change_percent": round(change_percent, 2),
+            "previous_close": previous_close,
+            "volume": int(quote.get("volume", 0)),
+            "ask_price": float(quote.get("ask_price", 0)),
+            "bid_price": float(quote.get("bid_price", 0)),
+            "last_trade_price": float(quote.get("last_trade_price", 0)),
+        }
+    )
 
 
 @handle_robin_stocks_errors
@@ -145,20 +147,22 @@ async def get_stock_info(symbol: str) -> dict[str, Any]:
     company_name = await execute_with_retry(rh.get_name_by_symbol, symbol)
 
     logger.info(f"Successfully retrieved stock info for {symbol}")
-    return create_success_response({
-        "symbol": symbol,
-        "company_name": company_name or instrument.get("simple_name", "N/A"),
-        "sector": fundamental.get("sector", "N/A"),
-        "industry": fundamental.get("industry", "N/A"),
-        "description": fundamental.get("description", "N/A"),
-        "market_cap": fundamental.get("market_cap", "N/A"),
-        "pe_ratio": fundamental.get("pe_ratio", "N/A"),
-        "dividend_yield": fundamental.get("dividend_yield", "N/A"),
-        "high_52_weeks": fundamental.get("high_52_weeks", "N/A"),
-        "low_52_weeks": fundamental.get("low_52_weeks", "N/A"),
-        "average_volume": fundamental.get("average_volume", "N/A"),
-        "tradeable": instrument.get("tradeable", False),
-    })
+    return create_success_response(
+        {
+            "symbol": symbol,
+            "company_name": company_name or instrument.get("simple_name", "N/A"),
+            "sector": fundamental.get("sector", "N/A"),
+            "industry": fundamental.get("industry", "N/A"),
+            "description": fundamental.get("description", "N/A"),
+            "market_cap": fundamental.get("market_cap", "N/A"),
+            "pe_ratio": fundamental.get("pe_ratio", "N/A"),
+            "dividend_yield": fundamental.get("dividend_yield", "N/A"),
+            "high_52_weeks": fundamental.get("high_52_weeks", "N/A"),
+            "low_52_weeks": fundamental.get("low_52_weeks", "N/A"),
+            "average_volume": fundamental.get("average_volume", "N/A"),
+            "tradeable": instrument.get("tradeable", False),
+        }
+    )
 
 
 @handle_robin_stocks_errors
@@ -185,32 +189,38 @@ async def search_stocks(query: str) -> dict[str, Any]:
     search_results = await execute_with_retry(rh.find_instrument_data, query)
 
     if not search_results:
-        return create_success_response({
-            "query": query,
-            "results": [],
-            "count": 0,
-            "message": f"No stocks found matching query: {query}",
-        })
+        return create_success_response(
+            {
+                "query": query,
+                "results": [],
+                "count": 0,
+                "message": f"No stocks found matching query: {query}",
+            }
+        )
 
     # Process search results (limit to 10 for performance)
     results = []
     for item in search_results[:10]:
         symbol = item.get("symbol", "")
         if symbol:  # Only include results with valid symbols
-            results.append({
-                "symbol": symbol.upper(),
-                "name": item.get("simple_name", "N/A"),
-                "tradeable": item.get("tradeable", False),
-                "country": item.get("country", "N/A"),
-                "type": item.get("type", "N/A"),
-            })
+            results.append(
+                {
+                    "symbol": symbol.upper(),
+                    "name": item.get("simple_name", "N/A"),
+                    "tradeable": item.get("tradeable", False),
+                    "country": item.get("country", "N/A"),
+                    "type": item.get("type", "N/A"),
+                }
+            )
 
     logger.info(f"Successfully searched stocks for query: {query}")
-    return create_success_response({
-        "query": query,
-        "results": results,
-        "count": len(results),
-    })
+    return create_success_response(
+        {
+            "query": query,
+            "results": results,
+            "count": len(results),
+        }
+    )
 
 
 @handle_robin_stocks_errors
@@ -232,13 +242,15 @@ async def get_market_hours() -> dict[str, Any]:
     # Process market data - focus on main markets
     market_data = []
     for market in markets[:5]:  # Limit to top 5 markets
-        market_data.append({
-            "name": market.get("name", "N/A"),
-            "mic": market.get("mic", "N/A"),
-            "operating_mic": market.get("operating_mic", "N/A"),
-            "timezone": market.get("timezone", "N/A"),
-            "website": market.get("website", "N/A"),
-        })
+        market_data.append(
+            {
+                "name": market.get("name", "N/A"),
+                "mic": market.get("mic", "N/A"),
+                "operating_mic": market.get("operating_mic", "N/A"),
+                "timezone": market.get("timezone", "N/A"),
+                "website": market.get("website", "N/A"),
+            }
+        )
 
     logger.info("Successfully retrieved market hours information")
     return create_success_response({"markets": market_data, "count": len(market_data)})
@@ -300,23 +312,27 @@ async def get_price_history(symbol: str, period: str = "week") -> dict[str, Any]
     price_points = []
     for data_point in historical_data[-20:]:
         if data_point and data_point.get("close_price"):
-            price_points.append({
-                "date": data_point.get("begins_at", "N/A"),
-                "open": float(data_point.get("open_price", 0)),
-                "high": float(data_point.get("high_price", 0)),
-                "low": float(data_point.get("low_price", 0)),
-                "close": float(data_point.get("close_price", 0)),
-                "volume": int(data_point.get("volume", 0)),
-            })
+            price_points.append(
+                {
+                    "date": data_point.get("begins_at", "N/A"),
+                    "open": float(data_point.get("open_price", 0)),
+                    "high": float(data_point.get("high_price", 0)),
+                    "low": float(data_point.get("low_price", 0)),
+                    "close": float(data_point.get("close_price", 0)),
+                    "volume": int(data_point.get("volume", 0)),
+                }
+            )
 
     logger.info(f"Successfully retrieved price history for {symbol} over {period}")
-    return create_success_response({
-        "symbol": symbol,
-        "period": period,
-        "interval": interval,
-        "data_points": price_points,
-        "count": len(price_points),
-    })
+    return create_success_response(
+        {
+            "symbol": symbol,
+            "period": period,
+            "interval": interval,
+            "data_points": price_points,
+            "count": len(price_points),
+        }
+    )
 
 
 @handle_robin_stocks_errors
@@ -369,37 +385,43 @@ async def get_instruments_by_symbols(symbols: list[str]) -> dict[str, Any]:
     processed_instruments = []
     for instrument in instruments_data:
         if instrument:
-            processed_instruments.append({
-                "symbol": instrument.get("symbol", "N/A"),
-                "name": instrument.get("name", "N/A"),
-                "instrument_id": instrument.get("id", "N/A"),
-                "url": instrument.get("url", "N/A"),
-                "tradeable": instrument.get("tradeable", False),
-                "market": instrument.get("market", "N/A"),
-                "list_date": instrument.get("list_date", "N/A"),
-                "state": instrument.get("state", "N/A"),
-                "type": instrument.get("type", "N/A"),
-                "tradability": instrument.get("tradability", "N/A"),
-                "simple_name": instrument.get("simple_name", "N/A"),
-                "country": instrument.get("country", "N/A"),
-                "symbol_description": instrument.get("symbol_description", "N/A"),
-                "fractional_tradability": instrument.get(
-                    "fractional_tradability", "N/A"
-                ),
-                "maintenance_ratio": instrument.get("maintenance_ratio", "N/A"),
-                "margin_initial_ratio": instrument.get("margin_initial_ratio", "N/A"),
-                "day_trade_ratio": instrument.get("day_trade_ratio", "N/A"),
-                "bloomberg_unique": instrument.get("bloomberg_unique", "N/A"),
-            })
+            processed_instruments.append(
+                {
+                    "symbol": instrument.get("symbol", "N/A"),
+                    "name": instrument.get("name", "N/A"),
+                    "instrument_id": instrument.get("id", "N/A"),
+                    "url": instrument.get("url", "N/A"),
+                    "tradeable": instrument.get("tradeable", False),
+                    "market": instrument.get("market", "N/A"),
+                    "list_date": instrument.get("list_date", "N/A"),
+                    "state": instrument.get("state", "N/A"),
+                    "type": instrument.get("type", "N/A"),
+                    "tradability": instrument.get("tradability", "N/A"),
+                    "simple_name": instrument.get("simple_name", "N/A"),
+                    "country": instrument.get("country", "N/A"),
+                    "symbol_description": instrument.get("symbol_description", "N/A"),
+                    "fractional_tradability": instrument.get(
+                        "fractional_tradability", "N/A"
+                    ),
+                    "maintenance_ratio": instrument.get("maintenance_ratio", "N/A"),
+                    "margin_initial_ratio": instrument.get(
+                        "margin_initial_ratio", "N/A"
+                    ),
+                    "day_trade_ratio": instrument.get("day_trade_ratio", "N/A"),
+                    "bloomberg_unique": instrument.get("bloomberg_unique", "N/A"),
+                }
+            )
 
     logger.info(
         f"Successfully retrieved instrument data for {len(processed_instruments)} symbols"
     )
-    return create_success_response({
-        "instruments": processed_instruments,
-        "count": len(processed_instruments),
-        "requested_symbols": clean_symbols,
-    })
+    return create_success_response(
+        {
+            "instruments": processed_instruments,
+            "count": len(processed_instruments),
+            "requested_symbols": clean_symbols,
+        }
+    )
 
 
 @handle_robin_stocks_errors
@@ -434,35 +456,39 @@ async def find_instrument_data(query: str) -> dict[str, Any]:
     processed_instruments = []
     for instrument in instruments_data[:10]:
         if instrument:
-            processed_instruments.append({
-                "symbol": instrument.get("symbol", "N/A"),
-                "name": instrument.get("name", "N/A"),
-                "instrument_id": instrument.get("id", "N/A"),
-                "url": instrument.get("url", "N/A"),
-                "tradeable": instrument.get("tradeable", False),
-                "market": instrument.get("market", "N/A"),
-                "list_date": instrument.get("list_date", "N/A"),
-                "state": instrument.get("state", "N/A"),
-                "type": instrument.get("type", "N/A"),
-                "tradability": instrument.get("tradability", "N/A"),
-                "simple_name": instrument.get("simple_name", "N/A"),
-                "country": instrument.get("country", "N/A"),
-                "symbol_description": instrument.get("symbol_description", "N/A"),
-                "fractional_tradability": instrument.get(
-                    "fractional_tradability", "N/A"
-                ),
-            })
+            processed_instruments.append(
+                {
+                    "symbol": instrument.get("symbol", "N/A"),
+                    "name": instrument.get("name", "N/A"),
+                    "instrument_id": instrument.get("id", "N/A"),
+                    "url": instrument.get("url", "N/A"),
+                    "tradeable": instrument.get("tradeable", False),
+                    "market": instrument.get("market", "N/A"),
+                    "list_date": instrument.get("list_date", "N/A"),
+                    "state": instrument.get("state", "N/A"),
+                    "type": instrument.get("type", "N/A"),
+                    "tradability": instrument.get("tradability", "N/A"),
+                    "simple_name": instrument.get("simple_name", "N/A"),
+                    "country": instrument.get("country", "N/A"),
+                    "symbol_description": instrument.get("symbol_description", "N/A"),
+                    "fractional_tradability": instrument.get(
+                        "fractional_tradability", "N/A"
+                    ),
+                }
+            )
 
     logger.info(
         f"Successfully found {len(processed_instruments)} instruments for query: {query}"
     )
-    return create_success_response({
-        "instruments": processed_instruments,
-        "count": len(processed_instruments),
-        "query": query,
-        "total_results": len(instruments_data),
-        "showing_results": len(processed_instruments),
-    })
+    return create_success_response(
+        {
+            "instruments": processed_instruments,
+            "count": len(processed_instruments),
+            "query": query,
+            "total_results": len(instruments_data),
+            "showing_results": len(processed_instruments),
+        }
+    )
 
 
 @handle_robin_stocks_errors
@@ -572,21 +598,25 @@ async def get_pricebook_by_symbol(symbol: str) -> dict[str, Any]:
         if pricebook_data.get("asks"):
             for ask in pricebook_data["asks"]:
                 if ask:
-                    processed_asks.append({
-                        "price": float(ask.get("price", 0)),
-                        "quantity": int(ask.get("quantity", 0)),
-                        "side": "ask",
-                    })
+                    processed_asks.append(
+                        {
+                            "price": float(ask.get("price", 0)),
+                            "quantity": int(ask.get("quantity", 0)),
+                            "side": "ask",
+                        }
+                    )
 
         # Process bids (buy orders)
         if pricebook_data.get("bids"):
             for bid in pricebook_data["bids"]:
                 if bid:
-                    processed_bids.append({
-                        "price": float(bid.get("price", 0)),
-                        "quantity": int(bid.get("quantity", 0)),
-                        "side": "bid",
-                    })
+                    processed_bids.append(
+                        {
+                            "price": float(bid.get("price", 0)),
+                            "quantity": int(bid.get("quantity", 0)),
+                            "side": "bid",
+                        }
+                    )
 
         # Sort asks by price (ascending) and bids by price (descending)
         processed_asks.sort(key=lambda x: x["price"])  # type: ignore[arg-type,return-value]

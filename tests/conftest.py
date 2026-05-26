@@ -81,6 +81,7 @@ class MockBroker(BaseBroker):
     async def order_sell_market(self, symbol: str, quantity: float) -> dict[str, Any]:
         return {"result": {"order": "sell"}}
 
+
 try:
     import pytest_asyncio  # noqa: F401
 except ImportError:

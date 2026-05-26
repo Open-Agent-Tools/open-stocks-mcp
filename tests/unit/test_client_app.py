@@ -40,7 +40,9 @@ async def test_call_tool_initializes_stdio_session_and_returns_text():
     mock_session_cm.__aexit__ = AsyncMock()
 
     with (
-        patch("open_stocks_mcp.client.app.stdio_client", return_value=mock_stdio_cm) as mock_stdio,
+        patch(
+            "open_stocks_mcp.client.app.stdio_client", return_value=mock_stdio_cm
+        ) as mock_stdio,
         patch("open_stocks_mcp.client.app.ClientSession", return_value=mock_session_cm),
     ):
         result = await call_tool(tool_name, arguments)
@@ -121,7 +123,9 @@ def test_main_parses_message_and_prints_response():
     runner = CliRunner()
     expected_response = "mocked response"
 
-    with patch("open_stocks_mcp.client.app.call_tool", new_callable=AsyncMock) as mock_call:
+    with patch(
+        "open_stocks_mcp.client.app.call_tool", new_callable=AsyncMock
+    ) as mock_call:
         mock_call.return_value = expected_response
 
         result = runner.invoke(main, ["get_stock_orders status=pending symbol=AAPL"])
@@ -137,7 +141,9 @@ def test_main_splits_argument_values_once_and_ignores_non_key_tokens():
     """Test argument parsing edge cases in main."""
     runner = CliRunner()
 
-    with patch("open_stocks_mcp.client.app.call_tool", new_callable=AsyncMock) as mock_call:
+    with patch(
+        "open_stocks_mcp.client.app.call_tool", new_callable=AsyncMock
+    ) as mock_call:
         mock_call.return_value = "ok"
 
         # query=foo=bar should result in key='query', value='foo=bar'

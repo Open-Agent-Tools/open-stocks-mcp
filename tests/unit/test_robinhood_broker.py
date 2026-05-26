@@ -38,7 +38,9 @@ class TestRobinhoodBrokerConstructor:
             password="secret",
             session_manager=session_mgr,
         )
-        session_mgr.set_credentials.assert_called_once_with("user@example.com", "secret")
+        session_mgr.set_credentials.assert_called_once_with(
+            "user@example.com", "secret"
+        )
         assert rb._auth_info.status == BrokerAuthStatus.NOT_AUTHENTICATED
 
     @pytest.mark.unit

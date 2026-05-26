@@ -32,11 +32,9 @@ def test_service_mounts_mcp_tokens(compose_config: dict) -> None:
     for svc_name, svc in compose_config.get("services", {}).items():
         vols = svc.get("volumes", [])
         token_mounts = [
-            v
-            for v in vols
-            if isinstance(v, str) and v.startswith("mcp_tokens:")
+            v for v in vols if isinstance(v, str) and v.startswith("mcp_tokens:")
         ]
         assert token_mounts, f"service '{svc_name}' must mount mcp_tokens"
-        assert any(
-            v == "mcp_tokens:/home/mcp/.tokens" for v in token_mounts
-        ), f"service '{svc_name}' must mount mcp_tokens at /home/mcp/.tokens"
+        assert any(v == "mcp_tokens:/home/mcp/.tokens" for v in token_mounts), (
+            f"service '{svc_name}' must mount mcp_tokens at /home/mcp/.tokens"
+        )

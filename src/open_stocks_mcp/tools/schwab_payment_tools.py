@@ -173,7 +173,9 @@ async def schwab_get_stock_loan_payments(
         )
 
     except Exception as e:
-        logger.error(f"Error getting Schwab stock loan payments for {account_hash}: {e}")
+        logger.error(
+            f"Error getting Schwab stock loan payments for {account_hash}: {e}"
+        )
         return create_error_response(e)
 
 

@@ -353,7 +353,9 @@ async def test_schwab_get_total_dividends_aggregates_amounts(
 @pytest.mark.asyncio
 @patch("open_stocks_mcp.tools.schwab_payment_tools.get_authenticated_broker_or_error")
 @patch("open_stocks_mcp.tools.schwab_payment_tools.asyncio.to_thread")
-async def test_schwab_get_total_dividends_groups_by_year(mock_to_thread, mock_get_broker):
+async def test_schwab_get_total_dividends_groups_by_year(
+    mock_to_thread, mock_get_broker
+):
     broker = MagicMock()
     mock_get_broker.return_value = (broker, None)
     mock_to_thread.return_value = [
@@ -540,7 +542,10 @@ async def test_schwab_get_stock_loan_payments_filters_non_loan_journals(
 
     assert result["result"]["status"] == "success"
     assert len(result["result"]["loan_payments"]) == 1
-    assert result["result"]["loan_payments"][0]["description"] == "SECURITIES LENDING REVENUE"
+    assert (
+        result["result"]["loan_payments"][0]["description"]
+        == "SECURITIES LENDING REVENUE"
+    )
     assert result["result"]["total_amount"] == "2.00"
     assert result["result"]["enrolled"] is True
 
@@ -571,7 +576,9 @@ async def test_schwab_get_stock_loan_payments_empty_returns_not_enrolled(
 @pytest.mark.asyncio
 @patch("open_stocks_mcp.tools.schwab_payment_tools.get_authenticated_broker_or_error")
 @patch("open_stocks_mcp.tools.schwab_payment_tools.asyncio.to_thread")
-async def test_schwab_get_stock_loan_payments_auth_error(mock_to_thread, mock_get_broker):
+async def test_schwab_get_stock_loan_payments_auth_error(
+    mock_to_thread, mock_get_broker
+):
     mock_get_broker.return_value = (
         None,
         {"result": {"status": "error", "error": "Auth failed"}},
