@@ -189,6 +189,22 @@ class TestSchwabBroker:
                 api_key="test", app_secret="test", token_path="/tmp/outside_token.json"
             )
 
+    @pytest.mark.unit
+    @pytest.mark.journey_system
+    def test_rejects_symlink_escaping_tokens_dir(self, tmp_path: Path) -> None:
+        """Symlink under ~/.tokens pointing outside is rejected."""
+        tokens_dir = Path.home() / ".tokens"
+        tokens_dir.mkdir(parents=True, exist_ok=True)
+        link_path = tokens_dir / "escape_link.json"
+        target = tmp_path / "outside.json"
+        target.write_text("{}")
+        try:
+            link_path.symlink_to(target)
+            with pytest.raises(ValueError, match="token_path must be under"):
+                SchwabBroker(api_key="test", app_secret="test", token_path=str(link_path))
+        finally:
+            link_path.unlink(missing_ok=True)
+
     def test_accepts_token_path_inside_tokens_dir(self) -> None:
         """Test that token_path can be inside ~/.tokens directory."""
         token_dir = Path.home() / ".tokens"
