@@ -8,10 +8,18 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+from open_stocks_mcp.brokers.auth_coordinator import (
+    create_unauthenticated_tool_response,
+)
 from open_stocks_mcp.brokers.base import BrokerAuthStatus
 from open_stocks_mcp.brokers.registry import BrokerRegistry, get_broker_registry
 from open_stocks_mcp.brokers.robinhood import RobinhoodBroker
 from open_stocks_mcp.brokers.schwab import SchwabBroker
+from open_stocks_mcp.server.tool_helpers import (
+    get_broker_status_data,
+    get_list_brokers_data,
+)
+from tests.conftest import MockBroker
 
 
 class TestMultiBrokerIntegration:
@@ -270,3 +278,238 @@ class TestMultiBrokerIntegration:
         # Should use existing token, not easy_client
         mock_schwab_auth.client_from_token_file.assert_called_once()
         mock_schwab_auth.easy_client.assert_not_called()
+
+
+@pytest.mark.asyncio
+@pytest.mark.journey_system
+class TestMultiBrokerStatusScenarios:
+    """Integration-style status/list tests across broker configuration states."""
+
+    async def test_broker_status_both_configured_authenticated(self) -> None:
+        registry = BrokerRegistry()
+        robinhood = MockBroker("robinhood", should_auth_succeed=True)
+        schwab = MockBroker("schwab", should_auth_succeed=True)
+        registry.register(robinhood)
+        registry.register(schwab)
+        await registry.authenticate_all()
+
+        with patch(
+            "open_stocks_mcp.server.tool_helpers.get_broker_registry",
+            return_value=registry,
+        ):
+            result = await get_broker_status_data()
+
+        payload = result["result"]
+        assert payload["total_configured"] == 2
+        assert payload["total_authenticated"] == 2
+        assert sorted(payload["available_brokers"]) == ["robinhood", "schwab"]
+        assert payload["brokers"]["robinhood"]["status"] == "authenticated"
+        assert payload["brokers"]["robinhood"]["is_available"] is True
+        assert payload["brokers"]["schwab"]["status"] == "authenticated"
+        assert payload["brokers"]["schwab"]["is_available"] is True
+
+    async def test_list_brokers_both_configured_authenticated(self) -> None:
+        registry = BrokerRegistry()
+        robinhood = MockBroker("robinhood", should_auth_succeed=True)
+        schwab = MockBroker("schwab", should_auth_succeed=True)
+        registry.register(robinhood)
+        registry.register(schwab)
+        await registry.authenticate_all()
+
+        with patch(
+            "open_stocks_mcp.server.tool_helpers.get_broker_registry",
+            return_value=registry,
+        ):
+            result = await get_list_brokers_data()
+
+        payload = result["result"]
+        assert payload["count"] == 2
+        broker_map = {entry["name"]: entry for entry in payload["brokers"]}
+        assert broker_map["robinhood"]["available"] is True
+        assert broker_map["robinhood"]["status"] == "authenticated"
+        assert broker_map["robinhood"]["configured"] is True
+        assert broker_map["schwab"]["available"] is True
+        assert broker_map["schwab"]["status"] == "authenticated"
+        assert broker_map["schwab"]["configured"] is True
+
+    async def test_broker_status_only_robinhood_configured(self) -> None:
+        registry = BrokerRegistry()
+        robinhood = MockBroker("robinhood", should_auth_succeed=True)
+        registry.register(robinhood)
+        await registry.authenticate_all()
+
+        with patch(
+            "open_stocks_mcp.server.tool_helpers.get_broker_registry",
+            return_value=registry,
+        ):
+            result = await get_broker_status_data()
+
+        payload = result["result"]
+        assert payload["total_configured"] == 1
+        assert payload["total_authenticated"] == 1
+        assert payload["available_brokers"] == ["robinhood"]
+
+    async def test_list_brokers_only_robinhood(self) -> None:
+        registry = BrokerRegistry()
+        robinhood = MockBroker("robinhood", should_auth_succeed=True)
+        registry.register(robinhood)
+        await registry.authenticate_all()
+
+        with patch(
+            "open_stocks_mcp.server.tool_helpers.get_broker_registry",
+            return_value=registry,
+        ):
+            result = await get_list_brokers_data()
+
+        payload = result["result"]
+        assert payload["count"] == 1
+        assert payload["brokers"][0]["name"] == "robinhood"
+
+    async def test_broker_status_only_schwab_configured(self) -> None:
+        registry = BrokerRegistry()
+        schwab = MockBroker("schwab", should_auth_succeed=True)
+        registry.register(schwab)
+        await registry.authenticate_all()
+
+        with patch(
+            "open_stocks_mcp.server.tool_helpers.get_broker_registry",
+            return_value=registry,
+        ):
+            result = await get_broker_status_data()
+
+        payload = result["result"]
+        assert payload["total_configured"] == 1
+        assert payload["available_brokers"] == ["schwab"]
+
+    async def test_list_brokers_only_schwab(self) -> None:
+        registry = BrokerRegistry()
+        schwab = MockBroker("schwab", should_auth_succeed=True)
+        registry.register(schwab)
+        await registry.authenticate_all()
+
+        with patch(
+            "open_stocks_mcp.server.tool_helpers.get_broker_registry",
+            return_value=registry,
+        ):
+            result = await get_list_brokers_data()
+
+        payload = result["result"]
+        assert payload["count"] == 1
+        assert payload["brokers"][0]["name"] == "schwab"
+
+    async def test_broker_status_neither_authenticated(self) -> None:
+        registry = BrokerRegistry()
+        robinhood = MockBroker("robinhood", should_auth_succeed=False)
+        schwab = MockBroker("schwab", should_auth_succeed=False)
+        registry.register(robinhood)
+        registry.register(schwab)
+        await registry.authenticate_all()
+
+        with patch(
+            "open_stocks_mcp.server.tool_helpers.get_broker_registry",
+            return_value=registry,
+        ):
+            result = await get_broker_status_data()
+
+        payload = result["result"]
+        assert payload["total_configured"] == 2
+        assert payload["total_authenticated"] == 0
+        assert payload["available_brokers"] == []
+        assert payload["brokers"]["robinhood"]["is_available"] is False
+        assert payload["brokers"]["robinhood"]["status"] == "auth_failed"
+        assert payload["brokers"]["schwab"]["is_available"] is False
+        assert payload["brokers"]["schwab"]["status"] == "auth_failed"
+
+    async def test_list_brokers_neither_authenticated(self) -> None:
+        registry = BrokerRegistry()
+        robinhood = MockBroker("robinhood", should_auth_succeed=False)
+        schwab = MockBroker("schwab", should_auth_succeed=False)
+        registry.register(robinhood)
+        registry.register(schwab)
+        await registry.authenticate_all()
+
+        with patch(
+            "open_stocks_mcp.server.tool_helpers.get_broker_registry",
+            return_value=registry,
+        ):
+            result = await get_list_brokers_data()
+
+        payload = result["result"]
+        assert payload["count"] == 2
+        broker_map = {entry["name"]: entry for entry in payload["brokers"]}
+        assert broker_map["robinhood"]["available"] is False
+        assert broker_map["schwab"]["available"] is False
+
+
+@pytest.mark.asyncio
+@pytest.mark.journey_system
+class TestMultiBrokerErrorResponses:
+    """Validate broker/tool error payloads for partial auth scenarios."""
+
+    async def test_error_response_unavailable_broker_auth_failed(self) -> None:
+        registry = BrokerRegistry()
+        robinhood = MockBroker("robinhood", should_auth_succeed=True)
+        schwab = MockBroker("schwab", should_auth_succeed=False)
+        registry.register(robinhood)
+        registry.register(schwab)
+        await registry.authenticate_all()
+
+        broker, error = registry.get_broker_or_error("schwab", "get_quote")
+        assert broker is None
+        assert error is not None
+        result = error["result"]
+        assert result["status"] == "broker_unavailable"
+        assert result["broker"] == "schwab"
+        assert result["auth_status"] == "auth_failed"
+
+    async def test_error_response_unavailable_broker_not_configured(self) -> None:
+        registry = BrokerRegistry()
+        unconfigured = MockBroker(
+            "unconfigured", should_auth_succeed=False, configured=False
+        )
+        registry.register(unconfigured)
+
+        broker, error = registry.get_broker_or_error("unconfigured", "get_quote")
+        assert broker is None
+        assert error is not None
+        result = error["result"]
+        assert result["status"] == "broker_unavailable"
+        assert result["auth_status"] == "not_configured"
+        assert "environment variables" in result["error"]
+
+    async def test_error_response_nonexistent_broker(self) -> None:
+        registry = BrokerRegistry()
+        broker, error = registry.get_broker_or_error("nonexistent", "get_quote")
+        assert broker is None
+        assert error is not None
+        assert error["result"]["status"] == "broker_not_found"
+
+    async def test_unauthenticated_tool_response_specific_broker(self) -> None:
+        result = create_unauthenticated_tool_response("schwab")
+        assert result["result"]["status"] == "no_authenticated_brokers"
+        assert "Schwab" in result["result"]["error"]
+
+    async def test_unauthenticated_tool_response_no_broker(self) -> None:
+        result = create_unauthenticated_tool_response(None)
+        assert result["result"]["status"] == "no_authenticated_brokers"
+        assert "No authenticated brokers available" in result["result"]["error"]
+
+    async def test_partial_auth_broker_status_shows_mixed_state(self) -> None:
+        registry = BrokerRegistry()
+        robinhood = MockBroker("robinhood", should_auth_succeed=True)
+        schwab = MockBroker("schwab", should_auth_succeed=False)
+        registry.register(robinhood)
+        registry.register(schwab)
+        await registry.authenticate_all()
+
+        with patch(
+            "open_stocks_mcp.server.tool_helpers.get_broker_registry",
+            return_value=registry,
+        ):
+            result = await get_broker_status_data()
+
+        payload = result["result"]
+        assert payload["total_authenticated"] == 1
+        assert payload["brokers"]["robinhood"]["is_available"] is True
+        assert payload["brokers"]["schwab"]["is_available"] is False
+        assert payload["brokers"]["schwab"]["status"] == "auth_failed"
