@@ -1803,7 +1803,7 @@ requires-dist = [
     { name = "jsonrpclib-pelix", specifier = ">=1.0.0" },
     { name = "jupyter", marker = "extra == 'docs'", specifier = ">=1.1.0" },
     { name = "mcp", specifier = ">=1.25.0" },
-    { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.19.0" },
+    { name = "mypy", marker = "extra == 'dev'", specifier = ">=2.1.0" },
     { name = "nbformat", marker = "extra == 'dev'", specifier = ">=5.10" },
     { name = "nbformat", marker = "extra == 'docs'", specifier = ">=5.10" },
     { name = "opentelemetry-api", marker = "extra == 'tracing'", specifier = ">=1.20.0" },
@@ -1830,7 +1830,7 @@ provides-extras = ["dev", "docs", "tracing"]
 dev = [
     { name = "black", specifier = ">=25.0.0" },
     { name = "httpx", specifier = ">=0.28.0" },
-    { name = "mypy", specifier = ">=1.19.0" },
+    { name = "mypy", specifier = ">=2.1.0" },
     { name = "nbformat", specifier = ">=5.10" },
     { name = "pre-commit", specifier = ">=4.5.0" },
     { name = "pytest", specifier = ">=9.0.0" },

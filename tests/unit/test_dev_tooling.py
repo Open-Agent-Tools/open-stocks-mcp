@@ -9,14 +9,25 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+import yaml
 
 ROOT = Path(__file__).parent.parent.parent
 VSCODE = ROOT / ".vscode"
+MYPY_DEV_REQUIREMENT = "mypy>=2.1.0"
+MYPY_PRE_COMMIT_REPO = "https://github.com/pre-commit/mirrors-mypy"
+MYPY_PRE_COMMIT_REV = "v2.1.0"
+MYPY_PRE_COMMIT_EXCLUDE = r"^(examples|tests)/"
 
 
 def _load_jsonc(path: Path) -> dict[str, Any]:
     content = re.sub(r"//[^\n]*", "", path.read_text(encoding="utf-8"))
     return json.loads(content)
+
+
+def _load_yaml(path: Path) -> dict[str, Any]:
+    data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    assert isinstance(data, dict)
+    return data
 
 
 @pytest.mark.unit
@@ -68,3 +79,20 @@ def test_schwab_status_version_matches_pyproject() -> None:
 
     content = schwab_status.read_text(encoding="utf-8")
     assert expected in content
+
+
+@pytest.mark.unit
+def test_mypy_dev_tooling_targets_2_1_0() -> None:
+    pyproject_data = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+
+    assert MYPY_DEV_REQUIREMENT in pyproject_data["project"]["optional-dependencies"][
+        "dev"
+    ]
+    assert MYPY_DEV_REQUIREMENT in pyproject_data["dependency-groups"]["dev"]
+
+    pre_commit = _load_yaml(ROOT / ".pre-commit-config.yaml")
+    mypy_repo = next(
+        repo for repo in pre_commit["repos"] if repo["repo"] == MYPY_PRE_COMMIT_REPO
+    )
+    assert mypy_repo["rev"] == MYPY_PRE_COMMIT_REV
+    assert mypy_repo["hooks"][0]["exclude"] == MYPY_PRE_COMMIT_EXCLUDE
