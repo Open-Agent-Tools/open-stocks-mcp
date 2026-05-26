@@ -55,8 +55,7 @@ async def get_dividends() -> dict[str, Any]:
         await rate_limiter.acquire()
 
         # Get dividend data
-        loop = asyncio.get_event_loop()
-        dividends = await loop.run_in_executor(None, rh.account.get_dividends)
+        dividends = await asyncio.to_thread(rh.account.get_dividends)
 
         # Validate response
         if not dividends or not isinstance(dividends, list):
@@ -86,8 +85,8 @@ async def get_dividends() -> dict[str, Any]:
             instrument_url = dividend.get("instrument")
             if instrument_url:
                 try:
-                    instrument_data = await loop.run_in_executor(
-                        None, rh.stocks.get_instrument_by_url, instrument_url
+                    instrument_data = await asyncio.to_thread(
+                        rh.stocks.get_instrument_by_url, instrument_url
                     )
                     if instrument_data and isinstance(instrument_data, dict):
                         processed["symbol"] = instrument_data.get("symbol")
@@ -151,11 +150,10 @@ async def get_total_dividends() -> dict[str, Any]:
         await rate_limiter.acquire()
 
         # Use robin_stocks built-in function
-        loop = asyncio.get_event_loop()
-        total = await loop.run_in_executor(None, rh.account.get_total_dividends)
+        total = await asyncio.to_thread(rh.account.get_total_dividends)
 
         # Also get detailed dividends for additional stats
-        dividends = await loop.run_in_executor(None, rh.account.get_dividends)
+        dividends = await asyncio.to_thread(rh.account.get_dividends)
 
         # Calculate additional statistics
         by_year: dict[str, float] = {}
@@ -246,9 +244,8 @@ async def get_dividends_by_instrument(symbol: str) -> dict[str, Any]:
         await rate_limiter.acquire()
 
         # Get dividends by instrument
-        loop = asyncio.get_event_loop()
-        dividends = await loop.run_in_executor(
-            None, rh.account.get_dividends_by_instrument, symbol
+        dividends = await asyncio.to_thread(
+            rh.account.get_dividends_by_instrument, symbol
         )
 
         # Process dividend data
@@ -328,10 +325,7 @@ async def get_interest_payments() -> dict[str, Any]:
         await rate_limiter.acquire()
 
         # Get interest payments
-        loop = asyncio.get_event_loop()
-        interest_payments = await loop.run_in_executor(
-            None, rh.account.get_interest_payments
-        )
+        interest_payments = await asyncio.to_thread(rh.account.get_interest_payments)
 
         # Process interest payment data
         processed_payments = []
@@ -405,10 +399,7 @@ async def get_stock_loan_payments() -> dict[str, Any]:
         await rate_limiter.acquire()
 
         # Get stock loan payments
-        loop = asyncio.get_event_loop()
-        loan_payments = await loop.run_in_executor(
-            None, rh.account.get_stock_loan_payments
-        )
+        loan_payments = await asyncio.to_thread(rh.account.get_stock_loan_payments)
 
         # Process loan payment data
         processed_payments = []
@@ -431,8 +422,8 @@ async def get_stock_loan_payments() -> dict[str, Any]:
                 instrument_url = payment.get("instrument")
                 if instrument_url:
                     try:
-                        instrument_data = await loop.run_in_executor(
-                            None, rh.stocks.get_instrument_by_url, instrument_url
+                        instrument_data = await asyncio.to_thread(
+                            rh.stocks.get_instrument_by_url, instrument_url
                         )
                         if instrument_data and isinstance(instrument_data, dict):
                             processed["symbol"] = instrument_data.get("symbol")

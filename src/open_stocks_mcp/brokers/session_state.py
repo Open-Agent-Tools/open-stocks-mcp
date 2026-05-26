@@ -135,12 +135,9 @@ class SessionManager:
         try:
             logger.info(f"Attempting to authenticate user: {self.username}")
 
-            loop = asyncio.get_event_loop()
-
             try:
                 login_result = await asyncio.wait_for(
-                    loop.run_in_executor(
-                        None,
+                    asyncio.to_thread(
                         self._login_with_device_verification,
                         self.username,
                         self.password,
@@ -162,7 +159,7 @@ class SessionManager:
                 self._increment_failed_attempts()
                 return False
 
-            user_profile = await loop.run_in_executor(None, rh.load_user_profile)
+            user_profile = await asyncio.to_thread(rh.load_user_profile)
 
             if user_profile:
                 self.login_time = datetime.now()
@@ -223,8 +220,7 @@ class SessionManager:
         """
         async with self._lock:
             try:
-                loop = asyncio.get_event_loop()
-                await loop.run_in_executor(None, rh.logout)
+                await asyncio.to_thread(rh.logout)
                 logger.info("Successfully logged out")
             except Exception as e:
                 logger.error(f"Error during logout: {e}")

@@ -97,9 +97,8 @@ async def execute_with_retry(
             if asyncio.iscoroutinefunction(func):
                 result = await func(*args, **kwargs)
             else:
-                loop = asyncio.get_event_loop()
                 bound_func = functools.partial(func, *args, **kwargs)
-                result = await loop.run_in_executor(None, bound_func)
+                result = await asyncio.to_thread(bound_func)
 
             session_manager.update_last_successful_call()
             await circuit_breaker.record_success()
