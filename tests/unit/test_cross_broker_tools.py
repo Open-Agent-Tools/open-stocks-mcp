@@ -2,6 +2,7 @@
 
 import asyncio
 import time
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -30,25 +31,25 @@ class MockBroker(BaseBroker):
     async def logout(self) -> None:
         self._auth_info.status = BrokerAuthStatus.NOT_AUTHENTICATED
 
-    async def get_account_info(self):
+    async def get_account_info(self) -> dict[str, Any]:
         return {"result": {"mock": "account"}}
 
-    async def get_portfolio(self):
+    async def get_portfolio(self) -> dict[str, Any]:
         return {"result": {"mock": "portfolio"}}
 
-    async def get_positions(self):
+    async def get_positions(self) -> dict[str, Any]:
         return {"result": {"mock": "positions"}}
 
-    async def get_stock_quote(self, symbol: str):
+    async def get_stock_quote(self, symbol: str) -> dict[str, Any]:
         return {"result": {"price": 100}}
 
-    async def get_stock_price(self, symbol: str):
+    async def get_stock_price(self, symbol: str) -> dict[str, Any]:
         return {"result": {"price": 100}}
 
-    async def order_buy_market(self, symbol: str, quantity: float):
+    async def order_buy_market(self, symbol: str, quantity: float) -> dict[str, Any]:
         return {"result": {"order": "buy"}}
 
-    async def order_sell_market(self, symbol: str, quantity: float):
+    async def order_sell_market(self, symbol: str, quantity: float) -> dict[str, Any]:
         return {"result": {"order": "sell"}}
 
 
@@ -58,7 +59,7 @@ class TestGetAggregatedPortfolio:
     @pytest.mark.asyncio
     @pytest.mark.unit
     @pytest.mark.journey_portfolio
-    async def test_brokers_collected_concurrently(self):
+    async def test_brokers_collected_concurrently(self) -> None:
         """Broker collection runs concurrently for available brokers."""
         mock_registry = MagicMock()
         mock_registry.list_brokers.return_value = ["robinhood", "schwab"]
@@ -69,7 +70,7 @@ class TestGetAggregatedPortfolio:
             rh_broker if name == "robinhood" else schwab_broker
         )
 
-        async def _slow_rh_portfolio(*_args, **_kwargs):
+        async def _slow_rh_portfolio(*_args: Any, **_kwargs: Any) -> dict[str, Any]:
             await asyncio.sleep(0.2)
             return {
                 "result": {
@@ -80,11 +81,11 @@ class TestGetAggregatedPortfolio:
                 }
             }
 
-        async def _slow_rh_positions(*_args, **_kwargs):
+        async def _slow_rh_positions(*_args: Any, **_kwargs: Any) -> dict[str, Any]:
             await asyncio.sleep(0.2)
             return {"result": {"positions": [], "count": 0, "status": "success"}}
 
-        async def _slow_schwab_accounts(*_args, **_kwargs):
+        async def _slow_schwab_accounts(*_args: Any, **_kwargs: Any) -> dict[str, Any]:
             await asyncio.sleep(0.2)
             return {
                 "result": {
@@ -131,7 +132,7 @@ class TestGetAggregatedPortfolio:
     @pytest.mark.asyncio
     @pytest.mark.unit
     @pytest.mark.journey_portfolio
-    async def test_both_brokers_available(self):
+    async def test_both_brokers_available(self) -> None:
         """Aggregation includes data from both brokers when both are authenticated."""
         mock_registry = MagicMock()
         mock_registry.list_brokers.return_value = ["robinhood", "schwab"]
@@ -228,7 +229,7 @@ class TestGetAggregatedPortfolio:
     @pytest.mark.asyncio
     @pytest.mark.unit
     @pytest.mark.journey_portfolio
-    async def test_schwab_unavailable_returns_degraded_response(self):
+    async def test_schwab_unavailable_returns_degraded_response(self) -> None:
         """Aggregation returns degraded response when Schwab is not authenticated."""
         mock_registry = MagicMock()
         mock_registry.list_brokers.return_value = ["robinhood", "schwab"]
@@ -292,7 +293,7 @@ class TestGetAggregatedPortfolio:
     @pytest.mark.asyncio
     @pytest.mark.unit
     @pytest.mark.journey_portfolio
-    async def test_robinhood_unavailable_returns_degraded_response(self):
+    async def test_robinhood_unavailable_returns_degraded_response(self) -> None:
         """Aggregation returns degraded response when Robinhood is not authenticated."""
         mock_registry = MagicMock()
         mock_registry.list_brokers.return_value = ["robinhood", "schwab"]
@@ -346,7 +347,7 @@ class TestGetAggregatedPortfolio:
     @pytest.mark.asyncio
     @pytest.mark.unit
     @pytest.mark.journey_portfolio
-    async def test_both_brokers_unavailable(self):
+    async def test_both_brokers_unavailable(self) -> None:
         """Aggregation returns degraded response when all brokers are unavailable."""
         mock_registry = MagicMock()
         mock_registry.list_brokers.return_value = ["robinhood", "schwab"]
@@ -374,7 +375,7 @@ class TestGetAggregatedPortfolio:
     @pytest.mark.asyncio
     @pytest.mark.unit
     @pytest.mark.journey_portfolio
-    async def test_aggregated_totals_sum_both_brokers(self):
+    async def test_aggregated_totals_sum_both_brokers(self) -> None:
         """Aggregated totals correctly sum values from both brokers."""
         mock_registry = MagicMock()
         mock_registry.list_brokers.return_value = ["robinhood", "schwab"]
@@ -448,7 +449,7 @@ class TestGetAggregatedPortfolio:
     @pytest.mark.asyncio
     @pytest.mark.unit
     @pytest.mark.journey_portfolio
-    async def test_positions_merged_from_both_brokers(self):
+    async def test_positions_merged_from_both_brokers(self) -> None:
         """Aggregated positions list includes entries from both brokers."""
         mock_registry = MagicMock()
         mock_registry.list_brokers.return_value = ["robinhood", "schwab"]
@@ -543,7 +544,7 @@ class TestGetAggregatedPortfolio:
     @pytest.mark.asyncio
     @pytest.mark.unit
     @pytest.mark.journey_portfolio
-    async def test_broker_status_includes_auth_error_message(self):
+    async def test_broker_status_includes_auth_error_message(self) -> None:
         """Unavailable broker entry includes the auth error reason."""
         mock_registry = MagicMock()
         mock_registry.list_brokers.return_value = ["robinhood", "schwab"]
@@ -591,7 +592,7 @@ class TestGetAggregatedPortfolio:
     @pytest.mark.asyncio
     @pytest.mark.unit
     @pytest.mark.journey_portfolio
-    async def test_no_brokers_registered(self):
+    async def test_no_brokers_registered(self) -> None:
         """Empty registry returns empty aggregation without error."""
         mock_registry = MagicMock()
         mock_registry.list_brokers.return_value = []
