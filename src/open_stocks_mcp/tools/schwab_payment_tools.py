@@ -136,7 +136,6 @@ async def schwab_get_dividends_by_symbol(
 
     try:
         normalized_symbol = symbol.upper()
-
         parsed_start_date = (
             datetime.date.fromisoformat(start_date) if start_date is not None else None
         )
@@ -175,9 +174,63 @@ async def schwab_get_dividends_by_symbol(
                 "count": len(dividends),
             }
         )
-
     except Exception as e:
         logger.error(
             f"Error getting Schwab dividends for {symbol} in {account_hash}: {e}"
         )
+        return create_error_response(e)
+
+
+@handle_schwab_errors
+async def schwab_get_interest_payments(
+    account_hash: str,
+    start_date: str | None = None,
+    end_date: str | None = None,
+) -> dict[str, Any]:
+    """Get interest payments for a Schwab account."""
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", f"get interest payments for {account_hash}"
+    )
+    if error:
+        return error
+
+    try:
+        parsed_start_date = (
+            datetime.date.fromisoformat(start_date) if start_date is not None else None
+        )
+        parsed_end_date = (
+            datetime.date.fromisoformat(end_date) if end_date is not None else None
+        )
+
+        response = await asyncio.to_thread(
+            broker.client.get_transactions,
+            account_hash,
+            start_date=parsed_start_date,
+            end_date=parsed_end_date,
+            transaction_types=["DIVIDEND_OR_INTEREST"],
+            symbol=None,
+        )
+
+        transactions = response.json() if hasattr(response, "json") else response
+        if not isinstance(transactions, list):
+            transactions = []
+
+        interest_payments = []
+        total_amount = Decimal("0.00")
+
+        for tx in transactions:
+            if _classify_transaction(tx) == "interest":
+                interest_payments.append(tx)
+                net_amount = tx.get("netAmount", 0)
+                total_amount += Decimal(str(net_amount))
+
+        return create_success_response(
+            {
+                "interest_payments": interest_payments,
+                "total_amount": str(total_amount.quantize(Decimal("0.01"))),
+                "count": len(interest_payments),
+            }
+        )
+    except Exception as e:
+        logger.error(f"Error getting Schwab interest payments for {account_hash}: {e}")
         return create_error_response(e)
