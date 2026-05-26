@@ -117,6 +117,14 @@ async def schwab_stream_account_activity() -> dict[str, Any]:
             }
         )
 
+    if not manager.is_running:
+        return create_success_response(
+            {
+                "status": "stream_unavailable",
+                "reason": "stream manager stopped",
+            }
+        )
+
     # Subscribe to account activity
     sub_success = await manager.subscribe_account_activity()
     if not sub_success:

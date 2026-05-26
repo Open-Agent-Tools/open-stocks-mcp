@@ -107,6 +107,7 @@ async def test_schwab_stream_account_activity_returns_cached_events() -> None:
     [
         (False, True, True, True, "streaming capability disabled"),
         (True, False, True, True, "stream manager unavailable"),
+        (True, True, False, True, "stream manager stopped"),
         (True, True, True, False, "account activity subscription failed"),
     ],
 )
