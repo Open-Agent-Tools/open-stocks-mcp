@@ -9,6 +9,7 @@ from open_stocks_mcp.tools.schwab_payment_tools import (
     schwab_get_dividends_by_symbol,
     schwab_get_interest_payments,
     schwab_get_stock_loan_payments,
+    schwab_get_total_dividends,
 )
 
 
@@ -308,6 +309,154 @@ async def test_schwab_get_interest_payments_auth_error(mock_to_thread, mock_get_
     assert result["result"]["status"] == "error"
     assert result["result"]["error"] == "Auth failed"
     mock_to_thread.assert_not_called()
+
+
+# ---- schwab_get_total_dividends tests ----
+
+
+@pytest.mark.asyncio
+@patch("open_stocks_mcp.tools.schwab_payment_tools.get_authenticated_broker_or_error")
+@patch("open_stocks_mcp.tools.schwab_payment_tools.asyncio.to_thread")
+async def test_schwab_get_total_dividends_aggregates_amounts(
+    mock_to_thread, mock_get_broker
+):
+    broker = MagicMock()
+    mock_get_broker.return_value = (broker, None)
+    mock_to_thread.return_value = [
+        {
+            "type": "DIVIDEND_OR_INTEREST",
+            "description": "QUALIFIED DIVIDEND",
+            "netAmount": 10.0,
+            "tradeDate": "2025-06-15",
+        },
+        {
+            "type": "DIVIDEND_OR_INTEREST",
+            "description": "ORDINARY DIVIDEND",
+            "netAmount": 20.0,
+            "tradeDate": "2025-09-20",
+        },
+        {
+            "type": "DIVIDEND_OR_INTEREST",
+            "description": "QUALIFIED DIVIDEND",
+            "netAmount": 30.0,
+            "tradeDate": "2026-03-10",
+        },
+    ]
+
+    result = await schwab_get_total_dividends("hash123")
+
+    assert result["result"]["status"] == "success"
+    assert result["result"]["total_amount"] == "60.00"
+    assert result["result"]["count"] == 3
+
+
+@pytest.mark.asyncio
+@patch("open_stocks_mcp.tools.schwab_payment_tools.get_authenticated_broker_or_error")
+@patch("open_stocks_mcp.tools.schwab_payment_tools.asyncio.to_thread")
+async def test_schwab_get_total_dividends_groups_by_year(mock_to_thread, mock_get_broker):
+    broker = MagicMock()
+    mock_get_broker.return_value = (broker, None)
+    mock_to_thread.return_value = [
+        {
+            "type": "DIVIDEND_OR_INTEREST",
+            "description": "QUALIFIED DIVIDEND",
+            "netAmount": 15.0,
+            "tradeDate": "2025-12-01",
+        },
+        {
+            "type": "DIVIDEND_OR_INTEREST",
+            "description": "QUALIFIED DIVIDEND",
+            "netAmount": 10.0,
+            "tradeDate": "2026-01-15",
+        },
+    ]
+
+    result = await schwab_get_total_dividends("hash123")
+
+    by_year = result["result"]["by_year"]
+    assert by_year["2026"] == "10.00"
+    assert by_year["2025"] == "15.00"
+    # descending order
+    assert list(by_year.keys()) == ["2026", "2025"]
+
+
+@pytest.mark.asyncio
+@patch("open_stocks_mcp.tools.schwab_payment_tools.get_authenticated_broker_or_error")
+@patch("open_stocks_mcp.tools.schwab_payment_tools.asyncio.to_thread")
+async def test_schwab_get_total_dividends_date_range_fields(
+    mock_to_thread, mock_get_broker
+):
+    broker = MagicMock()
+    mock_get_broker.return_value = (broker, None)
+    mock_to_thread.return_value = [
+        {
+            "type": "DIVIDEND_OR_INTEREST",
+            "description": "QUALIFIED DIVIDEND",
+            "netAmount": 5.0,
+            "tradeDate": "2025-12-01",
+        },
+        {
+            "type": "DIVIDEND_OR_INTEREST",
+            "description": "QUALIFIED DIVIDEND",
+            "netAmount": 10.0,
+            "tradeDate": "2026-01-15",
+        },
+    ]
+
+    result = await schwab_get_total_dividends("hash123")
+
+    assert result["result"]["first_payment_date"] == "2025-12-01"
+    assert result["result"]["last_payment_date"] == "2026-01-15"
+
+
+@pytest.mark.asyncio
+@patch("open_stocks_mcp.tools.schwab_payment_tools.get_authenticated_broker_or_error")
+@patch("open_stocks_mcp.tools.schwab_payment_tools.asyncio.to_thread")
+async def test_schwab_get_total_dividends_skips_non_dividends(
+    mock_to_thread, mock_get_broker
+):
+    broker = MagicMock()
+    mock_get_broker.return_value = (broker, None)
+    mock_to_thread.return_value = [
+        {
+            "type": "DIVIDEND_OR_INTEREST",
+            "description": "QUALIFIED DIVIDEND",
+            "netAmount": 10.0,
+            "tradeDate": "2026-01-01",
+        },
+        {
+            "type": "DIVIDEND_OR_INTEREST",
+            "description": "FREE BALANCE INTEREST ADJUSTMENT",
+            "netAmount": 5.0,
+            "tradeDate": "2026-01-02",
+        },
+        {"type": "TRADE", "description": "Bought AAPL", "netAmount": 100.0},
+    ]
+
+    result = await schwab_get_total_dividends("hash123")
+
+    assert result["result"]["total_amount"] == "10.00"
+    assert result["result"]["count"] == 1
+
+
+@pytest.mark.asyncio
+@patch("open_stocks_mcp.tools.schwab_payment_tools.get_authenticated_broker_or_error")
+@patch("open_stocks_mcp.tools.schwab_payment_tools.asyncio.to_thread")
+async def test_schwab_get_total_dividends_empty_returns_zero(
+    mock_to_thread, mock_get_broker
+):
+    broker = MagicMock()
+    mock_get_broker.return_value = (broker, None)
+    mock_to_thread.return_value = []
+
+    result = await schwab_get_total_dividends("hash123")
+
+    assert result["result"]["status"] == "success"
+    assert result["result"]["total_amount"] == "0.00"
+    assert result["result"]["count"] == 0
+    assert result["result"]["by_year"] == {}
+    assert result["result"]["first_payment_date"] is None
+    assert result["result"]["last_payment_date"] is None
 
 
 # --- schwab_get_stock_loan_payments tests ---
