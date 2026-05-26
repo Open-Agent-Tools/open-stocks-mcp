@@ -1966,7 +1966,6 @@ async def schwab_stream_option_quotes(symbols: list[str]) -> dict[str, Any]:
 
 
 @mcp.tool()
-<<<<<<< HEAD
 async def schwab_stream_quotes(symbols: list[str]) -> dict[str, Any]:
     """Get real-time equity quote snapshots from Schwab streaming.
 
@@ -1983,8 +1982,6 @@ async def schwab_stream_level2(symbol: str, venue: str = "nasdaq") -> dict[str, 
 
 
 @mcp.tool()
-=======
->>>>>>> af859be (chore: automated code-quality cleanup)
 async def schwab_stream_account_activity() -> dict[str, Any]:
     """Get latest account activity events from Schwab streaming."""
     return await _schwab_stream_account_activity_impl()
