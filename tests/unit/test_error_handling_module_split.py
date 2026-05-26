@@ -7,6 +7,7 @@ from open_stocks_mcp.tools.validation import validate_symbol
 
 def test_error_handling_reexports_core_symbols() -> None:
     assert error_handling.execute_with_retry is not None
+    assert error_handling.DEFAULT_MAX_RETRIES == 3
     assert error_handling.classify_error is not None
     assert error_handling.create_error_response is not None
     assert error_handling.validate_symbol is not None

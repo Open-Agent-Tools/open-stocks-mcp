@@ -1,10 +1,14 @@
 """Unit tests for options trading tools."""
 
+import inspect
 from typing import Any
 from unittest.mock import patch
 
 import pytest
 
+import open_stocks_mcp.tools.options.chains as options_chains_module
+import open_stocks_mcp.tools.options.market_data as options_market_data_module
+import open_stocks_mcp.tools.options.positions as options_positions_module
 from open_stocks_mcp.tools.options.chains import (
     find_tradable_options,
     get_options_chains,
@@ -19,6 +23,17 @@ from open_stocks_mcp.tools.options.positions import (
     get_open_option_positions,
     get_open_option_positions_with_details,
 )
+
+
+def test_options_modules_do_not_hardcode_default_max_retries() -> None:
+    chains_source = inspect.getsource(options_chains_module)
+    market_data_source = inspect.getsource(options_market_data_module)
+    positions_source = inspect.getsource(options_positions_module)
+
+    combined_source = "\n".join([chains_source, market_data_source, positions_source])
+
+    assert "max_retries=3" not in combined_source
+    assert "max_retries=2" in positions_source
 
 
 class TestOptionsChains:

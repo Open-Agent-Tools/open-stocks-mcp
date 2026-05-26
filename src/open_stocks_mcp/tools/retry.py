@@ -14,6 +14,8 @@ from open_stocks_mcp.tools.exceptions import (
     classify_error,
 )
 
+DEFAULT_MAX_RETRIES = 3
+
 
 async def execute_with_retry(
     func: Callable[..., Any],
@@ -69,8 +71,12 @@ async def execute_with_retry(
     if retry_config is None:
         raise RuntimeError("Retry configuration unavailable")
     configured_max_retries = (
-        retry_config.max_retries if max_retries is None else max_retries
+        retry_config.max_retries
+        if max_retries is None
+        else max_retries
     )
+    if configured_max_retries is None:
+        configured_max_retries = DEFAULT_MAX_RETRIES
     retry_delay = retry_config.initial_delay if delay is None else delay
     retry_backoff_factor = (
         retry_config.backoff_factor if backoff_factor is None else backoff_factor

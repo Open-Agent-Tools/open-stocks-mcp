@@ -79,7 +79,6 @@ async def get_option_market_data(option_id: str) -> dict[str, Any]:
     market_data = await execute_with_retry(
         rh.options.get_option_market_data_by_id,
         option_id,
-        max_retries=3,
     )
 
     if not market_data:
@@ -189,7 +188,6 @@ async def get_option_historicals(
         option_type,
         interval,
         span,
-        max_retries=3,
     )
 
     if not historical_data:
