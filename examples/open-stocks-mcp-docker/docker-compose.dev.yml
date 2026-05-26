@@ -58,11 +58,6 @@ services:
 # Named volumes for persistent data
 volumes:
   mcp_tokens:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ./data/tokens
   mcp_logs:
     driver: local
     driver_opts:
@@ -78,6 +73,7 @@ volumes:
 # to 0.0.0.0 without it. Clients must send `Authorization: Bearer $MCP_API_KEY`
 # on /mcp requests.
 #
-# Persistent data will be stored in:
-# - ./data/tokens/ (Robinhood session tokens)
+# Persistent data:
+# - mcp_tokens volume (Robinhood session tokens, Docker-managed)
 # - ./data/logs/ (Application logs)
+# Run `docker-compose down -v` to remove volumes and force re-authentication.

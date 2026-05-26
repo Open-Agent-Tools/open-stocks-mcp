@@ -36,6 +36,10 @@ RUN pip check && \
 # Change ownership of the working directory to the mcp user
 RUN chown -R mcp:mcp /usr/src/app
 
+# Pre-create the token directory with owner-only permissions so the
+# Docker-managed named volume is writable by the non-root mcp user.
+RUN install -d -m 700 -o mcp -g mcp /home/mcp/.tokens
+
 # Switch to the non-root user
 USER mcp
 
