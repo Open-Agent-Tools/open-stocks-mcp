@@ -474,9 +474,9 @@ async def schwab_get_transactions(
         return create_success_response(
             {
                 "transactions": transactions_data,
-                "count": len(transactions_data)
-                if isinstance(transactions_data, list)
-                else 1,
+                "count": (
+                    len(transactions_data) if isinstance(transactions_data, list) else 1
+                ),
             }
         )
     except Exception as e:

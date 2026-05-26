@@ -123,6 +123,10 @@ ignore = ["E501"]
 [tool.ruff.lint.per-file-ignores]
 "tests/conftest.py" = ["E402"]
 
+[tool.black]
+line-length = 88
+target-version = ["py311"]
+
 [tool.mypy]
 python_version = "3.11"
 strict = true
@@ -194,7 +198,7 @@ dev = [
     "httpx>=0.28.1",
     "ruff>=0.15.14",
     "mypy>=2.1.0",
-    "black>=25.0.0",
+    "black>=26.0.0",
     "pre-commit>=4.6.0",
     "nbformat>=5.10",
     "types-pyyaml>=6.0.12.20260518",

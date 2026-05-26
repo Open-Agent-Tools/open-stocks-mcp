@@ -108,9 +108,11 @@ class HealthService:
                 name="metrics",
                 status=metrics_state,
                 last_checked=now,
-                detail=", ".join(metrics.get("issues", []))
-                if metrics.get("issues")
-                else None,
+                detail=(
+                    ", ".join(metrics.get("issues", []))
+                    if metrics.get("issues")
+                    else None
+                ),
             )
         else:
             metrics_component = ComponentHealth(

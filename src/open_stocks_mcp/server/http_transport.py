@@ -610,9 +610,11 @@ def create_http_server(
                         tool_dict = {
                             "name": tool.name,
                             "description": tool.description,
-                            "inputSchema": tool.inputSchema.model_dump()
-                            if hasattr(tool.inputSchema, "model_dump")
-                            else tool.inputSchema,
+                            "inputSchema": (
+                                tool.inputSchema.model_dump()
+                                if hasattr(tool.inputSchema, "model_dump")
+                                else tool.inputSchema
+                            ),
                         }
                         serialized_tools.append(tool_dict)
 
