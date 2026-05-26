@@ -175,6 +175,9 @@ from open_stocks_mcp.tools.schwab_options_tools import (
     schwab_find_tradable_options as _schwab_find_tradable_options_impl,
 )
 from open_stocks_mcp.tools.schwab_options_tools import (
+    schwab_get_open_option_orders as _schwab_get_open_option_orders_impl,
+)
+from open_stocks_mcp.tools.schwab_options_tools import (
     schwab_option_buy_to_open as _schwab_option_buy_to_open_impl,
 )
 from open_stocks_mcp.tools.schwab_options_tools import (
@@ -210,6 +213,9 @@ from open_stocks_mcp.tools.schwab_streaming_tools import (
 )
 from open_stocks_mcp.tools.schwab_streaming_tools import (
     schwab_stream_option_quotes as _schwab_stream_option_quotes_impl,
+)
+from open_stocks_mcp.tools.schwab_streaming_tools import (
+    schwab_stream_quotes as _schwab_stream_quotes_impl,
 )
 from open_stocks_mcp.tools.schwab_trading_tools import (
     cancel_schwab_order,
@@ -1948,17 +1954,6 @@ async def schwab_open_option_orders(
 
 # Schwab Streaming Tools
 @mcp.tool()
-async def schwab_stream_level2(symbol: str, venue: str = "nasdaq") -> dict[str, Any]:
-    """Get real-time Level 2 order-book snapshot from Schwab streaming.
-
-    Args:
-        symbol: Ticker symbol (e.g. 'AAPL')
-        venue: 'nasdaq' or 'nyse' (default: 'nasdaq')
-    """
-    return await _schwab_stream_level2_impl(symbol, venue)
-
-
-@mcp.tool()
 async def schwab_stream_option_quotes(symbols: list[str]) -> dict[str, Any]:
     """Get real-time option quote snapshots from Schwab streaming.
 
@@ -1966,6 +1961,16 @@ async def schwab_stream_option_quotes(symbols: list[str]) -> dict[str, Any]:
         symbols: List of Schwab option symbols (e.g. ['AAPL  260619C00150000'])
     """
     return await _schwab_stream_option_quotes_impl(symbols)
+
+
+@mcp.tool()
+async def schwab_stream_quotes(symbols: list[str]) -> dict[str, Any]:
+    """Get real-time equity quote snapshots from Schwab streaming.
+
+    Args:
+        symbols: List of equity ticker symbols.
+    """
+    return await _schwab_stream_quotes_impl(symbols)
 
 
 @mcp.tool()
