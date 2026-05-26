@@ -284,4 +284,4 @@ The codebase itself is well-structured and maintains high standards, but the tes
 1. Fix pytest-asyncio installation issue
 2. Update hardcoded test versions to 0.6.4 or use __version__
 3. Review and align HTTP endpoint implementation with test expectations
-4. Improve Docker authentication flow for better reliability. Improve Docker authentication flow for better reliability
+4. Improve Docker authentication flow for better reliability
