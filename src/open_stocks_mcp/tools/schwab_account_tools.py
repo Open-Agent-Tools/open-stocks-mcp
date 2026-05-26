@@ -1,5 +1,6 @@
 """Schwab account-related MCP tools using schwab-py library."""
 
+import datetime
 from typing import Any
 
 from schwab.client import Client
@@ -252,6 +253,101 @@ async def get_schwab_account_balances(account_hash: str) -> dict[str, Any]:
 
     except Exception as e:
         logger.error(f"Error getting Schwab account balances: {e}")
+        return create_error_response(e)
+
+
+@handle_schwab_errors
+async def schwab_check_margin_status(account_hash: str) -> dict[str, Any]:
+    """Derive Schwab margin-call status from account balance fields."""
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", f"check margin status {account_hash}"
+    )
+    if error:
+        return error
+
+    try:
+
+        def _get_account() -> Any:
+            response = broker.client.get_account(account_hash)
+            return response.json()
+
+        account_data = await execute_broker_request(_get_account, retry_safe=True)
+        securities_account = account_data.get("securitiesAccount", {})
+        current_balances = securities_account.get("currentBalances", {})
+
+        equity = float(current_balances.get("equity", 0.0) or 0.0)
+        maintenance_requirement = float(
+            current_balances.get("maintenanceRequirement", 0.0) or 0.0
+        )
+        # Schwab has no direct margin-call endpoint, so infer status from equity vs maintenance requirement.
+        margin_call = maintenance_requirement > 0 and equity <= maintenance_requirement
+        deficit = max(0.0, maintenance_requirement - equity)
+
+        return create_success_response(
+            {
+                "account_hash": account_hash,
+                "account_type": securities_account.get("type"),
+                "equity": equity,
+                "maintenance_requirement": maintenance_requirement,
+                "margin_call": margin_call,
+                "deficit": deficit,
+                "status": "success",
+            }
+        )
+    except Exception as e:
+        logger.error(f"Error checking Schwab margin status: {e}")
+        return create_error_response(e)
+
+
+@handle_schwab_errors
+async def schwab_get_margin_interest(
+    account_hash: str,
+    start_date: str | None = None,
+    end_date: str | None = None,
+) -> dict[str, Any]:
+    """Get Schwab margin-interest transactions from transaction history."""
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", f"get margin interest {account_hash}"
+    )
+    if error:
+        return error
+
+    try:
+        parsed_start_date = (
+            datetime.date.fromisoformat(start_date) if start_date else None
+        )
+        parsed_end_date = datetime.date.fromisoformat(end_date) if end_date else None
+
+        def _get_transactions() -> Any:
+            response = broker.client.get_transactions(
+                account_hash,
+                start_date=parsed_start_date,
+                end_date=parsed_end_date,
+                transaction_types=[Client.Transactions.TransactionType.DIVIDEND_OR_INTEREST],
+            )
+            return response.json()
+
+        transactions = await execute_broker_request(_get_transactions, retry_safe=True)
+        margin_interest_transactions = [
+            txn
+            for txn in transactions
+            if "MARGIN INTEREST" in str(txn.get("description", "")).upper()
+        ]
+        total_charges = sum(
+            abs(float(txn.get("netAmount", 0.0) or 0.0))
+            for txn in margin_interest_transactions
+        )
+
+        return create_success_response(
+            {
+                "interest_charges": margin_interest_transactions,
+                "total_charges": total_charges,
+                "charges_count": len(margin_interest_transactions),
+                "status": "success",
+            }
+        )
+    except Exception as e:
+        logger.error(f"Error getting Schwab margin interest: {e}")
         return create_error_response(e)
 
 

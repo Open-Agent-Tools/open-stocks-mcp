@@ -361,6 +361,67 @@ def schwab_balances_payload() -> dict[str, Any]:
     )
 
 
+def schwab_margin_call_balances_payload() -> dict[str, Any]:
+    """Return Schwab balance data that indicates an active margin call."""
+    return _copy(
+        {
+            "securitiesAccount": {
+                "accountNumber": "12345678",
+                "type": "MARGIN",
+                "currentBalances": {
+                    "equity": 25000.0,
+                    "maintenanceRequirement": 30000.0,
+                },
+            }
+        }
+    )
+
+
+def schwab_no_margin_call_balances_payload() -> dict[str, Any]:
+    """Return Schwab balance data that indicates no margin call."""
+    return _copy(
+        {
+            "securitiesAccount": {
+                "accountNumber": "12345678",
+                "type": "MARGIN",
+                "currentBalances": {
+                    "equity": 50000.0,
+                    "maintenanceRequirement": 15000.0,
+                },
+            }
+        }
+    )
+
+
+def schwab_margin_interest_transactions_payload() -> list[dict[str, Any]]:
+    """Return Schwab transactions containing margin interest and non-interest entries."""
+    return _copy_list(
+        [
+            {
+                "transactionId": "1",
+                "type": "DIVIDEND_OR_INTEREST",
+                "description": "MARGIN INTEREST CHARGE",
+                "netAmount": -12.50,
+                "tradeDate": "2026-01-15T00:00:00+0000",
+            },
+            {
+                "transactionId": "2",
+                "type": "DIVIDEND_OR_INTEREST",
+                "description": "MARGIN INTEREST CHARGE",
+                "netAmount": -8.25,
+                "tradeDate": "2026-02-15T00:00:00+0000",
+            },
+            {
+                "transactionId": "3",
+                "type": "DIVIDEND_OR_INTEREST",
+                "description": "QUALIFIED DIVIDEND",
+                "netAmount": 5.00,
+                "tradeDate": "2026-02-20T00:00:00+0000",
+            },
+        ]
+    )
+
+
 def schwab_user_preferences_payload() -> dict[str, Any]:
     """Return representative Schwab user preferences response."""
     return _copy(
