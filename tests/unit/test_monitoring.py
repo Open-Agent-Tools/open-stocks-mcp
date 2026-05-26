@@ -242,4 +242,3 @@ async def test_alert_dedup_cleanup_avoids_memory_growth() -> None:
 
     # Map should be empty since 1s > 0.1s
     assert "test_signal" not in collector._last_alert_at
-
