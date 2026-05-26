@@ -6,10 +6,27 @@ from unittest.mock import patch
 import pytest
 
 from open_stocks_mcp.tools.robinhood_watchlist_tools import (
-    add_symbols_to_watchlist,
+    add_symbols_to_watchlist as compat_add_symbols_to_watchlist,
+)
+from open_stocks_mcp.tools.robinhood_watchlist_tools import (
+    get_all_watchlists as compat_get_all_watchlists,
+)
+from open_stocks_mcp.tools.robinhood_watchlist_tools import (
+    get_watchlist_by_name as compat_get_watchlist_by_name,
+)
+from open_stocks_mcp.tools.robinhood_watchlist_tools import (
+    get_watchlist_performance as compat_get_watchlist_performance,
+)
+from open_stocks_mcp.tools.robinhood_watchlist_tools import (
+    remove_symbols_from_watchlist as compat_remove_symbols_from_watchlist,
+)
+from open_stocks_mcp.tools.watchlists.read import (
     get_all_watchlists,
     get_watchlist_by_name,
     get_watchlist_performance,
+)
+from open_stocks_mcp.tools.watchlists.write import (
+    add_symbols_to_watchlist,
     remove_symbols_from_watchlist,
 )
 
@@ -17,7 +34,7 @@ from open_stocks_mcp.tools.robinhood_watchlist_tools import (
 class TestGetAllWatchlists:
     """Test get all watchlists functionality."""
 
-    @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.watchlists.read.execute_with_retry")
     @pytest.mark.journey_watchlists
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -52,7 +69,7 @@ class TestGetAllWatchlists:
         assert result["result"]["watchlists"][0]["name"] == "Tech Stocks"
         assert result["result"]["status"] == "success"
 
-    @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.watchlists.read.execute_with_retry")
     @pytest.mark.journey_watchlists
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -70,7 +87,7 @@ class TestGetAllWatchlists:
         assert result["result"]["status"] == "no_data"
         assert "No watchlists found" in result["result"]["message"]
 
-    @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.watchlists.read.execute_with_retry")
     @pytest.mark.journey_watchlists
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -88,7 +105,7 @@ class TestGetAllWatchlists:
         # Empty list is treated as no_data by the function
         assert result["result"]["status"] == "no_data"
 
-    @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.watchlists.read.execute_with_retry")
     @pytest.mark.journey_watchlists
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -113,10 +130,21 @@ class TestGetAllWatchlists:
         assert result["result"]["status"] == "success"
 
 
+class TestCompatibilityReExports:
+    """Verify compatibility re-exports from the legacy module."""
+
+    def test_legacy_module_re_exports_new_functions(self) -> None:
+        assert compat_get_all_watchlists is get_all_watchlists
+        assert compat_get_watchlist_by_name is get_watchlist_by_name
+        assert compat_get_watchlist_performance is get_watchlist_performance
+        assert compat_add_symbols_to_watchlist is add_symbols_to_watchlist
+        assert compat_remove_symbols_from_watchlist is remove_symbols_from_watchlist
+
+
 class TestGetWatchlistByName:
     """Test get watchlist by name functionality."""
 
-    @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.watchlists.read.execute_with_retry")
     @pytest.mark.journey_watchlists
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -139,7 +167,7 @@ class TestGetWatchlistByName:
         assert "AAPL" in result["result"]["symbols"]
         assert result["result"]["status"] == "success"
 
-    @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.watchlists.read.execute_with_retry")
     @pytest.mark.journey_watchlists
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -169,7 +197,7 @@ class TestGetWatchlistByName:
         assert result["result"]["status"] == "error"
         assert "Watchlist name is required" in result["result"]["error"]
 
-    @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.watchlists.read.execute_with_retry")
     @pytest.mark.journey_watchlists
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -195,7 +223,7 @@ class TestGetWatchlistByName:
 class TestAddSymbolsToWatchlist:
     """Test add symbols to watchlist functionality."""
 
-    @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.watchlists.write.execute_with_retry")
     @pytest.mark.journey_watchlists
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -217,7 +245,7 @@ class TestAddSymbolsToWatchlist:
 
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
-    @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.watchlists.write.execute_with_retry")
     @pytest.mark.journey_watchlists
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -271,7 +299,7 @@ class TestAddSymbolsToWatchlist:
         assert result["result"]["status"] == "error"
         assert "No valid symbols provided" in result["result"]["error"]
 
-    @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.watchlists.write.execute_with_retry")
     @pytest.mark.journey_watchlists
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -292,7 +320,7 @@ class TestAddSymbolsToWatchlist:
 class TestRemoveSymbolsFromWatchlist:
     """Test remove symbols from watchlist functionality."""
 
-    @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.watchlists.write.execute_with_retry")
     @pytest.mark.journey_watchlists
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -314,7 +342,7 @@ class TestRemoveSymbolsFromWatchlist:
 
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
-    @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.watchlists.write.execute_with_retry")
     @pytest.mark.journey_watchlists
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -357,7 +385,7 @@ class TestRemoveSymbolsFromWatchlist:
 
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
-    @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
+    @patch("open_stocks_mcp.tools.watchlists.read.execute_with_retry")
     @pytest.mark.journey_watchlists
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -378,8 +406,8 @@ class TestRemoveSymbolsFromWatchlist:
 class TestGetWatchlistPerformance:
     """Test get watchlist performance functionality."""
 
-    @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
-    @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.get_watchlist_by_name")
+    @patch("open_stocks_mcp.tools.watchlists.read.execute_with_retry")
+    @patch("open_stocks_mcp.tools.watchlists.read.get_watchlist_by_name")
     @pytest.mark.journey_watchlists
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -413,8 +441,8 @@ class TestGetWatchlistPerformance:
         assert result["result"]["summary"]["losers"] == 0
         assert mock_execute.call_count == 2
 
-    @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
-    @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.get_watchlist_by_name")
+    @patch("open_stocks_mcp.tools.watchlists.read.execute_with_retry")
+    @patch("open_stocks_mcp.tools.watchlists.read.get_watchlist_by_name")
     @pytest.mark.journey_watchlists
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -449,7 +477,7 @@ class TestGetWatchlistPerformance:
         assert summary["gainers"] == 2
         assert summary["losers"] == 0
 
-    @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.get_watchlist_by_name")
+    @patch("open_stocks_mcp.tools.watchlists.read.get_watchlist_by_name")
     @pytest.mark.journey_watchlists
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -477,7 +505,7 @@ class TestGetWatchlistPerformance:
         assert result["result"]["status"] == "error"
         assert "Watchlist name is required" in result["result"]["error"]
 
-    @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.get_watchlist_by_name")
+    @patch("open_stocks_mcp.tools.watchlists.read.get_watchlist_by_name")
     @pytest.mark.journey_watchlists
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -497,8 +525,8 @@ class TestGetWatchlistPerformance:
         assert result["result"]["summary"]["total_symbols"] == 0
         assert result["result"]["status"] == "no_data"
 
-    @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
-    @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.get_watchlist_by_name")
+    @patch("open_stocks_mcp.tools.watchlists.read.execute_with_retry")
+    @patch("open_stocks_mcp.tools.watchlists.read.get_watchlist_by_name")
     @pytest.mark.journey_watchlists
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -531,8 +559,8 @@ class TestGetWatchlistPerformance:
         assert summary["losers"] == 1
         assert summary["unchanged"] == 1
 
-    @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
-    @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.get_watchlist_by_name")
+    @patch("open_stocks_mcp.tools.watchlists.read.execute_with_retry")
+    @patch("open_stocks_mcp.tools.watchlists.read.get_watchlist_by_name")
     @pytest.mark.journey_watchlists
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -561,8 +589,8 @@ class TestGetWatchlistPerformance:
         assert result["result"]["summary"]["gainers"] == 0
         assert result["result"]["status"] == "success"
 
-    @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
-    @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.get_watchlist_by_name")
+    @patch("open_stocks_mcp.tools.watchlists.read.execute_with_retry")
+    @patch("open_stocks_mcp.tools.watchlists.read.get_watchlist_by_name")
     @pytest.mark.journey_watchlists
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -600,8 +628,8 @@ class TestGetWatchlistPerformance:
         assert googl["current_price"] == "N/A"
         assert msft["current_price"] == "380.00"
 
-    @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.execute_with_retry")
-    @patch("open_stocks_mcp.tools.robinhood_watchlist_tools.get_watchlist_by_name")
+    @patch("open_stocks_mcp.tools.watchlists.read.execute_with_retry")
+    @patch("open_stocks_mcp.tools.watchlists.read.get_watchlist_by_name")
     @pytest.mark.journey_watchlists
     @pytest.mark.unit
     @pytest.mark.asyncio
