@@ -81,9 +81,12 @@ class TestAccountTools:
 
         result = await get_portfolio()
 
-        assert "result" in result
-        # The actual response structure depends on how the tool processes the data
-        assert isinstance(result["result"], dict)
+        assert result["result"] == {
+            "market_value": "2000.00",
+            "equity": "2100.00",
+            "buying_power": "100.00",
+            "status": "success",
+        }
 
     @pytest.mark.journey_portfolio
     @pytest.mark.unit
@@ -153,12 +156,24 @@ class TestAccountTools:
 
         result = await get_positions()
 
-        assert "result" in result
-        # The result contains structured data with positions, count, status
-        assert isinstance(result["result"], dict)
-        assert "positions" in result["result"]
-        assert "count" in result["result"]
-        assert result["result"]["count"] == 2
+        assert result["result"] == {
+            "positions": [
+                {
+                    "symbol": "AAPL",
+                    "quantity": "10.0000",
+                    "average_buy_price": "150.00",
+                    "updated_at": "2023-01-01T00:00:00Z",
+                },
+                {
+                    "symbol": "GOOGL",
+                    "quantity": "5.0000",
+                    "average_buy_price": "2500.00",
+                    "updated_at": "2023-01-01T00:00:00Z",
+                },
+            ],
+            "count": 2,
+            "status": "success",
+        }
 
     @pytest.mark.journey_account
     @pytest.mark.unit
@@ -172,8 +187,19 @@ class TestAccountTools:
 
         result = await get_account_details()
 
-        assert "result" in result
-        assert isinstance(result["result"], dict)
+        assert result["result"] == {
+            "portfolio_equity": "2100.00",
+            "total_equity": "2100.00",
+            "account_buying_power": "1000.00",
+            "options_buying_power": "1000.00",
+            "crypto_buying_power": "1000.00",
+            "uninvested_cash": "100.00",
+            "withdrawable_cash": "100.00",
+            "cash_available_from_instant_deposits": "0.00",
+            "cash_held_for_orders": "0.00",
+            "near_margin_call": False,
+            "status": "success",
+        }
 
     @pytest.mark.journey_portfolio
     @pytest.mark.unit

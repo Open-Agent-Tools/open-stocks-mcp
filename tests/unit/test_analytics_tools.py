@@ -76,11 +76,12 @@ class TestBuildHoldings:
 
         result = await get_build_holdings()
 
-        assert "result" in result
-        assert result["result"]["status"] == "no_data"
-        assert result["result"]["total_positions"] == 0
-        assert result["result"]["holdings"] == {}
-        assert "No holdings found" in result["result"]["message"]
+        assert result["result"] == {
+            "holdings": {},
+            "total_positions": 0,
+            "message": "No holdings found",
+            "status": "no_data",
+        }
 
     @patch("open_stocks_mcp.tools.robinhood_advanced_portfolio_tools.rh.build_holdings")
     @pytest.mark.journey_research
@@ -92,11 +93,12 @@ class TestBuildHoldings:
 
         result = await get_build_holdings()
 
-        assert "result" in result
-        assert result["result"]["total_positions"] == 0
-        assert result["result"]["holdings"] == {}
-        # Empty dict is treated as no_data by the function
-        assert result["result"]["status"] == "no_data"
+        assert result["result"] == {
+            "holdings": {},
+            "total_positions": 0,
+            "message": "No holdings found",
+            "status": "no_data",
+        }
 
 
 class TestBuildUserProfile:
