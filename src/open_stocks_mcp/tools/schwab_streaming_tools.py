@@ -89,6 +89,95 @@ async def schwab_stream_option_quotes(symbols: list[str]) -> dict[str, Any]:
     )
 
 
+async def schwab_stream_level2(symbol: str, venue: str = "nasdaq") -> dict[str, Any]:
+    """Get a Level 2 snapshot from Schwab streaming cache for a symbol.
+
+    Note: this endpoint follows a subscribe-then-read pattern; the first call may
+    return `stream_unavailable` until an async book update arrives and is cached.
+    """
+    symbol_upper = symbol.upper()
+    venue_lower = venue.lower()
+
+    if venue_lower not in {"nasdaq", "nyse"}:
+        return create_success_response(
+            {
+                "status": "stream_unavailable",
+                "symbol": symbol_upper,
+                "venue": venue_lower,
+                "reason": "unsupported venue",
+            }
+        )
+
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", f"stream level2 for {symbol_upper}"
+    )
+    if error:
+        return error
+
+    health = broker.get_health_status()
+    if not health.get("capabilities", {}).get("streaming_quotes"):
+        return create_success_response(
+            {
+                "status": "stream_unavailable",
+                "symbol": symbol_upper,
+                "venue": venue_lower,
+                "reason": "streaming capability disabled",
+            }
+        )
+
+    manager = getattr(broker, "stream_manager", None)
+    if manager is None:
+        return create_success_response(
+            {
+                "status": "stream_unavailable",
+                "symbol": symbol_upper,
+                "venue": venue_lower,
+                "reason": "stream manager unavailable",
+            }
+        )
+
+    if not manager.is_running:
+        return create_success_response(
+            {
+                "status": "stream_unavailable",
+                "symbol": symbol_upper,
+                "venue": venue_lower,
+                "reason": "stream manager stopped",
+            }
+        )
+
+    subscribed = await manager.subscribe_level2(symbol_upper, venue_lower)
+    if not subscribed:
+        return create_success_response(
+            {
+                "status": "stream_unavailable",
+                "symbol": symbol_upper,
+                "venue": venue_lower,
+                "reason": "subscription failed",
+            }
+        )
+
+    snapshot = manager.get_latest_level2(symbol_upper, venue_lower)
+    if snapshot is None:
+        return create_success_response(
+            {
+                "status": "stream_unavailable",
+                "symbol": symbol_upper,
+                "venue": venue_lower,
+                "reason": "no snapshot available",
+            }
+        )
+
+    return create_success_response(
+        {
+            "status": "success",
+            "symbol": symbol_upper,
+            "venue": venue_lower,
+            "snapshot": snapshot,
+        }
+    )
+
+
 async def schwab_stream_account_activity() -> dict[str, Any]:
     """Get latest account activity events from Schwab streaming."""
     broker, error = await get_authenticated_broker_or_error(

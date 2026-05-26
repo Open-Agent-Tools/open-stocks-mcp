@@ -5,10 +5,12 @@ import pytest
 
 from open_stocks_mcp.tools.schwab_streaming_tools import (
     schwab_stream_account_activity,
+    schwab_stream_level2,
     schwab_stream_option_quotes,
 )
 
 
+@pytest.mark.journey_market_data
 @pytest.mark.asyncio
 async def test_schwab_stream_option_quotes_success() -> None:
     mock_broker = MagicMock()
@@ -135,6 +137,84 @@ async def test_schwab_stream_account_activity_unavailable(
         AsyncMock(return_value=(mock_broker, None)),
     ):
         result = await schwab_stream_account_activity()
+
+    assert result["result"]["status"] == "stream_unavailable"
+    assert result["result"]["reason"] == expected_reason
+
+
+@pytest.mark.journey_market_data
+@pytest.mark.asyncio
+async def test_schwab_stream_level2_success() -> None:
+    mock_broker = MagicMock()
+    mock_broker.get_health_status.return_value = {
+        "capabilities": {"streaming_quotes": True}
+    }
+    mock_broker.stream_manager.is_running = True
+    mock_broker.stream_manager.subscribe_level2 = AsyncMock(return_value=True)
+    mock_broker.stream_manager.get_latest_level2.return_value = {
+        "symbol": "AAPL",
+        "service": "NASDAQ_BOOK",
+        "book_time": 1710000000,
+        "bids": [],
+        "asks": [],
+    }
+
+    with patch(
+        "open_stocks_mcp.tools.schwab_streaming_tools.get_authenticated_broker_or_error",
+        AsyncMock(return_value=(mock_broker, None)),
+    ):
+        result = await schwab_stream_level2("aapl", "nasdaq")
+
+    assert result["result"]["status"] == "success"
+    assert result["result"]["symbol"] == "AAPL"
+    assert result["result"]["venue"] == "nasdaq"
+    mock_broker.stream_manager.subscribe_level2.assert_awaited_once_with(
+        "AAPL", "nasdaq"
+    )
+    mock_broker.stream_manager.get_latest_level2.assert_called_once_with(
+        "AAPL", "nasdaq"
+    )
+
+
+@pytest.mark.journey_market_data
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "symbol,venue,capability,manager_exists,is_running,sub_success,snapshot,expected_reason",
+    [
+        ("AAPL", "arca", True, True, True, True, {"x": 1}, "unsupported venue"),
+        ("AAPL", "nasdaq", False, True, True, True, {"x": 1}, "streaming capability disabled"),
+        ("AAPL", "nasdaq", True, False, True, True, {"x": 1}, "stream manager unavailable"),
+        ("AAPL", "nasdaq", True, True, False, True, {"x": 1}, "stream manager stopped"),
+        ("AAPL", "nasdaq", True, True, True, False, {"x": 1}, "subscription failed"),
+        ("AAPL", "nasdaq", True, True, True, True, None, "no snapshot available"),
+    ],
+)
+async def test_schwab_stream_level2_unavailable(
+    symbol: str,
+    venue: str,
+    capability: bool,
+    manager_exists: bool,
+    is_running: bool,
+    sub_success: bool,
+    snapshot: dict[str, Any] | None,
+    expected_reason: str,
+) -> None:
+    mock_broker = MagicMock()
+    mock_broker.get_health_status.return_value = {
+        "capabilities": {"streaming_quotes": capability}
+    }
+    if manager_exists:
+        mock_broker.stream_manager.is_running = is_running
+        mock_broker.stream_manager.subscribe_level2 = AsyncMock(return_value=sub_success)
+        mock_broker.stream_manager.get_latest_level2.return_value = snapshot
+    else:
+        mock_broker.stream_manager = None
+
+    with patch(
+        "open_stocks_mcp.tools.schwab_streaming_tools.get_authenticated_broker_or_error",
+        AsyncMock(return_value=(mock_broker, None)),
+    ):
+        result = await schwab_stream_level2(symbol, venue)
 
     assert result["result"]["status"] == "stream_unavailable"
     assert result["result"]["reason"] == expected_reason
