@@ -2062,6 +2062,8 @@ async def setup_brokers(
         schwab_broker = SchwabBroker(
             api_key=config.schwab_api_key,
             app_secret=config.schwab_app_secret,
+            callback_url=config.schwab_callback_url,
+            token_path=config.schwab_token_path,
         )
         registry.register(schwab_broker)
         logger.info("✓ Schwab broker registered")

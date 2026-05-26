@@ -49,7 +49,7 @@ SCHWAB_TOKEN_PATH=~/.tokens/schwab_token.json
 ENABLED_BROKERS=robinhood,schwab
 ```
 
-**Note:** Schwab requires a developer account and API approval (several days). See `docs/SCHWAB_INTEGRATION_PLAN.md` for details.
+**Note:** Schwab requires a developer account and API approval (several days). See [Schwab Setup Guide](docs/SCHWAB_SETUP.md) for full setup instructions.
 
 ### 2. Start the Server
 

@@ -271,6 +271,8 @@ class ServerConfig:
     )
     schwab_api_key: str | None = None
     schwab_app_secret: str | None = None
+    schwab_callback_url: str = "https://127.0.0.1:8182/"
+    schwab_token_path: str | None = None
 
     def __post_init__(self) -> None:
         if self.retry is None:
@@ -641,6 +643,28 @@ def load_config(config_path: Path | str | None = None) -> ServerConfig:
                     if isinstance(brokers.get("schwab"), dict)
                     else {}
                 ).get("app_secret", "")
+            )
+            or None
+        ),
+        schwab_callback_url=(
+            os.getenv("SCHWAB_CALLBACK_URL")
+            or str(
+                (
+                    brokers.get("schwab", {})
+                    if isinstance(brokers.get("schwab"), dict)
+                    else {}
+                ).get("callback_url", "")
+            )
+            or "https://127.0.0.1:8182/"
+        ),
+        schwab_token_path=(
+            os.getenv("SCHWAB_TOKEN_PATH")
+            or str(
+                (
+                    brokers.get("schwab", {})
+                    if isinstance(brokers.get("schwab"), dict)
+                    else {}
+                ).get("token_path", "")
             )
             or None
         ),
