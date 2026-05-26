@@ -48,9 +48,11 @@ from open_stocks_mcp.tools.options import (
     get_all_option_positions,
     get_open_option_positions,
     get_open_option_positions_with_details,
+    get_options_chains,
+)
+from open_stocks_mcp.tools.options.market_data import (
     get_option_historicals,
     get_option_market_data,
-    get_options_chains,
 )
 from open_stocks_mcp.tools.rate_limiter import configure_global_rate_limiter
 from open_stocks_mcp.tools.robinhood_account_features_tools import (
