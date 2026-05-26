@@ -156,6 +156,7 @@ from open_stocks_mcp.tools.schwab_options_tools import (
     get_schwab_option_chain_by_expiration,
     get_schwab_option_expirations,
     get_schwab_options_positions,
+    schwab_get_open_option_orders,
 )
 from open_stocks_mcp.tools.schwab_options_tools import (
     schwab_find_tradable_options as _schwab_find_tradable_options_impl,
@@ -1957,7 +1958,7 @@ async def schwab_open_option_orders(
         account_hash: Account hash from get_schwab_account_numbers()
         max_results: Maximum orders to fetch before filtering (default 50)
     """
-    return await _schwab_get_open_option_orders_impl(account_hash, max_results)
+    return await schwab_get_open_option_orders(account_hash, max_results)
 
 
 # Schwab Streaming Tools
