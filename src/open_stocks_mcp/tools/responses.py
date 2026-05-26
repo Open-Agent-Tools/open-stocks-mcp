@@ -1,13 +1,14 @@
 """Response formatting, sanitization, and error decorators."""
 
 import functools
-from collections.abc import Callable
-from typing import Any, TypeVar, cast
+from collections.abc import Awaitable, Callable
+from typing import Any, ParamSpec, TypeVar
 
 from open_stocks_mcp.logging_config import logger
 from open_stocks_mcp.tools.exceptions import classify_error
 
-F = TypeVar("F", bound=Callable[..., Any])
+P = ParamSpec("P")
+R = TypeVar("R")
 
 
 def create_error_response(error: Exception, context: str = "") -> dict[str, Any]:
@@ -31,32 +32,52 @@ def create_error_response(error: Exception, context: str = "") -> dict[str, Any]
     return response
 
 
-def handle_robin_stocks_errors(func: F) -> F:
+def handle_robin_stocks_errors(
+    func: Callable[P, Awaitable[R]],
+) -> Callable[P, Awaitable[R | dict[str, Any]]]:
     """Decorator to handle Robin Stocks API errors consistently."""
 
     @functools.wraps(func)
-    async def wrapper(*args: Any, **kwargs: Any) -> Any:
+    async def wrapper(*args: P.args, **kwargs: P.kwargs) -> R | dict[str, Any]:
         context = f"in {func.__name__}"
         try:
             return await func(*args, **kwargs)
         except Exception as e:
             return create_error_response(e, context)
 
-    return cast(F, wrapper)
+    return wrapper
 
 
-def handle_schwab_errors(func: F) -> F:
+def handle_robin_stocks_sync_errors(
+    func: Callable[P, R],
+) -> Callable[P, R | dict[str, Any]]:
+    """Decorator to handle synchronous Robin Stocks API errors consistently."""
+
+    @functools.wraps(func)
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> R | dict[str, Any]:
+        context = f"in {func.__name__}"
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            return create_error_response(e, context)
+
+    return wrapper
+
+
+def handle_schwab_errors(
+    func: Callable[P, Awaitable[R]],
+) -> Callable[P, Awaitable[R | dict[str, Any]]]:
     """Decorator to handle Schwab API errors consistently."""
 
     @functools.wraps(func)
-    async def wrapper(*args: Any, **kwargs: Any) -> Any:
+    async def wrapper(*args: P.args, **kwargs: P.kwargs) -> R | dict[str, Any]:
         context = f"in {func.__name__}"
         try:
             return await func(*args, **kwargs)
         except Exception as e:
             return create_error_response(e, context)
 
-    return cast(F, wrapper)
+    return wrapper
 
 
 def sanitize_api_response(data: Any) -> Any:
