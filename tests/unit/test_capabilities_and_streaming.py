@@ -165,3 +165,41 @@ async def test_schwab_stream_manager_start(mock_stream_client_class: MagicMock) 
         success = await manager.start()
         assert success is True
         assert manager.is_running is True
+
+
+@pytest.mark.asyncio
+async def test_schwab_stream_manager_handles_account_activity() -> None:
+    from open_stocks_mcp.brokers.schwab_stream import SchwabStreamManager
+
+    mock_broker = MagicMock()
+    manager = SchwabStreamManager(mock_broker)
+
+    message = {
+        "service": "ACCT_ACTIVITY",
+        "content": [{"key": "ACT001", "1": "OrderEntryRequest", "2": "<xml/>"}],
+    }
+
+    manager._handle_message(message)
+    activity = manager.get_latest_activity()
+    assert len(activity) == 1
+    assert activity[0]["key"] == "ACT001"
+    assert activity[0]["1"] == "OrderEntryRequest"
+    assert activity[0]["2"] == "<xml/>"
+
+    # Verify equity/option caches are unaffected
+    assert manager.get_latest_quote("ACT001") is None
+    assert manager.get_latest_option_quote("ACT001") is None
+
+
+@pytest.mark.asyncio
+async def test_schwab_stream_manager_subscribe_account_activity() -> None:
+    from open_stocks_mcp.brokers.schwab_stream import SchwabStreamManager
+
+    mock_broker = MagicMock()
+    manager = SchwabStreamManager(mock_broker)
+    manager._is_running = True
+    manager.stream_client = AsyncMock()
+
+    result = await manager.subscribe_account_activity()
+    assert result is True
+    manager.stream_client.account_activity_sub.assert_awaited_once()
