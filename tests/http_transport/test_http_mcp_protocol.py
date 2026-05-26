@@ -145,12 +145,15 @@ class TestHTTPTransportReliability:
             "method_not_found": -32601,
             "invalid_params": -32602,
             "internal_error": -32603,
+            "forbidden_tool": -32001,
         }
 
         # Verify standard error codes
         assert error_codes["parse_error"] == -32700
         assert error_codes["method_not_found"] == -32601
         assert error_codes["internal_error"] == -32603
+        # Verify server-defined error codes
+        assert error_codes["forbidden_tool"] == -32001
 
 
 @pytest.mark.journey_system
