@@ -12,6 +12,11 @@ def test_error_handling_reexports_core_symbols() -> None:
     assert error_handling.validate_symbol is not None
 
 
+def test_error_handling_does_not_export_unused_span_validator() -> None:
+    assert "validate_span" not in error_handling.__all__
+    assert not hasattr(error_handling, "validate_span")
+
+
 def test_validation_behavior_preserved() -> None:
     assert validate_symbol("AAPL") is True
     assert validate_symbol("AAPL7") is True

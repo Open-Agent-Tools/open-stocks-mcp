@@ -17,9 +17,3 @@ def validate_period(period: str) -> bool:
     """Validate a time period parameter."""
     valid_periods = ["day", "week", "month", "3month", "year", "5year", "all"]
     return period in valid_periods
-
-
-def validate_span(span: str) -> bool:
-    """Validate a time span parameter."""
-    valid_spans = ["day", "week", "month", "3month", "year", "5year", "all"]
-    return span in valid_spans
