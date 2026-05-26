@@ -8,6 +8,16 @@ from open_stocks_mcp.brokers.request_policy import install_robinhood_request_tim
 from open_stocks_mcp.brokers.session_state import SessionManager
 from open_stocks_mcp.config import get_config
 from open_stocks_mcp.logging_config import logger
+from open_stocks_mcp.tools.robinhood_account_tools import (
+    get_account_info,
+    get_portfolio,
+    get_positions,
+)
+from open_stocks_mcp.tools.robinhood_stock_tools import get_stock_price
+from open_stocks_mcp.tools.robinhood_trading_tools import (
+    order_buy_market,
+    order_sell_market,
+)
 
 
 class RobinhoodBroker(BaseBroker):
@@ -124,16 +134,12 @@ class RobinhoodBroker(BaseBroker):
         if not self.is_available():
             return self.create_unavailable_response("get_account_info")
 
-        from open_stocks_mcp.tools.robinhood_account_tools import get_account_info
-
         return await get_account_info()
 
     async def get_portfolio(self) -> dict[str, Any]:
         """Get portfolio holdings."""
         if not self.is_available():
             return self.create_unavailable_response("get_portfolio")
-
-        from open_stocks_mcp.tools.robinhood_account_tools import get_portfolio
 
         return await get_portfolio()
 
@@ -142,16 +148,12 @@ class RobinhoodBroker(BaseBroker):
         if not self.is_available():
             return self.create_unavailable_response("get_positions")
 
-        from open_stocks_mcp.tools.robinhood_account_tools import get_positions
-
         return await get_positions()
 
     async def get_stock_quote(self, symbol: str) -> dict[str, Any]:
         """Get stock quote by symbol."""
         if not self.is_available():
             return self.create_unavailable_response(f"get stock quote for {symbol}")
-
-        from open_stocks_mcp.tools.robinhood_stock_tools import get_stock_price
 
         return await get_stock_price(symbol)
 
@@ -160,8 +162,6 @@ class RobinhoodBroker(BaseBroker):
         if not self.is_available():
             return self.create_unavailable_response(f"get stock price for {symbol}")
 
-        from open_stocks_mcp.tools.robinhood_stock_tools import get_stock_price
-
         return await get_stock_price(symbol)
 
     async def order_buy_market(self, symbol: str, quantity: float) -> dict[str, Any]:
@@ -169,15 +169,11 @@ class RobinhoodBroker(BaseBroker):
         if not self.is_available():
             return self.create_unavailable_response(f"place buy order for {symbol}")
 
-        from open_stocks_mcp.tools.robinhood_trading_tools import order_buy_market
-
         return await order_buy_market(symbol, int(quantity))
 
     async def order_sell_market(self, symbol: str, quantity: float) -> dict[str, Any]:
         """Place market sell order."""
         if not self.is_available():
             return self.create_unavailable_response(f"place sell order for {symbol}")
-
-        from open_stocks_mcp.tools.robinhood_trading_tools import order_sell_market
 
         return await order_sell_market(symbol, int(quantity))

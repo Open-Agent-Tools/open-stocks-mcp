@@ -38,7 +38,9 @@ class TestRobinhoodBrokerConstructor:
             password="secret",
             session_manager=session_mgr,
         )
-        session_mgr.set_credentials.assert_called_once_with("user@example.com", "secret")
+        session_mgr.set_credentials.assert_called_once_with(
+            "user@example.com", "secret"
+        )
         assert rb._auth_info.status == BrokerAuthStatus.NOT_AUTHENTICATED
 
     @pytest.mark.unit
@@ -217,7 +219,7 @@ class TestRobinhoodTradingDelegation:
     ) -> None:
         expected = {"result": {"order_id": "abc123", "status": "queued"}}
         with patch(
-            "open_stocks_mcp.tools.robinhood_trading_tools.order_buy_market",
+            "open_stocks_mcp.brokers.robinhood.order_buy_market",
             new=AsyncMock(return_value=expected),
         ) as mock_tool:
             result = await broker.order_buy_market("AAPL", 3.9)
@@ -233,7 +235,7 @@ class TestRobinhoodTradingDelegation:
     ) -> None:
         expected = {"result": {"order_id": "xyz789", "status": "queued"}}
         with patch(
-            "open_stocks_mcp.tools.robinhood_trading_tools.order_sell_market",
+            "open_stocks_mcp.brokers.robinhood.order_sell_market",
             new=AsyncMock(return_value=expected),
         ) as mock_tool:
             result = await broker.order_sell_market("TSLA", 2.7)
@@ -249,7 +251,7 @@ class TestRobinhoodTradingDelegation:
     ) -> None:
         delegated_error = {"result": {"status": "error", "error": "Insufficient funds"}}
         with patch(
-            "open_stocks_mcp.tools.robinhood_trading_tools.order_buy_market",
+            "open_stocks_mcp.brokers.robinhood.order_buy_market",
             new=AsyncMock(return_value=delegated_error),
         ):
             result = await broker.order_buy_market("AAPL", 1)
@@ -263,7 +265,7 @@ class TestRobinhoodTradingDelegation:
     ) -> None:
         delegated_error = {"result": {"status": "error", "error": "Position not found"}}
         with patch(
-            "open_stocks_mcp.tools.robinhood_trading_tools.order_sell_market",
+            "open_stocks_mcp.brokers.robinhood.order_sell_market",
             new=AsyncMock(return_value=delegated_error),
         ):
             result = await broker.order_sell_market("TSLA", 1)
@@ -276,7 +278,7 @@ class TestRobinhoodTradingDelegation:
         self, unavailable_broker: RobinhoodBroker
     ) -> None:
         with patch(
-            "open_stocks_mcp.tools.robinhood_trading_tools.order_buy_market",
+            "open_stocks_mcp.brokers.robinhood.order_buy_market",
             new=AsyncMock(),
         ) as mock_tool:
             result = await unavailable_broker.order_buy_market("AAPL", 1)
@@ -291,7 +293,7 @@ class TestRobinhoodTradingDelegation:
         self, unavailable_broker: RobinhoodBroker
     ) -> None:
         with patch(
-            "open_stocks_mcp.tools.robinhood_trading_tools.order_sell_market",
+            "open_stocks_mcp.brokers.robinhood.order_sell_market",
             new=AsyncMock(),
         ) as mock_tool:
             result = await unavailable_broker.order_sell_market("TSLA", 1)
@@ -309,7 +311,7 @@ class TestGetStockQuoteDelegation:
     async def test_delegates_to_stock_price_tool(self, broker: RobinhoodBroker) -> None:
         expected = {"result": {"symbol": "AAPL", "price": 150.0}}
         with patch(
-            "open_stocks_mcp.tools.robinhood_stock_tools.get_stock_price",
+            "open_stocks_mcp.brokers.robinhood.get_stock_price",
             new=AsyncMock(return_value=expected),
         ) as mock_tool:
             result = await broker.get_stock_quote("AAPL")
@@ -331,7 +333,7 @@ class TestGetStockQuoteDelegation:
     @pytest.mark.asyncio
     async def test_result_is_not_not_implemented(self, broker: RobinhoodBroker) -> None:
         with patch(
-            "open_stocks_mcp.tools.robinhood_stock_tools.get_stock_price",
+            "open_stocks_mcp.brokers.robinhood.get_stock_price",
             new=AsyncMock(return_value={"result": {"price": 1.0}}),
         ):
             result = await broker.get_stock_quote("TSLA")
@@ -353,7 +355,7 @@ class TestGetStockQuoteDelegation:
         }
 
         with patch(
-            "open_stocks_mcp.tools.robinhood_stock_tools.get_stock_price",
+            "open_stocks_mcp.brokers.robinhood.get_stock_price",
             new=AsyncMock(return_value=expected),
         ) as mock_tool:
             result = await broker.get_stock_quote("123INVALID")
@@ -370,7 +372,7 @@ class TestOtherRobinhoodDelegations:
     async def test_get_account_info_delegates(self, broker: RobinhoodBroker) -> None:
         expected = {"result": {"accounts": []}}
         with patch(
-            "open_stocks_mcp.tools.robinhood_account_tools.get_account_info",
+            "open_stocks_mcp.brokers.robinhood.get_account_info",
             new=AsyncMock(return_value=expected),
         ) as mock_tool:
             result = await broker.get_account_info()
@@ -383,7 +385,7 @@ class TestOtherRobinhoodDelegations:
     async def test_get_portfolio_delegates(self, broker: RobinhoodBroker) -> None:
         expected = {"result": {"portfolio": {}}}
         with patch(
-            "open_stocks_mcp.tools.robinhood_account_tools.get_portfolio",
+            "open_stocks_mcp.brokers.robinhood.get_portfolio",
             new=AsyncMock(return_value=expected),
         ) as mock_tool:
             result = await broker.get_portfolio()
@@ -396,7 +398,7 @@ class TestOtherRobinhoodDelegations:
     async def test_get_positions_delegates(self, broker: RobinhoodBroker) -> None:
         expected = {"result": {"positions": []}}
         with patch(
-            "open_stocks_mcp.tools.robinhood_account_tools.get_positions",
+            "open_stocks_mcp.brokers.robinhood.get_positions",
             new=AsyncMock(return_value=expected),
         ) as mock_tool:
             result = await broker.get_positions()
@@ -410,10 +412,36 @@ class TestOtherRobinhoodDelegations:
     async def test_get_stock_price_delegates(self, broker: RobinhoodBroker) -> None:
         expected = {"result": {"price": 99.0}}
         with patch(
-            "open_stocks_mcp.tools.robinhood_stock_tools.get_stock_price",
+            "open_stocks_mcp.brokers.robinhood.get_stock_price",
             new=AsyncMock(return_value=expected),
         ) as mock_tool:
             result = await broker.get_stock_price("GOOGL")
 
         mock_tool.assert_awaited_once_with("GOOGL")
+        assert result == expected
+
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    async def test_order_buy_market_delegates(self, broker: RobinhoodBroker) -> None:
+        expected = {"result": {"status": "success"}}
+        with patch(
+            "open_stocks_mcp.brokers.robinhood.order_buy_market",
+            new=AsyncMock(return_value=expected),
+        ) as mock_tool:
+            result = await broker.order_buy_market("AAPL", 1)
+
+        mock_tool.assert_awaited_once_with("AAPL", 1)
+        assert result == expected
+
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    async def test_order_sell_market_delegates(self, broker: RobinhoodBroker) -> None:
+        expected = {"result": {"status": "success"}}
+        with patch(
+            "open_stocks_mcp.brokers.robinhood.order_sell_market",
+            new=AsyncMock(return_value=expected),
+        ) as mock_tool:
+            result = await broker.order_sell_market("AAPL", 1)
+
+        mock_tool.assert_awaited_once_with("AAPL", 1)
         assert result == expected
