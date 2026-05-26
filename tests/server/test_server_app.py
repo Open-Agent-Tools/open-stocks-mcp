@@ -56,6 +56,34 @@ class TestServerApp:
             mock_logging.assert_called_once_with(mock_config)
 
 
+@pytest.mark.journey_system
+class TestMarketToolRegistration:
+    """Verify that all market and research tools remain registered after refactoring."""
+
+    @pytest.mark.asyncio
+    async def test_market_research_tools_are_registered(self) -> None:
+        """Test that all 10 market/research tools are registered on the mcp server."""
+        # Get the list of registered tools via list_tools method
+        tools_list = await mcp.list_tools()
+        tool_names = [tool.name for tool in tools_list]
+
+        expected_tools = [
+            "top_movers_sp500",
+            "top_100_stocks",
+            "top_movers",
+            "stocks_by_tag",
+            "stock_ratings",
+            "stock_earnings",
+            "stock_news",
+            "stock_splits",
+            "stock_events",
+            "stock_level2_data",
+        ]
+
+        for tool_name in expected_tools:
+            assert tool_name in tool_names, f"Tool {tool_name} not registered"
+
+
 @pytest.mark.journey_account
 class TestAttemptLogin:
     """Test attempt_login functionality."""
