@@ -96,3 +96,33 @@ def test_mypy_dev_tooling_targets_2_1_0() -> None:
     )
     assert mypy_repo["rev"] == MYPY_PRE_COMMIT_REV
     assert mypy_repo["hooks"][0]["exclude"] == MYPY_PRE_COMMIT_EXCLUDE
+
+
+@pytest.mark.unit
+def test_dependency_floors_and_pre_commit_revisions() -> None:
+    pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    pre_commit = yaml.safe_load(
+        (ROOT / ".pre-commit-config.yaml").read_text(encoding="utf-8")
+    )
+
+    project_dependencies = set(pyproject["project"]["dependencies"])
+    optional_dev_dependencies = set(
+        pyproject["project"]["optional-dependencies"]["dev"]
+    )
+    group_dev_dependencies = set(pyproject["dependency-groups"]["dev"])
+
+    assert "httpx>=0.28.1" in project_dependencies
+    for dep in (
+        "pytest>=9.0.3",
+        "pytest-mock>=3.15.1",
+        "ruff>=0.15.14",
+        "pre-commit>=4.6.0",
+        "httpx>=0.28.1",
+    ):
+        assert dep in optional_dev_dependencies
+        assert dep in group_dev_dependencies
+    assert "pytest-cov>=7.1.0" in group_dev_dependencies
+
+    repo_revs = {repo["repo"]: repo["rev"] for repo in pre_commit["repos"]}
+    assert repo_revs["https://github.com/astral-sh/ruff-pre-commit"] == "v0.15.14"
+    assert repo_revs["https://github.com/pre-commit/pre-commit-hooks"] == "v6.0.0"
