@@ -124,3 +124,6 @@ class SessionPickleManager:
         return (
             self._consecutive_pickle_clear_failures >= self._max_pickle_clear_failures
         )
+
+    def reset_clear_failures(self) -> None:
+        self._consecutive_pickle_clear_failures = 0

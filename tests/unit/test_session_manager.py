@@ -6,11 +6,12 @@ import io
 from contextlib import redirect_stderr
 from datetime import datetime, timedelta
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import pytest
 
 from open_stocks_mcp.brokers import session_state as session_manager_module
+from open_stocks_mcp.brokers.session_pickle import SessionPickleManager
 from open_stocks_mcp.brokers.session_state import SessionManager
 
 pytestmark = pytest.mark.unit
@@ -57,6 +58,26 @@ def test_clear_pickle_file_success_when_file_exists(tmp_path: Path) -> None:
         assert manager._clear_pickle_file() is True
 
     assert not pickle_path.exists()
+
+
+def test_session_manager_accepts_pickle_manager_dependency() -> None:
+    pickle_manager = Mock(spec=SessionPickleManager)
+    pickle_manager._clear_pickle_file.return_value = True
+    manager = SessionManager(pickle_manager=pickle_manager)
+
+    assert manager._clear_pickle_file() is True
+
+    pickle_manager._clear_pickle_file.assert_called_once_with("robinhood")
+
+
+def test_should_block_auth_retries_delegates_to_pickle_manager() -> None:
+    pickle_manager = Mock(spec=SessionPickleManager)
+    pickle_manager.should_block_auth_retries.return_value = True
+    manager = SessionManager(pickle_manager=pickle_manager)
+
+    assert manager.should_block_auth_retries() is True
+
+    pickle_manager.should_block_auth_retries.assert_called_once_with()
 
 
 def test_clear_pickle_file_success_when_file_missing(tmp_path: Path) -> None:
@@ -247,6 +268,19 @@ async def test_logout_clears_session_state() -> None:
     assert manager.login_time is None
     assert manager.last_successful_call is None
     assert manager._failed_login_attempts == 0
+
+
+@pytest.mark.asyncio
+async def test_logout_resets_pickle_clear_failures_via_manager() -> None:
+    manager = SessionManager()
+
+    with (
+        patch("open_stocks_mcp.brokers.session_state.rh.logout"),
+        patch.object(manager._pickle, "reset_clear_failures") as reset_clear_failures,
+    ):
+        await manager.logout()
+
+    reset_clear_failures.assert_called_once_with()
 
 
 @pytest.mark.asyncio

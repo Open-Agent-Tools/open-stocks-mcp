@@ -8,6 +8,7 @@ from unittest.mock import patch
 import pytest
 from cryptography.fernet import Fernet
 
+from open_stocks_mcp.brokers.session_pickle import SessionPickleManager
 from open_stocks_mcp.brokers.session_state import SessionManager
 
 
@@ -18,18 +19,18 @@ def tmp_tokens_dir(tmp_path: Path) -> Path:
 
 
 @pytest.fixture()
-def manager(tmp_tokens_dir: Path) -> Generator[SessionManager, None, None]:
-    """SessionManager with home directory patched to a temp location."""
+def manager(tmp_tokens_dir: Path) -> Generator[SessionPickleManager, None, None]:
+    """SessionPickleManager with home directory patched to a temp location."""
     with patch(
         "open_stocks_mcp.brokers.session_pickle.Path.home",
         return_value=tmp_tokens_dir.parent,
     ):
-        yield SessionManager()
+        yield SessionPickleManager()
 
 
 class TestTokensDirectoryPermissions:
     def test_directory_created_with_restricted_permissions(
-        self, manager: SessionManager, tmp_tokens_dir: Path
+        self, manager: SessionPickleManager, tmp_tokens_dir: Path
     ) -> None:
         manager._get_tokens_dir()
         assert tmp_tokens_dir.exists()
@@ -37,7 +38,7 @@ class TestTokensDirectoryPermissions:
         assert mode == 0o700
 
     def test_existing_directory_permissions_are_hardened(
-        self, manager: SessionManager, tmp_tokens_dir: Path
+        self, manager: SessionPickleManager, tmp_tokens_dir: Path
     ) -> None:
         # Create directory with looser permissions first
         tmp_tokens_dir.mkdir(mode=0o755, parents=True, exist_ok=True)
@@ -48,7 +49,7 @@ class TestTokensDirectoryPermissions:
 
 class TestFernetKeyManagement:
     def test_key_file_created_on_first_access(
-        self, manager: SessionManager, tmp_tokens_dir: Path
+        self, manager: SessionPickleManager, tmp_tokens_dir: Path
     ) -> None:
         key = manager._get_or_create_fernet_key()
         key_path = tmp_tokens_dir / ".session.key"
@@ -56,7 +57,7 @@ class TestFernetKeyManagement:
         assert key == key_path.read_bytes()
 
     def test_key_file_has_restricted_permissions(
-        self, manager: SessionManager, tmp_tokens_dir: Path
+        self, manager: SessionPickleManager, tmp_tokens_dir: Path
     ) -> None:
         manager._get_or_create_fernet_key()
         key_path = tmp_tokens_dir / ".session.key"
@@ -64,13 +65,15 @@ class TestFernetKeyManagement:
         assert mode == 0o600
 
     def test_same_key_returned_on_subsequent_calls(
-        self, manager: SessionManager
+        self, manager: SessionPickleManager
     ) -> None:
         key1 = manager._get_or_create_fernet_key()
         key2 = manager._get_or_create_fernet_key()
         assert key1 == key2
 
-    def test_valid_fernet_key_generated(self, manager: SessionManager) -> None:
+    def test_valid_fernet_key_generated(
+        self, manager: SessionPickleManager
+    ) -> None:
         key = manager._get_or_create_fernet_key()
         # Fernet key must be usable — if it's invalid Fernet() raises ValueError
         fernet = Fernet(key)
@@ -80,7 +83,7 @@ class TestFernetKeyManagement:
 
 class TestPickleEncryption:
     def test_encrypt_removes_plaintext(
-        self, manager: SessionManager, tmp_tokens_dir: Path
+        self, manager: SessionPickleManager, tmp_tokens_dir: Path
     ) -> None:
         pickle_path = tmp_tokens_dir / "robinhood.pickle"
         tmp_tokens_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
@@ -91,7 +94,7 @@ class TestPickleEncryption:
         assert not pickle_path.exists()
 
     def test_encrypt_creates_enc_file(
-        self, manager: SessionManager, tmp_tokens_dir: Path
+        self, manager: SessionPickleManager, tmp_tokens_dir: Path
     ) -> None:
         pickle_path = tmp_tokens_dir / "robinhood.pickle"
         tmp_tokens_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
@@ -103,7 +106,7 @@ class TestPickleEncryption:
         assert enc_path.exists()
 
     def test_enc_file_has_restricted_permissions(
-        self, manager: SessionManager, tmp_tokens_dir: Path
+        self, manager: SessionPickleManager, tmp_tokens_dir: Path
     ) -> None:
         pickle_path = tmp_tokens_dir / "robinhood.pickle"
         tmp_tokens_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
@@ -116,7 +119,7 @@ class TestPickleEncryption:
         assert mode == 0o600
 
     def test_encrypt_no_op_when_no_plaintext(
-        self, manager: SessionManager, tmp_tokens_dir: Path
+        self, manager: SessionPickleManager, tmp_tokens_dir: Path
     ) -> None:
         manager._encrypt_pickle_if_exists()  # Should not raise
         enc_path = tmp_tokens_dir / "robinhood.pickle.enc"
@@ -125,7 +128,7 @@ class TestPickleEncryption:
 
 class TestPickleDecryption:
     def test_round_trip_preserves_content(
-        self, manager: SessionManager, tmp_tokens_dir: Path
+        self, manager: SessionPickleManager, tmp_tokens_dir: Path
     ) -> None:
         original_data = b"serialized-oauth-token-data"
         pickle_path = tmp_tokens_dir / "robinhood.pickle"
@@ -142,13 +145,13 @@ class TestPickleDecryption:
         assert pickle_path.read_bytes() == original_data
 
     def test_decrypt_returns_false_when_no_enc_file(
-        self, manager: SessionManager
+        self, manager: SessionPickleManager
     ) -> None:
         result = manager._decrypt_pickle_if_exists()
         assert result is False
 
     def test_corrupt_enc_file_is_removed(
-        self, manager: SessionManager, tmp_tokens_dir: Path
+        self, manager: SessionPickleManager, tmp_tokens_dir: Path
     ) -> None:
         tmp_tokens_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
         enc_path = tmp_tokens_dir / "robinhood.pickle.enc"
@@ -160,7 +163,7 @@ class TestPickleDecryption:
         assert not enc_path.exists()
 
     def test_decrypted_file_has_restricted_permissions(
-        self, manager: SessionManager, tmp_tokens_dir: Path
+        self, manager: SessionPickleManager, tmp_tokens_dir: Path
     ) -> None:
         pickle_path = tmp_tokens_dir / "robinhood.pickle"
         tmp_tokens_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
@@ -177,7 +180,7 @@ class TestLoginPickleReencryption:
     @pytest.mark.parametrize("login_result", [False, RuntimeError("login failed")])
     def test_login_failure_reencrypts_decrypted_pickle(
         self,
-        manager: SessionManager,
+        manager: SessionPickleManager,
         tmp_tokens_dir: Path,
         login_result: bool | RuntimeError,
     ) -> None:
@@ -199,7 +202,13 @@ class TestLoginPickleReencryption:
             return_value=return_value,
             side_effect=side_effect,
         ):
-            assert manager._login_with_device_verification("user", "pass") is False
+            session_manager = SessionManager()
+            session_manager._pickle = manager
+
+            assert (
+                session_manager._login_with_device_verification("user", "pass")
+                is False
+            )
 
         assert not pickle_path.exists()
         assert enc_path.exists()
@@ -207,7 +216,7 @@ class TestLoginPickleReencryption:
 
 class TestClearPickleFile:
     def test_clears_both_plaintext_and_encrypted(
-        self, manager: SessionManager, tmp_tokens_dir: Path
+        self, manager: SessionPickleManager, tmp_tokens_dir: Path
     ) -> None:
         tmp_tokens_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
         pickle_path = tmp_tokens_dir / "robinhood.pickle"
@@ -221,6 +230,17 @@ class TestClearPickleFile:
         assert not pickle_path.exists()
         assert not enc_path.exists()
 
-    def test_clear_succeeds_when_no_files_exist(self, manager: SessionManager) -> None:
+    def test_clear_succeeds_when_no_files_exist(
+        self, manager: SessionPickleManager
+    ) -> None:
         result = manager._clear_pickle_file()
         assert result is True
+
+    def test_reset_clear_failures_allows_auth_retries(
+        self, manager: SessionPickleManager
+    ) -> None:
+        manager._consecutive_pickle_clear_failures = 3
+
+        manager.reset_clear_failures()
+
+        assert manager.should_block_auth_retries() is False
