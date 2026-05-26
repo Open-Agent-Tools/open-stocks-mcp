@@ -257,3 +257,94 @@ async def test_schwab_stream_manager_subscribe_account_activity() -> None:
     result = await manager.subscribe_account_activity()
     assert result is True
     manager.stream_client.account_activity_sub.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_schwab_stream_manager_level2_handling() -> None:
+    from open_stocks_mcp.brokers.schwab_stream import SchwabStreamManager
+
+    mock_broker = MagicMock()
+    manager = SchwabStreamManager(mock_broker)
+
+    # Test NASDAQ_BOOK message handling
+    nasdaq_message = {
+        "service": "NASDAQ_BOOK",
+        "content": [
+            {
+                "key": "AAPL",
+                "SYMBOL": "AAPL",
+                "BIDS": [{"PRICE": 150.0, "SIZE": 100}],
+                "ASKS": [{"PRICE": 151.0, "SIZE": 200}],
+            }
+        ],
+    }
+
+    manager._handle_message(nasdaq_message)
+    book = manager.get_latest_level2("AAPL")
+    assert book is not None
+    assert book["SYMBOL"] == "AAPL"
+    assert book["BIDS"][0]["PRICE"] == 150.0
+
+    # Test NYSE_BOOK message handling
+    nyse_message = {
+        "service": "NYSE_BOOK",
+        "content": [
+            {
+                "key": "IBM",
+                "SYMBOL": "IBM",
+                "BIDS": [{"PRICE": 130.0, "SIZE": 50}],
+                "ASKS": [{"PRICE": 131.0, "SIZE": 60}],
+            }
+        ],
+    }
+
+    manager._handle_message(nyse_message)
+    book = manager.get_latest_level2("IBM")
+    assert book is not None
+    assert book["SYMBOL"] == "IBM"
+    assert book["BIDS"][0]["PRICE"] == 130.0
+
+
+@pytest.mark.asyncio
+async def test_schwab_stream_manager_subscribe_level2() -> None:
+    from open_stocks_mcp.brokers.schwab_stream import SchwabStreamManager
+
+    mock_broker = MagicMock()
+    manager = SchwabStreamManager(mock_broker)
+    manager._is_running = True
+    manager.stream_client = AsyncMock()
+
+    # Test NASDAQ subscription
+    success = await manager.subscribe_level2("AAPL", "nasdaq")
+    assert success is True
+    manager.stream_client.nasdaq_book_subs.assert_awaited_once_with(["AAPL"])
+
+    # Test NYSE subscription
+    success = await manager.subscribe_level2("IBM", "nyse")
+    assert success is True
+    manager.stream_client.nyse_book_subs.assert_awaited_once_with(["IBM"])
+
+    # Test unsupported venue
+    success = await manager.subscribe_level2("AAPL", "unknown")
+    assert success is False
+
+
+@patch("schwab.streaming.StreamClient")
+@pytest.mark.asyncio
+async def test_schwab_stream_manager_start_registers_book_handlers(
+    mock_stream_client_class: MagicMock,
+) -> None:
+    from open_stocks_mcp.brokers.schwab_stream import SchwabStreamManager
+
+    mock_broker = MagicMock()
+    mock_broker.is_available.return_value = True
+    mock_broker.client = MagicMock()
+
+    manager = SchwabStreamManager(mock_broker)
+    mock_stream_client = mock_stream_client_class.return_value
+    mock_stream_client.login = AsyncMock()
+
+    with patch("asyncio.create_task"):
+        await manager.start()
+        mock_stream_client.add_nasdaq_book_handler.assert_called_once()
+        mock_stream_client.add_nyse_book_handler.assert_called_once()

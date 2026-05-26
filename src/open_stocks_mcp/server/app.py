@@ -1928,6 +1928,17 @@ async def schwab_open_option_orders(
 
 # Schwab Streaming Tools
 @mcp.tool()
+async def schwab_stream_level2(symbol: str, venue: str = "nasdaq") -> dict[str, Any]:
+    """Get real-time Level 2 order-book snapshot from Schwab streaming.
+
+    Args:
+        symbol: Ticker symbol (e.g. 'AAPL')
+        venue: 'nasdaq' or 'nyse' (default: 'nasdaq')
+    """
+    return await _schwab_stream_level2_impl(symbol, venue)
+
+
+@mcp.tool()
 async def schwab_stream_option_quotes(symbols: list[str]) -> dict[str, Any]:
     """Get real-time option quote snapshots from Schwab streaming.
 
