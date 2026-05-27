@@ -790,6 +790,8 @@ def create_http_server(
                     outcome="success",
                 )
 
+            except HTTPException:
+                raise
             except Exception as e:
                 logger.error(f"MCP method '{method}' failed: {e}")
                 error_response = {
@@ -807,6 +809,8 @@ def create_http_server(
                     error_type=type(e).__name__,
                 )
 
+        except HTTPException:
+            raise
         except Exception as e:
             logger.error(f"MCP endpoint error: {e}")
             error_response = {
