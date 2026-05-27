@@ -146,12 +146,16 @@ class TestSchwabPreflightRejection:
         with pytest.raises(pytest.skip.Exception):
             require_schwab_live_preflight(config)
 
-    def test_schwab_skips_without_token_file(self, monkeypatch: Any, tmp_path: Any) -> None:
+    def test_schwab_skips_without_token_file(
+        self, monkeypatch: Any, tmp_path: Any
+    ) -> None:
         """Skip when no token file exists at the configured path."""
         monkeypatch.setenv(LIVE_MARKET_ENV_VAR, "1")
         monkeypatch.setenv("SCHWAB_API_KEY", "key")
         monkeypatch.setenv("SCHWAB_APP_SECRET", "secret")
-        monkeypatch.setenv("SCHWAB_TOKEN_PATH", str(tmp_path / "nonexistent_token.json"))
+        monkeypatch.setenv(
+            "SCHWAB_TOKEN_PATH", str(tmp_path / "nonexistent_token.json")
+        )
         config = MagicMock()
         config.getoption.return_value = True
         with pytest.raises(pytest.skip.Exception):

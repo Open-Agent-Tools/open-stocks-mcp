@@ -799,5 +799,3 @@ async def order_buy_fractional_by_price(
             "status": "success",
         }
     )
-
-

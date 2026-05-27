@@ -212,9 +212,7 @@ class TestSchwabBroker:
     def test_accepts_token_path_inside_tokens_dir(self) -> None:
         """Test that token_path can be inside ~/.tokens directory."""
         token_path = str(Path.home() / ".tokens" / "nested" / "token.json")
-        broker = SchwabBroker(
-            api_key="test", app_secret="test", token_path=token_path
-        )
+        broker = SchwabBroker(api_key="test", app_secret="test", token_path=token_path)
         assert Path(broker.token_path) == Path(token_path).expanduser().resolve()
 
     @pytest.mark.asyncio

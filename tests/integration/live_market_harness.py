@@ -115,7 +115,11 @@ def require_schwab_live_preflight(pytestconfig: Any) -> None:
     from pathlib import Path
 
     token_path_env = os.environ.get("SCHWAB_TOKEN_PATH")
-    token_path = Path(token_path_env) if token_path_env else Path.home() / ".tokens" / "schwab_token.json"
+    token_path = (
+        Path(token_path_env)
+        if token_path_env
+        else Path.home() / ".tokens" / "schwab_token.json"
+    )
     if not token_path.exists():
         pytest.skip(_SCHWAB_TOKEN_SKIP_REASON)
 
@@ -199,7 +203,11 @@ def live_schwab_broker(request: Any) -> Generator[Any, None, None]:
     app_secret = os.environ["SCHWAB_APP_SECRET"]
     callback_url = os.environ.get("SCHWAB_CALLBACK_URL", "https://127.0.0.1:8182/")
     token_path_env = os.environ.get("SCHWAB_TOKEN_PATH")
-    token_path = str(token_path_env) if token_path_env else str(Path.home() / ".tokens" / "schwab_token.json")
+    token_path = (
+        str(token_path_env)
+        if token_path_env
+        else str(Path.home() / ".tokens" / "schwab_token.json")
+    )
 
     from open_stocks_mcp.brokers.registry import BrokerRegistry
     from open_stocks_mcp.brokers.schwab import SchwabBroker

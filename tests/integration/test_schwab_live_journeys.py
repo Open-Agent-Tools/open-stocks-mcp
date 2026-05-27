@@ -74,10 +74,14 @@ def test_get_schwab_account(live_schwab_broker: Any) -> None:
         get_schwab_account_numbers,
     )
 
-    numbers_result = asyncio.get_event_loop().run_until_complete(get_schwab_account_numbers())
+    numbers_result = asyncio.get_event_loop().run_until_complete(
+        get_schwab_account_numbers()
+    )
     account_hash = numbers_result["result"]["accounts"][0]["hash_value"]
 
-    result = asyncio.get_event_loop().run_until_complete(get_schwab_account(account_hash))
+    result = asyncio.get_event_loop().run_until_complete(
+        get_schwab_account(account_hash)
+    )
     assert isinstance(result, dict)
     assert "result" in result
     inner = result["result"]
@@ -100,10 +104,14 @@ def test_get_schwab_account_balances(live_schwab_broker: Any) -> None:
         get_schwab_account_numbers,
     )
 
-    numbers_result = asyncio.get_event_loop().run_until_complete(get_schwab_account_numbers())
+    numbers_result = asyncio.get_event_loop().run_until_complete(
+        get_schwab_account_numbers()
+    )
     account_hash = numbers_result["result"]["accounts"][0]["hash_value"]
 
-    result = asyncio.get_event_loop().run_until_complete(get_schwab_account_balances(account_hash))
+    result = asyncio.get_event_loop().run_until_complete(
+        get_schwab_account_balances(account_hash)
+    )
     assert isinstance(result, dict)
     assert "result" in result
     inner = result["result"]
@@ -126,10 +134,14 @@ def test_get_schwab_portfolio(live_schwab_broker: Any) -> None:
         get_schwab_portfolio,
     )
 
-    numbers_result = asyncio.get_event_loop().run_until_complete(get_schwab_account_numbers())
+    numbers_result = asyncio.get_event_loop().run_until_complete(
+        get_schwab_account_numbers()
+    )
     account_hash = numbers_result["result"]["accounts"][0]["hash_value"]
 
-    result = asyncio.get_event_loop().run_until_complete(get_schwab_portfolio(account_hash))
+    result = asyncio.get_event_loop().run_until_complete(
+        get_schwab_portfolio(account_hash)
+    )
     assert isinstance(result, dict)
     assert "result" in result
     inner = result["result"]
@@ -177,7 +189,9 @@ def test_get_schwab_quotes(live_schwab_broker: Any) -> None:
 
     from open_stocks_mcp.tools.schwab_market_tools import get_schwab_quotes
 
-    result = asyncio.get_event_loop().run_until_complete(get_schwab_quotes(["AAPL", "MSFT"]))
+    result = asyncio.get_event_loop().run_until_complete(
+        get_schwab_quotes(["AAPL", "MSFT"])
+    )
     assert isinstance(result, dict)
     assert "result" in result
     inner = result["result"]
@@ -202,7 +216,9 @@ def test_get_schwab_price_history(live_schwab_broker: Any) -> None:
     from open_stocks_mcp.tools.schwab_market_tools import get_schwab_price_history
 
     result = asyncio.get_event_loop().run_until_complete(
-        get_schwab_price_history("AAPL", period_type="month", period=1, frequency_type="daily", frequency=1)
+        get_schwab_price_history(
+            "AAPL", period_type="month", period=1, frequency_type="daily", frequency=1
+        )
     )
     assert isinstance(result, dict)
     assert "result" in result
@@ -236,7 +252,9 @@ def test_search_schwab_instruments(live_schwab_broker: Any) -> None:
 
     from open_stocks_mcp.tools.schwab_market_tools import search_schwab_instruments
 
-    result = asyncio.get_event_loop().run_until_complete(search_schwab_instruments("Apple"))
+    result = asyncio.get_event_loop().run_until_complete(
+        search_schwab_instruments("Apple")
+    )
     assert isinstance(result, dict)
     assert "result" in result
     inner = result["result"]
@@ -264,15 +282,20 @@ def test_get_schwab_option_expirations(live_schwab_broker: Any) -> None:
 
     from open_stocks_mcp.tools.schwab_options_tools import get_schwab_option_expirations
 
-    result = asyncio.get_event_loop().run_until_complete(get_schwab_option_expirations("AAPL"))
+    result = asyncio.get_event_loop().run_until_complete(
+        get_schwab_option_expirations("AAPL")
+    )
     assert isinstance(result, dict)
     assert "result" in result
     inner = result["result"]
     assert inner.get("status") != "error", f"Unexpected error response: {inner}"
     assert isinstance(inner, dict)
-    assert "expirationList" in inner or "expirations" in inner or "count" in inner or "symbol" in inner, (
-        "Option expirations response must contain expiration data"
-    )
+    assert (
+        "expirationList" in inner
+        or "expirations" in inner
+        or "count" in inner
+        or "symbol" in inner
+    ), "Option expirations response must contain expiration data"
 
 
 @pytest.mark.integration
@@ -286,7 +309,9 @@ def test_get_schwab_option_chain(live_schwab_broker: Any) -> None:
 
     from open_stocks_mcp.tools.schwab_options_tools import get_schwab_option_chain
 
-    result = asyncio.get_event_loop().run_until_complete(get_schwab_option_chain("AAPL"))
+    result = asyncio.get_event_loop().run_until_complete(
+        get_schwab_option_chain("AAPL")
+    )
     assert isinstance(result, dict)
     assert "result" in result
     inner = result["result"]
@@ -308,10 +333,14 @@ def test_get_schwab_options_positions(live_schwab_broker: Any) -> None:
     from open_stocks_mcp.tools.schwab_account_tools import get_schwab_account_numbers
     from open_stocks_mcp.tools.schwab_options_tools import get_schwab_options_positions
 
-    numbers_result = asyncio.get_event_loop().run_until_complete(get_schwab_account_numbers())
+    numbers_result = asyncio.get_event_loop().run_until_complete(
+        get_schwab_account_numbers()
+    )
     account_hash = numbers_result["result"]["accounts"][0]["hash_value"]
 
-    result = asyncio.get_event_loop().run_until_complete(get_schwab_options_positions(account_hash))
+    result = asyncio.get_event_loop().run_until_complete(
+        get_schwab_options_positions(account_hash)
+    )
     assert isinstance(result, dict)
     assert "result" in result
     inner = result["result"]
@@ -341,10 +370,14 @@ def test_get_schwab_orders(live_schwab_broker: Any) -> None:
     from open_stocks_mcp.tools.schwab_account_tools import get_schwab_account_numbers
     from open_stocks_mcp.tools.schwab_trading_tools import get_schwab_orders
 
-    numbers_result = asyncio.get_event_loop().run_until_complete(get_schwab_account_numbers())
+    numbers_result = asyncio.get_event_loop().run_until_complete(
+        get_schwab_account_numbers()
+    )
     account_hash = numbers_result["result"]["accounts"][0]["hash_value"]
 
-    result = asyncio.get_event_loop().run_until_complete(get_schwab_orders(account_hash))
+    result = asyncio.get_event_loop().run_until_complete(
+        get_schwab_orders(account_hash)
+    )
     assert isinstance(result, dict)
     assert "result" in result
     inner = result["result"]
@@ -368,10 +401,14 @@ def test_schwab_get_open_stock_orders(live_schwab_broker: Any) -> None:
     from open_stocks_mcp.tools.schwab_account_tools import get_schwab_account_numbers
     from open_stocks_mcp.tools.schwab_trading_tools import schwab_get_open_stock_orders
 
-    numbers_result = asyncio.get_event_loop().run_until_complete(get_schwab_account_numbers())
+    numbers_result = asyncio.get_event_loop().run_until_complete(
+        get_schwab_account_numbers()
+    )
     account_hash = numbers_result["result"]["accounts"][0]["hash_value"]
 
-    result = asyncio.get_event_loop().run_until_complete(schwab_get_open_stock_orders(account_hash))
+    result = asyncio.get_event_loop().run_until_complete(
+        schwab_get_open_stock_orders(account_hash)
+    )
     assert isinstance(result, dict)
     assert "result" in result
     inner = result["result"]
@@ -397,11 +434,15 @@ def test_schwab_get_transactions_by_date(live_schwab_broker: Any) -> None:
         schwab_get_transactions_by_date,
     )
 
-    numbers_result = asyncio.get_event_loop().run_until_complete(get_schwab_account_numbers())
+    numbers_result = asyncio.get_event_loop().run_until_complete(
+        get_schwab_account_numbers()
+    )
     account_hash = numbers_result["result"]["accounts"][0]["hash_value"]
 
     result = asyncio.get_event_loop().run_until_complete(
-        schwab_get_transactions_by_date(account_hash, start_date="2024-01-01", end_date="2024-12-31")
+        schwab_get_transactions_by_date(
+            account_hash, start_date="2024-01-01", end_date="2024-12-31"
+        )
     )
     assert isinstance(result, dict)
     assert "result" in result
