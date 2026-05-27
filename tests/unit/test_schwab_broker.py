@@ -490,3 +490,81 @@ class TestSchwabBroker:
         assert result["result"]["status"] == "error"
         assert result["result"]["status"] != "not_implemented"
         assert "account hash" in result["result"]["error"].lower()
+
+    @pytest.mark.asyncio
+    async def test_portfolio_snapshot_normalizes_accounts_and_positions(
+        self, schwab_broker: SchwabBroker
+    ) -> None:
+        """Test Schwab specific portfolio snapshot normalization."""
+        schwab_broker._auth_info.status = BrokerAuthStatus.AUTHENTICATED
+        schwab_broker.client = MagicMock()
+
+        # Mock get_schwab_accounts called by SchwabBroker.get_portfolio_snapshot
+        mock_accounts = {
+            "result": {
+                "accounts": [
+                    {
+                        "securitiesAccount": {
+                            "currentBalances": {
+                                "liquidationValue": 5000.0,
+                                "buyingPower": 2000.0,
+                            },
+                            "positions": [
+                                {
+                                    "instrument": {"symbol": "MSFT"},
+                                    "longQuantity": 5,
+                                    "shortQuantity": 0,
+                                    "averagePrice": 300.0,
+                                    "marketValue": 1750.0,
+                                }
+                            ],
+                        }
+                    },
+                    {
+                        "securitiesAccount": {
+                            "currentBalances": {
+                                "liquidationValue": 3000.0,
+                                "buyingPower": 1000.0,
+                            },
+                            "positions": [
+                                {
+                                    "instrument": {"symbol": "GOOGL"},
+                                    "longQuantity": 0,
+                                    "shortQuantity": 2,
+                                    "averagePrice": 140.0,
+                                    "marketValue": 280.0,
+                                }
+                            ],
+                        }
+                    },
+                ]
+            }
+        }
+
+        with patch(
+            "open_stocks_mcp.tools.schwab_account_tools.get_schwab_accounts",
+            new=AsyncMock(return_value=mock_accounts),
+        ):
+            summary, positions = await schwab_broker.get_portfolio_snapshot()
+
+        # Aggregated summary: liquidationValue sums 5000 + 3000 = 8000
+        assert summary["market_value"] == 8000.0
+        assert summary["equity"] == 8000.0
+        assert summary["buying_power"] == 3000.0
+
+        # Positions from both accounts
+        assert len(positions) == 2
+        symbols = {p["symbol"] for p in positions}
+        assert symbols == {"MSFT", "GOOGL"}
+
+        msft = next(p for p in positions if p["symbol"] == "MSFT")
+        assert msft["quantity"] == 5.0
+        assert msft["average_buy_price"] == 300.0
+        assert msft["market_value"] == 1750.0
+        assert msft["broker"] == "schwab"
+
+        googl = next(p for p in positions if p["symbol"] == "GOOGL")
+        assert googl["quantity"] == 2.0  # 0 long + 2 short
+        assert googl["average_buy_price"] == 140.0
+        assert googl["market_value"] == 280.0
+        assert googl["broker"] == "schwab"

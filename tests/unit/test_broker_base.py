@@ -303,3 +303,47 @@ class TestBaseBroker:
         assert broker.auth_info.last_auth_attempt > first_attempt_time
         assert broker.auth_info.last_successful_auth is not None
         assert broker.is_available()
+
+    @pytest.mark.asyncio
+    async def test_portfolio_snapshot_normalizes_default_portfolio_and_positions(self):
+        """Test the default portfolio snapshot method normalizes results."""
+        broker = MockBroker("mock")
+
+        async def mock_portfolio():
+            return {
+                "result": {
+                    "market_value": "1000.00",
+                    "equity": "1100.00",
+                    "buying_power": "500.00",
+                }
+            }
+
+        async def mock_positions():
+            return {
+                "result": {
+                    "positions": [
+                        {
+                            "symbol": "AAPL",
+                            "quantity": "10",
+                            "average_buy_price": "150.00",
+                            "market_value": "1700.00",
+                        }
+                    ]
+                }
+            }
+
+        broker.get_portfolio = mock_portfolio
+        broker.get_positions = mock_positions
+
+        summary, positions = await broker.get_portfolio_snapshot()
+
+        assert summary["market_value"] == 1000.0
+        assert summary["equity"] == 1100.0
+        assert summary["buying_power"] == 500.0
+
+        assert len(positions) == 1
+        assert positions[0]["symbol"] == "AAPL"
+        assert positions[0]["quantity"] == 10.0
+        assert positions[0]["average_buy_price"] == 150.0
+        assert positions[0]["market_value"] == 1700.0
+        assert positions[0]["broker"] == "mock"
