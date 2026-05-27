@@ -47,6 +47,12 @@ class TestReadmeDiscoverability:
     def test_links_contributing(self) -> None:
         assert "CONTRIBUTING.md" in self.readme
 
+    def test_api_docs_use_public_ci_scope_language(self) -> None:
+        api_readme = (ROOT / "docs" / "api" / "README.md").read_text()
+        assert "Foreman skills" not in api_readme
+        assert "foreman skills" not in api_readme.lower()
+        assert "Notebook execution is intentionally not run in CI by design." in api_readme
+
 
 class TestGeneratedToolDocs:
     """Generated tool documentation must exist with registry counts."""
