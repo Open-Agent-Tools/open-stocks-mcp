@@ -147,10 +147,12 @@ Update your `.env` file with both Robinhood and Schwab credentials:
 ROBINHOOD_USERNAME=your_username
 ROBINHOOD_PASSWORD=your_password
 
-# Schwab
+# Schwab (optional — omit if only using Robinhood)
 SCHWAB_API_KEY=your_api_key
 SCHWAB_APP_SECRET=your_app_secret
+SCHWAB_CALLBACK_URL=https://127.0.0.1:8182/
 SCHWAB_TOKEN_PATH=/home/mcp/.tokens/schwab_token.json
+ENABLED_BROKERS=robinhood,schwab
 
 # Security (Required for Docker)
 MCP_API_KEY=your_long_random_secret
@@ -253,7 +255,7 @@ curl http://localhost:3001/status
 
 # Available tools list
 curl http://localhost:3001/tools
-# Returns: Complete list of 83 available MCP tools
+# Returns: Complete list of 152 available MCP tools
 ```
 
 ✅ **Security features validated:**
@@ -269,8 +271,9 @@ curl http://localhost:3001/tools
 
 ### Available Tools
 
-The server provides **83 MCP tools** across **11 categories**:
+The server provides **152 MCP tools** across **12 categories**:
 
+**Robinhood tools:**
 - **Account Management**: `account_info`, `portfolio`, `account_details`, `positions`
 - **Market Data**: `stock_price`, `stock_info`, `search_stocks_tool`, `market_hours`, `price_history`
 - **Options Trading**: `options_chains`, `find_options`, `option_market_data`, `option_historicals`
@@ -282,6 +285,13 @@ The server provides **83 MCP tools** across **11 categories**:
 - **Trading Operations**: `buy_stock_market`, `buy_stock_limit`, `sell_stock_market`, `cancel_stock_order_by_id`
 - **System Management**: `session_status`, `rate_limit_status`, `metrics_summary`, `health_check`
 - **Utility**: `list_tools`
+
+**Schwab tools** (enabled when `ENABLED_BROKERS=robinhood,schwab`):
+- **Account**: `schwab_account_numbers`, `schwab_account_details`, `schwab_all_accounts`
+- **Market Data**: `schwab_quote`, `schwab_quotes`, `schwab_price_history`, `schwab_market_hours`
+- **Trading**: `schwab_buy_stock_market`, `schwab_sell_stock_market`, `schwab_buy_stock_limit`
+- **Options**: `schwab_option_chain`, `schwab_option_expiration_dates`
+- **Research**: `schwab_get_dividends`, `schwab_instruments`, `schwab_movers`
 
 ## Management
 
@@ -369,15 +379,17 @@ Adjust these in `docker-compose.yml` based on your needs.
 - ✅ FastAPI-based server with comprehensive middleware
 - ✅ Security headers and CORS support
 - ✅ Health check and monitoring endpoints
-- ✅ Complete trading functionality (83 MCP tools)
+- ✅ Complete trading functionality (152 MCP tools)
 - ✅ Live trading validation (market/limit orders tested)
 - ✅ Trading API bugs fixed (`rh.get_quotes()` corrections)
 - ✅ Full backward compatibility with STDIO transport
 
 **Container Image:**
-- **Production**: Uses PyPI package `open-stocks-mcp==0.6.5`
+- **Production**: Uses PyPI package `open-stocks-mcp==0.6.5` pinned via the `OPEN_STOCKS_MCP_VERSION` Dockerfile build arg
 - **Development**: Built from source with latest features
 - **Base**: Python 3.11-slim for security and performance
+
+**Updating the pinned version:** The production image installs a specific PyPI release rather than pulling `latest`. To upgrade to a new release, update `ARG OPEN_STOCKS_MCP_VERSION=<new-version>` in `Dockerfile` (or override with `--build-arg OPEN_STOCKS_MCP_VERSION=<new-version>`) and rebuild with `docker-compose build --no-cache`.
 
 ### Trading Features Validated
 - ✅ **Market Orders**: `buy_stock_market` tested with XOM
