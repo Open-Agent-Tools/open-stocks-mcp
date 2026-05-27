@@ -55,6 +55,7 @@ dev = [
     "pytest-asyncio>=1.3.0",
     "pytest-benchmark>=5.0.0",
     "pytest-mock>=3.15.1",
+    "pytest-timeout>=2.3.1",
     "ruff>=0.15.14",
     "mypy>=2.1.0",
     "pre-commit>=4.6.0",
@@ -156,6 +157,8 @@ testpaths = ["tests"]
 addopts = [
     "--strict-markers",
     "--strict-config",
+    "--timeout=60",
+    "--timeout-method=thread",
     "--verbose",
     "-m",
     "not live_market",
@@ -183,6 +186,7 @@ markers = [
     "journey_advanced_data: Level II & premium features tests (pricebook, level2_data)",
     "journey_market_intelligence: Movers & trends tests (top_movers, top_100_stocks)",
     "journey_trading: Trading operations tests (buy/sell orders, cancellation)",
+    "timeout: per-test timeout override in seconds (pytest-timeout)",
 ]
 
 [tool.uv]
@@ -195,6 +199,7 @@ dev = [
     "pytest-benchmark>=5.0.0",
     "pytest-mock>=3.15.1",
     "pytest-cov>=7.1.0",
+    "pytest-timeout>=2.3.1",
     "httpx>=0.28.1",
     "ruff>=0.15.14",
     "mypy>=2.1.0",
