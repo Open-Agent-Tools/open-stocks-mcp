@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 import nbformat
@@ -11,6 +12,8 @@ _REPO_ROOT = Path(__file__).parents[2]
 NOTEBOOK_DIR = _REPO_ROOT / "examples" / "notebooks"
 PORTFOLIO_NOTEBOOK = NOTEBOOK_DIR / "portfolio_snapshot.ipynb"
 OPTIONS_NOTEBOOK = NOTEBOOK_DIR / "options_analysis.ipynb"
+QUICKSTART_NOTEBOOK = NOTEBOOK_DIR / "01_market_data_quickstart.ipynb"
+DRY_RUN_NOTEBOOK = NOTEBOOK_DIR / "02_trading_safe_dry_run.ipynb"
 
 
 async def get_registered_tool_names() -> set[str]:
@@ -62,3 +65,29 @@ async def test_notebook_structure(notebook_path: Path) -> None:
     assert has_registered_tool, (
         f"Notebook {notebook_path} missing a code cell referencing a registered MCP tool name"
     )
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "notebook_path",
+    [PORTFOLIO_NOTEBOOK, OPTIONS_NOTEBOOK, QUICKSTART_NOTEBOOK, DRY_RUN_NOTEBOOK],
+)
+async def test_notebook_no_bare_tool_calls(notebook_path: Path) -> None:
+    """No code cell line may begin with a bare MCP tool name followed by '('."""
+    assert notebook_path.exists(), f"Notebook {notebook_path} does not exist"
+    nb = nbformat.read(notebook_path, as_version=4)  # type: ignore[no-untyped-call]
+    live_tool_names = await get_registered_tool_names()
+    code_cells = [cell for cell in nb.cells if cell.cell_type == "code"]
+
+    for cell in code_cells:
+        # Notebooks may store newlines as literal \n or as actual newlines; handle both.
+        lines = re.split(r"\\n|\n", cell.source)
+        for line in lines:
+            stripped = line.strip()
+            for name in live_tool_names:
+                if re.match(rf"{re.escape(name)}\s*\(", stripped):
+                    pytest.fail(
+                        f"Notebook {notebook_path}: bare tool call '{name}(' in code cell. "
+                        f"Use session.call_tool('{name}', ...) instead.\n"
+                        f"  Line: {line!r}"
+                    )
