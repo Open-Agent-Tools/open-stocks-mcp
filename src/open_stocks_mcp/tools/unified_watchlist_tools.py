@@ -91,8 +91,8 @@ async def get_unified_watchlists(brokers: list[str] | None = None) -> dict[str, 
     all_broker_names = registry.list_brokers()
     broker_names = brokers if brokers is not None else all_broker_names
 
-    brokers_out = {}
-    unified_watchlists = []
+    brokers_out: dict[str, dict[str, Any]] = {}
+    unified_watchlists: list[dict[str, Any]] = []
     warnings = []
     partial_failure = False
 
@@ -175,8 +175,8 @@ async def get_unified_watchlist_by_name(
     all_broker_names = registry.list_brokers()
     broker_names = brokers if brokers is not None else all_broker_names
 
-    per_broker = {}
-    combined_symbols = set()
+    per_broker: dict[str, dict[str, Any]] = {}
+    combined_symbols: set[str] = set()
     warnings = []
     found_any = False
 
@@ -241,8 +241,8 @@ async def add_symbols_to_unified_watchlist(
     broker_names = brokers if brokers is not None else all_broker_names
 
     normalized = _normalize_symbols(symbols)
-    per_broker = {}
-    warnings = []
+    per_broker: dict[str, dict[str, Any]] = {}
+    warnings: list[dict[str, str]] = []
 
     for name in broker_names:
         if name not in all_broker_names:
@@ -300,8 +300,8 @@ async def remove_symbols_from_unified_watchlist(
     broker_names = brokers if brokers is not None else all_broker_names
 
     normalized = _normalize_symbols(symbols)
-    per_broker = {}
-    warnings = []
+    per_broker: dict[str, dict[str, Any]] = {}
+    warnings: list[dict[str, str]] = []
 
     for name in broker_names:
         if name not in all_broker_names:
