@@ -7,7 +7,8 @@ from open_stocks_mcp.server.app import mcp
 
 pytestmark = [pytest.mark.unit, pytest.mark.journey_system]
 
-NOTEBOOK_DIR = Path("examples/notebooks")
+_REPO_ROOT = Path(__file__).parents[2]
+NOTEBOOK_DIR = _REPO_ROOT / "examples" / "notebooks"
 PORTFOLIO_NOTEBOOK = NOTEBOOK_DIR / "portfolio_snapshot.ipynb"
 OPTIONS_NOTEBOOK = NOTEBOOK_DIR / "options_analysis.ipynb"
 
