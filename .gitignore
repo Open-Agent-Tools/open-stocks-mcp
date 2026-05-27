@@ -388,6 +388,7 @@ timelapse-runs/
 .dolt/
 .beads-credential-key
 .agentshore/
+.foreman/
 .agents/
 .beads/
 agentshore.yaml
