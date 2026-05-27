@@ -13,10 +13,14 @@ from open_stocks_mcp.brokers.schwab import SchwabBroker
 class TestSchwabBroker:
     """Test Schwab broker implementation."""
 
+    @pytest.fixture(autouse=True)
+    def _isolate_home(self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+        """Redirect Path.home() to tmp_path so no test writes to real ~/.tokens."""
+        monkeypatch.setattr(Path, "home", lambda: tmp_path)
+
     @pytest.fixture
-    def schwab_broker(self) -> SchwabBroker:
+    def schwab_broker(self, _isolate_home: None) -> SchwabBroker:
         """Create a Schwab broker instance for testing."""
-        # Use a path under ~/.tokens to satisfy validation
         token_path = str(Path.home() / ".tokens" / "test_schwab_token.json")
         return SchwabBroker(
             api_key="test_api_key",
@@ -35,39 +39,32 @@ class TestSchwabBroker:
 
     @pytest.mark.asyncio
     async def test_authenticate_with_existing_token(
-        self, schwab_broker: SchwabBroker, tmp_path: Path
+        self, schwab_broker: SchwabBroker
     ) -> None:
         """Test authentication with existing token file."""
-        # Create a temporary token file under ~/.tokens
         token_dir = Path.home() / ".tokens"
         token_dir.mkdir(parents=True, exist_ok=True)
         token_file = token_dir / "schwab_token_test.json"
         token_file.write_text('{"access_token": "test_token"}')
         schwab_broker.token_path = str(token_file)
 
-        try:
-            # Mock the schwab auth module
-            with patch("schwab.auth.client_from_token_file") as mock_client_from_token:
-                mock_client = MagicMock()
-                mock_client_from_token.return_value = mock_client
+        with patch("schwab.auth.client_from_token_file") as mock_client_from_token:
+            mock_client = MagicMock()
+            mock_client_from_token.return_value = mock_client
 
-                result = await schwab_broker.authenticate()
+            result = await schwab_broker.authenticate()
 
-                assert result is True
-                assert schwab_broker._auth_info.status == BrokerAuthStatus.AUTHENTICATED
-                assert schwab_broker.client == mock_client
-                mock_client_from_token.assert_called_once()
-                mock_client.set_timeout.assert_called_once_with(30.0)
-        finally:
-            if token_file.exists():
-                token_file.unlink()
+            assert result is True
+            assert schwab_broker._auth_info.status == BrokerAuthStatus.AUTHENTICATED
+            assert schwab_broker.client == mock_client
+            mock_client_from_token.assert_called_once()
+            mock_client.set_timeout.assert_called_once_with(30.0)
 
     @pytest.mark.asyncio
     async def test_authenticate_with_easy_client(
         self, schwab_broker: SchwabBroker
     ) -> None:
         """Test authentication using easy_client (no existing token)."""
-        # Mock easy_client and isatty
         with (
             patch("schwab.auth.easy_client") as mock_easy_client,
             patch("os.isatty", return_value=True),
@@ -91,7 +88,6 @@ class TestSchwabBroker:
     @pytest.mark.asyncio
     async def test_authenticate_failure(self, schwab_broker: SchwabBroker) -> None:
         """Test authentication failure."""
-        # Mock authentication failure and isatty
         with (
             patch("schwab.auth.easy_client", side_effect=Exception("OAuth failed")),
             patch("os.isatty", return_value=True),
@@ -144,26 +140,21 @@ class TestSchwabBroker:
         assert result is False
 
     @pytest.mark.asyncio
-    async def test_logout(self, schwab_broker: SchwabBroker, tmp_path: Path) -> None:
+    async def test_logout(self, schwab_broker: SchwabBroker) -> None:
         """Test logout clears client and auth status."""
-        # Create a dummy token file to cover lines 192-193
         token_dir = Path.home() / ".tokens"
         token_dir.mkdir(parents=True, exist_ok=True)
         token_file = token_dir / "schwab_token_logout_test.json"
         token_file.write_text("{}")
         schwab_broker.token_path = str(token_file)
 
-        try:
-            schwab_broker.client = MagicMock()
-            schwab_broker._auth_info.status = BrokerAuthStatus.AUTHENTICATED
+        schwab_broker.client = MagicMock()
+        schwab_broker._auth_info.status = BrokerAuthStatus.AUTHENTICATED
 
-            await schwab_broker.logout()
+        await schwab_broker.logout()
 
-            assert schwab_broker.client is None
-            assert schwab_broker._auth_info.status == BrokerAuthStatus.NOT_AUTHENTICATED
-        finally:
-            if token_file.exists():
-                token_file.unlink()
+        assert schwab_broker.client is None
+        assert schwab_broker._auth_info.status == BrokerAuthStatus.NOT_AUTHENTICATED
 
     @pytest.mark.asyncio
     async def test_logout_exception(self, schwab_broker: SchwabBroker) -> None:
@@ -199,15 +190,12 @@ class TestSchwabBroker:
         link_path = tokens_dir / "escape_link.json"
         target = tmp_path / "outside.json"
         target.write_text("{}")
-        try:
-            with patch("pathlib.Path.home", return_value=fake_home):
-                link_path.symlink_to(target)
-                with pytest.raises(ValueError, match="token_path must be under"):
-                    SchwabBroker(
-                        api_key="test", app_secret="test", token_path=str(link_path)
-                    )
-        finally:
-            link_path.unlink(missing_ok=True)
+        with patch("pathlib.Path.home", return_value=fake_home):
+            link_path.symlink_to(target)
+            with pytest.raises(ValueError, match="token_path must be under"):
+                SchwabBroker(
+                    api_key="test", app_secret="test", token_path=str(link_path)
+                )
 
     def test_accepts_token_path_inside_tokens_dir(self) -> None:
         """Test that token_path can be inside ~/.tokens directory."""
@@ -228,7 +216,7 @@ class TestSchwabBroker:
 
     @pytest.mark.asyncio
     async def test_authenticate_invalid_existing_token(
-        self, schwab_broker: SchwabBroker, tmp_path: Path
+        self, schwab_broker: SchwabBroker
     ) -> None:
         """Test authentication when existing token file is invalid."""
         token_dir = Path.home() / ".tokens"
@@ -237,22 +225,18 @@ class TestSchwabBroker:
         token_file.write_text("invalid json")
         schwab_broker.token_path = str(token_file)
 
-        try:
-            with (
-                patch(
-                    "schwab.auth.client_from_token_file",
-                    side_effect=Exception("Invalid token"),
-                ),
-                patch("os.isatty", return_value=True),
-                patch("schwab.auth.easy_client") as mock_easy_client,
-            ):
-                mock_easy_client.return_value = MagicMock()
-                result = await schwab_broker.authenticate()
-                assert result is True
-                mock_easy_client.assert_called_once()
-        finally:
-            if token_file.exists():
-                token_file.unlink()
+        with (
+            patch(
+                "schwab.auth.client_from_token_file",
+                side_effect=Exception("Invalid token"),
+            ),
+            patch("os.isatty", return_value=True),
+            patch("schwab.auth.easy_client") as mock_easy_client,
+        ):
+            mock_easy_client.return_value = MagicMock()
+            result = await schwab_broker.authenticate()
+            assert result is True
+            mock_easy_client.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_authenticate_non_interactive(
@@ -281,21 +265,17 @@ class TestSchwabBroker:
         token_file.write_text('{"access_token":"expired"}')
         schwab_broker.token_path = str(token_file)
 
-        try:
-            with (
-                patch(
-                    "schwab.auth.client_from_token_file",
-                    side_effect=Exception("token expired"),
-                ),
-                patch(
-                    "schwab.auth.easy_client", side_effect=Exception("bad credentials")
-                ),
-                patch("os.isatty", return_value=True),
-            ):
-                result = await schwab_broker.authenticate()
-        finally:
-            if token_file.exists():
-                token_file.unlink()
+        with (
+            patch(
+                "schwab.auth.client_from_token_file",
+                side_effect=Exception("token expired"),
+            ),
+            patch(
+                "schwab.auth.easy_client", side_effect=Exception("bad credentials")
+            ),
+            patch("os.isatty", return_value=True),
+        ):
+            result = await schwab_broker.authenticate()
 
         assert result is False
         assert schwab_broker.client is None
@@ -313,8 +293,6 @@ class TestSchwabBroker:
         token_dir = Path.home() / ".tokens"
         token_dir.mkdir(parents=True, exist_ok=True)
         token_file = token_dir / "schwab_token_noexist_test.json"
-        if token_file.exists():
-            token_file.unlink()
         schwab_broker.token_path = str(token_file)
 
         with (
