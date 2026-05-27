@@ -60,19 +60,49 @@ async def test_get_unified_watchlists_success(
     with patch(
         "open_stocks_mcp.tools.unified_watchlist_tools.get_rh_watchlists",
         return_value=rh_watchlists,
+    ), patch(
+        "open_stocks_mcp.tools.unified_watchlist_tools.load_schwab_watchlists",
+        return_value=({"Income": ["SCHD", "VYM"]}, None),
     ):
         result = await get_unified_watchlists()
 
     assert result["result"]["status"] in ["success", "partial_success"]
-    assert "robinhood" in result["result"]["brokers"]
-    assert "schwab" in result["result"]["brokers"]
-    assert result["result"]["brokers"]["schwab"]["status"] == "unsupported"
+    assert result["result"]["brokers"]["schwab"]["status"] == "success"
 
-    # Check aggregation
     watchlists = result["result"]["watchlists"]
-    assert len(watchlists) >= 1
+    assert len(watchlists) == 2
     tech = next(w for w in watchlists if w["name"] == "Tech")
     assert "robinhood" in tech["brokers"]
+    assert tech["symbols"] == ["AAPL", "MSFT"]
+
+
+@pytest.mark.asyncio
+async def test_get_unified_watchlists_merges_same_name_across_brokers(
+    mock_registry, mock_robinhood, mock_schwab
+):
+    mock_registry.list_brokers.return_value = ["robinhood", "schwab"]
+    mock_registry.get_broker.side_effect = lambda name: (
+        mock_robinhood if name == "robinhood" else mock_schwab
+    )
+
+    rh_watchlists = {
+        "result": {
+            "watchlists": [{"name": "Tech", "symbols": ["AAPL"], "symbol_count": 1}],
+            "status": "success",
+        }
+    }
+
+    with patch(
+        "open_stocks_mcp.tools.unified_watchlist_tools.get_rh_watchlists",
+        return_value=rh_watchlists,
+    ), patch(
+        "open_stocks_mcp.tools.unified_watchlist_tools.load_schwab_watchlists",
+        return_value=({"Tech": ["MSFT", "AAPL"]}, None),
+    ):
+        result = await get_unified_watchlists()
+
+    tech = next(w for w in result["result"]["watchlists"] if w["name"] == "Tech")
+    assert sorted(tech["brokers"]) == ["robinhood", "schwab"]
     assert tech["symbols"] == ["AAPL", "MSFT"]
 
 
@@ -98,22 +128,23 @@ async def test_get_unified_watchlist_by_name_success(
     with patch(
         "open_stocks_mcp.tools.unified_watchlist_tools.get_rh_watchlist_by_name",
         return_value=rh_watchlist,
+    ), patch(
+        "open_stocks_mcp.tools.unified_watchlist_tools.get_schwab_watchlist",
+        return_value=(["SCHD"], None),
     ):
         result = await get_unified_watchlist_by_name("Tech")
 
     assert result["result"]["status"] in ["success", "partial_success"]
     assert result["result"]["watchlist_name"] == "Tech"
-    assert result["result"]["symbols"] == ["AAPL", "MSFT"]
-    assert "robinhood" in result["result"]["brokers"]
-    assert "schwab" in result["result"]["brokers"]
-    assert result["result"]["per_broker"]["schwab"]["status"] == "unsupported"
+    assert result["result"]["symbols"] == ["AAPL", "MSFT", "SCHD"]
+    assert result["result"]["per_broker"]["schwab"]["status"] == "success"
 
 
 @pytest.mark.asyncio
-async def test_add_symbols_to_unified_watchlist_success_with_unsupported_broker(
+async def test_add_symbols_to_unified_watchlist_success(
     mock_registry, mock_robinhood, mock_schwab
 ):
-    """Test success when RH succeeds and unsupported brokers are neutral."""
+    """Test success when RH and Schwab local store both succeed."""
     mock_registry.list_brokers.return_value = ["robinhood", "schwab"]
     mock_registry.get_broker.side_effect = lambda name: (
         mock_robinhood if name == "robinhood" else mock_schwab
@@ -126,21 +157,24 @@ async def test_add_symbols_to_unified_watchlist_success_with_unsupported_broker(
     with patch(
         "open_stocks_mcp.tools.unified_watchlist_tools.add_rh_symbols",
         return_value=rh_result,
+    ), patch(
+        "open_stocks_mcp.tools.unified_watchlist_tools.add_schwab_symbols",
+        return_value=(["AAPL"], None),
     ):
         result = await add_symbols_to_unified_watchlist("Tech", ["aapl", "AAPL "])
 
     assert result["result"]["status"] == "success"
     assert "AAPL" in result["result"]["symbols_added"]
-    assert len(result["result"]["symbols_added"]) == 1  # De-duplicated and uppercased
+    assert len(result["result"]["symbols_added"]) == 1
     assert result["result"]["per_broker"]["robinhood"]["status"] == "success"
-    assert result["result"]["per_broker"]["schwab"]["status"] == "unsupported"
+    assert result["result"]["per_broker"]["schwab"]["status"] == "success"
 
 
 @pytest.mark.asyncio
-async def test_remove_symbols_from_unified_watchlist_success_with_unsupported_broker(
+async def test_remove_symbols_from_unified_watchlist_success(
     mock_registry, mock_robinhood, mock_schwab
 ):
-    """Test success when RH succeeds and unsupported brokers are neutral."""
+    """Test success when RH and Schwab local store both succeed."""
     mock_registry.list_brokers.return_value = ["robinhood", "schwab"]
     mock_registry.get_broker.side_effect = lambda name: (
         mock_robinhood if name == "robinhood" else mock_schwab
@@ -153,9 +187,38 @@ async def test_remove_symbols_from_unified_watchlist_success_with_unsupported_br
     with patch(
         "open_stocks_mcp.tools.unified_watchlist_tools.remove_rh_symbols",
         return_value=rh_result,
+    ), patch(
+        "open_stocks_mcp.tools.unified_watchlist_tools.remove_schwab_symbols",
+        return_value=([], None),
     ):
         result = await remove_symbols_from_unified_watchlist("Tech", ["AAPL"])
 
     assert result["result"]["status"] == "success"
     assert result["result"]["symbols_removed"] == ["AAPL"]
     assert result["result"]["per_broker"]["robinhood"]["status"] == "success"
+    assert result["result"]["per_broker"]["schwab"]["status"] == "success"
+
+
+@pytest.mark.asyncio
+async def test_get_unified_watchlists_handles_corrupt_schwab_store(
+    mock_registry, mock_robinhood, mock_schwab
+):
+    mock_registry.list_brokers.return_value = ["robinhood", "schwab"]
+    mock_registry.get_broker.side_effect = lambda name: (
+        mock_robinhood if name == "robinhood" else mock_schwab
+    )
+
+    rh_watchlists = {"result": {"watchlists": [], "status": "success"}}
+
+    with patch(
+        "open_stocks_mcp.tools.unified_watchlist_tools.get_rh_watchlists",
+        return_value=rh_watchlists,
+    ), patch(
+        "open_stocks_mcp.tools.unified_watchlist_tools.load_schwab_watchlists",
+        return_value=({}, "Unable to read Schwab watchlist store"),
+    ):
+        result = await get_unified_watchlists()
+
+    assert result["result"]["status"] == "partial_success"
+    assert result["result"]["brokers"]["schwab"]["status"] == "error"
+    assert result["result"]["warnings"][0]["broker"] == "schwab"

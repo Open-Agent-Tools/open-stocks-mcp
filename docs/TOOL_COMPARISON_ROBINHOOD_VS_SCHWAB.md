@@ -452,6 +452,10 @@ The current implementation remains a 24-tool Schwab core. The broader parity roa
 ### Watchlists
 - **Status**: Deferred
 - **Rationale**: Schwab does not expose a watchlist endpoint; the current workaround is client-side JSON storage (local file or database).
+- **Current local store behavior**:
+  - Path: `OPEN_STOCKS_SCHWAB_WATCHLIST_STORE` if set, otherwise `~/.open-stocks-mcp/schwab_watchlists.json`.
+  - Format: JSON object `{"watchlists": {"<name>": ["SYMBOL", ...]}}` with uppercased, deduplicated symbols.
+  - Concurrency/permissions: reads and writes are best-effort local file operations; unreadable/corrupt or unwritable stores return tool warnings/errors and do not modify Robinhood results.
 
 ### Cryptocurrency
 - **Status**: Not Applicable
