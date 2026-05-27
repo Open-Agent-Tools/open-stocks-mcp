@@ -16,11 +16,14 @@ from open_stocks_mcp.tools import rate_limiter
 from open_stocks_mcp.tools.error_handling import (
     APIError,
     AuthenticationError,
+    BrokerAuthenticationError,
+    BrokerError,
     DataError,
     NetworkError,
     RateLimitError,
     RobinStocksError,
     classify_error,
+    classify_schwab_error,
     create_error_response,
     create_no_data_response,
     create_success_response,
@@ -124,10 +127,20 @@ def test_exception_types_expose_error_type_and_original_error() -> None:
     assert APIError().error_type == "api"
 
 
+def test_robinhood_errors_subclass_broker_hierarchy_and_tag_broker() -> None:
+    auth_error = AuthenticationError()
+    assert isinstance(auth_error, BrokerAuthenticationError)
+    assert isinstance(auth_error, BrokerError)
+    assert RobinStocksError("x").broker == "robinhood"
+    assert classify_error(RuntimeError("unauthorized")).broker == "robinhood"
+    assert create_error_response(RuntimeError("unauthorized"))["result"]["broker"] == "robinhood"
+
+
 def test_create_error_response_without_context() -> None:
     response = create_error_response(RuntimeError("unauthorized"))
     assert response["result"]["status"] == "error"
     assert response["result"]["error_type"] == "authentication"
+    assert response["result"]["broker"] == "robinhood"
     assert "context" not in response["result"]
 
 
@@ -135,6 +148,7 @@ def test_create_error_response_with_context() -> None:
     response = create_error_response(RuntimeError("rate limit hit"), "in test")
     assert response["result"]["context"] == "in test"
     assert response["result"]["error_type"] == "rate_limit"
+    assert response["result"]["broker"] == "robinhood"
 
 
 def test_create_error_response_error_type_matches_api_error_fallback() -> None:
@@ -182,6 +196,7 @@ class TestDecorators:
             "result": {
                 "error": "Rate limit exceeded",
                 "error_type": "rate_limit",
+                "broker": "robinhood",
                 "status": "error",
                 "context": "in boom",
             }
@@ -225,6 +240,7 @@ class TestDecorators:
             "result": {
                 "error": "Rate limit exceeded",
                 "error_type": "rate_limit",
+                "broker": "schwab",
                 "status": "error",
                 "context": "in boom",
             }
@@ -288,6 +304,7 @@ async def test_handle_robin_stocks_errors_classifies_exception() -> None:
         "result": {
             "error": "Rate limit exceeded",
             "error_type": "rate_limit",
+            "broker": "robinhood",
             "status": "error",
             "context": "in boom",
         }
@@ -319,10 +336,63 @@ async def test_handle_schwab_errors_classifies_exception() -> None:
         "result": {
             "error": "Network connectivity issue",
             "error_type": "network",
+            "broker": "schwab",
             "status": "error",
             "context": "in boom",
         }
     }
+
+
+@pytest.mark.asyncio
+async def test_handle_schwab_errors_classifies_auth_and_tags_broker() -> None:
+    async def boom() -> dict[str, Any]:
+        raise RuntimeError("401 Unauthorized")
+
+    decorated = handle_schwab_errors(boom)
+    response = await decorated()
+    assert response["result"]["error_type"] == "authentication"
+    assert response["result"]["broker"] == "schwab"
+    assert response["result"]["status"] == "error"
+    assert response["result"]["context"] == "in boom"
+
+
+@pytest.mark.asyncio
+async def test_handle_schwab_errors_classifies_rate_limit() -> None:
+    async def boom() -> dict[str, Any]:
+        raise RuntimeError("429 Too Many Requests")
+
+    decorated = handle_schwab_errors(boom)
+    response = await decorated()
+    assert response["result"]["error_type"] == "rate_limit"
+    assert response["result"]["broker"] == "schwab"
+
+
+@pytest.mark.asyncio
+async def test_handle_schwab_errors_classifies_network() -> None:
+    async def boom() -> dict[str, Any]:
+        raise TimeoutError("read timeout")
+
+    decorated = handle_schwab_errors(boom)
+    response = await decorated()
+    assert response["result"]["error_type"] == "network"
+    assert response["result"]["broker"] == "schwab"
+
+
+@pytest.mark.asyncio
+async def test_handle_schwab_errors_falls_back_to_api() -> None:
+    async def boom() -> dict[str, Any]:
+        raise RuntimeError("kaboom")
+
+    decorated = handle_schwab_errors(boom)
+    response = await decorated()
+    assert response["result"]["error_type"] == "api"
+    assert response["result"]["broker"] == "schwab"
+
+
+def test_classify_schwab_error_returns_broker_error_subclass() -> None:
+    classified = classify_schwab_error(RuntimeError("unauthorized"))
+    assert isinstance(classified, BrokerAuthenticationError)
+    assert classified.broker == "schwab"
 
 
 @pytest.mark.asyncio

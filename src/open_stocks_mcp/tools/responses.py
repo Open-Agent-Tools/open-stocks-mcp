@@ -5,7 +5,7 @@ from collections.abc import Awaitable, Callable
 from typing import Any, ParamSpec, TypeVar
 
 from open_stocks_mcp.logging_config import logger
-from open_stocks_mcp.tools.exceptions import classify_error
+from open_stocks_mcp.tools.exceptions import BrokerError, classify_error
 
 P = ParamSpec("P")
 R = TypeVar("R")
@@ -13,12 +13,13 @@ R = TypeVar("R")
 
 def create_error_response(error: Exception, context: str = "") -> dict[str, Any]:
     """Create a standardized error response."""
-    classified_error = classify_error(error)
+    classified_error = error if isinstance(error, BrokerError) else classify_error(error)
 
     response: dict[str, Any] = {
         "result": {
             "error": classified_error.message,
             "error_type": classified_error.error_type,
+            "broker": classified_error.broker,
             "status": "error",
         }
     }
