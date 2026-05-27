@@ -514,6 +514,8 @@ class TestServerTools:
             "username": "testuser",
             "login_time": "2023-01-01T10:00:00",
             "session_timeout_hours": 23,
+            "consecutive_pickle_clear_failures": 0,
+            "auth_retries_blocked": False,
         }
         mock_get_session_manager.return_value = mock_session_manager
 
@@ -523,6 +525,8 @@ class TestServerTools:
         assert result["result"]["is_authenticated"] is True
         assert result["result"]["is_valid"] is True
         assert result["result"]["username"] == "testuser"
+        assert result["result"]["consecutive_pickle_clear_failures"] == 0
+        assert result["result"]["auth_retries_blocked"] is False
         assert result["result"]["status"] == "success"
 
     @pytest.mark.journey_system

@@ -203,6 +203,8 @@ class SessionManager:
             "session_timeout_hours": self.session_timeout_hours,
             "failed_login_attempts": self._failed_login_attempts,
             "max_failed_attempts": self.max_failed_attempts,
+            "consecutive_pickle_clear_failures": self._pickle._consecutive_pickle_clear_failures,
+            "auth_retries_blocked": self.should_block_auth_retries(),
         }
 
         if self.login_time:
