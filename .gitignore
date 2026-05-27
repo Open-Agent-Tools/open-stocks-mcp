@@ -387,3 +387,7 @@ timelapse-runs/
 # Beads / Dolt files (added by bd init)
 .dolt/
 .beads-credential-key
+.agentshore/
+.agents/
+.beads/
+agentshore.yaml
