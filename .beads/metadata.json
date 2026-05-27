@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "open_stocks_mcp",
+  "project_id": "3076c7f5-9829-4bb4-9fe3-8621174398a7"
+}

@@ -383,3 +383,7 @@ merge_sha.txt
 
 # Timelapse capture runs
 timelapse-runs/
+
+# Beads / Dolt files (added by bd init)
+.dolt/
+.beads-credential-key
