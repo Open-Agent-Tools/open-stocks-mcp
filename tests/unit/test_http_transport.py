@@ -89,6 +89,29 @@ class TestHttpTransportUnit:
         assert "method not found" in body["error"]["message"].lower()
         assert body["id"] == 7
 
+    def test_mcp_missing_method_returns_invalid_request_minus_32600(
+        self, client: TestClient
+    ) -> None:
+        response = client.post("/mcp", json={"jsonrpc": "2.0", "id": 1})
+        assert response.status_code == 200
+        body = response.json()
+        assert body["error"]["code"] == -32600
+        assert "invalid request" in body["error"]["message"].lower()
+        assert body["id"] == 1
+
+    def test_mcp_non_string_method_returns_invalid_request_minus_32600(
+        self, client: TestClient
+    ) -> None:
+        response = client.post(
+            "/mcp",
+            json={"jsonrpc": "2.0", "method": None, "id": 2},
+        )
+        assert response.status_code == 200
+        body = response.json()
+        assert body["error"]["code"] == -32600
+        assert "invalid request" in body["error"]["message"].lower()
+        assert body["id"] == 2
+
     def test_mcp_tools_call_missing_name_returns_invalid_params_minus_32602(
         self, client: TestClient
     ) -> None:

@@ -596,6 +596,26 @@ def create_http_server(
             params = json_request.get("params", {})
             _log_mcp_request(method, request_id)
 
+            if not isinstance(method, str):
+                return _mcp_json_response(
+                    {
+                        "jsonrpc": "2.0",
+                        "error": {
+                            "code": -32600,
+                            "message": (
+                                "Invalid Request: method missing or not a string"
+                            ),
+                        },
+                        "id": request_id,
+                    },
+                    status_code=200,
+                    method=method,
+                    request_id=request_id,
+                    outcome="error",
+                    error_code=-32600,
+                    error_type="invalid_request",
+                )
+
             try:
                 result: dict[str, Any]
                 if method == "initialize":
