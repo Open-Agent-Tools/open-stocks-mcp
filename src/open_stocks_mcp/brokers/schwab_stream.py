@@ -74,7 +74,13 @@ class SchwabStreamManager:
                         logger.error(f"Error in Schwab stream custom handler: {e}")
 
             # Register handlers for Level One, Level 2 and account activity
-            assert self.stream_client is not None
+            if self.stream_client is None:
+                logger.error(
+                    "Schwab StreamClient unexpectedly None after construction;"
+                    " cannot start streamer"
+                )
+                self._is_running = False
+                return False
             self.stream_client.add_level_one_equity_handler(_core_handler)
             self.stream_client.add_level_one_option_handler(_core_handler)
             self.stream_client.add_nasdaq_book_handler(_core_handler)
@@ -129,8 +135,13 @@ class SchwabStreamManager:
                 await asyncio.sleep(5)  # Wait before retry
                 if self._is_running:
                     # Attempt re-login
+                    if self.stream_client is None:
+                        logger.error(
+                            "Schwab stream_client is None before re-login;"
+                            " exiting reconnect loop"
+                        )
+                        break
                     try:
-                        assert self.stream_client is not None
                         await self.stream_client.login()
                     except Exception as re_login_err:
                         logger.error(
