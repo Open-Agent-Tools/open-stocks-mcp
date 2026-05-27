@@ -183,6 +183,24 @@ class TestHttpTransportUnit:
         assert response.status_code in {200, 204}
         assert "POST" in response.headers["access-control-allow-methods"]
 
+    @patch(
+        "open_stocks_mcp.server.http_transport.get_metrics_collector", return_value=None
+    )
+    def test_mcp_tools_call_propagates_metrics_collector_http_exception(
+        self, _mock_get_metrics_collector: Mock, client: TestClient
+    ) -> None:
+        response = client.post(
+            "/mcp",
+            json={
+                "jsonrpc": "2.0",
+                "method": "tools/call",
+                "params": {"name": "account_info", "arguments": {}},
+                "id": 9,
+            },
+        )
+        assert response.status_code == 503
+        assert response.json()["detail"] == "Metrics collector unavailable"
+
 
 @pytest.fixture(scope="module")
 def slow_timeout_mcp_server() -> FastMCP:
