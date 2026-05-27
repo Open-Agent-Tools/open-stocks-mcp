@@ -687,3 +687,48 @@ async def schwab_get_open_option_orders(
     except Exception as e:
         logger.error(f"Error getting Schwab open option orders for {account_hash}: {e}")
         return create_error_response(e)
+
+
+@handle_schwab_errors
+async def schwab_get_option_orders(
+    account_hash: str, max_results: int = 50, status: str | None = None
+) -> dict[str, Any]:
+    """Get option orders for a Schwab account, optionally filtered by status.
+
+    Args:
+        account_hash: Account hash from get_schwab_account_numbers()
+        max_results: Maximum number of orders to fetch before filtering (default 50)
+        status: Optional order status filter (e.g. FILLED, WORKING, CANCELED)
+
+    Returns:
+        Dict with filtered option orders and count
+    """
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", f"get option orders for {account_hash}"
+    )
+    if error:
+        return error
+
+    try:
+
+        def _get_orders() -> Any:
+            response = broker.client.get_orders_for_account(
+                account_hash, max_results=max_results
+            )
+            return response.json()
+
+        orders_data = await execute_broker_request(_get_orders, retry_safe=True)
+        all_orders = orders_data if isinstance(orders_data, list) else []
+        option_orders = [order for order in all_orders if _has_option_leg(order)]
+        if status is not None:
+            option_orders = [
+                order for order in option_orders if order.get("status") == status
+            ]
+
+        return create_success_response(
+            {"orders": option_orders, "count": len(option_orders)}
+        )
+
+    except Exception as e:
+        logger.error(f"Error getting Schwab option orders for {account_hash}: {e}")
+        return create_error_response(e)
