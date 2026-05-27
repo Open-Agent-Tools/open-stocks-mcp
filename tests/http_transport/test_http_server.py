@@ -9,6 +9,8 @@ from unittest.mock import AsyncMock, Mock, patch
 import httpx
 import pytest
 from mcp.server.fastmcp import FastMCP
+from sse_starlette import EventSourceResponse
+from starlette.requests import Request
 
 import open_stocks_mcp.tracing as tracing_module
 from open_stocks_mcp import __version__
@@ -480,10 +482,37 @@ class TestMCPIntegration:
         assert "do-not-log" not in messages
 
     async def test_sse_endpoint(self, mcp_server: FastMCP) -> None:
-        """Test SSE endpoint is registered."""
+        """Test SSE endpoint wiring and first connected event payload."""
         app = create_http_server(mcp_server)
 
-        assert any(getattr(route, "path", None) == "/sse" for route in app.routes)
+        sse_route = next(route for route in app.routes if getattr(route, "path", None) == "/sse")
+        assert "GET" in getattr(sse_route, "methods", set())
+        assert callable(getattr(sse_route, "endpoint", None))
+        assert sse_route.endpoint.__name__ == "sse_endpoint"
+
+        request = Request(
+            {
+                "type": "http",
+                "method": "GET",
+                "path": "/sse",
+                "headers": [],
+            }
+        )
+        response = await sse_route.endpoint(request)
+        assert isinstance(response, EventSourceResponse)
+        assert response.media_type == "text/event-stream"
+
+        iterator = response.body_iterator
+        try:
+            first_event = await anext(iterator)
+        finally:
+            with contextlib.suppress(Exception):
+                await iterator.aclose()
+
+        assert isinstance(first_event, dict)
+        assert first_event["event"] == "connected"
+        assert first_event["data"]["server"] == "Open Stocks MCP Server"
+        assert first_event["data"]["version"] == __version__
 
     @pytest.mark.anyio
     async def test_mcp_endpoint_rejects_oversized_body(
