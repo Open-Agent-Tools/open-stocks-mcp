@@ -219,7 +219,7 @@ if isinstance(order_result, dict) and 'non_field_errors' in order_result:
 1. Install: `pip install google-agent-developer-kit`
 2. Set environment variables (see above)
 3. Start Docker server: `cd examples/open-stocks-mcp-docker && docker-compose up -d`
-4. From project root: `MCP_HTTP_URL="http://localhost:3001/mcp" adk eval examples/google_adk_agent tests/evals/list_available_tools_test.json --config_file_path tests/evals/test_config.json`
+4. From project root: `MCP_HTTP_URL="http://localhost:3001/mcp" adk eval examples/google_adk_agent tests/evals/0_list_available_tools_test.json --config_file_path tests/evals/test_config.json`
 5. **Full Read-Only Suite**: For the complete read-only eval suite covering all 7 categories (`0_sys_*`, `2_mkt_*`, `3_wth_*`, `4_ntf_*`, `6_prf_*`, `8_opt_*`, `9_adv_*`), see `tests/evals/ADK-testing-evals.md` for the full manifest and per-category run commands. Each category eval uses the same pattern: `MCP_HTTP_URL="http://localhost:3001/mcp" adk eval examples/google_adk_agent tests/evals/<category>_test.json --config_file_path tests/evals/test_config.json`
 
 ### Phase 8 Development Priorities
