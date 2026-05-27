@@ -481,10 +481,14 @@ class TestRobinhoodGetPortfolioSnapshotEnrichment:
 
         with (
             patch.object(
-                RobinhoodBroker, "get_portfolio", new=AsyncMock(return_value=rh_portfolio)
+                RobinhoodBroker,
+                "get_portfolio",
+                new=AsyncMock(return_value=rh_portfolio),
             ),
             patch.object(
-                RobinhoodBroker, "get_positions", new=AsyncMock(return_value=rh_positions)
+                RobinhoodBroker,
+                "get_positions",
+                new=AsyncMock(return_value=rh_positions),
             ),
             patch(
                 "open_stocks_mcp.brokers.robinhood.execute_with_retry",
@@ -515,10 +519,14 @@ class TestRobinhoodGetPortfolioSnapshotEnrichment:
 
         with (
             patch.object(
-                RobinhoodBroker, "get_portfolio", new=AsyncMock(return_value=rh_portfolio)
+                RobinhoodBroker,
+                "get_portfolio",
+                new=AsyncMock(return_value=rh_portfolio),
             ),
             patch.object(
-                RobinhoodBroker, "get_positions", new=AsyncMock(return_value=rh_positions)
+                RobinhoodBroker,
+                "get_positions",
+                new=AsyncMock(return_value=rh_positions),
             ),
             patch(
                 "open_stocks_mcp.brokers.robinhood.execute_with_retry",
@@ -547,10 +555,14 @@ class TestRobinhoodGetPortfolioSnapshotEnrichment:
 
         with (
             patch.object(
-                RobinhoodBroker, "get_portfolio", new=AsyncMock(return_value=rh_portfolio)
+                RobinhoodBroker,
+                "get_portfolio",
+                new=AsyncMock(return_value=rh_portfolio),
             ),
             patch.object(
-                RobinhoodBroker, "get_positions", new=AsyncMock(return_value=rh_positions)
+                RobinhoodBroker,
+                "get_positions",
+                new=AsyncMock(return_value=rh_positions),
             ),
             patch(
                 "open_stocks_mcp.brokers.robinhood.execute_with_retry",
@@ -584,10 +596,14 @@ class TestRobinhoodGetPortfolioSnapshotEnrichment:
 
         with (
             patch.object(
-                RobinhoodBroker, "get_portfolio", new=AsyncMock(return_value=rh_portfolio)
+                RobinhoodBroker,
+                "get_portfolio",
+                new=AsyncMock(return_value=rh_portfolio),
             ),
             patch.object(
-                RobinhoodBroker, "get_positions", new=AsyncMock(return_value=rh_positions)
+                RobinhoodBroker,
+                "get_positions",
+                new=AsyncMock(return_value=rh_positions),
             ),
             patch(
                 "open_stocks_mcp.brokers.robinhood.execute_with_retry",

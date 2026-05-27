@@ -76,9 +76,7 @@ def test_autouse_fixture_prevents_cross_test_bleed() -> None:
 @pytest.mark.asyncio
 async def test_option_position_tools_complete_fast() -> None:
     """Previously flaky option-position calls should return quickly."""
-    cases: list[
-        tuple[str, Callable[[], Awaitable[dict[str, Any]]], Any]
-    ] = [
+    cases: list[tuple[str, Callable[[], Awaitable[dict[str, Any]]], Any]] = [
         (
             "open_stocks_mcp.tools.options.positions.rh.options.get_aggregate_positions",
             get_aggregate_positions,
