@@ -1,7 +1,8 @@
 """Regression tests for the error_handling module split."""
 
-from open_stocks_mcp.tools import error_handling
+from open_stocks_mcp.tools import error_handling, responses
 from open_stocks_mcp.tools.responses import create_success_response
+from open_stocks_mcp.tools.schwab import error_handling as schwab_error_handling
 from open_stocks_mcp.tools.validation import validate_symbol
 
 
@@ -16,6 +17,15 @@ def test_error_handling_reexports_core_symbols() -> None:
 def test_error_handling_does_not_export_unused_span_validator() -> None:
     assert "validate_span" not in error_handling.__all__
     assert not hasattr(error_handling, "validate_span")
+
+
+def test_schwab_decorator_moved_to_schwab_module_with_facade_compatibility() -> None:
+    assert not hasattr(responses, "handle_schwab_errors")
+    assert hasattr(schwab_error_handling, "handle_schwab_errors")
+    assert (
+        error_handling.handle_schwab_errors
+        is schwab_error_handling.handle_schwab_errors
+    )
 
 
 def test_validation_behavior_preserved() -> None:
