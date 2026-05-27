@@ -12,7 +12,6 @@ from mcp.server.fastmcp import FastMCP
 
 from open_stocks_mcp.brokers import session_state as session_manager_module
 from open_stocks_mcp.server.app import mcp as production_mcp
-from open_stocks_mcp.tools import rate_limiter
 from open_stocks_mcp.tools.error_handling import (
     APIError,
     AuthenticationError,
@@ -46,7 +45,15 @@ def _patch_retry_dependencies(
     monkeypatch.setattr(
         session_manager_module, "get_session_manager", lambda: session_manager
     )
-    monkeypatch.setattr(rate_limiter, "get_rate_limiter", lambda: None)
+    limiter = Mock()
+    limiter.acquire = AsyncMock(return_value=None)
+    registry = Mock()
+    registry.get_rate_limiter = Mock(return_value=limiter)
+    registry.coordinated_refresh = AsyncMock(return_value=True)
+    monkeypatch.setattr(
+        "open_stocks_mcp.brokers.registry.get_broker_registry",
+        AsyncMock(return_value=registry),
+    )
     breaker = Mock()
     breaker.before_request = AsyncMock(return_value=None)
     breaker.record_success = AsyncMock(return_value=None)
@@ -364,6 +371,15 @@ def retry_patch(monkeypatch: pytest.MonkeyPatch) -> dict[str, Any]:
     fake_session.should_block_auth_retries = Mock(return_value=False)
 
     fake_rate_limiter = SimpleNamespace(acquire=AsyncMock())
+    fake_registry = Mock()
+    fake_registry.get_rate_limiter = Mock(return_value=fake_rate_limiter)
+
+    async def _coordinated_refresh(
+        *, broker_name: str, account_id: str | None, refresh_coro: Callable[[], Any]
+    ) -> bool:
+        return bool(await refresh_coro())
+
+    fake_registry.coordinated_refresh = AsyncMock(side_effect=_coordinated_refresh)
     fake_breaker = Mock()
     fake_breaker.before_request = AsyncMock(return_value=None)
     fake_breaker.record_success = AsyncMock(return_value=None)
@@ -375,8 +391,8 @@ def retry_patch(monkeypatch: pytest.MonkeyPatch) -> dict[str, Any]:
         lambda: fake_session,
     )
     monkeypatch.setattr(
-        "open_stocks_mcp.tools.rate_limiter.get_rate_limiter",
-        lambda: fake_rate_limiter,
+        "open_stocks_mcp.brokers.registry.get_broker_registry",
+        AsyncMock(return_value=fake_registry),
     )
     monkeypatch.setattr(
         "open_stocks_mcp.tools.circuit_breaker.get_broker_circuit_breaker",
@@ -389,6 +405,7 @@ def retry_patch(monkeypatch: pytest.MonkeyPatch) -> dict[str, Any]:
         "rate_limiter": fake_rate_limiter,
         "breaker": fake_breaker,
         "sleep": sleep_mock,
+        "registry": fake_registry,
     }
 
 
@@ -521,6 +538,9 @@ async def test_execute_with_retry_uses_registry_single_flight_for_auth_refresh()
         return bool(await refresh_coro())
 
     registry = Mock()
+    limiter = Mock()
+    limiter.acquire = AsyncMock(return_value=None)
+    registry.get_rate_limiter = Mock(return_value=limiter)
     registry.coordinated_refresh = AsyncMock(side_effect=coordinated_refresh)
     breaker = Mock()
     breaker.before_request = AsyncMock(return_value=None)
@@ -537,7 +557,6 @@ async def test_execute_with_retry_uses_registry_single_flight_for_auth_refresh()
             "open_stocks_mcp.brokers.session_state.get_session_manager",
             return_value=session,
         ),
-        patch("open_stocks_mcp.tools.rate_limiter.get_rate_limiter", return_value=None),
         patch(
             "open_stocks_mcp.tools.circuit_breaker.get_broker_circuit_breaker",
             return_value=breaker,
@@ -688,6 +707,31 @@ async def test_execute_with_retry_skips_rate_limiter_when_disabled(
 
     assert await execute_with_retry(ok, rate_limit=False) == "ok"
     get_rate_limiter.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_execute_with_retry_uses_broker_specific_limiter(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _patch_retry_dependencies(monkeypatch)
+
+    limiter = Mock()
+    limiter.acquire = AsyncMock(return_value=None)
+    registry = Mock()
+    registry.get_rate_limiter = Mock(return_value=limiter)
+
+    monkeypatch.setattr(
+        "open_stocks_mcp.brokers.registry.get_broker_registry",
+        AsyncMock(return_value=registry),
+    )
+
+    async def ok() -> str:
+        return "ok"
+
+    result = await execute_with_retry(ok, broker_name="schwab")
+    assert result == "ok"
+    registry.get_rate_limiter.assert_called_once_with("schwab")
+    limiter.acquire.assert_awaited_once()
 
 
 @pytest.mark.parametrize("symbol", ["A", "AAPL", "GOOGL", "BRK", "abc", "BRK1"])

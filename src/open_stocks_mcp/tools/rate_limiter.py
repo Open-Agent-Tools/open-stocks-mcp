@@ -1,6 +1,7 @@
 """Rate limiting for Robin Stocks API calls."""
 
 import asyncio
+import os
 import time
 from collections import defaultdict, deque
 from collections.abc import Callable, Coroutine
@@ -15,6 +16,9 @@ BURST_WINDOW_SECONDS = 1
 DEFAULT_CALLS_PER_MINUTE = 30
 DEFAULT_CALLS_PER_HOUR = 1000
 DEFAULT_BURST_SIZE = 5
+DEFAULT_SCHWAB_CALLS_PER_MINUTE = 120
+DEFAULT_SCHWAB_CALLS_PER_HOUR = 3600
+DEFAULT_SCHWAB_BURST_SIZE = 20
 
 
 class RateLimiter:
@@ -327,6 +331,36 @@ _request_coordinator: RequestCoordinator | None = None
 _batchers: dict[str, Batcher] = {}
 
 
+def _int_env(name: str, default: int) -> int:
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    try:
+        return int(raw)
+    except ValueError:
+        logger.warning("Invalid %s=%r; using default %s", name, raw, default)
+        return default
+
+
+def get_broker_rate_limit_defaults(broker_name: str) -> tuple[int, int, int]:
+    """Return broker-specific (per-minute, per-hour, burst) rate-limit defaults."""
+    normalized = broker_name.strip().lower()
+    if normalized == "schwab":
+        # Schwab integration docs call out ~120 req/min as the intended baseline.
+        return (
+            _int_env(
+                "OPEN_STOCKS_SCHWAB_CALLS_PER_MINUTE", DEFAULT_SCHWAB_CALLS_PER_MINUTE
+            ),
+            _int_env("OPEN_STOCKS_SCHWAB_CALLS_PER_HOUR", DEFAULT_SCHWAB_CALLS_PER_HOUR),
+            _int_env("OPEN_STOCKS_SCHWAB_BURST_SIZE", DEFAULT_SCHWAB_BURST_SIZE),
+        )
+    return (
+        _int_env("OPEN_STOCKS_ROBINHOOD_CALLS_PER_MINUTE", DEFAULT_CALLS_PER_MINUTE),
+        _int_env("OPEN_STOCKS_ROBINHOOD_CALLS_PER_HOUR", DEFAULT_CALLS_PER_HOUR),
+        _int_env("OPEN_STOCKS_ROBINHOOD_BURST_SIZE", DEFAULT_BURST_SIZE),
+    )
+
+
 def get_batcher(
     name: str,
     batch_size: int = 10,
@@ -371,13 +405,17 @@ def reset_request_coordinator() -> None:
     _request_coordinator = None
 
 
-def get_rate_limiter() -> RateLimiter:
+def get_rate_limiter(broker_name: str | None = None) -> RateLimiter:
     """Get the global rate limiter instance.
 
     Returns:
         The global RateLimiter instance
     """
     global _rate_limiter
+    if broker_name:
+        from open_stocks_mcp.brokers.registry import get_broker_registry_sync
+
+        return get_broker_registry_sync().get_rate_limiter(broker_name)
     if _rate_limiter is None:
         # Initialize with conservative defaults
         _rate_limiter = RateLimiter(
@@ -397,7 +435,11 @@ def get_request_coordinator() -> RequestCoordinator:
 
 
 async def rate_limited_call(
-    func: Any, *args: Any, endpoint: str | None = None, **kwargs: Any
+    func: Any,
+    *args: Any,
+    endpoint: str | None = None,
+    broker_name: str | None = None,
+    **kwargs: Any,
 ) -> Any:
     """Execute a function with rate limiting.
 
@@ -409,7 +451,7 @@ async def rate_limited_call(
     Returns:
         Result of the function call
     """
-    limiter = get_rate_limiter()
+    limiter = get_rate_limiter(broker_name=broker_name)
     await limiter.acquire(endpoint)
 
     if asyncio.iscoroutinefunction(func):

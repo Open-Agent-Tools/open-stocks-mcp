@@ -6,6 +6,10 @@ from typing import Any
 
 from open_stocks_mcp.brokers.base import BaseBroker, BrokerAuthStatus
 from open_stocks_mcp.logging_config import logger
+from open_stocks_mcp.tools.rate_limiter import (
+    RateLimiter,
+    get_broker_rate_limit_defaults,
+)
 
 
 class RegistryNotInitializedError(LookupError):
@@ -32,6 +36,7 @@ class BrokerRegistry:
         self._authentication_attempts: dict[str, int] = {}
         self._refresh_locks: dict[tuple[str, str], asyncio.Lock] = {}
         self._refresh_futures: dict[tuple[str, str], asyncio.Future[bool]] = {}
+        self._rate_limiters: dict[str, RateLimiter] = {}
 
     def register(self, broker: BaseBroker) -> None:
         """Register a broker instance.
@@ -128,6 +133,24 @@ class BrokerRegistry:
             List of available broker names
         """
         return [name for name, broker in self._brokers.items() if broker.is_available()]
+
+    def get_rate_limiter(self, broker_name: str) -> RateLimiter:
+        """Get or create a broker-specific limiter by normalized broker name."""
+        normalized = broker_name.strip().lower()
+        limiter = self._rate_limiters.get(normalized)
+        if limiter is not None:
+            return limiter
+
+        calls_per_minute, calls_per_hour, burst_size = get_broker_rate_limit_defaults(
+            normalized
+        )
+        limiter = RateLimiter(
+            calls_per_minute=calls_per_minute,
+            calls_per_hour=calls_per_hour,
+            burst_size=burst_size,
+        )
+        self._rate_limiters[normalized] = limiter
+        return limiter
 
     def get_auth_status(self) -> dict[str, Any]:
         """Get authentication status for all brokers.

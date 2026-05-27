@@ -412,6 +412,37 @@ class TestBrokerRegistry:
         assert all(results)
         assert refresh_count == 2
 
+    @pytest.mark.asyncio
+    async def test_get_rate_limiter_returns_stable_per_broker_instances(self, registry):
+        robinhood = registry.get_rate_limiter("robinhood")
+        schwab = registry.get_rate_limiter("schwab")
+
+        assert robinhood is registry.get_rate_limiter("RobinHood")
+        assert schwab is registry.get_rate_limiter(" SCHWAB ")
+        assert robinhood is not schwab
+        assert robinhood.calls_per_minute == 30
+        assert schwab.calls_per_minute >= 120
+
+    @pytest.mark.asyncio
+    async def test_broker_rate_limiters_are_independent(self, registry, monkeypatch):
+        monkeypatch.setattr("open_stocks_mcp.tools.rate_limiter.time.time", lambda: 1000.0)
+        sleep_calls: list[float] = []
+
+        async def fake_sleep(seconds: float) -> None:
+            sleep_calls.append(seconds)
+
+        monkeypatch.setattr("open_stocks_mcp.tools.rate_limiter.asyncio.sleep", fake_sleep)
+
+        robinhood = registry.get_rate_limiter("robinhood")
+        schwab = registry.get_rate_limiter("schwab")
+        robinhood.call_times.extend([999.5, 999.7, 999.9, 999.95, 999.99])
+
+        await schwab.acquire()
+
+        assert sleep_calls == []
+        assert len(robinhood.call_times) == 5
+        assert len(schwab.call_times) == 1
+
 
 class TestBrokerRegistrySingleton:
     """Test get_broker_registry singleton pattern."""

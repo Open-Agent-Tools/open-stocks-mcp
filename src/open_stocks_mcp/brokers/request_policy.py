@@ -62,6 +62,7 @@ async def execute_broker_request(
     *args: Any,
     policy: Any | None = None,
     retry_safe: bool = True,
+    broker_name: str = "schwab",
     **kwargs: Any,
 ) -> T:
     """Execute a synchronous broker SDK call with optional retries and deadline enforcement.
@@ -89,6 +90,11 @@ async def execute_broker_request(
     if deadline is not None:
         deadline = float(deadline)
 
+    from open_stocks_mcp.brokers.registry import get_broker_registry
+
+    registry = await get_broker_registry()
+    rate_limiter = registry.get_rate_limiter(broker_name)
+
     start_time = time.time()
     last_exception = None
 
@@ -101,6 +107,7 @@ async def execute_broker_request(
                 raise TimeoutError(f"Broker request exceeded deadline of {deadline}s")
 
         try:
+            await rate_limiter.acquire()
             # Run sync function in thread pool to avoid blocking the event loop
             return await asyncio.to_thread(func, *args, **kwargs)
         except Exception as e:

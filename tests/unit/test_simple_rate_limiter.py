@@ -8,6 +8,7 @@ import pytest
 
 from open_stocks_mcp.tools.rate_limiter import (
     RateLimiter,
+    get_broker_rate_limit_defaults,
     get_rate_limiter,
     rate_limited_call,
 )
@@ -261,6 +262,14 @@ def test_configure_global_rate_limiter_updates_singleton() -> None:
     assert get_rate_limiter() is limiter
 
 
+def test_get_broker_rate_limit_defaults() -> None:
+    robinhood = get_broker_rate_limit_defaults("robinhood")
+    schwab = get_broker_rate_limit_defaults("schwab")
+
+    assert robinhood == (30, 1000, 5)
+    assert schwab[0] >= 120
+
+
 class TestRequestCoordinator:
     """Test RequestCoordinator singleflight deduplication logic."""
 
@@ -421,3 +430,31 @@ async def test_rate_limited_call_runs_sync_function_without_deprecated_loop(
 
     result = await rate_limited_call(add, 2, 3)
     assert result == 5
+
+
+@pytest.mark.journey_system
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_rate_limited_call_routes_to_broker_limiter(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    acquire_calls: list[str | None] = []
+
+    class StubLimiter:
+        async def acquire(self, endpoint: str | None = None) -> None:
+            acquire_calls.append(endpoint)
+
+    def fake_get_rate_limiter(broker_name: str | None = None) -> StubLimiter:
+        assert broker_name == "schwab"
+        return StubLimiter()
+
+    monkeypatch.setattr(
+        "open_stocks_mcp.tools.rate_limiter.get_rate_limiter", fake_get_rate_limiter
+    )
+
+    async def ok() -> str:
+        return "ok"
+
+    result = await rate_limited_call(ok, endpoint="/quote", broker_name="schwab")
+    assert result == "ok"
+    assert acquire_calls == ["/quote"]
