@@ -24,9 +24,9 @@ def test_broker_and_http_dependencies_use_compatible_release_pins() -> None:
     dependencies = _project_dependencies()
 
     assert dependencies["robin-stocks"] == "robin-stocks~=3.4.0"
-    assert dependencies["schwab-py"] == "schwab-py~=1.5.0"
-    assert dependencies["fastapi"] == "fastapi~=0.128.0"
-    assert dependencies["uvicorn"] == "uvicorn~=0.40.0"
+    assert dependencies["schwab-py"] == "schwab-py~=1.5.1"
+    assert dependencies["fastapi"] == "fastapi~=0.136.3"
+    assert dependencies["uvicorn"] == "uvicorn~=0.48.0"
 
 
 @pytest.mark.unit
