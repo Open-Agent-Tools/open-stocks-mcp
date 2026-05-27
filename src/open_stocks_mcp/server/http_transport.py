@@ -209,6 +209,14 @@ def _require_metrics_collector() -> Any:
     return metrics_collector
 
 
+def _require_health_service() -> Any:
+    """Return health service or raise 503 when unavailable."""
+    svc = get_health_service()
+    if svc is None:
+        raise HTTPException(status_code=503, detail="Service unhealthy")
+    return svc
+
+
 class BearerAuthMiddleware(BaseHTTPMiddleware):
     """Require ``Authorization: Bearer <api_key>`` on protected endpoints.
 
@@ -394,7 +402,7 @@ def create_http_server(
         try:
             _require_session_manager()
             metrics_collector = _require_metrics_collector()
-            health_service = get_health_service()
+            health_service = _require_health_service()
             health_status = await health_service.get_status()
             metrics = await metrics_collector.get_metrics()
 
