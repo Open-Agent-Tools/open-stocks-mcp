@@ -491,7 +491,7 @@ class TestRobinhoodGetPortfolioSnapshotEnrichment:
                 new=AsyncMock(return_value=rh_quotes),
             ),
         ):
-            summary, positions = await broker.get_portfolio_snapshot()
+            _, positions = await broker.get_portfolio_snapshot()
 
         assert len(positions) == 1
         assert positions[0]["symbol"] == "AAPL"
@@ -525,7 +525,7 @@ class TestRobinhoodGetPortfolioSnapshotEnrichment:
                 new=AsyncMock(return_value=rh_quotes),
             ),
         ):
-            summary, positions = await broker.get_portfolio_snapshot()
+            _, positions = await broker.get_portfolio_snapshot()
 
         assert len(positions) == 1
         assert positions[0]["market_value"] is None
@@ -557,7 +557,7 @@ class TestRobinhoodGetPortfolioSnapshotEnrichment:
                 new=AsyncMock(side_effect=RuntimeError("quote fetch failed")),
             ),
         ):
-            summary, positions = await broker.get_portfolio_snapshot()
+            _, positions = await broker.get_portfolio_snapshot()
 
         assert len(positions) == 1
         assert positions[0]["market_value"] is None
@@ -594,7 +594,7 @@ class TestRobinhoodGetPortfolioSnapshotEnrichment:
                 new=AsyncMock(return_value=rh_quotes),
             ),
         ):
-            summary, positions = await broker.get_portfolio_snapshot()
+            _, positions = await broker.get_portfolio_snapshot()
 
         by_symbol = {p["symbol"]: p for p in positions}
         assert by_symbol["AAPL"]["market_value"] == pytest.approx(1755.0)

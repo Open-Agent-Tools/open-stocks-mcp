@@ -1,9 +1,8 @@
 """Robinhood broker implementation using existing robin-stocks integration."""
 
+import math
 from datetime import datetime
 from typing import Any
-
-import math
 
 import robin_stocks.robinhood as rh
 
