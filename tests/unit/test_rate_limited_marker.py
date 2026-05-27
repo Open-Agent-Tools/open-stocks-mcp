@@ -204,7 +204,7 @@ def test_rate_limited_collection_nodeids() -> None:
     count = sum(
         1
         for line in result.stdout.splitlines()
-        if "::" in line and not line.startswith("no tests ran")
+        if "<Function " in line or "<Coroutine " in line
     )
 
     assert count == 4, f"Expected 4 tests, found {count}. Output:\n{result.stdout}"
