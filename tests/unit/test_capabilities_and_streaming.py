@@ -42,6 +42,8 @@ class MockBroker(BaseBroker):
         return {}
 
 
+@pytest.mark.journey_market_data
+@pytest.mark.unit
 def test_broker_capabilities_defaults() -> None:
     capabilities = BrokerCapabilities()
     assert not capabilities.streaming_quotes
@@ -49,6 +51,8 @@ def test_broker_capabilities_defaults() -> None:
     assert not capabilities.crypto
 
 
+@pytest.mark.journey_market_data
+@pytest.mark.unit
 def test_base_broker_health_status() -> None:
     broker = MockBroker("test_broker")
     broker._auth_info.status = BrokerAuthStatus.AUTHENTICATED
@@ -62,6 +66,8 @@ def test_base_broker_health_status() -> None:
     assert status["streaming_ready"] is True
 
 
+@pytest.mark.journey_market_data
+@pytest.mark.unit
 @pytest.mark.asyncio
 async def test_schwab_stream_manager_handling() -> None:
     from open_stocks_mcp.brokers.schwab_stream import SchwabStreamManager
@@ -82,6 +88,8 @@ async def test_schwab_stream_manager_handling() -> None:
     assert quote["2"] == 151.0
 
 
+@pytest.mark.journey_market_data
+@pytest.mark.unit
 @pytest.mark.asyncio
 async def test_schwab_stream_manager_option_quote_handling() -> None:
     from open_stocks_mcp.brokers.schwab_stream import SchwabStreamManager
@@ -105,6 +113,8 @@ async def test_schwab_stream_manager_option_quote_handling() -> None:
     assert manager.get_latest_quote("AAPL") is None
 
 
+@pytest.mark.journey_market_data
+@pytest.mark.unit
 @pytest.mark.asyncio
 async def test_schwab_stream_manager_subscribe_option_quotes() -> None:
     from open_stocks_mcp.brokers.schwab_stream import SchwabStreamManager
@@ -121,6 +131,8 @@ async def test_schwab_stream_manager_subscribe_option_quotes() -> None:
     )
 
 
+@pytest.mark.journey_market_data
+@pytest.mark.unit
 @pytest.mark.asyncio
 async def test_schwab_stream_manager_handles_level2_by_venue() -> None:
     from open_stocks_mcp.brokers.schwab_stream import SchwabStreamManager
@@ -155,6 +167,8 @@ async def test_schwab_stream_manager_handles_level2_by_venue() -> None:
     assert nyse_book["book_time"] == 222
 
 
+@pytest.mark.journey_market_data
+@pytest.mark.unit
 @pytest.mark.asyncio
 async def test_schwab_stream_manager_subscribe_quotes_splitting() -> None:
     from open_stocks_mcp.brokers.schwab_stream import SchwabStreamManager
@@ -174,6 +188,8 @@ async def test_schwab_stream_manager_subscribe_quotes_splitting() -> None:
     )
 
 
+@pytest.mark.journey_market_data
+@pytest.mark.unit
 @patch("schwab.streaming.StreamClient")
 @pytest.mark.asyncio
 async def test_schwab_stream_manager_start(mock_stream_client_class: MagicMock) -> None:
@@ -201,6 +217,8 @@ async def test_schwab_stream_manager_start(mock_stream_client_class: MagicMock) 
         assert manager.is_running is True
 
 
+@pytest.mark.journey_market_data
+@pytest.mark.unit
 @pytest.mark.asyncio
 async def test_schwab_stream_manager_handles_account_activity() -> None:
     from open_stocks_mcp.brokers.schwab_stream import SchwabStreamManager
@@ -225,6 +243,8 @@ async def test_schwab_stream_manager_handles_account_activity() -> None:
     assert manager.get_latest_option_quote("ACT001") is None
 
 
+@pytest.mark.journey_market_data
+@pytest.mark.unit
 @pytest.mark.asyncio
 async def test_schwab_stream_manager_subscribe_account_activity() -> None:
     from open_stocks_mcp.brokers.schwab_stream import SchwabStreamManager
@@ -239,6 +259,8 @@ async def test_schwab_stream_manager_subscribe_account_activity() -> None:
     manager.stream_client.account_activity_sub.assert_awaited_once()
 
 
+@pytest.mark.journey_market_data
+@pytest.mark.unit
 @pytest.mark.asyncio
 async def test_schwab_stream_manager_level2_handling() -> None:
     from open_stocks_mcp.brokers.schwab_stream import SchwabStreamManager
@@ -287,6 +309,8 @@ async def test_schwab_stream_manager_level2_handling() -> None:
     assert book["bids"][0]["PRICE"] == 130.0
 
 
+@pytest.mark.journey_market_data
+@pytest.mark.unit
 @pytest.mark.asyncio
 async def test_schwab_stream_manager_subscribe_level2() -> None:
     from open_stocks_mcp.brokers.schwab_stream import SchwabStreamManager
@@ -311,6 +335,8 @@ async def test_schwab_stream_manager_subscribe_level2() -> None:
     assert success is False
 
 
+@pytest.mark.journey_market_data
+@pytest.mark.unit
 @patch("schwab.streaming.StreamClient")
 @pytest.mark.asyncio
 async def test_schwab_stream_manager_start_registers_book_handlers(
