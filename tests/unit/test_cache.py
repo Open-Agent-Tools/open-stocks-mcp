@@ -5,12 +5,14 @@ from __future__ import annotations
 import asyncio
 import importlib
 import time
-from collections.abc import Iterator
 from typing import Any
 from unittest.mock import patch
 
 import pytest
+
 ...
+
+
 class TestCachedAsyncDecorator:
     """Tests for the cached_async decorator."""
 

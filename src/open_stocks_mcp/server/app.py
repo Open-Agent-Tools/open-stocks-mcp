@@ -147,12 +147,14 @@ from open_stocks_mcp.tools.schwab_options_tools import (
     get_schwab_option_chain_by_expiration,
     get_schwab_option_expirations,
     get_schwab_options_positions,
-    schwab_get_option_orders,
     schwab_get_open_option_orders,
-    schwab_get_option_quote as _schwab_get_option_quote_impl,
+    schwab_get_option_orders,
 )
 from open_stocks_mcp.tools.schwab_options_tools import (
     schwab_find_tradable_options as _schwab_find_tradable_options_impl,
+)
+from open_stocks_mcp.tools.schwab_options_tools import (
+    schwab_get_option_quote as _schwab_get_option_quote_impl,
 )
 from open_stocks_mcp.tools.schwab_options_tools import (
     schwab_option_buy_to_open as _schwab_option_buy_to_open_impl,
