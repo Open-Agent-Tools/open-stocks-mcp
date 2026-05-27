@@ -4,10 +4,10 @@ Project guidance for Claude Code when working with the Open Stocks MCP server.
 
 ## Project Overview
 
-**Open Stocks MCP** - Model Context Protocol server providing stock market data through Robin Stocks API.
-- **Current Version**: v0.6.5 with enhanced authentication and session management
+**Open Stocks MCP** - Model Context Protocol server providing stock market data and trading tools through Robinhood and Charles Schwab broker APIs.
+- **Current Version**: v0.6.5 with multi-broker support, enhanced authentication, and session management
 - **Framework**: FastMCP for simplified MCP development
-- **API**: Robin Stocks for market data and trading
+- **APIs**: Robin Stocks for Robinhood plus schwab-py for Charles Schwab
 - **Transport**: HTTP with Server-Sent Events (SSE), configurable via `--port` (default 3000)
 - **Docker**: Production-ready with persistent session/log storage
 
@@ -49,6 +49,7 @@ pytest tests/unit/                                        # Unit tests (fast)
 pytest tests/integration/ -m integration                  # Integration (needs auth)
 pytest -m rate_limited                                    # Live rate-limited API tests
 RUN_RATE_LIMITED=1 pytest                                 # Include rate-limited tests in full run
+OPEN_STOCKS_RUN_LIVE_MARKET=1 RUN_RATE_LIMITED=1 ENABLED_BROKERS=schwab uv run pytest tests/integration/test_schwab_live_journeys.py -m "live_market and auth_required and rate_limited" --run-live-market -q
 
 # READ ONLY journeys (perfect for ADK evaluations)
 pytest -m "journey_account or journey_portfolio or journey_market_data or journey_research or journey_notifications or journey_system"
@@ -74,6 +75,8 @@ RUN_PERFORMANCE=1 uv run pytest      # Include performance tests in a full run
 - `rate_limited` - Live endpoint tests that may hit Robinhood or Schwab rate
   limits; skipped by default unless selected with `-m rate_limited` or
   `RUN_RATE_LIMITED=1`
+- `live_market` + `auth_required` - Schwab live journey tests remain blocked on
+  live credentials and a persisted Schwab OAuth token.
 - `performance` - Mocked benchmark tests for representative tool wrapper
   latency; skipped by default unless selected with `-m performance` or
   `RUN_PERFORMANCE=1`
@@ -111,6 +114,9 @@ curl http://localhost:3001/health  # Test health endpoint
 ## MCP Architecture
 
 ### Tool Structure
+The server currently exposes 152 active MCP tools across Robinhood and Schwab.
+Use [Tool Reference](docs/MCP_TOOLS_REFERENCE.md) for the generated breakdown.
+
 All tools return JSON with `result` field:
 ```python
 @mcp.tool()
@@ -123,25 +129,56 @@ async def get_stock_quote(symbol: str) -> dict:
 ```
 
 ### Key Patterns
-- **Async wrappers** for Robin Stocks (synchronous API)
+- **Async wrappers** around broker SDKs and synchronous API calls
 - **Retry logic** via `execute_with_retry`
 - **Error handling** via `@handle_robin_stocks_errors` 
 - **Rate limiting** via `get_rate_limiter()`
 - **Session management** for authentication
 
+### Multi-Broker Guidance
+Open Stocks MCP supports Robinhood and Charles Schwab in the same server. Keep
+Robinhood tool names stable for backward compatibility, and use the `schwab_`
+prefix for Schwab-specific tools such as `schwab_portfolio`,
+`schwab_quote`, and `schwab_buy_stock_market`.
+
+Schwab authentication uses an OAuth first-run flow through schwab-py. The token
+is persisted at `~/.tokens/schwab_token.json` by default and is refreshed by the
+library on subsequent runs. See [docs/SCHWAB_SETUP.md](docs/SCHWAB_SETUP.md)
+for operator setup and [docs/SCHWAB_INTEGRATION_PLAN.md](docs/SCHWAB_INTEGRATION_PLAN.md)
+for the multi-broker design plan.
+
+Schwab live journey tests are blocked on live credentials: `SCHWAB_API_KEY`,
+`SCHWAB_APP_SECRET`, a matching callback URL, and a valid token file. Do not
+treat Schwab live journey failures as CI regressions unless those credentials
+and `RUN_RATE_LIMITED=1 --run-live-market` were explicitly provided.
+
 ## Environment Variables
 
-### Required for Live Testing
+### Required for Robinhood Live Testing
 ```bash
 ROBINHOOD_USERNAME="email@example.com"
 ROBINHOOD_PASSWORD="password"
 ```
+
+### Required for Schwab Live Testing
+```bash
+SCHWAB_API_KEY="your-api-key"
+SCHWAB_APP_SECRET="your-app-secret"
+SCHWAB_CALLBACK_URL="https://127.0.0.1:8182/"
+SCHWAB_TOKEN_PATH="~/.tokens/schwab_token.json"
+ENABLED_BROKERS="robinhood,schwab"
+```
+
+The Schwab token path defaults to `~/.tokens/schwab_token.json`. The first
+server run opens the OAuth browser flow and writes the token; non-interactive
+Docker or CI runs should mount a token that was created interactively first.
 
 ### Required for ADK Evaluation  
 ```bash
 GOOGLE_API_KEY="your-google-api-key"
 ROBINHOOD_USERNAME="email@example.com" 
 ROBINHOOD_PASSWORD="password"
+# Include Schwab variables above when evaluating Schwab tools.
 ```
 
 ## Current Development Status
