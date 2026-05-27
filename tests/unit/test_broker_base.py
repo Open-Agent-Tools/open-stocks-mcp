@@ -347,3 +347,71 @@ class TestBaseBroker:
         assert positions[0]["average_buy_price"] == 150.0
         assert positions[0]["market_value"] == 1700.0
         assert positions[0]["broker"] == "mock"
+
+    @pytest.mark.asyncio
+    async def test_portfolio_snapshot_returns_zeroed_summary_when_portfolio_errors(self):
+        """Test that a zeroed summary dict is returned when get_portfolio() errors."""
+        broker = MockBroker("mock")
+
+        async def mock_portfolio_error():
+            return {"result": {"error": "auth required"}}
+
+        async def mock_positions():
+            return {"result": {"positions": []}}
+
+        broker.get_portfolio = mock_portfolio_error
+        broker.get_positions = mock_positions
+
+        summary, positions = await broker.get_portfolio_snapshot()
+
+        assert summary == {"market_value": 0.0, "equity": 0.0, "buying_power": 0.0}
+        assert positions == []
+
+    @pytest.mark.asyncio
+    async def test_portfolio_snapshot_returns_zeroed_summary_when_positions_errors(self):
+        """Test that positions list is empty when get_positions() errors."""
+        broker = MockBroker("mock")
+
+        async def mock_portfolio():
+            return {
+                "result": {
+                    "market_value": "2000.00",
+                    "equity": "2100.00",
+                    "buying_power": "300.00",
+                }
+            }
+
+        async def mock_positions_error():
+            return {"result": {"error": "service unavailable"}}
+
+        broker.get_portfolio = mock_portfolio
+        broker.get_positions = mock_positions_error
+
+        summary, positions = await broker.get_portfolio_snapshot()
+
+        assert summary["market_value"] == 2000.0
+        assert summary["equity"] == 2100.0
+        assert summary["buying_power"] == 300.0
+        assert positions == []
+
+    @pytest.mark.asyncio
+    async def test_portfolio_snapshot_zeroed_summary_keys_present_on_both_errors(self):
+        """Summary always has the three required keys even when both calls error."""
+        broker = MockBroker("mock")
+
+        async def mock_portfolio_error():
+            return {"result": {"error": "network error"}}
+
+        async def mock_positions_error():
+            return {"result": {"error": "network error"}}
+
+        broker.get_portfolio = mock_portfolio_error
+        broker.get_positions = mock_positions_error
+
+        summary, positions = await broker.get_portfolio_snapshot()
+
+        assert set(summary.keys()) == {"market_value", "equity", "buying_power"}
+        assert summary["market_value"] == 0.0
+        assert summary["equity"] == 0.0
+        assert summary["buying_power"] == 0.0
+        assert positions == []
