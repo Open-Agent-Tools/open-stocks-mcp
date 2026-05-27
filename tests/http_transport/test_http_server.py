@@ -516,6 +516,76 @@ class TestMCPIntegration:
         assert first_event["data"]["server"] == "Open Stocks MCP Server"
         assert first_event["data"]["version"] == __version__
 
+    async def test_sse_connected_event_includes_timestamp(
+        self, mcp_server: FastMCP
+    ) -> None:
+        """SSE connected event data includes a numeric timestamp field."""
+        app = create_http_server(mcp_server)
+        sse_route = next(
+            route for route in app.routes if getattr(route, "path", None) == "/sse"
+        )
+        request = Request(
+            {"type": "http", "method": "GET", "path": "/sse", "headers": []}
+        )
+        response = await sse_route.endpoint(request)
+        iterator = response.body_iterator
+        try:
+            event = await anext(iterator)
+        finally:
+            with contextlib.suppress(Exception):
+                await iterator.aclose()
+
+        assert "timestamp" in event["data"]
+        assert isinstance(event["data"]["timestamp"], (int, float))
+
+    async def test_sse_heartbeat_delivered_after_connected(
+        self, mcp_server: FastMCP
+    ) -> None:
+        """After the initial connected event, a heartbeat event is delivered."""
+        app = create_http_server(mcp_server)
+        sse_route = next(
+            route for route in app.routes if getattr(route, "path", None) == "/sse"
+        )
+        request = Request(
+            {"type": "http", "method": "GET", "path": "/sse", "headers": []}
+        )
+        request.is_disconnected = AsyncMock(return_value=False)  # type: ignore[method-assign]
+
+        response = await sse_route.endpoint(request)
+        iterator = response.body_iterator
+        try:
+            _connected = await anext(iterator)
+            heartbeat = await anext(iterator)
+        finally:
+            with contextlib.suppress(Exception):
+                await iterator.aclose()
+
+        assert heartbeat["event"] == "heartbeat"
+        assert "timestamp" in heartbeat["data"]
+        assert isinstance(heartbeat["data"]["timestamp"], (int, float))
+
+    async def test_sse_disconnection_stops_event_stream(
+        self, mcp_server: FastMCP
+    ) -> None:
+        """When the client disconnects immediately after connection, only the connected event is delivered."""
+        app = create_http_server(mcp_server)
+        sse_route = next(
+            route for route in app.routes if getattr(route, "path", None) == "/sse"
+        )
+        request = Request(
+            {"type": "http", "method": "GET", "path": "/sse", "headers": []}
+        )
+        request.is_disconnected = AsyncMock(return_value=True)  # type: ignore[method-assign]
+
+        response = await sse_route.endpoint(request)
+        iterator = response.body_iterator
+        events = []
+        async for event in iterator:
+            events.append(event)
+
+        assert len(events) == 1
+        assert events[0]["event"] == "connected"
+
     @pytest.mark.anyio
     async def test_mcp_endpoint_rejects_oversized_body(
         self, http_client: httpx.AsyncClient
