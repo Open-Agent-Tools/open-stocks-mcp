@@ -1,8 +1,7 @@
 """Unit tests for dividend tools."""
 
-from unittest.mock import AsyncMock
 from typing import Any
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
@@ -31,7 +30,10 @@ class TestDividendTools:
     @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_dividends_success(
-        self, mock_to_thread: Any, mock_get_session_manager: Any, mock_get_rate_limiter: Any
+        self,
+        mock_to_thread: Any,
+        mock_get_session_manager: Any,
+        mock_get_rate_limiter: Any,
     ) -> None:
         """Test successful dividends retrieval."""
         self._configure_authenticated_session(
@@ -77,7 +79,10 @@ class TestDividendTools:
     @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_total_dividends_success(
-        self, mock_to_thread: Any, mock_get_session_manager: Any, mock_get_rate_limiter: Any
+        self,
+        mock_to_thread: Any,
+        mock_get_session_manager: Any,
+        mock_get_rate_limiter: Any,
     ) -> None:
         """Test successful total dividends calculation."""
         self._configure_authenticated_session(
@@ -104,7 +109,10 @@ class TestDividendTools:
     @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_dividends_by_instrument_success(
-        self, mock_to_thread: Any, mock_get_session_manager: Any, mock_get_rate_limiter: Any
+        self,
+        mock_to_thread: Any,
+        mock_get_session_manager: Any,
+        mock_get_rate_limiter: Any,
     ) -> None:
         """Test successful dividends by instrument retrieval."""
         self._configure_authenticated_session(
