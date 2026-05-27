@@ -82,8 +82,7 @@ class TestHTTPErrorHandling:
             headers={"content-type": "application/json"},
         )
         assert response.status_code in [400, 401, 422]
-
-    # Bad Request or Unprocessable Entity
+        # Bad Request or Unprocessable Entity
 
     async def test_invalid_content_type(self, http_client: httpx.AsyncClient) -> None:
         """Test handling of invalid content types"""
