@@ -243,12 +243,16 @@ class TestMultiBrokerIntegration:
         # Mock Robinhood
         mock_rh_session = MagicMock()
         mock_rh_session.ensure_authenticated = AsyncMock(return_value=True)
-        
+
         # Track session validity state
         session_state = {"valid": True}
-        def get_valid(): return session_state["valid"]
-        async def do_logout(): session_state["valid"] = False
-        
+
+        def get_valid():
+            return session_state["valid"]
+
+        async def do_logout():
+            session_state["valid"] = False
+
         mock_rh_session.is_session_valid.side_effect = get_valid
         mock_rh_session.logout = AsyncMock(side_effect=do_logout)
         mock_session_manager.return_value = mock_rh_session
