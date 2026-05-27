@@ -376,7 +376,3 @@ _site/
 # package-lock.json
 # yarn.lock
 examples/kubernetes/secret.yaml
-.foreman/
-.agents/
-.beads/
-foreman.yaml
