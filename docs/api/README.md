@@ -51,5 +51,4 @@ uv run jupyter lab examples/notebooks/
 
 ## CI Scope
 
-Notebook execution is intentionally not run in CI by design for this issue. CI
-workflow changes are out of scope for Foreman skills.
+Notebook execution is intentionally not run in CI by design.
