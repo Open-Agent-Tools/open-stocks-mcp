@@ -520,10 +520,12 @@ def create_http_server(
             raise HTTPException(status_code=500, detail="Failed to list tools") from e
 
     @app.get("/tools/docs")
-    async def tools_docs() -> dict[str, Any]:
-        """Return MCP tool docs metadata from the live registry."""
+    async def tools_docs(request: Request) -> dict[str, Any]:
+        """Return MCP tool docs metadata from the lifespan cache."""
         try:
-            payload = await build_tool_docs_payload(mcp_server)
+            payload = getattr(request.app.state, "tool_docs_payload", None)
+            if payload is None:
+                payload = await build_tool_docs_payload(mcp_server)
             tools = [
                 {"name": t["name"], "description": t["description"]}
                 for t in payload["result"]["tools"]

@@ -382,6 +382,35 @@ class TestHTTPEndpoints:
             assert "name" in item
             assert "description" in item
 
+    async def test_tools_docs_serves_from_lifespan_cache(
+        self, mcp_server: FastMCP
+    ) -> None:
+        """Verify /tools/docs reads app.state cache, not rebuilding on each request."""
+        from httpx import ASGITransport
+
+        cached_payload = {
+            "result": {
+                "tools": [{"name": "cached_tool", "description": "from cache"}],
+                "count": 1,
+            }
+        }
+        app = create_http_server(mcp_server)
+        app.state.tool_docs_payload = cached_payload
+
+        with patch(
+            "open_stocks_mcp.server.http_transport.build_tool_docs_payload"
+        ) as mock_build:
+            transport = ASGITransport(app=app)
+            async with httpx.AsyncClient(
+                transport=transport, base_url="http://test"
+            ) as client:
+                response = await client.get("/tools/docs")
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["result"]["tools"][0]["name"] == "cached_tool"
+        mock_build.assert_not_called()
+
     async def test_openapi_contains_all_mcp_tools(
         self, http_client: httpx.AsyncClient, mcp_server: FastMCP
     ) -> None:
