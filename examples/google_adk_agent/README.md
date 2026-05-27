@@ -146,13 +146,13 @@ The agent has access to 60+ MCP tools organized into these categories:
 You can evaluate the agent's performance using ADK's evaluation tools. 
 
 ### **Schwab Orders Evaluation**
-To test the agent's ability to retrieve Schwab order history (read-only), run:
+Multi-step eval: the agent first calls `schwab_account_numbers` to resolve the account hash, then calls `schwab_orders` to retrieve order history — no raw account hash in the user prompt.
 
 ```bash
 MCP_HTTP_URL="http://localhost:3001/mcp" adk eval examples/google_adk_agent tests/evals/5_ord_schwab_orders_test.json --config_file_path tests/evals/test_config.json
 ```
 
-> **Note**: This evaluation requires live Schwab OAuth credentials and a valid account hash returned by `schwab_account_numbers`.
+> **Note**: This evaluation requires live Schwab OAuth credentials.
 
 ## Agent Capabilities
 

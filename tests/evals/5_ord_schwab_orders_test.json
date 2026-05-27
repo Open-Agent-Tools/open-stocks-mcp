@@ -1,7 +1,7 @@
 {
   "eval_set_id": "schwab_orders_test_set",
   "name": "Schwab Orders Test",
-  "description": "Test case for retrieving Schwab orders through agent interaction",
+  "description": "Multi-step test: agent resolves Schwab account hash via schwab_account_numbers, then retrieves orders via schwab_orders",
   "eval_cases": [
     {
       "eval_id": "schwab_orders_test",
@@ -11,7 +11,7 @@
           "user_content": {
             "parts": [
               {
-                "text": "Show me my recent orders on Schwab for account REPLACE_WITH_SCHWAB_ACCOUNT_HASH. (Note: The placeholder account hash must be replaced with a real hash from schwab_account_numbers before live execution.)"
+                "text": "Show me my recent Schwab orders."
               }
             ],
             "role": "user"
@@ -19,7 +19,7 @@
           "final_response": {
             "parts": [
               {
-                "text": "I have retrieved your recent orders for Schwab account REPLACE_WITH_SCHWAB_ACCOUNT_HASH. You have 0 open orders. (Note: For live execution, ensure REPLACE_WITH_SCHWAB_ACCOUNT_HASH is replaced with a real account hash returned by the schwab_account_numbers tool.)"
+                "text": "I looked up your Schwab account and retrieved your recent orders. Here is a summary of your order history."
               }
             ],
             "role": "model"
@@ -28,9 +28,13 @@
             "tool_uses": [
               {
                 "id": "adk-tool-use-id",
+                "args": {},
+                "name": "schwab_account_numbers"
+              },
+              {
+                "id": "adk-tool-use-id",
                 "args": {
-                  "account_hash": "REPLACE_WITH_SCHWAB_ACCOUNT_HASH",
-                  "max_results": 10
+                  "account_hash": "resolved-account-hash"
                 },
                 "name": "schwab_orders"
               }
