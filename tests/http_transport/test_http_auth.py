@@ -372,6 +372,20 @@ class TestBearerTokenAuth:
         response = await authed_client.get("/")
         assert response.status_code == 200
 
+    async def test_metrics_bypasses_bearer_auth(
+        self, authed_client: httpx.AsyncClient
+    ) -> None:
+        mcp_response = await authed_client.post(
+            "/mcp",
+            json={"jsonrpc": "2.0", "method": "tools/list", "id": 1},
+        )
+        assert mcp_response.status_code == 401
+
+        metrics_response = await authed_client.get("/metrics")
+        assert metrics_response.status_code == 200
+        assert metrics_response.headers["content-type"].startswith("text/plain")
+        assert "open_stocks_mcp_total_calls" in metrics_response.text
+
 
 @pytest.mark.integration
 @pytest.mark.journey_system
