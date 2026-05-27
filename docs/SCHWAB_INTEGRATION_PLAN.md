@@ -74,7 +74,7 @@ src/open_stocks_mcp/
 │   ├── robinhood_user_profile_tools.py      # 7 tools
 │   ├── robinhood_watchlist_tools.py         # 5 tools
 │   ├── robinhood_tools.py                   # Utility (list_available_tools)
-│   ├── session_manager.py                   # Robinhood-specific auth
+│   ├── session_manager.py                   # Compatibility re-export shim
 │   ├── rate_limiter.py                      # Broker-agnostic (reusable)
 │   └── error_handling.py                    # Broker-agnostic (reusable)
 ├── config.py                       # Configuration management
@@ -179,7 +179,7 @@ class RobinhoodBroker(BaseBroker):
     """Robinhood broker implementation."""
 
     def __init__(self):
-        self.session_manager = None  # Migrate from tools/session_manager.py
+        self.session_manager = None  # Implemented via brokers/session_state.py
 
     @property
     def name(self) -> str:
@@ -869,7 +869,7 @@ class BrokerAuthenticationError(BrokerError):
 - `.env.example` - Schwab environment variables
 
 ### Deprecated Files (moved into brokers/)
-- `src/open_stocks_mcp/tools/session_manager.py` → `brokers/robinhood.py`
+- `src/open_stocks_mcp/tools/session_manager.py` → `src/open_stocks_mcp/brokers/session_state.py` (shim preserved)
 
 ---
 
