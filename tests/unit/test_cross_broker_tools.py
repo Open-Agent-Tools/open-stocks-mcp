@@ -569,3 +569,38 @@ class TestGetAggregatedPortfolio:
         assert data["aggregated"]["total_market_value"] == 1000.0
         assert len(data["aggregated"]["positions"]) == 1
         assert data["aggregated"]["positions"][0]["symbol"] == "BTC"
+
+    @pytest.mark.asyncio
+    @pytest.mark.unit
+    @pytest.mark.journey_portfolio
+    async def test_brokers_dict_preserves_registry_order_with_unavailable_middle(
+        self,
+    ) -> None:
+        """brokers dict keys follow registry.list_brokers() order even when a middle broker is unavailable."""
+        mock_registry = MagicMock()
+        mock_registry.list_brokers.return_value = ["robinhood", "schwab", "paper"]
+
+        rh_broker = MockBroker("robinhood", authenticated=True)
+        schwab_broker = MockBroker("schwab", authenticated=False)
+        paper_broker = MockBroker("paper", authenticated=True)
+
+        def _get_broker(name: str) -> MockBroker:
+            return {"robinhood": rh_broker, "schwab": schwab_broker, "paper": paper_broker}[name]
+
+        mock_registry.get_broker.side_effect = _get_broker
+
+        rh_broker.get_portfolio_snapshot = AsyncMock(
+            return_value=({"market_value": 1000.0, "equity": 1000.0, "buying_power": 500.0}, [])
+        )
+        paper_broker.get_portfolio_snapshot = AsyncMock(
+            return_value=({"market_value": 2000.0, "equity": 2000.0, "buying_power": 1000.0}, [])
+        )
+
+        with patch(
+            "open_stocks_mcp.tools.cross_broker_tools.get_broker_registry",
+            return_value=mock_registry,
+        ):
+            result = await get_aggregated_portfolio()
+
+        broker_keys = list(result["result"]["brokers"].keys())
+        assert broker_keys == ["robinhood", "schwab", "paper"]

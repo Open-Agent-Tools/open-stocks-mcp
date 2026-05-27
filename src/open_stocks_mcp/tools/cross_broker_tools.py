@@ -59,50 +59,55 @@ async def get_aggregated_portfolio() -> dict[str, Any]:
         available_names.append(name)
         coros.append(broker.get_portfolio_snapshot())
 
+    results_map: dict[str, Any] = {}
     if coros:
         results = await asyncio.gather(*coros, return_exceptions=True)
-        for name, result in zip(available_names, results, strict=True):
-            if isinstance(result, BaseException):
-                logger.error(
-                    f"Error collecting data from broker {name}: {result}",
-                    exc_info=result,
-                )
-                brokers_out[name] = {
-                    "status": "error",
-                    "error": str(result),
-                    "market_value": 0.0,
-                    "equity": 0.0,
-                    "buying_power": 0.0,
-                    "positions": [],
-                    "position_count": 0,
-                }
-                unavailable.append(name)
-                continue
-
-            summary, positions = result
-            market_value = summary.get("market_value", 0.0)
-            equity = summary.get("equity", 0.0)
-            buying_power = summary.get("buying_power", 0.0)
-
-            brokers_out[name] = {
-                "status": "available",
-                "error": None,
-                "market_value": market_value,
-                "equity": equity,
-                "buying_power": buying_power,
-                "positions": positions,
-                "position_count": len(positions),
-            }
-            all_positions.extend(positions)
-            total_market_value += market_value
-            total_equity += equity
-            total_buying_power += buying_power
+        results_map = dict(zip(available_names, results, strict=True))
 
     for name in broker_names:
-        if name in brokers_out:
-            continue
         if name in unavailable_records:
             brokers_out[name] = unavailable_records[name]
+            continue
+
+        if name not in results_map:
+            continue
+
+        result = results_map[name]
+        if isinstance(result, BaseException):
+            logger.error(
+                f"Error collecting data from broker {name}: {result}",
+                exc_info=result,
+            )
+            brokers_out[name] = {
+                "status": "error",
+                "error": str(result),
+                "market_value": 0.0,
+                "equity": 0.0,
+                "buying_power": 0.0,
+                "positions": [],
+                "position_count": 0,
+            }
+            unavailable.append(name)
+            continue
+
+        summary, positions = result
+        market_value = summary.get("market_value", 0.0)
+        equity = summary.get("equity", 0.0)
+        buying_power = summary.get("buying_power", 0.0)
+
+        brokers_out[name] = {
+            "status": "available",
+            "error": None,
+            "market_value": market_value,
+            "equity": equity,
+            "buying_power": buying_power,
+            "positions": positions,
+            "position_count": len(positions),
+        }
+        all_positions.extend(positions)
+        total_market_value += market_value
+        total_equity += equity
+        total_buying_power += buying_power
 
     return create_success_response(
         {
