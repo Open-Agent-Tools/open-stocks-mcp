@@ -140,6 +140,7 @@ class SchwabStreamManager:
                             "Schwab stream_client is None before re-login;"
                             " exiting reconnect loop"
                         )
+                        self._is_running = False
                         break
                     try:
                         await self.stream_client.login()

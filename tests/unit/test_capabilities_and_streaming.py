@@ -379,11 +379,12 @@ async def test_schwab_stream_manager_run_loop_skips_relogin_when_stream_client_d
     fake_client.handle_responses = handle_responses_then_clear
     manager.stream_client = fake_client
 
-    async def fast_sleep(_: float) -> None:
-        manager._is_running = False  # stop loop after first sleep
+    async def noop_sleep(_: float) -> None:
+        pass  # do not touch _is_running; the guard must clear it
 
-    with patch("asyncio.sleep", side_effect=fast_sleep):
+    with patch("asyncio.sleep", side_effect=noop_sleep):
         await manager._run_loop()
 
-    # Loop must exit cleanly — no AttributeError, no relogin attempt on None client
+    # Loop must exit cleanly — guard sets _is_running=False and breaks
     assert call_count == 1
+    assert manager.is_running is False
