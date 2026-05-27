@@ -10,24 +10,7 @@ from typing import Any
 from unittest.mock import patch
 
 import pytest
-
-
-@pytest.fixture(autouse=True)
-def _reset_cache_state() -> Iterator[None]:
-    """Reset shared cache + metrics state between tests."""
-    from open_stocks_mcp import monitoring
-    from open_stocks_mcp.config import reset_cache_config
-    from open_stocks_mcp.tools import cache
-
-    reset_cache_config()
-    cache.clear_caches()
-    monitoring._metrics_collector = None
-    yield
-    reset_cache_config()
-    cache.clear_caches()
-    monitoring._metrics_collector = None
-
-
+...
 class TestCachedAsyncDecorator:
     """Tests for the cached_async decorator."""
 

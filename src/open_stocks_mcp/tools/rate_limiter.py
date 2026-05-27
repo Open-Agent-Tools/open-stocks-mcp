@@ -365,6 +365,12 @@ def reset_global_rate_limiter() -> None:
     _rate_limiter = None
 
 
+def reset_request_coordinator() -> None:
+    """Reset global request coordinator for test isolation."""
+    global _request_coordinator
+    _request_coordinator = None
+
+
 def get_rate_limiter() -> RateLimiter:
     """Get the global rate limiter instance.
 
