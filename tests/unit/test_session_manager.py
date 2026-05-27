@@ -466,3 +466,31 @@ async def test_ensure_authenticated_session_returns_error_tuple_on_exception() -
 
     assert success is False
     assert error == "invalid credentials"
+
+def test_pickle_clear_failure_threshold_can_be_configured(tmp_path: Path) -> None:
+    manager = SessionManager(max_pickle_clear_failures=1)
+    pickle_path = tmp_path / "robinhood.pickle"
+    pickle_path.write_text("session")
+    
+    with (
+        patch.object(manager._pickle, "_get_pickle_file_path", return_value=pickle_path),
+        patch.object(Path, "unlink", side_effect=PermissionError("denied"))
+    ):
+        manager._clear_pickle_file()
+        assert manager.should_block_auth_retries() is True
+
+def test_pickle_clear_failure_threshold_defaults_to_three(tmp_path: Path) -> None:
+    manager = SessionManager()
+    pickle_path = tmp_path / "robinhood.pickle"
+    pickle_path.write_text("session")
+    
+    with (
+        patch.object(manager._pickle, "_get_pickle_file_path", return_value=pickle_path),
+        patch.object(Path, "unlink", side_effect=PermissionError("denied"))
+    ):
+        manager._clear_pickle_file()
+        manager._clear_pickle_file()
+        assert manager.should_block_auth_retries() is False
+        
+        manager._clear_pickle_file()
+        assert manager.should_block_auth_retries() is True

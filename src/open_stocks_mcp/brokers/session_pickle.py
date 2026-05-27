@@ -12,9 +12,9 @@ from open_stocks_mcp.logging_config import logger
 class SessionPickleManager:
     """Manages pickle read/write/clear and Fernet encryption for session tokens."""
 
-    def __init__(self) -> None:
+    def __init__(self, max_pickle_clear_failures: int = 3) -> None:
         self._consecutive_pickle_clear_failures = 0
-        self._max_pickle_clear_failures = 3
+        self._max_pickle_clear_failures = max_pickle_clear_failures
 
     def _get_tokens_dir(self) -> Path:
         tokens_dir = Path.home() / ".tokens"

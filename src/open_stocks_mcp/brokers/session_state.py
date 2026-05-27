@@ -22,10 +22,12 @@ class SessionManager:
         self,
         session_timeout_hours: int = 23,
         max_failed_attempts: int = 3,
+        max_pickle_clear_failures: int = 3,
         pickle_manager: SessionPickleManager | None = None,
     ) -> None:
         self.session_timeout_hours = session_timeout_hours
         self.max_failed_attempts = max_failed_attempts
+        self._max_pickle_clear_failures = max_pickle_clear_failures
         self.login_time: datetime | None = None
         self.last_successful_call: datetime | None = None
         self.username: str | None = None
@@ -33,7 +35,9 @@ class SessionManager:
         self._lock = asyncio.Lock()
         self._is_authenticated = False
         self._failed_login_attempts = 0
-        self._pickle = pickle_manager or SessionPickleManager()
+        self._pickle = pickle_manager or SessionPickleManager(
+            max_pickle_clear_failures=self._max_pickle_clear_failures
+        )
 
     def set_credentials(self, username: str, password: str) -> None:
         self.username = username
