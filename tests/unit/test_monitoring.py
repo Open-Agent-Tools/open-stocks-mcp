@@ -127,7 +127,8 @@ async def test_get_metrics_cleans_stale_tool_samples() -> None:
 
     assert metrics["calls_in_window"] == 1
     assert metrics["tool_usage"]["new_tool"]["calls"] == 1
-    assert metrics["tool_usage"]["old_tool"]["calls"] == 0
+    # Pruning removes the key entirely once its deque empties
+    assert "old_tool" not in metrics["tool_usage"]
 
 
 @pytest.mark.asyncio
@@ -264,6 +265,35 @@ def test_percentile_uses_ceil_rank_for_short_and_even_lists() -> None:
 
     assert p([10.0, 20.0, 30.0], 0.50) == 20.0
     assert p([10.0, 20.0, 30.0], 0.99) == 30.0
+
+
+@pytest.mark.asyncio
+async def test_clean_old_entries_prunes_empty_deques() -> None:
+    collector = MetricsCollector(window_size_minutes=1)
+    now = datetime.now()
+    stale = now - timedelta(minutes=2)
+
+    # Insert stale entries for old_tool
+    collector.tool_usage["old_tool"].append((stale, True))
+    collector.tool_response_times["old_tool"].append((stale, 0.5))
+    # Insert current entries for recent_tool
+    collector.tool_usage["recent_tool"].append((now, True))
+    collector.tool_response_times["recent_tool"].append((now, 0.1))
+
+    collector._clean_old_entries(now)
+
+    # old_tool's deques are now empty — keys should be pruned
+    assert "old_tool" not in collector.tool_usage
+    assert "old_tool" not in collector.tool_response_times
+    # recent_tool should still be present with data intact
+    assert "recent_tool" in collector.tool_usage
+    assert len(collector.tool_usage["recent_tool"]) == 1
+    assert "recent_tool" in collector.tool_response_times
+    assert len(collector.tool_response_times["recent_tool"]) == 1
+
+    # record_api_call must be able to re-create a pruned key via defaultdict
+    await collector.record_api_call("old_tool", 0.05, True)
+    assert "old_tool" in collector.tool_usage
 
 
 @pytest.mark.asyncio

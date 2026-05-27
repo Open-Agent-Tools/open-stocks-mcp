@@ -197,11 +197,17 @@ class MetricsCollector:
         for tool_calls in self.tool_usage.values():
             while tool_calls and tool_calls[0][0] < cutoff:
                 tool_calls.popleft()
+        empty_tools = [t for t, d in self.tool_usage.items() if not d]
+        for t in empty_tools:
+            del self.tool_usage[t]
 
         # Clean per-tool response times
         for tool_durations in self.tool_response_times.values():
             while tool_durations and tool_durations[0][0] < cutoff:
                 tool_durations.popleft()
+        empty_tools = [t for t, d in self.tool_response_times.items() if not d]
+        for t in empty_tools:
+            del self.tool_response_times[t]
 
         while (
             self.broker_operations and self.broker_operations[0]["timestamp"] < cutoff
