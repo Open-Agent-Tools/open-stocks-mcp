@@ -27,12 +27,6 @@ class TestReadmeDiscoverability:
     def test_links_api_tools_reference(self) -> None:
         assert "docs/api/tools.md" in self.readme
 
-    def test_api_docs_use_public_ci_scope_language(self) -> None:
-        api_readme = (ROOT / "docs" / "api" / "README.md").read_text()
-        api_lower = api_readme.lower()
-        assert "foreman skills" not in api_lower
-        assert "Notebook execution is intentionally not run in CI by design." in api_readme
-
     def test_links_notebooks_via_api_docs(self) -> None:
         assert "notebook" in self.readme.lower()
         api_readme = (ROOT / "docs" / "api" / "README.md").read_text()
@@ -51,7 +45,9 @@ class TestReadmeDiscoverability:
         api_readme = (ROOT / "docs" / "api" / "README.md").read_text()
         assert "Foreman skills" not in api_readme
         assert "foreman skills" not in api_readme.lower()
-        assert "Notebook execution is intentionally not run in CI by design." in api_readme
+        assert (
+            "Notebook execution is intentionally not run in CI by design." in api_readme
+        )
 
 
 class TestGeneratedToolDocs:

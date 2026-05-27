@@ -402,16 +402,16 @@ def _parse_broker_settings(brokers_yaml: dict[str, Any]) -> BrokerSettings:
         rh_timeout = 23
 
     sc_api_key = os.getenv("SCHWAB_API_KEY") or _optional_string(sc_yaml.get("api_key"))
-    sc_app_secret = (
-        os.getenv("SCHWAB_APP_SECRET") or _optional_string(sc_yaml.get("app_secret"))
+    sc_app_secret = os.getenv("SCHWAB_APP_SECRET") or _optional_string(
+        sc_yaml.get("app_secret")
     )
     sc_callback_url = (
         os.getenv("SCHWAB_CALLBACK_URL")
         or _optional_string(sc_yaml.get("callback_url"))
         or "https://127.0.0.1:8182/"
     )
-    sc_token_path = (
-        os.getenv("SCHWAB_TOKEN_PATH") or _optional_string(sc_yaml.get("token_path"))
+    sc_token_path = os.getenv("SCHWAB_TOKEN_PATH") or _optional_string(
+        sc_yaml.get("token_path")
     )
 
     raw_enabled = os.getenv("ENABLED_BROKERS")
