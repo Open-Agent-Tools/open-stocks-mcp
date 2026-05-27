@@ -397,7 +397,8 @@ def test_create_mcp_server_applies_rate_limiter_from_config() -> None:
 
 
 @pytest.mark.asyncio
-async def test_setup_brokers_skips_robinhood_when_flag_disabled() -> None:
+async def test_setup_brokers_skips_robinhood_when_flag_disabled(monkeypatch) -> None:
+    monkeypatch.setenv("ENABLED_BROKERS", "schwab")
     mock_registry = MagicMock()
     config = MagicMock()
     config.is_feature_enabled.side_effect = lambda name: {
@@ -420,7 +421,10 @@ async def test_setup_brokers_skips_robinhood_when_flag_disabled() -> None:
 
 
 @pytest.mark.asyncio
-async def test_setup_brokers_registers_robinhood_when_flag_enabled() -> None:
+async def test_setup_brokers_registers_robinhood_when_flag_enabled(
+    monkeypatch,
+) -> None:
+    monkeypatch.setenv("ENABLED_BROKERS", "robinhood")
     mock_registry = MagicMock()
     config = MagicMock()
     config.is_feature_enabled.side_effect = lambda name: {
@@ -444,7 +448,10 @@ async def test_setup_brokers_registers_robinhood_when_flag_enabled() -> None:
 
 
 @pytest.mark.asyncio
-async def test_setup_brokers_registers_schwab_when_enabled_and_configured() -> None:
+async def test_setup_brokers_registers_schwab_when_enabled_and_configured(
+    monkeypatch,
+) -> None:
+    monkeypatch.setenv("ENABLED_BROKERS", "schwab")
     mock_registry = MagicMock()
     config = MagicMock()
     config.is_feature_enabled.side_effect = lambda name: {
@@ -465,6 +472,173 @@ async def test_setup_brokers_registers_schwab_when_enabled_and_configured() -> N
         await setup_brokers(None, None, config=config)
 
     mock_registry.register.assert_called_once()
+
+
+@pytest.mark.journey_system
+class TestSetupBrokers:
+    """Test setup_brokers environment variable gating."""
+
+    @pytest.mark.asyncio
+    async def test_setup_brokers_default_behavior(self, monkeypatch) -> None:
+        """Test default behavior (unset ENABLED_BROKERS) registers Robinhood."""
+        monkeypatch.delenv("ENABLED_BROKERS", raising=False)
+        mock_registry = MagicMock()
+        mock_registry.register = MagicMock()
+
+        with (
+            patch(
+                "open_stocks_mcp.server.app.get_broker_registry",
+                AsyncMock(return_value=mock_registry),
+            ),
+            patch("open_stocks_mcp.server.app.RobinhoodBroker", MagicMock()),
+            patch("open_stocks_mcp.server.app.get_session_manager", MagicMock()),
+            patch("open_stocks_mcp.server.app.attempt_broker_logins", AsyncMock()),
+        ):
+            await setup_brokers("user", "pass")
+
+        # Current behavior (and desired default): registers Robinhood if creds provided
+        mock_registry.register.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_setup_brokers_respects_enabled_brokers_schwab_only(
+        self, monkeypatch
+    ) -> None:
+        """Test that setting ENABLED_BROKERS=schwab skips Robinhood even if creds present."""
+        monkeypatch.setenv("ENABLED_BROKERS", "schwab")
+        mock_registry = MagicMock()
+        mock_registry.register = MagicMock()
+
+        with (
+            patch(
+                "open_stocks_mcp.server.app.get_broker_registry",
+                AsyncMock(return_value=mock_registry),
+            ),
+            patch("open_stocks_mcp.server.app.RobinhoodBroker", MagicMock()),
+            patch("open_stocks_mcp.server.app.get_session_manager", MagicMock()),
+            patch("open_stocks_mcp.server.app.attempt_broker_logins", AsyncMock()),
+        ):
+            await setup_brokers("user", "pass")
+
+        # Should NOT register Robinhood
+        mock_registry.register.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_setup_brokers_empty_enabled_brokers(self, monkeypatch) -> None:
+        """Test that setting ENABLED_BROKERS='' results in no brokers."""
+        monkeypatch.setenv("ENABLED_BROKERS", "")
+        mock_registry = MagicMock()
+        mock_registry.register = MagicMock()
+
+        with (
+            patch(
+                "open_stocks_mcp.server.app.get_broker_registry",
+                AsyncMock(return_value=mock_registry),
+            ),
+            patch("open_stocks_mcp.server.app.attempt_broker_logins", AsyncMock()),
+        ):
+            await setup_brokers("user", "pass")
+
+        mock_registry.register.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_setup_brokers_whitespace_and_case_insensitivity(
+        self, monkeypatch
+    ) -> None:
+        """Test whitespace tolerance and case insensitivity in ENABLED_BROKERS."""
+        monkeypatch.setenv("ENABLED_BROKERS", " Robinhood , schwab ")
+        mock_registry = MagicMock()
+        mock_registry.register = MagicMock()
+
+        with (
+            patch(
+                "open_stocks_mcp.server.app.get_broker_registry",
+                AsyncMock(return_value=mock_registry),
+            ),
+            patch("open_stocks_mcp.server.app.RobinhoodBroker", MagicMock()),
+            patch("open_stocks_mcp.server.app.get_session_manager", MagicMock()),
+            patch("open_stocks_mcp.server.app.attempt_broker_logins", AsyncMock()),
+        ):
+            await setup_brokers("user", "pass")
+
+        # Robinhood should be registered
+        mock_registry.register.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_setup_brokers_unknown_token_logs_warning(
+        self, monkeypatch, caplog
+    ) -> None:
+        """Test that unknown tokens in ENABLED_BROKERS log a warning but don't crash."""
+        monkeypatch.setenv("ENABLED_BROKERS", "bogus,robinhood")
+        mock_registry = MagicMock()
+        mock_registry.register = MagicMock()
+
+        import logging
+
+        caplog.set_level(logging.WARNING, logger="open_stocks_mcp")
+
+        with (
+            patch(
+                "open_stocks_mcp.server.app.get_broker_registry",
+                AsyncMock(return_value=mock_registry),
+            ),
+            patch("open_stocks_mcp.server.app.RobinhoodBroker", MagicMock()),
+            patch("open_stocks_mcp.server.app.get_session_manager", MagicMock()),
+            patch("open_stocks_mcp.server.app.attempt_broker_logins", AsyncMock()),
+        ):
+            await setup_brokers("user", "pass")
+
+        assert "bogus" in caplog.text
+        # Robinhood should still be registered
+        mock_registry.register.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_setup_brokers_default_broker_valid(self, monkeypatch) -> None:
+        """Test that valid DEFAULT_BROKER calls set_active_broker."""
+        monkeypatch.setenv("DEFAULT_BROKER", "robinhood")
+        mock_registry = MagicMock()
+        mock_registry.register = MagicMock()
+        mock_registry.list_brokers.return_value = ["robinhood"]
+
+        with (
+            patch(
+                "open_stocks_mcp.server.app.get_broker_registry",
+                AsyncMock(return_value=mock_registry),
+            ),
+            patch("open_stocks_mcp.server.app.RobinhoodBroker", MagicMock()),
+            patch("open_stocks_mcp.server.app.get_session_manager", MagicMock()),
+            patch("open_stocks_mcp.server.app.attempt_broker_logins", AsyncMock()),
+        ):
+            await setup_brokers("user", "pass")
+
+        mock_registry.set_active_broker.assert_called_once_with("robinhood")
+
+    @pytest.mark.asyncio
+    async def test_setup_brokers_default_broker_invalid_logs_warning(
+        self, monkeypatch, caplog
+    ) -> None:
+        """Test that invalid DEFAULT_BROKER logs a warning."""
+        monkeypatch.setenv("DEFAULT_BROKER", "schwab")
+        mock_registry = MagicMock()
+        mock_registry.register = MagicMock()
+        mock_registry.list_brokers.return_value = ["robinhood"]
+
+        import logging
+
+        caplog.set_level(logging.WARNING, logger="open_stocks_mcp")
+
+        with (
+            patch(
+                "open_stocks_mcp.server.app.get_broker_registry",
+                AsyncMock(return_value=mock_registry),
+            ),
+            patch("open_stocks_mcp.server.app.RobinhoodBroker", MagicMock()),
+            patch("open_stocks_mcp.server.app.get_session_manager", MagicMock()),
+            patch("open_stocks_mcp.server.app.attempt_broker_logins", AsyncMock()),
+        ):
+            await setup_brokers("user", "pass")
+
+        assert "schwab" in caplog.text
+        mock_registry.set_active_broker.assert_not_called()
 
 
 def test_main_debug_flag_passes_debug_config_to_server() -> None:

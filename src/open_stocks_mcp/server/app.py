@@ -2043,6 +2043,46 @@ def create_mcp_server(config: ServerConfig | None = None) -> FastMCP:
     return mcp
 
 
+KNOWN_BROKERS = {"robinhood", "schwab"}
+
+
+def _parse_enabled_brokers(raw: str | None) -> list[str]:
+    """Parse comma-separated list of enabled brokers.
+
+    Args:
+        raw: Raw environment variable value
+
+    Returns:
+        List of normalized broker names
+    """
+    if raw is None:
+        return ["robinhood"]
+
+    tokens = [t.strip().lower() for t in raw.split(",") if t.strip()]
+    return list(dict.fromkeys(tokens))
+
+
+def _apply_default_broker(registry: Any, raw: str | None) -> None:
+    """Apply the default broker if specified.
+
+    Args:
+        registry: Broker registry
+        raw: Raw environment variable value
+    """
+    if not raw:
+        return
+
+    name = raw.strip().lower()
+    registered = registry.list_brokers()
+
+    if name in registered:
+        registry.set_active_broker(name)
+    else:
+        logger.warning(
+            f"⚠️  DEFAULT_BROKER '{name}' not in registered brokers: {registered}"
+        )
+
+
 async def setup_brokers(
     username: str | None,
     password: str | None,
@@ -2057,6 +2097,7 @@ async def setup_brokers(
     Args:
         username: Robinhood username (optional)
         password: Robinhood password (optional)
+        config: Server configuration (optional)
     """
     if config is None:
         config = load_config()
@@ -2066,47 +2107,60 @@ async def setup_brokers(
     # Get the global registry
     registry = await get_broker_registry()
 
-    robinhood_enabled = config.is_feature_enabled("brokers.robinhood")
-    schwab_enabled = config.is_feature_enabled("brokers.schwab")
+    # Get enabled brokers from environment
+    enabled = _parse_enabled_brokers(os.getenv("ENABLED_BROKERS"))
+
+    # Log warnings for unknown brokers
+    for broker_name in enabled:
+        if broker_name not in KNOWN_BROKERS:
+            logger.warning(
+                f"⚠️  Unknown broker '{broker_name}' in ENABLED_BROKERS. "
+                f"Known brokers: {KNOWN_BROKERS}"
+            )
 
     # Setup Robinhood broker if enabled and credentials provided
-    if robinhood_enabled and username and password:
-        logger.info("Configuring Robinhood broker...")
-        session_manager = get_session_manager()
-        robinhood_broker = RobinhoodBroker(
-            username=username,
-            password=password,
-            session_manager=session_manager,
-        )
-        registry.register(robinhood_broker)
-        logger.info("✓ Robinhood broker registered")
-    elif robinhood_enabled:
-        logger.warning(
-            "⚠️  Robinhood credentials not provided - skipping Robinhood integration"
-        )
+    if "robinhood" in enabled:
+        if username and password:
+            logger.info("Configuring Robinhood broker...")
+            session_manager = get_session_manager()
+            robinhood_broker = RobinhoodBroker(
+                username=username,
+                password=password,
+                session_manager=session_manager,
+            )
+            registry.register(robinhood_broker)
+            logger.info("✓ Robinhood broker registered")
+        else:
+            logger.warning(
+                "⚠️  Robinhood credentials not provided - skipping Robinhood integration"
+            )
+            logger.info(
+                "   Set ROBINHOOD_USERNAME and ROBINHOOD_PASSWORD to enable Robinhood"
+            )
+    elif username or password:
         logger.info(
-            "   Set ROBINHOOD_USERNAME and ROBINHOOD_PASSWORD to enable Robinhood"
+            "Robinhood credentials supplied but Robinhood is disabled via ENABLED_BROKERS"
         )
-    else:
-        logger.info("Robinhood broker disabled by feature flag brokers.robinhood")
 
-    # Setup Schwab broker if enabled and credentials configured
-    if schwab_enabled and config.schwab_api_key and config.schwab_app_secret:
-        logger.info("Configuring Schwab broker...")
-        schwab_broker = SchwabBroker(
-            api_key=config.schwab_api_key,
-            app_secret=config.schwab_app_secret,
-            callback_url=config.schwab_callback_url,
-            token_path=config.schwab_token_path,
-        )
-        registry.register(schwab_broker)
-        logger.info("✓ Schwab broker registered")
-    elif schwab_enabled:
-        logger.warning(
-            "⚠️  Schwab enabled but SCHWAB_API_KEY/SCHWAB_APP_SECRET not configured"
-        )
-    else:
-        logger.info("Schwab broker disabled by feature flag brokers.schwab")
+    # Setup Schwab broker if enabled
+    if "schwab" in enabled:
+        if config.schwab_api_key and config.schwab_app_secret:
+            logger.info("Configuring Schwab broker...")
+            schwab_broker = SchwabBroker(
+                api_key=config.schwab_api_key,
+                app_secret=config.schwab_app_secret,
+                callback_url=config.schwab_callback_url,
+                token_path=config.schwab_token_path,
+            )
+            registry.register(schwab_broker)
+            logger.info("✓ Schwab broker registered")
+        else:
+            logger.info(
+                "Schwab enablement gate honored, but Schwab registration is tracked in #54"
+            )
+
+    # Apply default broker if specified
+    _apply_default_broker(registry, os.getenv("DEFAULT_BROKER"))
 
     # Attempt to authenticate all registered brokers
     await attempt_broker_logins(require_at_least_one=False)
