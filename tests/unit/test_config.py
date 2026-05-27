@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+from dataclasses import fields
 from pathlib import Path
 
 import pytest
 
-from open_stocks_mcp.config import ConfigError, load_config
+from open_stocks_mcp.config import ConfigError, RetryConfig, load_config
 
 
 @pytest.mark.unit
@@ -159,6 +160,25 @@ def test_missing_file_uses_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
     assert cfg.cache.ttl_account_seconds > 0
     assert cfg.cache.max_size > 0
     assert cfg.feature_flags.enable_cache is True
+
+
+@pytest.mark.unit
+@pytest.mark.journey_system
+def test_authentication_retry_count_uses_generic_max_retries(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    retry_fields = {field.name for field in fields(RetryConfig)}
+    retry = RetryConfig(max_retries=3)
+
+    assert "authentication_max_retries" not in retry_fields
+    assert retry.max_retries_for("authentication") == 3
+
+    monkeypatch.setenv("OPEN_STOCKS_MCP_RETRY_MAX_RETRIES", "3")
+    monkeypatch.setenv("OPEN_STOCKS_MCP_RETRY_AUTHENTICATION_MAX_RETRIES", "9")
+
+    cfg = load_config(config_path=Path("/tmp/definitely-missing-config.yaml"))
+
+    assert cfg.retry.max_retries_for("authentication") == 3
 
 
 @pytest.mark.unit
