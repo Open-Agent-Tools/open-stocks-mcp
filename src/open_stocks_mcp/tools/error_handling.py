@@ -20,11 +20,11 @@ from open_stocks_mcp.tools.responses import (
     create_success_response,
     handle_robin_stocks_errors,
     handle_robin_stocks_sync_errors,
-    handle_schwab_errors,
     log_api_call,
     sanitize_api_response,
 )
 from open_stocks_mcp.tools.retry import DEFAULT_MAX_RETRIES, execute_with_retry
+from open_stocks_mcp.tools.schwab.error_handling import handle_schwab_errors
 from open_stocks_mcp.tools.validation import (
     validate_period,
     validate_symbol,
