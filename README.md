@@ -328,7 +328,7 @@ export ROBINHOOD_PASSWORD="password"
 cd examples/open-stocks-mcp-docker && docker-compose up -d
 
 # Run evaluation
-MCP_HTTP_URL="http://localhost:3001/mcp" adk eval examples/google_adk_agent tests/evals/list_available_tools_test.json --config_file_path tests/evals/test_config.json
+MCP_HTTP_URL="http://localhost:3001/mcp" adk eval examples/google_adk_agent tests/evals/0_list_available_tools_test.json --config_file_path tests/evals/test_config.json
 ```
 
 ## Project Scope
