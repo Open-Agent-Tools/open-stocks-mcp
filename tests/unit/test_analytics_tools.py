@@ -276,7 +276,6 @@ class TestDayTrades:
 class TestInterestPayments:
     """Test interest payments functionality."""
 
-    @patch("open_stocks_mcp.tools.robinhood_dividend_tools.get_rate_limiter")
     @patch("open_stocks_mcp.tools.robinhood_dividend_tools.get_session_manager")
     @patch(
         "open_stocks_mcp.tools.robinhood_dividend_tools.rh.account.get_interest_payments"
@@ -288,7 +287,6 @@ class TestInterestPayments:
         self,
         mock_interest_payments: Any,
         mock_session_manager: Any,
-        mock_rate_limiter: Any,
     ) -> None:
         """Test successful interest payments retrieval."""
         mock_interest_payments.return_value = [
@@ -317,11 +315,6 @@ class TestInterestPayments:
         mock_session_instance.ensure_authenticated.return_value = True
         mock_session_manager.return_value = mock_session_instance
 
-        # Mock rate limiter
-        mock_rate_instance = AsyncMock()
-        mock_rate_instance.acquire.return_value = None
-        mock_rate_limiter.return_value = mock_rate_instance
-
         result = await get_interest_payments()
 
         assert "result" in result
@@ -332,7 +325,6 @@ class TestInterestPayments:
         assert result["result"]["interest_payments"][0]["type"] == "cash_management"
         assert result["result"]["status"] == "success"
 
-    @patch("open_stocks_mcp.tools.robinhood_dividend_tools.get_rate_limiter")
     @patch("open_stocks_mcp.tools.robinhood_dividend_tools.get_session_manager")
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
@@ -346,7 +338,6 @@ class TestInterestPayments:
         self,
         mock_interest_payments: Any,
         mock_session_manager: Any,
-        mock_rate_limiter: Any,
     ) -> None:
         """Test interest payments when no data is available."""
         mock_interest_payments.return_value = None
@@ -355,11 +346,6 @@ class TestInterestPayments:
         mock_session_instance = AsyncMock()
         mock_session_instance.ensure_authenticated.return_value = True
         mock_session_manager.return_value = mock_session_instance
-
-        # Mock rate limiter
-        mock_rate_instance = AsyncMock()
-        mock_rate_instance.acquire.return_value = None
-        mock_rate_limiter.return_value = mock_rate_instance
 
         result = await get_interest_payments()
 
@@ -373,7 +359,6 @@ class TestInterestPayments:
 class TestStockLoanPayments:
     """Test stock loan payments functionality."""
 
-    @patch("open_stocks_mcp.tools.robinhood_dividend_tools.get_rate_limiter")
     @patch("open_stocks_mcp.tools.robinhood_dividend_tools.get_session_manager")
     @patch(
         "open_stocks_mcp.tools.robinhood_dividend_tools.rh.stocks.get_instrument_by_url"
@@ -389,7 +374,6 @@ class TestStockLoanPayments:
         mock_loan_payments: Any,
         mock_instrument: Any,
         mock_session_manager: Any,
-        mock_rate_limiter: Any,
     ) -> None:
         """Test successful stock loan payments retrieval."""
         mock_loan_payments.return_value = [
@@ -425,11 +409,6 @@ class TestStockLoanPayments:
         mock_session_instance.ensure_authenticated.return_value = True
         mock_session_manager.return_value = mock_session_instance
 
-        # Mock rate limiter
-        mock_rate_instance = AsyncMock()
-        mock_rate_instance.acquire.return_value = None
-        mock_rate_limiter.return_value = mock_rate_instance
-
         result = await get_stock_loan_payments()
 
         assert "result" in result
@@ -442,7 +421,6 @@ class TestStockLoanPayments:
         assert result["result"]["loan_payments"][1]["symbol"] == "GME"
         assert result["result"]["status"] == "success"
 
-    @patch("open_stocks_mcp.tools.robinhood_dividend_tools.get_rate_limiter")
     @patch("open_stocks_mcp.tools.robinhood_dividend_tools.get_session_manager")
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
@@ -453,7 +431,7 @@ class TestStockLoanPayments:
     @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_stock_loan_payments_no_data(
-        self, mock_loan_payments: Any, mock_session_manager: Any, mock_rate_limiter: Any
+        self, mock_loan_payments: Any, mock_session_manager: Any
     ) -> None:
         """Test stock loan payments when no data is available."""
         mock_loan_payments.return_value = None
@@ -462,11 +440,6 @@ class TestStockLoanPayments:
         mock_session_instance = AsyncMock()
         mock_session_instance.ensure_authenticated.return_value = True
         mock_session_manager.return_value = mock_session_instance
-
-        # Mock rate limiter
-        mock_rate_instance = AsyncMock()
-        mock_rate_instance.acquire.return_value = None
-        mock_rate_limiter.return_value = mock_rate_instance
 
         result = await get_stock_loan_payments()
 

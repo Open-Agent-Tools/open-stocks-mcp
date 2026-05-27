@@ -1,6 +1,5 @@
 """Robin Stocks dividend and income tracking tools."""
 
-import asyncio
 import contextlib
 from typing import Any
 
@@ -9,9 +8,9 @@ import robin_stocks.robinhood as rh
 from open_stocks_mcp.brokers.session_state import get_session_manager
 from open_stocks_mcp.logging_config import logger
 from open_stocks_mcp.tools.error_handling import (
+    execute_with_retry,
     handle_robin_stocks_errors,
 )
-from open_stocks_mcp.tools.rate_limiter import get_rate_limiter
 
 
 @handle_robin_stocks_errors
@@ -50,12 +49,8 @@ async def get_dividends() -> dict[str, Any]:
         if not await session_mgr.ensure_authenticated():
             return {"result": {"error": "Authentication required", "status": "error"}}
 
-        # Apply rate limiting
-        rate_limiter = get_rate_limiter("robinhood")
-        await rate_limiter.acquire()
-
         # Get dividend data
-        dividends = await asyncio.to_thread(rh.account.get_dividends)
+        dividends = await execute_with_retry(rh.account.get_dividends)
 
         # Validate response
         if not dividends or not isinstance(dividends, list):
@@ -85,7 +80,7 @@ async def get_dividends() -> dict[str, Any]:
             instrument_url = dividend.get("instrument")
             if instrument_url:
                 try:
-                    instrument_data = await asyncio.to_thread(
+                    instrument_data = await execute_with_retry(
                         rh.stocks.get_instrument_by_url, instrument_url
                     )
                     if instrument_data and isinstance(instrument_data, dict):
@@ -145,15 +140,11 @@ async def get_total_dividends() -> dict[str, Any]:
         if not await session_mgr.ensure_authenticated():
             return {"result": {"error": "Authentication required", "status": "error"}}
 
-        # Apply rate limiting
-        rate_limiter = get_rate_limiter("robinhood")
-        await rate_limiter.acquire()
-
         # Use robin_stocks built-in function
-        total = await asyncio.to_thread(rh.account.get_total_dividends)
+        total = await execute_with_retry(rh.account.get_total_dividends)
 
         # Also get detailed dividends for additional stats
-        dividends = await asyncio.to_thread(rh.account.get_dividends)
+        dividends = await execute_with_retry(rh.account.get_dividends)
 
         # Calculate additional statistics
         by_year: dict[str, float] = {}
@@ -239,12 +230,8 @@ async def get_dividends_by_instrument(symbol: str) -> dict[str, Any]:
         if not await session_mgr.ensure_authenticated():
             return {"result": {"error": "Authentication required", "status": "error"}}
 
-        # Apply rate limiting
-        rate_limiter = get_rate_limiter("robinhood")
-        await rate_limiter.acquire()
-
         # Get dividends by instrument
-        dividends = await asyncio.to_thread(
+        dividends = await execute_with_retry(
             rh.account.get_dividends_by_instrument, symbol
         )
 
@@ -320,12 +307,8 @@ async def get_interest_payments() -> dict[str, Any]:
         if not await session_mgr.ensure_authenticated():
             return {"result": {"error": "Authentication required", "status": "error"}}
 
-        # Apply rate limiting
-        rate_limiter = get_rate_limiter("robinhood")
-        await rate_limiter.acquire()
-
         # Get interest payments
-        interest_payments = await asyncio.to_thread(rh.account.get_interest_payments)
+        interest_payments = await execute_with_retry(rh.account.get_interest_payments)
 
         # Process interest payment data
         processed_payments = []
@@ -394,12 +377,8 @@ async def get_stock_loan_payments() -> dict[str, Any]:
         if not await session_mgr.ensure_authenticated():
             return {"result": {"error": "Authentication required", "status": "error"}}
 
-        # Apply rate limiting
-        rate_limiter = get_rate_limiter("robinhood")
-        await rate_limiter.acquire()
-
         # Get stock loan payments
-        loan_payments = await asyncio.to_thread(rh.account.get_stock_loan_payments)
+        loan_payments = await execute_with_retry(rh.account.get_stock_loan_payments)
 
         # Process loan payment data
         processed_payments = []
@@ -422,7 +401,7 @@ async def get_stock_loan_payments() -> dict[str, Any]:
                 instrument_url = payment.get("instrument")
                 if instrument_url:
                     try:
-                        instrument_data = await asyncio.to_thread(
+                        instrument_data = await execute_with_retry(
                             rh.stocks.get_instrument_by_url, instrument_url
                         )
                         if instrument_data and isinstance(instrument_data, dict):
