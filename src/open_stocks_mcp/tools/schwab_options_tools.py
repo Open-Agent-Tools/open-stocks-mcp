@@ -401,6 +401,81 @@ async def get_schwab_option_positions_detailed(
 
 
 @handle_schwab_errors
+async def schwab_get_option_quote(
+    symbol: str,
+    expiration_date: str,
+    strike: float,
+    option_type: str,
+) -> dict[str, Any]:
+    """Get a single option contract quote by expiration, strike, and type.
+
+    Args:
+        symbol: Stock ticker symbol
+        expiration_date: Expiration date in YYYY-MM-DD format
+        strike: Strike price (e.g. 170.0)
+        option_type: 'CALL' or 'PUT'
+
+    Returns:
+        Dict with contract data including bid, ask, last, delta, gamma, theta,
+        vega, volatility, openInterest, totalVolume, and putCall.
+    """
+    broker, error = await get_authenticated_broker_or_error(
+        "schwab", f"get option quote for {symbol}"
+    )
+    if error:
+        return error
+
+    try:
+        normalized_type = option_type.upper()
+        if normalized_type not in ("CALL", "PUT"):
+            return create_error_response(
+                ValueError(
+                    f"Invalid option_type '{option_type}'. Must be 'CALL' or 'PUT'."
+                )
+            )
+
+        contract_type_map = {
+            "CALL": Client.Options.ContractType.CALL,
+            "PUT": Client.Options.ContractType.PUT,
+        }
+        ct = contract_type_map[normalized_type]
+
+        def _get_option_chain() -> Any:
+            response = broker.client.get_option_chain(
+                symbol.upper(),
+                contract_type=ct,
+                include_underlying_quote=False,
+            )
+            return response.json()
+
+        chain_data = await execute_broker_request(_get_option_chain, retry_safe=True)
+
+        exp_map_key = "callExpDateMap" if normalized_type == "CALL" else "putExpDateMap"
+        exp_map: dict[str, Any] = chain_data.get(exp_map_key, {})
+
+        strike_key = f"{strike:.1f}"
+
+        for exp_chain_key, strikes_map in exp_map.items():
+            # Schwab keys have DTE suffix: "YYYY-MM-DD:N"
+            if not exp_chain_key.startswith(expiration_date):
+                continue
+            contracts = strikes_map.get(strike_key)
+            if contracts:
+                return create_success_response(contracts[0])
+
+        return create_error_response(
+            ValueError(
+                f"No {normalized_type} contract found for {symbol.upper()} "
+                f"expiring {expiration_date} at strike {strike_key}"
+            )
+        )
+
+    except Exception as e:
+        logger.error(f"Error getting Schwab option quote for {symbol}: {e}")
+        return create_error_response(e)
+
+
+@handle_schwab_errors
 async def schwab_option_buy_to_open(
     account_hash: str,
     symbol: str,
