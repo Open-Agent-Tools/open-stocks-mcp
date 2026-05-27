@@ -21,6 +21,8 @@ from open_stocks_mcp.server.tool_helpers import (
 )
 from tests.conftest import MockBroker
 
+pytestmark = pytest.mark.integration
+
 
 class TestMultiBrokerIntegration:
     """Test multi-broker scenarios."""
