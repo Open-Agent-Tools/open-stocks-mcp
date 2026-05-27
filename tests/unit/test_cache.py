@@ -10,7 +10,21 @@ from unittest.mock import patch
 
 import pytest
 
-...
+
+@pytest.fixture(autouse=True)
+def reset_cache_test_state() -> None:
+    """Keep global cache/config/metrics state isolated between tests."""
+    from open_stocks_mcp import monitoring
+    from open_stocks_mcp.config import reset_cache_config
+    from open_stocks_mcp.tools.cache import clear_caches
+
+    clear_caches()
+    reset_cache_config()
+    monitoring._metrics_collector = None
+    yield
+    clear_caches()
+    reset_cache_config()
+    monitoring._metrics_collector = None
 
 
 class TestCachedAsyncDecorator:
