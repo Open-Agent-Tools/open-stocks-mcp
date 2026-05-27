@@ -2098,8 +2098,8 @@ async def setup_brokers(
     authentication fails for all brokers.
 
     Args:
-        username: Robinhood username (optional)
-        password: Robinhood password (optional)
+        username: Robinhood username (optional, overrides config)
+        password: Robinhood password (optional, overrides config)
         config: Server configuration (optional)
     """
     if config is None:
@@ -2110,25 +2110,20 @@ async def setup_brokers(
     # Get the global registry
     registry = await get_broker_registry()
 
-    # Get enabled brokers from environment
-    enabled = _parse_enabled_brokers(os.getenv("ENABLED_BROKERS"))
+    # Use centralized broker config for enabled brokers
+    enabled = config.brokers.enabled_brokers
 
-    # Log warnings for unknown brokers
-    for broker_name in enabled:
-        if broker_name not in KNOWN_BROKERS:
-            logger.warning(
-                f"⚠️  Unknown broker '{broker_name}' in ENABLED_BROKERS. "
-                f"Known brokers: {KNOWN_BROKERS}"
-            )
-
-    # Setup Robinhood broker if enabled and credentials provided
+    # Setup Robinhood broker if enabled
     if "robinhood" in enabled:
-        if username and password:
+        # CLI credentials override configured credentials
+        rh_username = username or config.brokers.robinhood.username
+        rh_password = password or config.brokers.robinhood.password
+        if rh_username and rh_password:
             logger.info("Configuring Robinhood broker...")
             session_manager = get_session_manager()
             robinhood_broker = RobinhoodBroker(
-                username=username,
-                password=password,
+                username=rh_username,
+                password=rh_password,
                 session_manager=session_manager,
             )
             registry.register(robinhood_broker)
@@ -2147,13 +2142,14 @@ async def setup_brokers(
 
     # Setup Schwab broker if enabled
     if "schwab" in enabled:
-        if config.schwab_api_key and config.schwab_app_secret:
+        sc = config.brokers.schwab
+        if sc.api_key and sc.app_secret:
             logger.info("Configuring Schwab broker...")
             schwab_broker = SchwabBroker(
-                api_key=config.schwab_api_key,
-                app_secret=config.schwab_app_secret,
-                callback_url=config.schwab_callback_url,
-                token_path=config.schwab_token_path,
+                api_key=sc.api_key,
+                app_secret=sc.app_secret,
+                callback_url=sc.callback_url,
+                token_path=sc.token_path,
             )
             registry.register(schwab_broker)
             logger.info("✓ Schwab broker registered")
@@ -2162,8 +2158,16 @@ async def setup_brokers(
                 "Schwab enablement gate honored, but Schwab registration is tracked in #54"
             )
 
-    # Apply default broker if specified
-    _apply_default_broker(registry, os.getenv("DEFAULT_BROKER"))
+    # Apply default broker from centralized config
+    default = config.brokers.default_broker
+    if default:
+        registered = registry.list_brokers()
+        if default in registered:
+            registry.set_active_broker(default)
+        else:
+            logger.warning(
+                f"⚠️  DEFAULT_BROKER '{default}' not in registered brokers: {registered}"
+            )
 
     # Attempt to authenticate all registered brokers
     await attempt_broker_logins(require_at_least_one=False)

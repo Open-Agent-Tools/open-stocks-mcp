@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+import logging
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
 import yaml
+
+_config_logger = logging.getLogger(__name__)
 
 
 class ConfigError(ValueError):
@@ -250,6 +253,39 @@ class OtelConfig:
 
 
 @dataclass
+class RobinhoodConfig:
+    """Robinhood broker credentials and session settings."""
+
+    username: str | None = None
+    password: str | None = None
+    pickle_name: str = "robinhood"
+    session_timeout_hours: int = 23
+
+
+@dataclass
+class SchwabConfig:
+    """Schwab broker credentials and OAuth settings."""
+
+    api_key: str | None = None
+    app_secret: str | None = None
+    callback_url: str = "https://127.0.0.1:8182/"
+    token_path: str | None = None
+
+
+_KNOWN_BROKERS: frozenset[str] = frozenset({"robinhood", "schwab"})
+
+
+@dataclass
+class BrokerSettings:
+    """Multi-broker configuration surface."""
+
+    robinhood: RobinhoodConfig = field(default_factory=RobinhoodConfig)
+    schwab: SchwabConfig = field(default_factory=SchwabConfig)
+    enabled_brokers: list[str] = field(default_factory=lambda: ["robinhood"])
+    default_broker: str | None = None
+
+
+@dataclass
 class ServerConfig:
     name: str = "Open Stocks MCP"
     environment: str = "default"
@@ -268,6 +304,7 @@ class ServerConfig:
     feature_flag_definitions: dict[str, FeatureFlagDefinition] = field(
         default_factory=dict
     )
+    brokers: BrokerSettings = field(default_factory=BrokerSettings)
     schwab_api_key: str | None = None
     schwab_app_secret: str | None = None
     schwab_callback_url: str = "https://127.0.0.1:8182/"
@@ -295,6 +332,108 @@ class ServerConfig:
     def alerting(self) -> AlertConfig:
         """Compatibility alias for issue docs that refer to server.alerting."""
         return self.alerts
+
+
+def _parse_enabled_brokers_config(
+    raw: str | None, yaml_list: list[str] | None
+) -> list[str]:
+    """Parse ENABLED_BROKERS env var or YAML list into a normalized broker list.
+
+    Unknown names are warned-and-dropped. Empty result is allowed.
+    """
+    if raw is not None:
+        tokens = [t.strip().lower() for t in raw.split(",") if t.strip()]
+    elif yaml_list is not None:
+        tokens = [str(t).strip().lower() for t in yaml_list if str(t).strip()]
+    else:
+        return ["robinhood"]
+
+    result: list[str] = []
+    seen: set[str] = set()
+    for name in tokens:
+        if name in seen:
+            continue
+        seen.add(name)
+        if name not in _KNOWN_BROKERS:
+            _config_logger.warning(
+                "Unknown broker '%s' in ENABLED_BROKERS; ignoring. Known brokers: %s",
+                name,
+                sorted(_KNOWN_BROKERS),
+            )
+        else:
+            result.append(name)
+    return result
+
+
+def _parse_broker_settings(brokers_yaml: dict[str, Any]) -> BrokerSettings:
+    """Build a BrokerSettings from YAML section + env var overrides."""
+    rh_yaml = brokers_yaml.get("robinhood", {})
+    if not isinstance(rh_yaml, dict):
+        rh_yaml = {}
+    sc_yaml = brokers_yaml.get("schwab", {})
+    if not isinstance(sc_yaml, dict):
+        sc_yaml = {}
+
+    rh_username = (
+        os.getenv("ROBINHOOD_USERNAME") or str(rh_yaml.get("username", "")) or None
+    )
+    rh_password = (
+        os.getenv("ROBINHOOD_PASSWORD") or str(rh_yaml.get("password", "")) or None
+    )
+    rh_pickle = os.getenv("ROBINHOOD_PICKLE_NAME") or str(
+        rh_yaml.get("pickle_name", "robinhood")
+    )
+    rh_timeout_raw = os.getenv("ROBINHOOD_SESSION_TIMEOUT_HOURS") or rh_yaml.get(
+        "session_timeout_hours", 23
+    )
+    try:
+        rh_timeout = int(rh_timeout_raw)
+    except (TypeError, ValueError):
+        rh_timeout = 23
+
+    sc_api_key = os.getenv("SCHWAB_API_KEY") or str(sc_yaml.get("api_key", "")) or None
+    sc_app_secret = (
+        os.getenv("SCHWAB_APP_SECRET") or str(sc_yaml.get("app_secret", "")) or None
+    )
+    sc_callback_url = (
+        os.getenv("SCHWAB_CALLBACK_URL")
+        or str(sc_yaml.get("callback_url", ""))
+        or "https://127.0.0.1:8182/"
+    )
+    sc_token_path = (
+        os.getenv("SCHWAB_TOKEN_PATH") or str(sc_yaml.get("token_path", "")) or None
+    )
+
+    raw_enabled = os.getenv("ENABLED_BROKERS")
+    yaml_enabled: list[str] | None = None
+    if "enabled_brokers" in brokers_yaml:
+        raw_list = brokers_yaml["enabled_brokers"]
+        if isinstance(raw_list, list):
+            yaml_enabled = [str(x) for x in raw_list]
+    if raw_enabled is None and yaml_enabled is None:
+        enabled = ["robinhood"]
+    else:
+        enabled = _parse_enabled_brokers_config(raw_enabled, yaml_enabled)
+
+    raw_default = os.getenv("DEFAULT_BROKER") or brokers_yaml.get("default_broker")
+    default_broker: str | None = raw_default.strip().lower() if raw_default else None
+
+    return BrokerSettings(
+        robinhood=RobinhoodConfig(
+            username=rh_username,
+            password=rh_password,
+            pickle_name=rh_pickle,
+            session_timeout_hours=rh_timeout,
+        ),
+        schwab=SchwabConfig(
+            api_key=sc_api_key,
+            app_secret=sc_app_secret,
+            callback_url=sc_callback_url,
+            token_path=sc_token_path,
+        ),
+        enabled_brokers=enabled,
+        default_broker=default_broker,
+    )
 
 
 def load_config(config_path: Path | str | None = None) -> ServerConfig:
@@ -633,6 +772,7 @@ def load_config(config_path: Path | str | None = None) -> ServerConfig:
             exporter_endpoint=os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT") or None,
         ),
         feature_flag_definitions=feature_flag_definitions,
+        brokers=_parse_broker_settings(brokers),
         schwab_api_key=(
             os.getenv("SCHWAB_API_KEY")
             or str(

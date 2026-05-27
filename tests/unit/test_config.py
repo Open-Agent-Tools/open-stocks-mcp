@@ -7,7 +7,11 @@ from pathlib import Path
 
 import pytest
 
+<<<<<<< HEAD
 from open_stocks_mcp.config import ConfigError, RetryConfig, load_config
+=======
+from open_stocks_mcp.config import ConfigError, RetryConfig, load_config
+>>>>>>> 9af2b56 (feat: implement typed broker configuration models from Schwab integration plan (#265))
 
 
 @pytest.mark.unit
@@ -342,3 +346,209 @@ def test_tool_execution_timeout_defaults_to_30(
 
     assert cfg.timeout is not None
     assert cfg.timeout.tool_execution_timeout_seconds == 30.0
+
+
+# ---------------------------------------------------------------------------
+# Broker config tests
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.unit
+@pytest.mark.journey_system
+def test_broker_config_defaults_missing_file(monkeypatch: pytest.MonkeyPatch) -> None:
+    for var in (
+        "ROBINHOOD_USERNAME",
+        "ROBINHOOD_PASSWORD",
+        "SCHWAB_API_KEY",
+        "SCHWAB_APP_SECRET",
+        "SCHWAB_CALLBACK_URL",
+        "SCHWAB_TOKEN_PATH",
+        "ENABLED_BROKERS",
+        "DEFAULT_BROKER",
+    ):
+        monkeypatch.delenv(var, raising=False)
+
+    cfg = load_config(config_path=Path("/tmp/definitely-missing-config.yaml"))
+
+    assert cfg.brokers.enabled_brokers == ["robinhood"]
+    assert cfg.brokers.default_broker is None
+    assert cfg.brokers.robinhood.username is None
+    assert cfg.brokers.robinhood.password is None
+    assert cfg.brokers.schwab.api_key is None
+    assert cfg.brokers.schwab.app_secret is None
+
+
+@pytest.mark.unit
+@pytest.mark.journey_system
+def test_broker_config_robinhood_credentials_from_env(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("ROBINHOOD_USERNAME", "testuser")
+    monkeypatch.setenv("ROBINHOOD_PASSWORD", "testpass")
+    monkeypatch.delenv("ENABLED_BROKERS", raising=False)
+
+    cfg = load_config(config_path=Path("/tmp/definitely-missing-config.yaml"))
+
+    assert cfg.brokers.robinhood.username == "testuser"
+    assert cfg.brokers.robinhood.password == "testpass"
+
+
+@pytest.mark.unit
+@pytest.mark.journey_system
+def test_broker_config_schwab_credentials_from_env(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("SCHWAB_API_KEY", "mykey")
+    monkeypatch.setenv("SCHWAB_APP_SECRET", "mysecret")
+    monkeypatch.setenv("SCHWAB_CALLBACK_URL", "https://cb.example.com/")
+    monkeypatch.setenv("SCHWAB_TOKEN_PATH", "/tmp/token.json")
+    monkeypatch.delenv("ENABLED_BROKERS", raising=False)
+
+    cfg = load_config(config_path=Path("/tmp/definitely-missing-config.yaml"))
+
+    assert cfg.brokers.schwab.api_key == "mykey"
+    assert cfg.brokers.schwab.app_secret == "mysecret"
+    assert cfg.brokers.schwab.callback_url == "https://cb.example.com/"
+    assert cfg.brokers.schwab.token_path == "/tmp/token.json"
+
+
+@pytest.mark.unit
+@pytest.mark.journey_system
+def test_broker_config_yaml_overridden_by_env(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    path = tmp_path / "config.yaml"
+    path.write_text(
+        """
+brokers:
+  robinhood:
+    username: yaml_user
+    password: yaml_pass
+  schwab:
+    api_key: yaml_key
+""".strip()
+    )
+    monkeypatch.setenv("ROBINHOOD_USERNAME", "env_user")
+    monkeypatch.setenv("ROBINHOOD_PASSWORD", "env_pass")
+    monkeypatch.setenv("SCHWAB_API_KEY", "env_key")
+    monkeypatch.delenv("ENABLED_BROKERS", raising=False)
+
+    cfg = load_config(config_path=path)
+
+    assert cfg.brokers.robinhood.username == "env_user"
+    assert cfg.brokers.robinhood.password == "env_pass"
+    assert cfg.brokers.schwab.api_key == "env_key"
+
+
+@pytest.mark.unit
+@pytest.mark.journey_system
+def test_enabled_brokers_normalization(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("ENABLED_BROKERS", " Robinhood, schwab ")
+
+    cfg = load_config(config_path=Path("/tmp/definitely-missing-config.yaml"))
+
+    assert cfg.brokers.enabled_brokers == ["robinhood", "schwab"]
+
+
+@pytest.mark.unit
+@pytest.mark.journey_system
+def test_enabled_brokers_empty_string(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("ENABLED_BROKERS", "")
+
+    cfg = load_config(config_path=Path("/tmp/definitely-missing-config.yaml"))
+
+    assert cfg.brokers.enabled_brokers == []
+
+
+@pytest.mark.unit
+@pytest.mark.journey_system
+def test_enabled_brokers_unknown_dropped(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("ENABLED_BROKERS", "bogus,robinhood")
+
+    cfg = load_config(config_path=Path("/tmp/definitely-missing-config.yaml"))
+
+    assert cfg.brokers.enabled_brokers == ["robinhood"]
+    assert "bogus" not in cfg.brokers.enabled_brokers
+
+
+@pytest.mark.unit
+@pytest.mark.journey_system
+def test_default_broker_from_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("ENABLED_BROKERS", "robinhood,schwab")
+    monkeypatch.setenv("DEFAULT_BROKER", "schwab")
+    monkeypatch.setenv("SCHWAB_API_KEY", "k")
+    monkeypatch.setenv("SCHWAB_APP_SECRET", "s")
+
+    cfg = load_config(config_path=Path("/tmp/definitely-missing-config.yaml"))
+
+    assert cfg.brokers.default_broker == "schwab"
+
+
+@pytest.mark.unit
+@pytest.mark.journey_system
+def test_broker_config_yaml_values_used_when_no_env(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    path = tmp_path / "config.yaml"
+    path.write_text(
+        """
+brokers:
+  robinhood:
+    username: yaml_user
+    password: yaml_pass
+    pickle_name: mydb
+    session_timeout_hours: 12
+  schwab:
+    api_key: yaml_key
+    app_secret: yaml_secret
+    callback_url: https://my.callback/
+    token_path: /tmp/tok.json
+  enabled_brokers:
+    - robinhood
+    - schwab
+  default_broker: robinhood
+""".strip()
+    )
+    for var in (
+        "ROBINHOOD_USERNAME",
+        "ROBINHOOD_PASSWORD",
+        "SCHWAB_API_KEY",
+        "SCHWAB_APP_SECRET",
+        "SCHWAB_CALLBACK_URL",
+        "SCHWAB_TOKEN_PATH",
+        "ENABLED_BROKERS",
+        "DEFAULT_BROKER",
+    ):
+        monkeypatch.delenv(var, raising=False)
+
+    cfg = load_config(config_path=path)
+
+    assert cfg.brokers.robinhood.username == "yaml_user"
+    assert cfg.brokers.robinhood.password == "yaml_pass"
+    assert cfg.brokers.robinhood.pickle_name == "mydb"
+    assert cfg.brokers.robinhood.session_timeout_hours == 12
+    assert cfg.brokers.schwab.api_key == "yaml_key"
+    assert cfg.brokers.schwab.app_secret == "yaml_secret"
+    assert cfg.brokers.schwab.callback_url == "https://my.callback/"
+    assert cfg.brokers.schwab.token_path == "/tmp/tok.json"
+    assert cfg.brokers.enabled_brokers == ["robinhood", "schwab"]
+    assert cfg.brokers.default_broker == "robinhood"
+
+
+@pytest.mark.unit
+@pytest.mark.journey_system
+def test_schwab_compat_fields_backed_by_broker_config(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("SCHWAB_API_KEY", "compat_key")
+    monkeypatch.setenv("SCHWAB_APP_SECRET", "compat_secret")
+    monkeypatch.setenv("SCHWAB_CALLBACK_URL", "https://compat.cb/")
+    monkeypatch.setenv("SCHWAB_TOKEN_PATH", "/compat/tok")
+    monkeypatch.delenv("ENABLED_BROKERS", raising=False)
+
+    cfg = load_config(config_path=Path("/tmp/definitely-missing-config.yaml"))
+
+    assert cfg.schwab_api_key == "compat_key"
+    assert cfg.schwab_app_secret == "compat_secret"
+    assert cfg.schwab_callback_url == "https://compat.cb/"
+    assert cfg.schwab_token_path == "/compat/tok"
