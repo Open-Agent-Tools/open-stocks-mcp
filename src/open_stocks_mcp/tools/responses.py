@@ -13,7 +13,9 @@ R = TypeVar("R")
 
 def create_error_response(error: Exception, context: str = "") -> dict[str, Any]:
     """Create a standardized error response."""
-    classified_error = error if isinstance(error, BrokerError) else classify_error(error)
+    classified_error = (
+        error if isinstance(error, BrokerError) else classify_error(error)
+    )
 
     response: dict[str, Any] = {
         "result": {

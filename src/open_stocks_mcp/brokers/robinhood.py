@@ -182,7 +182,9 @@ class RobinhoodBroker(BaseBroker):
 
         return await order_sell_market(symbol, int(quantity))
 
-    async def get_portfolio_snapshot(self) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    async def get_portfolio_snapshot(
+        self,
+    ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
         """Get enriched portfolio snapshot from Robinhood."""
         summary, positions = await super().get_portfolio_snapshot()
 

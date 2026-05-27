@@ -143,7 +143,10 @@ def test_robinhood_errors_subclass_broker_hierarchy_and_tag_broker() -> None:
     assert isinstance(auth_error, BrokerError)
     assert RobinStocksError("x").broker == "robinhood"
     assert classify_error(RuntimeError("unauthorized")).broker == "robinhood"
-    assert create_error_response(RuntimeError("unauthorized"))["result"]["broker"] == "robinhood"
+    assert (
+        create_error_response(RuntimeError("unauthorized"))["result"]["broker"]
+        == "robinhood"
+    )
 
 
 def test_create_error_response_without_context() -> None:

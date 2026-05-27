@@ -72,6 +72,7 @@ async def execute_with_retry(
     from open_stocks_mcp.brokers.registry import get_broker_registry
     from open_stocks_mcp.brokers.session_state import get_session_manager
     from open_stocks_mcp.tools.circuit_breaker import get_broker_circuit_breaker
+
     last_exception = None
     retry_config = _get_retry_config()
     configured_max_retries = (
@@ -86,11 +87,7 @@ async def execute_with_retry(
     session_manager = get_session_manager()
     registry = await get_broker_registry()
     circuit_breaker = get_broker_circuit_breaker()
-    rate_limiter = (
-        registry.get_rate_limiter(broker_name)
-        if rate_limit
-        else None
-    )
+    rate_limiter = registry.get_rate_limiter(broker_name) if rate_limit else None
     auth_retry_count = 0
     max_auth_retries = retry_config.auth_max_retries
 

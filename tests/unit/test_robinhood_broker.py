@@ -481,17 +481,21 @@ class TestRobinhoodGetPortfolioSnapshotEnrichment:
 
         with (
             patch.object(
-                RobinhoodBroker, "get_portfolio", new=AsyncMock(return_value=rh_portfolio)
+                RobinhoodBroker,
+                "get_portfolio",
+                new=AsyncMock(return_value=rh_portfolio),
             ),
             patch.object(
-                RobinhoodBroker, "get_positions", new=AsyncMock(return_value=rh_positions)
+                RobinhoodBroker,
+                "get_positions",
+                new=AsyncMock(return_value=rh_positions),
             ),
             patch(
                 "open_stocks_mcp.brokers.robinhood.execute_with_retry",
                 new=AsyncMock(return_value=rh_quotes),
             ),
         ):
-            _, positions = await broker.get_portfolio_snapshot()
+            _summary, positions = await broker.get_portfolio_snapshot()
 
         assert len(positions) == 1
         assert positions[0]["symbol"] == "AAPL"
@@ -515,17 +519,21 @@ class TestRobinhoodGetPortfolioSnapshotEnrichment:
 
         with (
             patch.object(
-                RobinhoodBroker, "get_portfolio", new=AsyncMock(return_value=rh_portfolio)
+                RobinhoodBroker,
+                "get_portfolio",
+                new=AsyncMock(return_value=rh_portfolio),
             ),
             patch.object(
-                RobinhoodBroker, "get_positions", new=AsyncMock(return_value=rh_positions)
+                RobinhoodBroker,
+                "get_positions",
+                new=AsyncMock(return_value=rh_positions),
             ),
             patch(
                 "open_stocks_mcp.brokers.robinhood.execute_with_retry",
                 new=AsyncMock(return_value=rh_quotes),
             ),
         ):
-            _, positions = await broker.get_portfolio_snapshot()
+            _summary, positions = await broker.get_portfolio_snapshot()
 
         assert len(positions) == 1
         assert positions[0]["market_value"] is None
@@ -547,17 +555,21 @@ class TestRobinhoodGetPortfolioSnapshotEnrichment:
 
         with (
             patch.object(
-                RobinhoodBroker, "get_portfolio", new=AsyncMock(return_value=rh_portfolio)
+                RobinhoodBroker,
+                "get_portfolio",
+                new=AsyncMock(return_value=rh_portfolio),
             ),
             patch.object(
-                RobinhoodBroker, "get_positions", new=AsyncMock(return_value=rh_positions)
+                RobinhoodBroker,
+                "get_positions",
+                new=AsyncMock(return_value=rh_positions),
             ),
             patch(
                 "open_stocks_mcp.brokers.robinhood.execute_with_retry",
                 new=AsyncMock(side_effect=RuntimeError("quote fetch failed")),
             ),
         ):
-            _, positions = await broker.get_portfolio_snapshot()
+            _summary, positions = await broker.get_portfolio_snapshot()
 
         assert len(positions) == 1
         assert positions[0]["market_value"] is None
@@ -584,17 +596,21 @@ class TestRobinhoodGetPortfolioSnapshotEnrichment:
 
         with (
             patch.object(
-                RobinhoodBroker, "get_portfolio", new=AsyncMock(return_value=rh_portfolio)
+                RobinhoodBroker,
+                "get_portfolio",
+                new=AsyncMock(return_value=rh_portfolio),
             ),
             patch.object(
-                RobinhoodBroker, "get_positions", new=AsyncMock(return_value=rh_positions)
+                RobinhoodBroker,
+                "get_positions",
+                new=AsyncMock(return_value=rh_positions),
             ),
             patch(
                 "open_stocks_mcp.brokers.robinhood.execute_with_retry",
                 new=AsyncMock(return_value=rh_quotes),
             ),
         ):
-            _, positions = await broker.get_portfolio_snapshot()
+            _summary, positions = await broker.get_portfolio_snapshot()
 
         by_symbol = {p["symbol"]: p for p in positions}
         assert by_symbol["AAPL"]["market_value"] == pytest.approx(1755.0)

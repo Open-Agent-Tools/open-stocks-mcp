@@ -40,8 +40,7 @@ def install_tool_execution_limit(mcp_server: FastMCP, timeout_seconds: float) ->
                 "tool": tool_name,
                 "timeout_seconds": active_timeout,
                 "error": (
-                    f"Tool '{tool_name}' exceeded the "
-                    f"{active_timeout}s execution limit"
+                    f"Tool '{tool_name}' exceeded the {active_timeout}s execution limit"
                 ),
             }
             return mcp.types.CallToolResult(

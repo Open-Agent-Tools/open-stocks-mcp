@@ -89,6 +89,4 @@ async def test_fast_tool_completes_normally() -> None:
     result = await server.call_tool("account_info", {})
 
     # Fast tool returns the normal call_tool result (not a timeout CallToolResult)
-    assert not (
-        isinstance(result, mcp.types.CallToolResult) and result.isError is True
-    )
+    assert not (isinstance(result, mcp.types.CallToolResult) and result.isError is True)
