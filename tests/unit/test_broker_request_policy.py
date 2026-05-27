@@ -1,9 +1,21 @@
 import unittest
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock, Mock
 
 import pytest
 
 from open_stocks_mcp.brokers.request_policy import install_robinhood_request_timeout
+
+
+@pytest.fixture(autouse=True)
+def _patch_broker_registry(monkeypatch: pytest.MonkeyPatch) -> None:
+    limiter = Mock()
+    limiter.acquire = AsyncMock(return_value=None)
+    registry = Mock()
+    registry.get_rate_limiter = Mock(return_value=limiter)
+    monkeypatch.setattr(
+        "open_stocks_mcp.brokers.registry.get_broker_registry",
+        AsyncMock(return_value=registry),
+    )
 
 
 class TestBrokerRequestPolicy(unittest.TestCase):
@@ -126,3 +138,25 @@ async def test_execute_broker_request_deadline():
     # Total would be 0.15s which exceeds 0.1s.
     assert mock_func.call_count <= 3
     assert elapsed < 0.2
+
+
+@pytest.mark.asyncio
+async def test_execute_broker_request_uses_broker_limiter(
+    monkeypatch: pytest.MonkeyPatch,
+):
+    from open_stocks_mcp.brokers.request_policy import execute_broker_request
+
+    limiter = Mock()
+    limiter.acquire = AsyncMock(return_value=None)
+    registry = Mock()
+    registry.get_rate_limiter = Mock(return_value=limiter)
+    monkeypatch.setattr(
+        "open_stocks_mcp.brokers.registry.get_broker_registry",
+        AsyncMock(return_value=registry),
+    )
+
+    fn = MagicMock(return_value="ok")
+    result = await execute_broker_request(fn, broker_name="schwab")
+    assert result == "ok"
+    registry.get_rate_limiter.assert_called_once_with("schwab")
+    limiter.acquire.assert_awaited_once()

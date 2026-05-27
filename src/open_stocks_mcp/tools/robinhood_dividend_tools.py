@@ -51,7 +51,7 @@ async def get_dividends() -> dict[str, Any]:
             return {"result": {"error": "Authentication required", "status": "error"}}
 
         # Apply rate limiting
-        rate_limiter = get_rate_limiter()
+        rate_limiter = get_rate_limiter("robinhood")
         await rate_limiter.acquire()
 
         # Get dividend data
@@ -146,7 +146,7 @@ async def get_total_dividends() -> dict[str, Any]:
             return {"result": {"error": "Authentication required", "status": "error"}}
 
         # Apply rate limiting
-        rate_limiter = get_rate_limiter()
+        rate_limiter = get_rate_limiter("robinhood")
         await rate_limiter.acquire()
 
         # Use robin_stocks built-in function
@@ -240,7 +240,7 @@ async def get_dividends_by_instrument(symbol: str) -> dict[str, Any]:
             return {"result": {"error": "Authentication required", "status": "error"}}
 
         # Apply rate limiting
-        rate_limiter = get_rate_limiter()
+        rate_limiter = get_rate_limiter("robinhood")
         await rate_limiter.acquire()
 
         # Get dividends by instrument
@@ -321,7 +321,7 @@ async def get_interest_payments() -> dict[str, Any]:
             return {"result": {"error": "Authentication required", "status": "error"}}
 
         # Apply rate limiting
-        rate_limiter = get_rate_limiter()
+        rate_limiter = get_rate_limiter("robinhood")
         await rate_limiter.acquire()
 
         # Get interest payments
@@ -395,7 +395,7 @@ async def get_stock_loan_payments() -> dict[str, Any]:
             return {"result": {"error": "Authentication required", "status": "error"}}
 
         # Apply rate limiting
-        rate_limiter = get_rate_limiter()
+        rate_limiter = get_rate_limiter("robinhood")
         await rate_limiter.acquire()
 
         # Get stock loan payments
