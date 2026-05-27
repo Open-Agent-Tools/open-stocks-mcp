@@ -9,7 +9,10 @@ from typing import Any
 
 from mcp.server.fastmcp import FastMCP
 
-from open_stocks_mcp.brokers.registry import get_broker_registry
+from open_stocks_mcp.brokers.registry import (
+    RegistryNotInitializedError,
+    get_broker_registry,
+)
 from open_stocks_mcp.brokers.session_state import get_session_manager
 from open_stocks_mcp.health import get_health_service
 from open_stocks_mcp.logging_config import logger
@@ -117,17 +120,27 @@ async def get_list_brokers_data() -> dict[str, Any]:
 
 async def get_rate_limit_status_data() -> dict[str, Any]:
     """Return current rate limit usage and statistics."""
-    rate_limiter = get_rate_limiter("robinhood")
+    fallback_note: str | None = None
+    try:
+        rate_limiter = get_rate_limiter("robinhood")
+    except RegistryNotInitializedError:
+        # Early startup can hit this before broker registry lifespan init.
+        rate_limiter = get_rate_limiter()
+        fallback_note = (
+            "broker registry not initialized; using global rate limiter fallback"
+        )
     stats = rate_limiter.get_stats()
 
-    return {
-        "result": {
-            **stats,
-            "endpoint_usage": stats.get("endpoint_usage", {}),
-            "circuit_breaker": get_broker_circuit_breaker().snapshot(),
-            "status": "success",
-        }
+    result: dict[str, Any] = {
+        **stats,
+        "endpoint_usage": stats.get("endpoint_usage", {}),
+        "circuit_breaker": get_broker_circuit_breaker().snapshot(),
+        "status": "success",
     }
+    if fallback_note:
+        result["note"] = fallback_note
+
+    return {"result": result}
 
 
 async def get_metrics_summary_data() -> dict[str, Any]:

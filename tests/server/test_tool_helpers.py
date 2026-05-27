@@ -5,6 +5,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from mcp.server.fastmcp import FastMCP
 
+from open_stocks_mcp.brokers.registry import RegistryNotInitializedError
 from open_stocks_mcp.server.tool_helpers import (
     get_broker_status_data,
     get_health_check_data,
@@ -149,6 +150,28 @@ class TestRateLimitStatusHelper:
         assert response["result"]["status"] == "success"
         assert response["result"]["requests_made"] == 5
         assert response["result"]["limit"] == 100
+
+    @pytest.mark.asyncio
+    async def test_falls_back_to_global_limiter_when_registry_uninitialized(self) -> None:
+        global_limiter = MagicMock()
+        global_limiter.get_stats.return_value = {"requests_made": 7, "limit": 99}
+
+        with patch(
+            "open_stocks_mcp.server.tool_helpers.get_rate_limiter"
+        ) as mock_get_rl:
+            mock_get_rl.side_effect = [
+                RegistryNotInitializedError("not initialized"),
+                global_limiter,
+            ]
+
+            response = await get_rate_limit_status_data()
+
+        assert mock_get_rl.call_args_list[0].args == ("robinhood",)
+        assert mock_get_rl.call_args_list[1].args == ()
+        assert response["result"]["status"] == "success"
+        assert response["result"]["requests_made"] == 7
+        assert response["result"]["limit"] == 99
+        assert "global rate limiter fallback" in response["result"]["note"]
 
 
 @pytest.mark.journey_system
