@@ -4,6 +4,7 @@ import functools
 from collections.abc import Awaitable, Callable
 from typing import Any, ParamSpec, TypeVar
 
+from open_stocks_mcp.tools.exceptions import classify_schwab_error
 from open_stocks_mcp.tools.responses import create_error_response
 
 P = ParamSpec("P")
@@ -21,6 +22,6 @@ def handle_schwab_errors(
         try:
             return await func(*args, **kwargs)
         except Exception as e:
-            return create_error_response(e, context)
+            return create_error_response(classify_schwab_error(e), context)
 
     return wrapper
