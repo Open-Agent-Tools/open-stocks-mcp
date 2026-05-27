@@ -141,7 +141,102 @@ async def test_get_unified_watchlist_by_name_success(
 
 
 @pytest.mark.asyncio
-async def test_add_symbols_to_unified_watchlist_success(
+async def test_get_unified_watchlist_by_name_broker_error_not_masked_as_not_found(
+    mock_registry, mock_robinhood, mock_schwab
+):
+    """When a broker returns an error, status should be partial_failure, not not_found."""
+    mock_registry.list_brokers.return_value = ["robinhood", "schwab"]
+    mock_registry.get_broker.side_effect = lambda name: (
+        mock_robinhood if name == "robinhood" else mock_schwab
+    )
+
+    rh_error = {
+        "result": {
+            "status": "error",
+            "message": "Authentication failed",
+        }
+    }
+
+    with patch(
+        "open_stocks_mcp.tools.unified_watchlist_tools.get_rh_watchlist_by_name",
+        return_value=rh_error,
+    ):
+        result = await get_unified_watchlist_by_name("Tech")
+
+    assert result["result"]["status"] == "partial_failure"
+    assert result["result"]["per_broker"]["robinhood"]["status"] == "error"
+
+
+@pytest.mark.asyncio
+async def test_get_unified_watchlist_by_name_broker_unavailable_not_masked(
+    mock_registry, mock_robinhood, mock_schwab
+):
+    """When a broker is unavailable, status should be partial_failure, not not_found."""
+    mock_registry.list_brokers.return_value = ["robinhood", "schwab"]
+    mock_robinhood.is_available.return_value = False
+    mock_registry.get_broker.side_effect = lambda name: (
+        mock_robinhood if name == "robinhood" else mock_schwab
+    )
+
+    result = await get_unified_watchlist_by_name("Tech")
+
+    assert result["result"]["status"] == "partial_failure"
+    assert result["result"]["per_broker"]["robinhood"]["status"] == "unavailable"
+
+
+@pytest.mark.asyncio
+async def test_get_unified_watchlist_by_name_genuine_not_found(
+    mock_registry, mock_robinhood, mock_schwab
+):
+    """When the watchlist genuinely doesn't exist (no broker errors), status is not_found."""
+    mock_registry.list_brokers.return_value = ["robinhood", "schwab"]
+    mock_registry.get_broker.side_effect = lambda name: (
+        mock_robinhood if name == "robinhood" else mock_schwab
+    )
+
+    rh_not_found = {
+        "result": {
+            "status": "not_found",
+        }
+    }
+
+    with patch(
+        "open_stocks_mcp.tools.unified_watchlist_tools.get_rh_watchlist_by_name",
+        return_value=rh_not_found,
+    ):
+        result = await get_unified_watchlist_by_name("NonExistent")
+
+    assert result["result"]["status"] == "not_found"
+
+
+@pytest.mark.asyncio
+async def test_get_unified_watchlist_by_name_unregistered_broker_partial_failure(
+    mock_registry, mock_robinhood
+):
+    """When an unregistered broker is requested, status should be partial_failure."""
+    mock_registry.list_brokers.return_value = ["robinhood"]
+    mock_registry.get_broker.side_effect = lambda name: (
+        mock_robinhood if name == "robinhood" else None
+    )
+
+    rh_not_found = {
+        "result": {
+            "status": "not_found",
+        }
+    }
+
+    with patch(
+        "open_stocks_mcp.tools.unified_watchlist_tools.get_rh_watchlist_by_name",
+        return_value=rh_not_found,
+    ):
+        result = await get_unified_watchlist_by_name("Tech", brokers=["robinhood", "fakeBroker"])
+
+    assert result["result"]["status"] == "partial_failure"
+    assert result["result"]["per_broker"]["fakeBroker"]["status"] == "error"
+
+
+@pytest.mark.asyncio
+async def test_add_symbols_to_unified_watchlist_partial_success(
     mock_registry, mock_robinhood, mock_schwab
 ):
     """Test success when RH and Schwab local store both succeed."""
