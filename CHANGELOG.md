@@ -6,6 +6,11 @@ All notable changes to the Open Stocks MCP project will be documented in this fi
 
 ### Changed
 - Bumped version to 0.6.5
+- **Percentile calculation**: Global `p50/p95/p99_response_time_ms` values in
+  `get_metrics()` now use ceil-rank (`math.ceil(quantile * len)`) instead of the
+  previous truncated-index (`int(len * quantile)`) for percentile computation,
+  introduced in PR #296. Values may differ by one rank position for small or
+  even-length sample windows (e.g., 4 samples at p50: old=30.0, new=20.0).
 - Code cleanup for release (release cleanup)
 - Updated all dependencies to latest versions
 - Added open source community infrastructure

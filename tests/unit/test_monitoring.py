@@ -244,6 +244,28 @@ async def test_alert_dedup_cleanup_avoids_memory_growth() -> None:
     assert "test_signal" not in collector._last_alert_at
 
 
+def test_percentile_uses_ceil_rank_for_short_and_even_lists() -> None:
+    p = MetricsCollector._percentile
+
+    assert p([], 0.50) == 0.0
+
+    assert p([10.0], 0.50) == 10.0
+
+    # 2-element list: ceil-rank gives index 0 (10.0);
+    # old truncated-index int(2*0.5)=1 would give 20.0
+    assert p([10.0, 20.0], 0.50) == 10.0
+    assert p([10.0, 20.0], 0.95) == 20.0
+
+    # 4-element list at p50: ceil(4*0.5)=2 → index 1 → 20.0;
+    # old int(4*0.5)=2 → index 2 → 30.0 (key divergence)
+    assert p([10.0, 20.0, 30.0, 40.0], 0.50) == 20.0
+    assert p([10.0, 20.0, 30.0, 40.0], 0.95) == 40.0
+    assert p([10.0, 20.0, 30.0, 40.0], 0.99) == 40.0
+
+    assert p([10.0, 20.0, 30.0], 0.50) == 20.0
+    assert p([10.0, 20.0, 30.0], 0.99) == 30.0
+
+
 @pytest.mark.asyncio
 async def test_monitored_tool_wraps_exception_with_explicit_cause_and_records_metric() -> (
     None
