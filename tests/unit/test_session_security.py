@@ -241,3 +241,19 @@ class TestClearPickleFile:
         manager.reset_clear_failures()
 
         assert manager.should_block_auth_retries() is False
+
+
+class TestSessionInfoCircuitBreaker:
+    def test_get_session_info_includes_pickle_clear_circuit_breaker_state(
+        self, manager: SessionPickleManager
+    ) -> None:
+        session_manager = SessionManager(pickle_manager=manager)
+        manager._consecutive_pickle_clear_failures = manager._max_pickle_clear_failures
+
+        info = session_manager.get_session_info()
+
+        assert (
+            info["consecutive_pickle_clear_failures"]
+            == manager._consecutive_pickle_clear_failures
+        )
+        assert info["auth_retries_blocked"] is True
