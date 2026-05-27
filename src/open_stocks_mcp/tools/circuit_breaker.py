@@ -4,25 +4,10 @@ from __future__ import annotations
 
 import asyncio
 import time
-from dataclasses import dataclass
 from typing import Any
 
-from open_stocks_mcp.config import get_config
+from open_stocks_mcp.config import CircuitBreakerConfig, get_config
 from open_stocks_mcp.tools.exceptions import CircuitBreakerError
-
-
-@dataclass
-class CircuitBreakerConfig:
-    """Circuit breaker runtime configuration."""
-
-    enabled: bool = True
-    failure_threshold: int = 5
-    recovery_timeout_seconds: float = 60.0
-
-    @property
-    def cooldown_seconds(self) -> float:
-        """Backward-compatible alias for recovery timeout."""
-        return self.recovery_timeout_seconds
 
 
 class BrokerCircuitBreaker:

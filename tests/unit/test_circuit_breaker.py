@@ -6,7 +6,11 @@ from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
-from open_stocks_mcp.config import load_config, reset_cache_config
+from open_stocks_mcp.config import (
+    CircuitBreakerConfig as CanonicalCircuitBreakerConfig,
+    load_config,
+    reset_cache_config,
+)
 from open_stocks_mcp.tools.circuit_breaker import (
     BrokerCircuitBreaker,
     CircuitBreakerConfig,
@@ -163,3 +167,7 @@ def test_load_config_reads_recovery_timeout_env(
     assert cfg.circuit_breaker.failure_threshold == 2
     assert cfg.circuit_breaker.recovery_timeout_seconds == 0.25
     assert cfg.circuit_breaker.cooldown_seconds == 0.25
+
+
+def test_circuit_breaker_uses_canonical_config_dataclass() -> None:
+    assert CircuitBreakerConfig is CanonicalCircuitBreakerConfig
