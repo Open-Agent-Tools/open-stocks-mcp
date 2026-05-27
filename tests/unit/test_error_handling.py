@@ -13,7 +13,6 @@ from mcp.server.fastmcp import FastMCP
 import open_stocks_mcp.tools.retry as retry_module
 from open_stocks_mcp.brokers import session_state as session_manager_module
 from open_stocks_mcp.config import RetryConfig
-from open_stocks_mcp.server.app import mcp as production_mcp
 from open_stocks_mcp.tools.error_handling import (
     APIError,
     AuthenticationError,
@@ -423,18 +422,6 @@ async def test_decorated_tool_schema_is_not_collapsed() -> None:
         entry.inputSchema.model_dump()
         if hasattr(entry.inputSchema, "model_dump")
         else entry.inputSchema
-    )
-    assert schema["properties"]["symbol"]["type"] == "string"
-
-
-@pytest.mark.asyncio
-async def test_production_stock_price_tool_schema_includes_symbol() -> None:
-    tools = await production_mcp.list_tools()
-    stock_price_tool = next(tool for tool in tools if tool.name == "stock_price")
-    schema = (
-        stock_price_tool.inputSchema.model_dump()
-        if hasattr(stock_price_tool.inputSchema, "model_dump")
-        else stock_price_tool.inputSchema
     )
     assert schema["properties"]["symbol"]["type"] == "string"
 
