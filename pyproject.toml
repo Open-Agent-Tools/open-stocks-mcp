@@ -155,7 +155,6 @@ ignore_missing_imports = true
 pythonpath = ["src"]
 asyncio_mode = "auto"
 testpaths = ["tests"]
-pythonpath = ["src"]
 addopts = [
     "--strict-markers",
     "--strict-config",
