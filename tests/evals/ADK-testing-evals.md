@@ -261,6 +261,8 @@ Evaluations for Schwab-specific tools. These typically require live Schwab OAuth
 - `tests/evals/5_ord_schwab_orders_test.json` — exercises `schwab_orders` (requires `account_hash`).
 
 > **Note on Schwab Evaluations**: Most Schwab evaluations require live OAuth credentials. The `schwab_orders` evaluation specifically requires a valid `account_hash`, which can be retrieved using the `schwab_account_numbers` tool. For testing, replace the `REPLACE_WITH_SCHWAB_ACCOUNT_HASH` placeholder in the JSON with a real hash from your account.
+>
+> The `final_response` examples in Schwab eval JSON files are illustrative placeholders only. Before running against a live Schwab account, update those expected values (account numbers, account hashes, quotes, and other account-specific fields) to match real output from your account, or ADK eval assertions will fail.
 
 Run with:
 
