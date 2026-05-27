@@ -25,6 +25,14 @@ def _safe_float(value: Any, default: float = 0.0) -> float:
         return default
 
 
+_ERROR_STATUSES = {"error", "no_data"}
+
+
+def _has_error(data: dict[str, Any]) -> bool:
+    """Return True if the response dict indicates an error or missing data."""
+    return "error" in data or data.get("status") in _ERROR_STATUSES
+
+
 async def _collect_robinhood_comparison(
     symbols: list[str] | None = None,
     include_orders: bool = True,
@@ -51,7 +59,7 @@ async def _collect_robinhood_comparison(
         for symbol in symbols:
             price_result = await get_stock_price(symbol)
             price_data = price_result.get("result", {})
-            if "error" not in price_data:
+            if not _has_error(price_data):
                 data["pricing"][symbol] = {
                     "price": _safe_float(price_data.get("price")),
                     "change": _safe_float(price_data.get("change")),
@@ -61,7 +69,10 @@ async def _collect_robinhood_comparison(
     # 2. Summary & Holdings
     portfolio_result = await get_portfolio()
     portfolio_data = portfolio_result.get("result", {})
-    if "error" not in portfolio_data:
+    if _has_error(portfolio_data):
+        data["available"] = False
+        data["notes"] = portfolio_data.get("message") or portfolio_data.get("error")
+    else:
         data["summary"]["equity"] = _safe_float(portfolio_data.get("equity"))
         data["summary"]["buying_power"] = _safe_float(
             portfolio_data.get("buying_power")
@@ -69,7 +80,7 @@ async def _collect_robinhood_comparison(
 
     positions_result = await get_positions()
     positions_data = positions_result.get("result", {})
-    if "error" not in positions_data:
+    if not _has_error(positions_data):
         for pos in positions_data.get("positions", []):
             symbol = pos.get("symbol")
             if not symbols or symbol in symbols:
@@ -82,7 +93,7 @@ async def _collect_robinhood_comparison(
     if include_orders:
         orders_result = await get_stock_orders()
         orders_data = orders_result.get("result", {})
-        if "error" not in orders_data:
+        if not _has_error(orders_data):
             rh_orders = orders_data.get("orders", [])
             for o in rh_orders[:max_orders]:
                 symbol = o.get("symbol")
@@ -125,7 +136,7 @@ async def _collect_schwab_comparison(
     # Schwab needs an account hash for many calls
     accounts_result = await get_schwab_account_numbers()
     accounts_data = accounts_result.get("result", {})
-    if "error" in accounts_data or not accounts_data.get("accounts"):
+    if _has_error(accounts_data) or not accounts_data.get("accounts"):
         data["available"] = False
         data["notes"] = accounts_data.get("error", "No accounts found")
         return data
@@ -137,7 +148,7 @@ async def _collect_schwab_comparison(
         for symbol in symbols:
             quote_result = await get_schwab_quote(symbol)
             quote_data = quote_result.get("result", {})
-            if "error" not in quote_data:
+            if not _has_error(quote_data):
                 data["pricing"][symbol] = {
                     "price": _safe_float(quote_data.get("last_price")),
                     "change": _safe_float(quote_data.get("change")),
@@ -147,14 +158,14 @@ async def _collect_schwab_comparison(
     # 2. Summary & Holdings
     balances_result = await get_schwab_account_balances(account_hash)
     balances_data = balances_result.get("result", {})
-    if "error" not in balances_data:
+    if not _has_error(balances_data):
         curr = balances_data.get("current_balances", {})
         data["summary"]["equity"] = _safe_float(curr.get("market_value"))
         data["summary"]["buying_power"] = _safe_float(curr.get("buying_power"))
 
     portfolio_result = await get_schwab_portfolio(account_hash)
     portfolio_data = portfolio_result.get("result", {})
-    if "error" not in portfolio_data:
+    if not _has_error(portfolio_data):
         for pos in portfolio_data.get("positions", []):
             symbol = pos.get("symbol")
             if not symbols or symbol in symbols:
@@ -169,7 +180,7 @@ async def _collect_schwab_comparison(
             account_hash, max_results=max_orders * 2
         )
         orders_data = orders_result.get("result", {})
-        if "error" not in orders_data:
+        if not _has_error(orders_data):
             schwab_orders = orders_data.get("orders", [])
             for o in schwab_orders:
                 if len(data["orders"]) >= max_orders:

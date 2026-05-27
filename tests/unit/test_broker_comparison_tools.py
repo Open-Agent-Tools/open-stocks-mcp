@@ -271,3 +271,112 @@ async def test_get_broker_comparison_partial_failure():
     assert data["brokers"]["robinhood"]["available"] is True
     assert data["brokers"]["schwab"]["available"] is False
     assert "schwab" in data["availability_notes"]
+
+
+@pytest.mark.asyncio
+@pytest.mark.unit
+async def test_robinhood_no_data_portfolio_marks_unavailable():
+    """When get_portfolio returns no_data, Robinhood should show available=False."""
+    from open_stocks_mcp.tools.broker_comparison_tools import get_broker_comparison
+
+    mock_registry = MagicMock()
+    mock_registry.list_brokers.return_value = ["robinhood"]
+
+    rh_broker = MockBroker("robinhood", authenticated=True)
+    mock_registry.get_broker.side_effect = lambda name: rh_broker
+
+    mock_rh_portfolio = AsyncMock(
+        return_value={
+            "result": {"message": "Portfolio data not available", "status": "no_data"}
+        }
+    )
+    mock_rh_positions = AsyncMock(
+        return_value={"result": {"positions": [], "status": "success"}}
+    )
+    mock_rh_orders = AsyncMock(
+        return_value={"result": {"orders": [], "status": "success"}}
+    )
+
+    with (
+        patch(
+            "open_stocks_mcp.tools.broker_comparison_tools.get_broker_registry",
+            return_value=mock_registry,
+        ),
+        patch(
+            "open_stocks_mcp.tools.broker_comparison_tools.get_portfolio",
+            mock_rh_portfolio,
+        ),
+        patch(
+            "open_stocks_mcp.tools.broker_comparison_tools.get_positions",
+            mock_rh_positions,
+        ),
+        patch(
+            "open_stocks_mcp.tools.broker_comparison_tools.get_stock_orders",
+            mock_rh_orders,
+        ),
+    ):
+        result = await get_broker_comparison()
+
+    rh_data = result["result"]["brokers"]["robinhood"]
+    assert rh_data["available"] is False
+    assert rh_data["notes"] is not None
+    assert rh_data["summary"]["equity"] == 0.0
+    assert rh_data["summary"]["buying_power"] == 0.0
+
+
+@pytest.mark.asyncio
+@pytest.mark.unit
+async def test_no_data_pricing_excluded_from_comparison():
+    """Pricing with no_data status should not be included."""
+    from open_stocks_mcp.tools.broker_comparison_tools import get_broker_comparison
+
+    mock_registry = MagicMock()
+    mock_registry.list_brokers.return_value = ["robinhood"]
+
+    rh_broker = MockBroker("robinhood", authenticated=True)
+    mock_registry.get_broker.side_effect = lambda name: rh_broker
+
+    mock_rh_price = AsyncMock(
+        return_value={
+            "result": {"message": "No data for XYZ", "status": "no_data"}
+        }
+    )
+    mock_rh_portfolio = AsyncMock(
+        return_value={
+            "result": {"equity": 10000.0, "buying_power": 2000.0, "status": "success"}
+        }
+    )
+    mock_rh_positions = AsyncMock(
+        return_value={"result": {"positions": [], "status": "success"}}
+    )
+    mock_rh_orders = AsyncMock(
+        return_value={"result": {"orders": [], "status": "success"}}
+    )
+
+    with (
+        patch(
+            "open_stocks_mcp.tools.broker_comparison_tools.get_broker_registry",
+            return_value=mock_registry,
+        ),
+        patch(
+            "open_stocks_mcp.tools.broker_comparison_tools.get_stock_price",
+            mock_rh_price,
+        ),
+        patch(
+            "open_stocks_mcp.tools.broker_comparison_tools.get_portfolio",
+            mock_rh_portfolio,
+        ),
+        patch(
+            "open_stocks_mcp.tools.broker_comparison_tools.get_positions",
+            mock_rh_positions,
+        ),
+        patch(
+            "open_stocks_mcp.tools.broker_comparison_tools.get_stock_orders",
+            mock_rh_orders,
+        ),
+    ):
+        result = await get_broker_comparison(symbols=["XYZ"])
+
+    rh_data = result["result"]["brokers"]["robinhood"]
+    assert rh_data["available"] is True
+    assert "XYZ" not in rh_data["pricing"]
