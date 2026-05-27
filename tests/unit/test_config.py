@@ -7,11 +7,7 @@ from pathlib import Path
 
 import pytest
 
-<<<<<<< HEAD
 from open_stocks_mcp.config import ConfigError, RetryConfig, load_config
-=======
-from open_stocks_mcp.config import ConfigError, RetryConfig, load_config
->>>>>>> 9af2b56 (feat: implement typed broker configuration models from Schwab integration plan (#265))
 
 
 @pytest.mark.unit
@@ -533,6 +529,49 @@ brokers:
     assert cfg.brokers.schwab.token_path == "/tmp/tok.json"
     assert cfg.brokers.enabled_brokers == ["robinhood", "schwab"]
     assert cfg.brokers.default_broker == "robinhood"
+
+
+@pytest.mark.unit
+@pytest.mark.journey_system
+def test_broker_config_yaml_null_values_remain_unset(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    path = tmp_path / "config.yaml"
+    path.write_text(
+        """
+brokers:
+  robinhood:
+    username: null
+    password: null
+  schwab:
+    api_key: null
+    app_secret: null
+    callback_url: null
+    token_path: null
+""".strip()
+    )
+    for var in (
+        "ROBINHOOD_USERNAME",
+        "ROBINHOOD_PASSWORD",
+        "SCHWAB_API_KEY",
+        "SCHWAB_APP_SECRET",
+        "SCHWAB_CALLBACK_URL",
+        "SCHWAB_TOKEN_PATH",
+    ):
+        monkeypatch.delenv(var, raising=False)
+
+    cfg = load_config(config_path=path)
+
+    assert cfg.brokers.robinhood.username is None
+    assert cfg.brokers.robinhood.password is None
+    assert cfg.brokers.schwab.api_key is None
+    assert cfg.brokers.schwab.app_secret is None
+    assert cfg.brokers.schwab.callback_url == "https://127.0.0.1:8182/"
+    assert cfg.brokers.schwab.token_path is None
+    assert cfg.schwab_api_key is None
+    assert cfg.schwab_app_secret is None
+    assert cfg.schwab_callback_url == "https://127.0.0.1:8182/"
+    assert cfg.schwab_token_path is None
 
 
 @pytest.mark.unit

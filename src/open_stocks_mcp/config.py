@@ -365,6 +365,14 @@ def _parse_enabled_brokers_config(
     return result
 
 
+def _optional_string(value: Any) -> str | None:
+    """Normalize scalar config values where null/blank means unset."""
+    if value is None:
+        return None
+    text = str(value).strip()
+    return text or None
+
+
 def _parse_broker_settings(brokers_yaml: dict[str, Any]) -> BrokerSettings:
     """Build a BrokerSettings from YAML section + env var overrides."""
     rh_yaml = brokers_yaml.get("robinhood", {})
@@ -374,14 +382,16 @@ def _parse_broker_settings(brokers_yaml: dict[str, Any]) -> BrokerSettings:
     if not isinstance(sc_yaml, dict):
         sc_yaml = {}
 
-    rh_username = (
-        os.getenv("ROBINHOOD_USERNAME") or str(rh_yaml.get("username", "")) or None
+    rh_username = os.getenv("ROBINHOOD_USERNAME") or _optional_string(
+        rh_yaml.get("username")
     )
-    rh_password = (
-        os.getenv("ROBINHOOD_PASSWORD") or str(rh_yaml.get("password", "")) or None
+    rh_password = os.getenv("ROBINHOOD_PASSWORD") or _optional_string(
+        rh_yaml.get("password")
     )
-    rh_pickle = os.getenv("ROBINHOOD_PICKLE_NAME") or str(
-        rh_yaml.get("pickle_name", "robinhood")
+    rh_pickle = (
+        os.getenv("ROBINHOOD_PICKLE_NAME")
+        or _optional_string(rh_yaml.get("pickle_name"))
+        or "robinhood"
     )
     rh_timeout_raw = os.getenv("ROBINHOOD_SESSION_TIMEOUT_HOURS") or rh_yaml.get(
         "session_timeout_hours", 23
@@ -391,17 +401,17 @@ def _parse_broker_settings(brokers_yaml: dict[str, Any]) -> BrokerSettings:
     except (TypeError, ValueError):
         rh_timeout = 23
 
-    sc_api_key = os.getenv("SCHWAB_API_KEY") or str(sc_yaml.get("api_key", "")) or None
+    sc_api_key = os.getenv("SCHWAB_API_KEY") or _optional_string(sc_yaml.get("api_key"))
     sc_app_secret = (
-        os.getenv("SCHWAB_APP_SECRET") or str(sc_yaml.get("app_secret", "")) or None
+        os.getenv("SCHWAB_APP_SECRET") or _optional_string(sc_yaml.get("app_secret"))
     )
     sc_callback_url = (
         os.getenv("SCHWAB_CALLBACK_URL")
-        or str(sc_yaml.get("callback_url", ""))
+        or _optional_string(sc_yaml.get("callback_url"))
         or "https://127.0.0.1:8182/"
     )
     sc_token_path = (
-        os.getenv("SCHWAB_TOKEN_PATH") or str(sc_yaml.get("token_path", "")) or None
+        os.getenv("SCHWAB_TOKEN_PATH") or _optional_string(sc_yaml.get("token_path"))
     )
 
     raw_enabled = os.getenv("ENABLED_BROKERS")
@@ -775,47 +785,44 @@ def load_config(config_path: Path | str | None = None) -> ServerConfig:
         brokers=_parse_broker_settings(brokers),
         schwab_api_key=(
             os.getenv("SCHWAB_API_KEY")
-            or str(
+            or _optional_string(
                 (
                     brokers.get("schwab", {})
                     if isinstance(brokers.get("schwab"), dict)
                     else {}
-                ).get("api_key", "")
+                ).get("api_key")
             )
-            or None
         ),
         schwab_app_secret=(
             os.getenv("SCHWAB_APP_SECRET")
-            or str(
+            or _optional_string(
                 (
                     brokers.get("schwab", {})
                     if isinstance(brokers.get("schwab"), dict)
                     else {}
-                ).get("app_secret", "")
+                ).get("app_secret")
             )
-            or None
         ),
         schwab_callback_url=(
             os.getenv("SCHWAB_CALLBACK_URL")
-            or str(
+            or _optional_string(
                 (
                     brokers.get("schwab", {})
                     if isinstance(brokers.get("schwab"), dict)
                     else {}
-                ).get("callback_url", "")
+                ).get("callback_url")
             )
             or "https://127.0.0.1:8182/"
         ),
         schwab_token_path=(
             os.getenv("SCHWAB_TOKEN_PATH")
-            or str(
+            or _optional_string(
                 (
                     brokers.get("schwab", {})
                     if isinstance(brokers.get("schwab"), dict)
                     else {}
-                ).get("token_path", "")
+                ).get("token_path")
             )
-            or None
         ),
     )
 
