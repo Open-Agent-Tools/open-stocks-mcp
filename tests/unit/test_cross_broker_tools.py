@@ -585,15 +585,25 @@ class TestGetAggregatedPortfolio:
         paper_broker = MockBroker("paper", authenticated=True)
 
         def _get_broker(name: str) -> MockBroker:
-            return {"robinhood": rh_broker, "schwab": schwab_broker, "paper": paper_broker}[name]
+            return {
+                "robinhood": rh_broker,
+                "schwab": schwab_broker,
+                "paper": paper_broker,
+            }[name]
 
         mock_registry.get_broker.side_effect = _get_broker
 
         rh_broker.get_portfolio_snapshot = AsyncMock(
-            return_value=({"market_value": 1000.0, "equity": 1000.0, "buying_power": 500.0}, [])
+            return_value=(
+                {"market_value": 1000.0, "equity": 1000.0, "buying_power": 500.0},
+                [],
+            )
         )
         paper_broker.get_portfolio_snapshot = AsyncMock(
-            return_value=({"market_value": 2000.0, "equity": 2000.0, "buying_power": 1000.0}, [])
+            return_value=(
+                {"market_value": 2000.0, "equity": 2000.0, "buying_power": 1000.0},
+                [],
+            )
         )
 
         with patch(
