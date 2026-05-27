@@ -144,6 +144,8 @@ class TestRateLimitStatusHelper:
 
             response = await get_rate_limit_status_data()
 
+        mock_get_rl.assert_called_once_with("robinhood")
+
         assert response["result"]["status"] == "success"
         assert response["result"]["requests_made"] == 5
         assert response["result"]["limit"] == 100

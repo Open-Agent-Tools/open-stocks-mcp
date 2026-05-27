@@ -13,7 +13,6 @@ from open_stocks_mcp.tools.error_handling import (
     handle_robin_stocks_errors,
     log_api_call,
 )
-from open_stocks_mcp.tools.rate_limiter import get_rate_limiter
 
 
 @handle_robin_stocks_errors
@@ -57,10 +56,6 @@ async def get_top_movers_sp500(direction: str = "up") -> dict[str, Any]:
         return create_error_response(
             ValueError("Authentication required"), "authentication"
         )
-
-    # Apply rate limiting
-    rate_limiter = get_rate_limiter()
-    await rate_limiter.acquire()
 
     log_api_call("get_top_movers_sp500", direction=direction)
 
@@ -130,10 +125,6 @@ async def get_top_100() -> dict[str, Any]:
             ValueError("Authentication required"), "authentication"
         )
 
-    # Apply rate limiting
-    rate_limiter = get_rate_limiter()
-    await rate_limiter.acquire()
-
     log_api_call("get_top_100")
 
     # Get top 100 stocks with retry logic
@@ -198,10 +189,6 @@ async def get_top_movers() -> dict[str, Any]:
             ValueError("Authentication required"), "authentication"
         )
 
-    # Apply rate limiting
-    rate_limiter = get_rate_limiter()
-    await rate_limiter.acquire()
-
     log_api_call("get_top_movers")
 
     # Get top movers with retry logic
@@ -257,10 +244,6 @@ async def get_stocks_by_tag(tag: str) -> dict[str, Any]:
         return create_error_response(
             ValueError("Authentication required"), "authentication"
         )
-
-    # Apply rate limiting
-    rate_limiter = get_rate_limiter()
-    await rate_limiter.acquire()
 
     log_api_call("get_stocks_by_tag", tag=tag)
 

@@ -117,7 +117,7 @@ async def get_list_brokers_data() -> dict[str, Any]:
 
 async def get_rate_limit_status_data() -> dict[str, Any]:
     """Return current rate limit usage and statistics."""
-    rate_limiter = get_rate_limiter()
+    rate_limiter = get_rate_limiter("robinhood")
     stats = rate_limiter.get_stats()
 
     return {

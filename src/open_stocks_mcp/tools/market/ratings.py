@@ -15,7 +15,6 @@ from open_stocks_mcp.tools.error_handling import (
     log_api_call,
     validate_symbol,
 )
-from open_stocks_mcp.tools.rate_limiter import get_rate_limiter
 
 
 @handle_robin_stocks_errors
@@ -62,10 +61,6 @@ async def get_stock_ratings(symbol: str) -> dict[str, Any]:
             return create_error_response(
                 ValueError("Authentication required"), "authentication"
             )
-
-        # Apply rate limiting
-        rate_limiter = get_rate_limiter()
-        await rate_limiter.acquire()
 
         log_api_call("get_stock_ratings", symbol=symbol)
 
