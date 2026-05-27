@@ -1,6 +1,6 @@
 # Open Stocks MCP — Tool Reference
 
-Total tools: 150
+Total tools: 152
 
 ## account_details
 
@@ -693,6 +693,27 @@ Get option expiration dates for a symbol.
 
     Args:
         symbol: Stock ticker symbol
+
+
+## schwab_option_orders
+
+Get option orders for a Schwab account.
+
+    Args:
+        account_hash: Account hash from get_schwab_account_numbers()
+        max_results: Maximum number of orders to return (default: 50)
+        status: Optional order status filter (e.g. FILLED, WORKING, CANCELED)
+
+
+## schwab_option_quote
+
+Get a single option contract quote by expiration, strike, and type (Schwab).
+
+    Args:
+        symbol: Stock ticker symbol
+        expiration_date: Expiration date in YYYY-MM-DD format
+        strike: Strike price (e.g. 170.0)
+        option_type: 'CALL' or 'PUT'
 
 
 ## schwab_option_sell_to_close
