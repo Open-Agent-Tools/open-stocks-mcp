@@ -406,7 +406,7 @@ def test_interactive_mfa_prompt_uses_original_stderr_when_stderr_is_redirected()
     assert code == "654321"
     assert "ROBINHOOD MFA REQUIRED" in original_stderr.getvalue()
     assert "Enter verification code:" in original_stderr.getvalue()
-    assert "ROBINHOOD MFA REQUIRED" not in redirected_stderr.getvalue()
+    assert redirected_stderr.getvalue() == ""
 
 
 @pytest.mark.journey_account
