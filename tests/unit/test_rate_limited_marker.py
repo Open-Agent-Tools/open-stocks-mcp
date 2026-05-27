@@ -141,6 +141,7 @@ def test_rate_limited_tests_are_not_skipped_when_explicitly_selected(
 
 @pytest.mark.unit
 @pytest.mark.journey_system
+@pytest.mark.slow
 def test_rate_limited_collection_finds_live_api_tests() -> None:
     result = subprocess.run(
         [
@@ -167,6 +168,7 @@ def test_rate_limited_collection_finds_live_api_tests() -> None:
 
 @pytest.mark.unit
 @pytest.mark.journey_system
+@pytest.mark.slow
 def test_rate_limited_collection_nodeids() -> None:
     """Assert the exact set of live-API tests selected by -m rate_limited."""
     result = subprocess.run(
@@ -220,6 +222,7 @@ def test_rate_limited_docs_are_present() -> None:
 
 @pytest.mark.unit
 @pytest.mark.journey_system
+@pytest.mark.slow
 def test_run_rate_limited_env_can_include_marked_tests() -> None:
     env = {**os.environ, "RUN_RATE_LIMITED": "1"}
     result = subprocess.run(
@@ -279,3 +282,20 @@ def test_pytester_explicit_m_not_rate_limited_selects_unmarked(
     result = pytester.runpytest("-m", "not rate_limited")
 
     result.assert_outcomes(passed=1, deselected=1)
+
+@pytest.mark.unit
+def test_subprocess_rate_limited_marker_tests_are_marked_slow() -> None:
+    """Ensure subprocess tests are marked slow to avoid running in fast sessions."""
+    from tests.unit.test_rate_limited_marker import (
+        test_rate_limited_collection_finds_live_api_tests,
+        test_rate_limited_collection_nodeids,
+        test_run_rate_limited_env_can_include_marked_tests,
+    )
+
+    for test_func in [
+        test_rate_limited_collection_finds_live_api_tests,
+        test_rate_limited_collection_nodeids,
+        test_run_rate_limited_env_can_include_marked_tests,
+    ]:
+        markers = {m.name for m in getattr(test_func, "pytestmark", [])}
+        assert "slow" in markers, f"{test_func.__name__} is missing @pytest.mark.slow"
