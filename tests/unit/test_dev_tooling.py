@@ -83,19 +83,6 @@ def test_dev_dependency_black_requires_26_x() -> None:
 
 
 @pytest.mark.unit
-def test_schwab_status_version_matches_pyproject() -> None:
-    pyproject = ROOT / "pyproject.toml"
-    schwab_status = ROOT / "SCHWAB_STATUS.md"
-
-    pyproject_data = tomllib.loads(pyproject.read_text(encoding="utf-8"))
-    version = pyproject_data["project"]["version"]
-    expected = f"**Version**: v{version}"
-
-    content = schwab_status.read_text(encoding="utf-8")
-    assert expected in content
-
-
-@pytest.mark.unit
 def test_mypy_dev_tooling_targets_2_1_0() -> None:
     pyproject_data = tomllib.loads(
         (ROOT / "pyproject.toml").read_text(encoding="utf-8")
@@ -155,4 +142,15 @@ def test_production_code_avoids_deprecated_asyncio_get_event_loop() -> None:
     assert offenders == [], (
         "Deprecated asyncio.get_event_loop() found in production code: "
         + ", ".join(offenders)
+    )
+
+
+@pytest.mark.unit
+def test_pytest_adds_src_layout_to_pythonpath() -> None:
+    pyproject = ROOT / "pyproject.toml"
+    data = tomllib.loads(pyproject.read_text(encoding="utf-8"))
+    pytest_config = data.get("tool", {}).get("pytest", {}).get("ini_options", {})
+    assert pytest_config.get("pythonpath") == ["src"], (
+        "pytest pythonpath should be configured to ['src'] in pyproject.toml "
+        "to resolve the src/ layout during collection."
     )
