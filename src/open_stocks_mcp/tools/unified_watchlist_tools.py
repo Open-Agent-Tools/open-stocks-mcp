@@ -31,6 +31,23 @@ def _normalize_symbols(symbols: list[str]) -> list[str]:
     return normalized
 
 
+def _compute_mutation_status(per_broker: dict[str, dict[str, Any]]) -> str:
+    """Compute mutation status while treating unsupported brokers as neutral."""
+    actionable_statuses = [
+        broker_result.get("status")
+        for broker_result in per_broker.values()
+        if broker_result.get("status") != "unsupported"
+    ]
+
+    if not actionable_statuses:
+        return "error"
+    if all(status == "success" for status in actionable_statuses):
+        return "success"
+    if any(status == "success" for status in actionable_statuses):
+        return "partial_success"
+    return "error"
+
+
 async def get_unified_watchlists(brokers: list[str] | None = None) -> dict[str, Any]:
     """Get all watchlists across supported brokers."""
     registry = await get_broker_registry()
@@ -206,14 +223,7 @@ async def add_symbols_to_unified_watchlist(
                 {"broker": "schwab", "message": "Add operation ignored for Schwab."}
             )
 
-    # Determine overall status
-    success_count = sum(1 for b in per_broker.values() if b.get("status") == "success")
-    if success_count == len(per_broker) and len(per_broker) > 0:
-        status = "success"
-    elif success_count > 0:
-        status = "partial_success"
-    else:
-        status = "error"
+    status = _compute_mutation_status(per_broker)
 
     return create_success_response(
         {
@@ -265,13 +275,7 @@ async def remove_symbols_from_unified_watchlist(
                 {"broker": "schwab", "message": "Remove operation ignored for Schwab."}
             )
 
-    success_count = sum(1 for b in per_broker.values() if b.get("status") == "success")
-    if success_count == len(per_broker) and len(per_broker) > 0:
-        status = "success"
-    elif success_count > 0:
-        status = "partial_success"
-    else:
-        status = "error"
+    status = _compute_mutation_status(per_broker)
 
     return create_success_response(
         {

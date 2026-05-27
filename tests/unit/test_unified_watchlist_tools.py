@@ -110,10 +110,10 @@ async def test_get_unified_watchlist_by_name_success(
 
 
 @pytest.mark.asyncio
-async def test_add_symbols_to_unified_watchlist_partial_success(
+async def test_add_symbols_to_unified_watchlist_success_with_unsupported_broker(
     mock_registry, mock_robinhood, mock_schwab
 ):
-    """Test partial success when adding symbols (RH success, Schwab unsupported)."""
+    """Test success when RH succeeds and unsupported brokers are neutral."""
     mock_registry.list_brokers.return_value = ["robinhood", "schwab"]
     mock_registry.get_broker.side_effect = lambda name: (
         mock_robinhood if name == "robinhood" else mock_schwab
@@ -129,7 +129,7 @@ async def test_add_symbols_to_unified_watchlist_partial_success(
     ):
         result = await add_symbols_to_unified_watchlist("Tech", ["aapl", "AAPL "])
 
-    assert result["result"]["status"] == "partial_success"
+    assert result["result"]["status"] == "success"
     assert "AAPL" in result["result"]["symbols_added"]
     assert len(result["result"]["symbols_added"]) == 1  # De-duplicated and uppercased
     assert result["result"]["per_broker"]["robinhood"]["status"] == "success"
@@ -137,10 +137,10 @@ async def test_add_symbols_to_unified_watchlist_partial_success(
 
 
 @pytest.mark.asyncio
-async def test_remove_symbols_from_unified_watchlist_success(
+async def test_remove_symbols_from_unified_watchlist_success_with_unsupported_broker(
     mock_registry, mock_robinhood, mock_schwab
 ):
-    """Test success when removing symbols from Robinhood."""
+    """Test success when RH succeeds and unsupported brokers are neutral."""
     mock_registry.list_brokers.return_value = ["robinhood", "schwab"]
     mock_registry.get_broker.side_effect = lambda name: (
         mock_robinhood if name == "robinhood" else mock_schwab
@@ -156,8 +156,6 @@ async def test_remove_symbols_from_unified_watchlist_success(
     ):
         result = await remove_symbols_from_unified_watchlist("Tech", ["AAPL"])
 
-    assert (
-        result["result"]["status"] == "partial_success"
-    )  # Because Schwab is unsupported
+    assert result["result"]["status"] == "success"
     assert result["result"]["symbols_removed"] == ["AAPL"]
     assert result["result"]["per_broker"]["robinhood"]["status"] == "success"
