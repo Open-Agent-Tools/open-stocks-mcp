@@ -134,6 +134,65 @@ docker-compose logs -f
 docker inspect open-stocks-mcp-server --format='{{.State.Health.Status}}'
 ```
 
+## Multi-Broker Setup (Robinhood + Schwab)
+
+You can run Open Stocks MCP with both Robinhood and Schwab enabled using the provided both-broker configuration override.
+
+### 1. Configure Credentials
+
+Update your `.env` file with both Robinhood and Schwab credentials:
+
+```env
+# Robinhood
+ROBINHOOD_USERNAME=your_username
+ROBINHOOD_PASSWORD=your_password
+
+# Schwab
+SCHWAB_API_KEY=your_api_key
+SCHWAB_APP_SECRET=your_app_secret
+SCHWAB_TOKEN_PATH=/home/mcp/.tokens/schwab_token.json
+
+# Security (Required for Docker)
+MCP_API_KEY=your_long_random_secret
+```
+
+### 2. Start with Both-Broker Override
+
+Use the `docker-compose.both-brokers.yml` override to enable both brokers. This override mounts a custom configuration file that enables the Schwab feature flag.
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.both-brokers.yml up -d
+```
+
+### 3. Schwab OAuth Limitations
+
+Charles Schwab uses browser-based OAuth. When running in a detached Docker container:
+1. **First-run authorization**: Check the logs (`docker compose logs -f`) for the Schwab authorization URL.
+2. **Interactive login**: Copy the URL into your local browser to complete the Schwab authentication.
+3. **Callback reachability**: Your local browser must be able to reach the callback URL (default `https://127.0.0.1:8182/`) to pass the authorization code back to the server.
+4. **Token persistence**: Once completed, the OAuth token is saved to `/home/mcp/.tokens/schwab_token.json`. This is persisted in the `mcp_tokens` volume so you don't need to re-authenticate on every restart.
+
+### 4. Validate Both Brokers
+
+Confirm both brokers are active and authenticated using the `broker_status` tool. Note that you must provide the `Authorization: Bearer` header with your `MCP_API_KEY`:
+
+```bash
+curl -sS -X POST http://localhost:3001/mcp \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $MCP_API_KEY" \
+  -d '{
+    "jsonrpc": "2.0",
+    "method": "tools/call",
+    "params": {
+      "name": "broker_status",
+      "arguments": {}
+    },
+    "id": 1
+  }'
+```
+
+The response `result.content[0].text` will contain a JSON report showing `robinhood` and `schwab` statuses (e.g., `authenticated`, `failed`, or `not_configured`).
+
 ## Usage
 
 ### Connecting to the Server
