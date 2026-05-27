@@ -1,5 +1,6 @@
 """Base broker interface for multi-broker support."""
 
+import asyncio
 from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass
 from datetime import datetime
@@ -285,6 +286,57 @@ class BaseBroker(ABC):
             Order result in standardized format
         """
         pass
+
+    async def get_portfolio_snapshot(self) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+        """Get a normalized snapshot of the broker's portfolio and positions.
+
+        This method provides a standard interface for cross-broker aggregation.
+        Default implementation uses get_portfolio() and get_positions() and
+        normalizes the results.
+
+        Returns:
+            Tuple of (summary dict, positions list)
+            Summary dict keys: market_value, equity, buying_power
+            Position dict keys: symbol, quantity, average_buy_price, market_value, broker
+        """
+        summary: dict[str, Any] = {}
+        positions: list[dict[str, Any]] = []
+
+        portfolio_result, positions_result = await asyncio.gather(
+            self.get_portfolio(),
+            self.get_positions(),
+        )
+
+        portfolio_data = portfolio_result.get("result", {})
+        if "error" not in portfolio_data:
+            summary["market_value"] = self._safe_float(portfolio_data.get("market_value"))
+            summary["equity"] = self._safe_float(portfolio_data.get("equity"))
+            summary["buying_power"] = self._safe_float(portfolio_data.get("buying_power"))
+
+        positions_data = positions_result.get("result", {})
+        if "error" not in positions_data:
+            for pos in positions_data.get("positions", []):
+                positions.append(
+                    {
+                        "symbol": pos.get("symbol"),
+                        "quantity": self._safe_float(pos.get("quantity")),
+                        "average_buy_price": self._safe_float(
+                            pos.get("average_buy_price")
+                        ),
+                        "market_value": self._safe_float(pos.get("market_value"), None),
+                        "broker": self.name,
+                    }
+                )
+
+        return summary, positions
+
+    @staticmethod
+    def _safe_float(value: Any, default: Any = 0.0) -> Any:
+        """Convert value to float, returning default on failure."""
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return default
 
     # Add more abstract methods as needed for common operations
     # Each broker implements these according to their API

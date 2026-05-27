@@ -374,3 +374,52 @@ class SchwabBroker(BaseBroker):
         except Exception as e:
             logger.error(f"Error getting Schwab transaction {transaction_id}: {e}")
             return {"result": {"error": str(e), "status": "error"}}
+
+    async def get_portfolio_snapshot(self) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+        """Get a normalized snapshot of Schwab accounts and positions."""
+        summary: dict[str, Any] = {
+            "market_value": 0.0,
+            "equity": 0.0,
+            "buying_power": 0.0,
+        }
+        positions: list[dict[str, Any]] = []
+
+        if not self.is_available():
+            return summary, positions
+
+        from open_stocks_mcp.tools.schwab_account_tools import get_schwab_accounts
+
+        accounts_result = await get_schwab_accounts(include_positions=True)
+        accounts_data = accounts_result.get("result", {})
+        if "error" in accounts_data:
+            return summary, positions
+
+        total_market_value = 0.0
+        total_buying_power = 0.0
+
+        for account in accounts_data.get("accounts", []):
+            sec_account = account.get("securitiesAccount", {})
+            balances = sec_account.get("currentBalances", {})
+            total_market_value += self._safe_float(balances.get("liquidationValue"))
+            total_buying_power += self._safe_float(balances.get("buyingPower"))
+
+            for pos in sec_account.get("positions", []):
+                instrument = pos.get("instrument", {})
+                quantity = self._safe_float(pos.get("longQuantity")) + self._safe_float(
+                    pos.get("shortQuantity")
+                )
+                positions.append(
+                    {
+                        "symbol": instrument.get("symbol"),
+                        "quantity": quantity,
+                        "average_buy_price": self._safe_float(pos.get("averagePrice")),
+                        "market_value": self._safe_float(pos.get("marketValue")),
+                        "broker": self.name,
+                    }
+                )
+
+        summary["market_value"] = total_market_value
+        summary["equity"] = total_market_value
+        summary["buying_power"] = total_buying_power
+
+        return summary, positions

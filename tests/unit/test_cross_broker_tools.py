@@ -70,57 +70,24 @@ class TestGetAggregatedPortfolio:
             rh_broker if name == "robinhood" else schwab_broker
         )
 
-        async def _slow_rh_portfolio(*_args: Any, **_kwargs: Any) -> dict[str, Any]:
+        async def _slow_snapshot(*_args: Any, **_kwargs: Any) -> tuple[dict[str, Any], list[dict[str, Any]]]:
             await asyncio.sleep(0.2)
-            return {
-                "result": {
-                    "market_value": "0",
-                    "equity": "0",
-                    "buying_power": "0",
-                    "status": "success",
-                }
-            }
+            return (
+                {
+                    "market_value": 0.0,
+                    "equity": 0.0,
+                    "buying_power": 0.0,
+                },
+                [],
+            )
 
-        async def _slow_rh_positions(*_args: Any, **_kwargs: Any) -> dict[str, Any]:
-            await asyncio.sleep(0.2)
-            return {"result": {"positions": [], "count": 0, "status": "success"}}
-
-        async def _slow_schwab_accounts(*_args: Any, **_kwargs: Any) -> dict[str, Any]:
-            await asyncio.sleep(0.2)
-            return {
-                "result": {
-                    "accounts": [
-                        {
-                            "securitiesAccount": {
-                                "currentBalances": {
-                                    "liquidationValue": 0.0,
-                                    "buyingPower": 0.0,
-                                },
-                                "positions": [],
-                            }
-                        }
-                    ],
-                    "count": 1,
-                    "status": "success",
-                }
-            }
+        rh_broker.get_portfolio_snapshot = AsyncMock(side_effect=_slow_snapshot)
+        schwab_broker.get_portfolio_snapshot = AsyncMock(side_effect=_slow_snapshot)
 
         with (
             patch(
                 "open_stocks_mcp.tools.cross_broker_tools.get_broker_registry",
                 return_value=mock_registry,
-            ),
-            patch(
-                "open_stocks_mcp.tools.cross_broker_tools.get_portfolio",
-                AsyncMock(side_effect=_slow_rh_portfolio),
-            ),
-            patch(
-                "open_stocks_mcp.tools.cross_broker_tools.get_positions",
-                AsyncMock(side_effect=_slow_rh_positions),
-            ),
-            patch(
-                "open_stocks_mcp.tools.cross_broker_tools.get_schwab_accounts",
-                AsyncMock(side_effect=_slow_schwab_accounts),
             ),
         ):
             start = time.perf_counter()
@@ -143,74 +110,47 @@ class TestGetAggregatedPortfolio:
             rh_broker if name == "robinhood" else schwab_broker
         )
 
-        rh_portfolio = AsyncMock(
-            return_value={
-                "result": {
-                    "market_value": "10000.00",
-                    "equity": "9500.00",
-                    "buying_power": "3000.00",
-                    "status": "success",
-                }
-            }
+        rh_broker.get_portfolio_snapshot = AsyncMock(
+            return_value=(
+                {
+                    "market_value": 10000.00,
+                    "equity": 9500.00,
+                    "buying_power": 3000.00,
+                },
+                [
+                    {
+                        "symbol": "AAPL",
+                        "quantity": 10.0,
+                        "average_buy_price": 150.00,
+                        "market_value": 1500.0,
+                        "broker": "robinhood",
+                    }
+                ],
+            )
         )
-        rh_positions = AsyncMock(
-            return_value={
-                "result": {
-                    "positions": [
-                        {
-                            "symbol": "AAPL",
-                            "quantity": "10",
-                            "average_buy_price": "150.00",
-                        }
-                    ],
-                    "count": 1,
-                    "status": "success",
-                }
-            }
-        )
-        schwab_accounts = AsyncMock(
-            return_value={
-                "result": {
-                    "accounts": [
-                        {
-                            "securitiesAccount": {
-                                "currentBalances": {
-                                    "liquidationValue": 5000.0,
-                                    "buyingPower": 2000.0,
-                                },
-                                "positions": [
-                                    {
-                                        "instrument": {"symbol": "MSFT"},
-                                        "longQuantity": 5,
-                                        "averagePrice": 300.0,
-                                        "marketValue": 1750.0,
-                                    }
-                                ],
-                            }
-                        }
-                    ],
-                    "count": 1,
-                    "status": "success",
-                }
-            }
+        schwab_broker.get_portfolio_snapshot = AsyncMock(
+            return_value=(
+                {
+                    "market_value": 5000.0,
+                    "equity": 5000.0,
+                    "buying_power": 2000.0,
+                },
+                [
+                    {
+                        "symbol": "MSFT",
+                        "quantity": 5.0,
+                        "average_buy_price": 300.0,
+                        "market_value": 1750.0,
+                        "broker": "schwab",
+                    }
+                ],
+            )
         )
 
         with (
             patch(
                 "open_stocks_mcp.tools.cross_broker_tools.get_broker_registry",
                 return_value=mock_registry,
-            ),
-            patch(
-                "open_stocks_mcp.tools.cross_broker_tools.get_portfolio",
-                rh_portfolio,
-            ),
-            patch(
-                "open_stocks_mcp.tools.cross_broker_tools.get_positions",
-                rh_positions,
-            ),
-            patch(
-                "open_stocks_mcp.tools.cross_broker_tools.get_schwab_accounts",
-                schwab_accounts,
             ),
         ):
             result = await get_aggregated_portfolio()
@@ -240,44 +180,29 @@ class TestGetAggregatedPortfolio:
             rh_broker if name == "robinhood" else schwab_broker
         )
 
-        rh_portfolio = AsyncMock(
-            return_value={
-                "result": {
-                    "market_value": "10000.00",
-                    "equity": "9500.00",
-                    "buying_power": "3000.00",
-                    "status": "success",
-                }
-            }
-        )
-        rh_positions = AsyncMock(
-            return_value={
-                "result": {
-                    "positions": [
-                        {
-                            "symbol": "AAPL",
-                            "quantity": "10",
-                            "average_buy_price": "150.00",
-                        }
-                    ],
-                    "count": 1,
-                    "status": "success",
-                }
-            }
+        rh_broker.get_portfolio_snapshot = AsyncMock(
+            return_value=(
+                {
+                    "market_value": 10000.00,
+                    "equity": 9500.00,
+                    "buying_power": 3000.00,
+                },
+                [
+                    {
+                        "symbol": "AAPL",
+                        "quantity": 10.0,
+                        "average_buy_price": 150.00,
+                        "market_value": 1500.0,
+                        "broker": "robinhood",
+                    }
+                ],
+            )
         )
 
         with (
             patch(
                 "open_stocks_mcp.tools.cross_broker_tools.get_broker_registry",
                 return_value=mock_registry,
-            ),
-            patch(
-                "open_stocks_mcp.tools.cross_broker_tools.get_portfolio",
-                rh_portfolio,
-            ),
-            patch(
-                "open_stocks_mcp.tools.cross_broker_tools.get_positions",
-                rh_positions,
             ),
         ):
             result = await get_aggregated_portfolio()
@@ -304,34 +229,21 @@ class TestGetAggregatedPortfolio:
             rh_broker if name == "robinhood" else schwab_broker
         )
 
-        schwab_accounts = AsyncMock(
-            return_value={
-                "result": {
-                    "accounts": [
-                        {
-                            "securitiesAccount": {
-                                "currentBalances": {
-                                    "liquidationValue": 5000.0,
-                                    "buyingPower": 2000.0,
-                                },
-                                "positions": [],
-                            }
-                        }
-                    ],
-                    "count": 1,
-                    "status": "success",
-                }
-            }
+        schwab_broker.get_portfolio_snapshot = AsyncMock(
+            return_value=(
+                {
+                    "market_value": 5000.0,
+                    "equity": 5000.0,
+                    "buying_power": 2000.0,
+                },
+                [],
+            )
         )
 
         with (
             patch(
                 "open_stocks_mcp.tools.cross_broker_tools.get_broker_registry",
                 return_value=mock_registry,
-            ),
-            patch(
-                "open_stocks_mcp.tools.cross_broker_tools.get_schwab_accounts",
-                schwab_accounts,
             ),
         ):
             result = await get_aggregated_portfolio()
@@ -386,55 +298,31 @@ class TestGetAggregatedPortfolio:
             rh_broker if name == "robinhood" else schwab_broker
         )
 
-        rh_portfolio = AsyncMock(
-            return_value={
-                "result": {
-                    "market_value": "10000.00",
-                    "equity": "9500.00",
-                    "buying_power": "3000.00",
-                    "status": "success",
-                }
-            }
+        rh_broker.get_portfolio_snapshot = AsyncMock(
+            return_value=(
+                {
+                    "market_value": 10000.00,
+                    "equity": 9500.00,
+                    "buying_power": 3000.00,
+                },
+                [],
+            )
         )
-        rh_positions = AsyncMock(
-            return_value={"result": {"positions": [], "count": 0, "status": "success"}}
-        )
-        schwab_accounts = AsyncMock(
-            return_value={
-                "result": {
-                    "accounts": [
-                        {
-                            "securitiesAccount": {
-                                "currentBalances": {
-                                    "liquidationValue": 5000.0,
-                                    "buyingPower": 2000.0,
-                                },
-                                "positions": [],
-                            }
-                        }
-                    ],
-                    "count": 1,
-                    "status": "success",
-                }
-            }
+        schwab_broker.get_portfolio_snapshot = AsyncMock(
+            return_value=(
+                {
+                    "market_value": 5000.0,
+                    "equity": 5000.0,
+                    "buying_power": 2000.0,
+                },
+                [],
+            )
         )
 
         with (
             patch(
                 "open_stocks_mcp.tools.cross_broker_tools.get_broker_registry",
                 return_value=mock_registry,
-            ),
-            patch(
-                "open_stocks_mcp.tools.cross_broker_tools.get_portfolio",
-                rh_portfolio,
-            ),
-            patch(
-                "open_stocks_mcp.tools.cross_broker_tools.get_positions",
-                rh_positions,
-            ),
-            patch(
-                "open_stocks_mcp.tools.cross_broker_tools.get_schwab_accounts",
-                schwab_accounts,
             ),
         ):
             result = await get_aggregated_portfolio()
@@ -460,74 +348,47 @@ class TestGetAggregatedPortfolio:
             rh_broker if name == "robinhood" else schwab_broker
         )
 
-        rh_portfolio = AsyncMock(
-            return_value={
-                "result": {
-                    "market_value": "10000.00",
-                    "equity": "9500.00",
-                    "buying_power": "3000.00",
-                    "status": "success",
-                }
-            }
+        rh_broker.get_portfolio_snapshot = AsyncMock(
+            return_value=(
+                {
+                    "market_value": 10000.00,
+                    "equity": 9500.00,
+                    "buying_power": 3000.00,
+                },
+                [
+                    {
+                        "symbol": "AAPL",
+                        "quantity": 10.0,
+                        "average_buy_price": 150.00,
+                        "market_value": 1500.0,
+                        "broker": "robinhood",
+                    }
+                ],
+            )
         )
-        rh_positions = AsyncMock(
-            return_value={
-                "result": {
-                    "positions": [
-                        {
-                            "symbol": "AAPL",
-                            "quantity": "10",
-                            "average_buy_price": "150.00",
-                        }
-                    ],
-                    "count": 1,
-                    "status": "success",
-                }
-            }
-        )
-        schwab_accounts = AsyncMock(
-            return_value={
-                "result": {
-                    "accounts": [
-                        {
-                            "securitiesAccount": {
-                                "currentBalances": {
-                                    "liquidationValue": 5000.0,
-                                    "buyingPower": 2000.0,
-                                },
-                                "positions": [
-                                    {
-                                        "instrument": {"symbol": "MSFT"},
-                                        "longQuantity": 5,
-                                        "averagePrice": 300.0,
-                                        "marketValue": 1750.0,
-                                    }
-                                ],
-                            }
-                        }
-                    ],
-                    "count": 1,
-                    "status": "success",
-                }
-            }
+        schwab_broker.get_portfolio_snapshot = AsyncMock(
+            return_value=(
+                {
+                    "market_value": 5000.0,
+                    "equity": 5000.0,
+                    "buying_power": 2000.0,
+                },
+                [
+                    {
+                        "symbol": "MSFT",
+                        "quantity": 5.0,
+                        "average_buy_price": 300.0,
+                        "market_value": 1750.0,
+                        "broker": "schwab",
+                    }
+                ],
+            )
         )
 
         with (
             patch(
                 "open_stocks_mcp.tools.cross_broker_tools.get_broker_registry",
                 return_value=mock_registry,
-            ),
-            patch(
-                "open_stocks_mcp.tools.cross_broker_tools.get_portfolio",
-                rh_portfolio,
-            ),
-            patch(
-                "open_stocks_mcp.tools.cross_broker_tools.get_positions",
-                rh_positions,
-            ),
-            patch(
-                "open_stocks_mcp.tools.cross_broker_tools.get_schwab_accounts",
-                schwab_accounts,
             ),
         ):
             result = await get_aggregated_portfolio()
@@ -555,32 +416,21 @@ class TestGetAggregatedPortfolio:
             rh_broker if name == "robinhood" else schwab_broker
         )
 
-        rh_portfolio = AsyncMock(
-            return_value={
-                "result": {
-                    "market_value": "10000.00",
-                    "equity": "9500.00",
-                    "buying_power": "3000.00",
-                    "status": "success",
-                }
-            }
-        )
-        rh_positions = AsyncMock(
-            return_value={"result": {"positions": [], "count": 0, "status": "success"}}
+        rh_broker.get_portfolio_snapshot = AsyncMock(
+            return_value=(
+                {
+                    "market_value": 10000.00,
+                    "equity": 9500.00,
+                    "buying_power": 3000.00,
+                },
+                [],
+            )
         )
 
         with (
             patch(
                 "open_stocks_mcp.tools.cross_broker_tools.get_broker_registry",
                 return_value=mock_registry,
-            ),
-            patch(
-                "open_stocks_mcp.tools.cross_broker_tools.get_portfolio",
-                rh_portfolio,
-            ),
-            patch(
-                "open_stocks_mcp.tools.cross_broker_tools.get_positions",
-                rh_positions,
             ),
         ):
             result = await get_aggregated_portfolio()
@@ -625,48 +475,32 @@ class TestGetAggregatedPortfolio:
         )
 
         # Robinhood raises an exception during portfolio collection
-        rh_portfolio = AsyncMock(side_effect=RuntimeError("rh boom"))
+        rh_broker.get_portfolio_snapshot = AsyncMock(side_effect=RuntimeError("rh boom"))
 
         # Schwab returns valid data with one MSFT position
-        schwab_accounts = AsyncMock(
-            return_value={
-                "result": {
-                    "accounts": [
-                        {
-                            "securitiesAccount": {
-                                "currentBalances": {
-                                    "liquidationValue": 5000.0,
-                                    "buyingPower": 2000.0,
-                                },
-                                "positions": [
-                                    {
-                                        "instrument": {"symbol": "MSFT"},
-                                        "longQuantity": 5,
-                                        "averagePrice": 300.0,
-                                        "marketValue": 1750.0,
-                                    }
-                                ],
-                            }
-                        }
-                    ],
-                    "count": 1,
-                    "status": "success",
-                }
-            }
+        schwab_broker.get_portfolio_snapshot = AsyncMock(
+            return_value=(
+                {
+                    "market_value": 5000.0,
+                    "equity": 5000.0,
+                    "buying_power": 2000.0,
+                },
+                [
+                    {
+                        "symbol": "MSFT",
+                        "quantity": 5.0,
+                        "average_buy_price": 300.0,
+                        "market_value": 1750.0,
+                        "broker": "schwab",
+                    }
+                ],
+            )
         )
 
         with (
             patch(
                 "open_stocks_mcp.tools.cross_broker_tools.get_broker_registry",
                 return_value=mock_registry,
-            ),
-            patch(
-                "open_stocks_mcp.tools.cross_broker_tools.get_portfolio",
-                rh_portfolio,
-            ),
-            patch(
-                "open_stocks_mcp.tools.cross_broker_tools.get_schwab_accounts",
-                schwab_accounts,
             ),
         ):
             result = await get_aggregated_portfolio()
@@ -687,3 +521,45 @@ class TestGetAggregatedPortfolio:
         # Robinhood should be in unavailable_brokers and partial_failure should be True
         assert "robinhood" in data["unavailable_brokers"]
         assert data["partial_failure"] is True
+
+    @pytest.mark.asyncio
+    @pytest.mark.unit
+    @pytest.mark.journey_portfolio
+    async def test_registered_third_broker_snapshot_is_aggregated_without_name_branch(self) -> None:
+        """A third broker registered under a new name is aggregated if it implements snapshots."""
+        mock_registry = MagicMock()
+        mock_registry.list_brokers.return_value = ["paper"]
+
+        paper_broker = MockBroker("paper", authenticated=True)
+        # We'll use get_portfolio_snapshot which we are about to add
+        paper_broker.get_portfolio_snapshot = AsyncMock(
+            return_value=(
+                {
+                    "market_value": 1000.0,
+                    "equity": 1000.0,
+                    "buying_power": 500.0,
+                },
+                [
+                    {
+                        "symbol": "BTC",
+                        "quantity": 0.5,
+                        "average_buy_price": 20000.0,
+                        "market_value": 25000.0,
+                        "broker": "paper",
+                    }
+                ],
+            )
+        )
+        mock_registry.get_broker.return_value = paper_broker
+
+        with patch(
+            "open_stocks_mcp.tools.cross_broker_tools.get_broker_registry",
+            return_value=mock_registry,
+        ):
+            result = await get_aggregated_portfolio()
+
+        data = result["result"]
+        assert data["brokers"]["paper"]["status"] == "available"
+        assert data["aggregated"]["total_market_value"] == 1000.0
+        assert len(data["aggregated"]["positions"]) == 1
+        assert data["aggregated"]["positions"][0]["symbol"] == "BTC"

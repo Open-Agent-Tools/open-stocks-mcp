@@ -6,100 +6,6 @@ from typing import Any
 from open_stocks_mcp.brokers.registry import get_broker_registry
 from open_stocks_mcp.logging_config import logger
 from open_stocks_mcp.tools.responses import create_success_response
-from open_stocks_mcp.tools.robinhood_account_tools import get_portfolio, get_positions
-from open_stocks_mcp.tools.schwab_account_tools import get_schwab_accounts
-
-
-def _safe_float(value: Any, default: float = 0.0) -> float:
-    """Convert value to float, returning default on failure."""
-    try:
-        return float(value)
-    except (TypeError, ValueError):
-        return default
-
-
-async def _collect_robinhood_data(
-    broker_name: str,
-) -> tuple[dict[str, Any], list[dict[str, Any]]]:
-    """Collect portfolio summary and positions from Robinhood.
-
-    Returns:
-        Tuple of (summary dict, positions list)
-    """
-    summary: dict[str, Any] = {}
-    positions: list[dict[str, Any]] = []
-
-    portfolio_result, positions_result = await asyncio.gather(
-        get_portfolio(),
-        get_positions(),
-    )
-    portfolio_data = portfolio_result.get("result", {})
-    if "error" not in portfolio_data:
-        summary["market_value"] = _safe_float(portfolio_data.get("market_value"))
-        summary["equity"] = _safe_float(portfolio_data.get("equity"))
-        summary["buying_power"] = _safe_float(portfolio_data.get("buying_power"))
-
-    positions_data = positions_result.get("result", {})
-    if "error" not in positions_data:
-        for pos in positions_data.get("positions", []):
-            positions.append(
-                {
-                    "symbol": pos.get("symbol"),
-                    "quantity": _safe_float(pos.get("quantity")),
-                    "average_buy_price": _safe_float(pos.get("average_buy_price")),
-                    "market_value": None,
-                    "broker": broker_name,
-                }
-            )
-
-    return summary, positions
-
-
-async def _collect_schwab_data(
-    broker_name: str,
-) -> tuple[dict[str, Any], list[dict[str, Any]]]:
-    """Collect portfolio summary and positions from Schwab.
-
-    Returns:
-        Tuple of (summary dict, positions list)
-    """
-    summary: dict[str, Any] = {"market_value": 0.0, "equity": 0.0, "buying_power": 0.0}
-    positions: list[dict[str, Any]] = []
-
-    accounts_result = await get_schwab_accounts(include_positions=True)
-    accounts_data = accounts_result.get("result", {})
-    if "error" in accounts_data:
-        return summary, positions
-
-    total_market_value = 0.0
-    total_buying_power = 0.0
-
-    for account in accounts_data.get("accounts", []):
-        sec_account = account.get("securitiesAccount", {})
-        balances = sec_account.get("currentBalances", {})
-        total_market_value += _safe_float(balances.get("liquidationValue"))
-        total_buying_power += _safe_float(balances.get("buyingPower"))
-
-        for pos in sec_account.get("positions", []):
-            instrument = pos.get("instrument", {})
-            quantity = _safe_float(pos.get("longQuantity")) + _safe_float(
-                pos.get("shortQuantity")
-            )
-            positions.append(
-                {
-                    "symbol": instrument.get("symbol"),
-                    "quantity": quantity,
-                    "average_buy_price": _safe_float(pos.get("averagePrice")),
-                    "market_value": _safe_float(pos.get("marketValue")),
-                    "broker": broker_name,
-                }
-            )
-
-    summary["market_value"] = total_market_value
-    summary["equity"] = total_market_value
-    summary["buying_power"] = total_buying_power
-
-    return summary, positions
 
 
 async def get_aggregated_portfolio() -> dict[str, Any]:
@@ -151,19 +57,7 @@ async def get_aggregated_portfolio() -> dict[str, Any]:
             continue
 
         available_names.append(name)
-        if name == "robinhood":
-            coros.append(_collect_robinhood_data(name))
-        elif name == "schwab":
-            coros.append(_collect_schwab_data(name))
-        else:
-
-            async def _collect_unknown(
-                broker_name: str,
-            ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
-                logger.warning(f"No aggregation collector for broker: {broker_name}")
-                return {}, []
-
-            coros.append(_collect_unknown(name))
+        coros.append(broker.get_portfolio_snapshot())
 
     if coros:
         results = await asyncio.gather(*coros, return_exceptions=True)
