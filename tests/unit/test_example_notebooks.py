@@ -68,6 +68,17 @@ async def test_notebook_structure(notebook_path: Path) -> None:
 
 
 @pytest.mark.asyncio
+async def test_dry_run_notebook_uses_session_list_tools() -> None:
+    """dry-run notebook must call session.list_tools(), not a bare list_tools()."""
+    assert DRY_RUN_NOTEBOOK.exists(), f"Notebook {DRY_RUN_NOTEBOOK} does not exist"
+    nb = nbformat.read(DRY_RUN_NOTEBOOK, as_version=4)  # type: ignore[no-untyped-call]
+    code_sources = [cell.source for cell in nb.cells if cell.cell_type == "code"]
+    assert any("session.list_tools()" in source for source in code_sources), (
+        f"Notebook {DRY_RUN_NOTEBOOK} must contain a code cell with 'session.list_tools()'"
+    )
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "notebook_path",
     [PORTFOLIO_NOTEBOOK, OPTIONS_NOTEBOOK, QUICKSTART_NOTEBOOK, DRY_RUN_NOTEBOOK],
