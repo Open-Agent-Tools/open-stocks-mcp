@@ -13,7 +13,16 @@ from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock
 
-from open_stocks_mcp.brokers.base import BaseBroker, BrokerAuthStatus
+try:
+    from open_stocks_mcp.brokers.base import BaseBroker, BrokerAuthStatus
+except ImportError:
+    print(
+        "\n\033[91mERROR: open_stocks_mcp is not importable.\033[0m\n"
+        "Run setup with:   uv sync\n"
+        "Run tests with:   uv run pytest\n",
+        file=sys.stderr,
+    )
+    sys.exit(1)
 
 
 class MockBroker(BaseBroker):
