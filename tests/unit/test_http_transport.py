@@ -184,6 +184,23 @@ class TestHttpTransportUnit:
         assert "POST" in response.headers["access-control-allow-methods"]
 
     @patch(
+        "open_stocks_mcp.server.http_transport.get_health_service", return_value=None
+    )
+    @patch(
+        "open_stocks_mcp.server.http_transport.get_metrics_collector",
+        return_value=AsyncMock(),
+    )
+    def test_health_returns_503_when_health_service_unavailable(
+        self,
+        _mock_get_metrics_collector: Mock,
+        _mock_get_health_service: Mock,
+        client: TestClient,
+    ) -> None:
+        response = client.get("/health")
+        assert response.status_code == 503
+        assert response.json()["detail"] == "Service unhealthy"
+
+    @patch(
         "open_stocks_mcp.server.http_transport.get_metrics_collector", return_value=None
     )
     def test_mcp_tools_call_propagates_metrics_collector_http_exception(
