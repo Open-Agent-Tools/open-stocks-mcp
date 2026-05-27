@@ -100,14 +100,14 @@ def test_docker_readme_tool_count_matches_app():
     app_content = APP_PY_PATH.read_text()
 
     actual_count = sum(
-        1
-        for line in app_content.splitlines()
-        if line.strip() == "@mcp.tool()"
+        1 for line in app_content.splitlines() if line.strip() == "@mcp.tool()"
     )
 
     # Find all numeric tool-count claims in the README (e.g. "152 MCP tools", "**152 MCP tools**")
     claimed = re.findall(r"\b(\d+)\s+MCP tools\b", readme_content)
-    assert claimed, "Docker README contains no '\\d+ MCP tools' claim — add the tool count."
+    assert claimed, (
+        "Docker README contains no '\\d+ MCP tools' claim — add the tool count."
+    )
 
     wrong = [c for c in claimed if int(c) != actual_count]
     assert not wrong, (
