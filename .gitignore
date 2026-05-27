@@ -376,3 +376,10 @@ _site/
 # package-lock.json
 # yarn.lock
 examples/kubernetes/secret.yaml
+
+# CI/merge artifacts
+dirty_check.txt
+merge_sha.txt
+
+# Timelapse capture runs
+timelapse-runs/
