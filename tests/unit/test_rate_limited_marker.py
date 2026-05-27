@@ -216,6 +216,7 @@ def test_rate_limited_docs_are_present() -> None:
     for relative_path in ("README.md", "CLAUDE.md"):
         content = (ROOT / relative_path).read_text(encoding="utf-8")
         assert "rate_limited" in content
+        assert "RUN_RATE_LIMITED=1" in content
 
 
 @pytest.mark.unit
