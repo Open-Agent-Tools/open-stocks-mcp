@@ -1,0 +1,14 @@
+# Docker Compose Override for Both-Broker Setup
+#
+# This override enables both Robinhood and Schwab brokers by mounting
+# the both-broker configuration file.
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.both-brokers.yml up -d
+
+services:
+  open-stocks-mcp:
+    environment:
+      - OPEN_STOCKS_CONFIG=/usr/src/app/open-stocks-mcp.yaml
+    volumes:
+      - ./config.both-brokers.yaml:/usr/src/app/open-stocks-mcp.yaml:ro

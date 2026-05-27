@@ -1,0 +1,10 @@
+# Both-Broker Configuration for Docker
+# Enables both Robinhood and Schwab feature flags.
+#
+# Usage: OPEN_STOCKS_CONFIG=config.both-brokers.yaml open-stocks-mcp-server
+
+environment: docker
+
+feature_flags:
+  brokers.robinhood: true
+  brokers.schwab: true
