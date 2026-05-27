@@ -15,6 +15,7 @@ from open_stocks_mcp.brokers.robinhood import RobinhoodBroker
 from open_stocks_mcp.brokers.schwab import SchwabBroker
 from open_stocks_mcp.config import ServerConfig, load_config
 from open_stocks_mcp.logging_config import logger, setup_logging
+from open_stocks_mcp.server.tool_execution_limits import install_tool_execution_limit
 from open_stocks_mcp.server.tool_helpers import (
     get_broker_status_data,
     get_health_check_data,
@@ -2040,6 +2041,8 @@ def create_mcp_server(config: ServerConfig | None = None) -> FastMCP:
     )
     setup_tracing(config)
     instrument_mcp_tool_calls(mcp)
+    if config.timeout is not None:
+        install_tool_execution_limit(mcp, config.timeout.tool_execution_timeout_seconds)
     return mcp
 
 

@@ -1,8 +1,10 @@
 """Fast unit tests for HTTP transport JSON-RPC and endpoint behavior."""
 
+import asyncio
+import json
 from collections.abc import Iterator
 from typing import Any
-from unittest.mock import Mock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 from fastapi.testclient import TestClient
@@ -13,6 +15,7 @@ from open_stocks_mcp.server.http_transport import (
     MAX_MCP_REQUEST_BODY_SIZE,
     create_http_server,
 )
+from open_stocks_mcp.server.tool_execution_limits import install_tool_execution_limit
 
 
 @pytest.fixture(scope="session")
@@ -179,3 +182,79 @@ class TestHttpTransportUnit:
         )
         assert response.status_code in {200, 204}
         assert "POST" in response.headers["access-control-allow-methods"]
+
+
+@pytest.fixture(scope="module")
+def slow_timeout_mcp_server() -> FastMCP:
+    """FastMCP server with a slow account_info tool and tiny execution timeout."""
+    server = FastMCP("SlowTimeoutTest")
+
+    @server.tool()
+    async def account_info() -> dict[str, Any]:
+        await asyncio.sleep(10.0)
+        return {"result": {"status": "ok"}}
+
+    install_tool_execution_limit(server, timeout_seconds=0.05)
+    return server
+
+
+@pytest.fixture
+def timeout_client(slow_timeout_mcp_server: FastMCP) -> Iterator[TestClient]:
+    with TestClient(create_http_server(slow_timeout_mcp_server)) as test_client:
+        yield test_client
+
+
+@pytest.mark.unit
+@pytest.mark.journey_system
+class TestHttpTransportToolTimeout:
+    def test_tools_call_timeout_returns_200_with_is_error_true(
+        self, timeout_client: TestClient
+    ) -> None:
+        mock_collector = AsyncMock()
+        with patch(
+            "open_stocks_mcp.server.http_transport.get_metrics_collector",
+            return_value=mock_collector,
+        ):
+            response = timeout_client.post(
+                "/mcp",
+                json={
+                    "jsonrpc": "2.0",
+                    "method": "tools/call",
+                    "params": {"name": "account_info", "arguments": {}},
+                    "id": 1,
+                },
+            )
+
+        assert response.status_code == 200
+        body = response.json()
+        assert "error" not in body, f"Unexpected JSON-RPC error: {body}"
+        assert body["result"]["isError"] is True
+        content = body["result"]["content"]
+        assert len(content) >= 1
+        data = json.loads(content[0]["text"])
+        assert data["error_type"] == "ToolExecutionTimeout"
+        assert data["tool"] == "account_info"
+        assert data["failure_class"] == "timeout"
+
+    def test_tools_call_timeout_records_metrics_as_failure(
+        self, timeout_client: TestClient
+    ) -> None:
+        mock_collector = AsyncMock()
+        with patch(
+            "open_stocks_mcp.server.http_transport.get_metrics_collector",
+            return_value=mock_collector,
+        ):
+            timeout_client.post(
+                "/mcp",
+                json={
+                    "jsonrpc": "2.0",
+                    "method": "tools/call",
+                    "params": {"name": "account_info", "arguments": {}},
+                    "id": 2,
+                },
+            )
+
+        mock_collector.record_api_call.assert_awaited_once()
+        call_kwargs = mock_collector.record_api_call.call_args.kwargs
+        assert call_kwargs["success"] is False
+        assert call_kwargs["error_type"] == "ToolExecutionTimeout"
