@@ -375,7 +375,9 @@ class SchwabBroker(BaseBroker):
             logger.error(f"Error getting Schwab transaction {transaction_id}: {e}")
             return {"result": {"error": str(e), "status": "error"}}
 
-    async def get_portfolio_snapshot(self) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    async def get_portfolio_snapshot(
+        self,
+    ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
         """Get a normalized snapshot of Schwab accounts and positions."""
         summary: dict[str, Any] = {
             "market_value": 0.0,

@@ -70,7 +70,9 @@ class TestGetAggregatedPortfolio:
             rh_broker if name == "robinhood" else schwab_broker
         )
 
-        async def _slow_snapshot(*_args: Any, **_kwargs: Any) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+        async def _slow_snapshot(
+            *_args: Any, **_kwargs: Any
+        ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
             await asyncio.sleep(0.2)
             return (
                 {
@@ -475,7 +477,9 @@ class TestGetAggregatedPortfolio:
         )
 
         # Robinhood raises an exception during portfolio collection
-        rh_broker.get_portfolio_snapshot = AsyncMock(side_effect=RuntimeError("rh boom"))
+        rh_broker.get_portfolio_snapshot = AsyncMock(
+            side_effect=RuntimeError("rh boom")
+        )
 
         # Schwab returns valid data with one MSFT position
         schwab_broker.get_portfolio_snapshot = AsyncMock(
@@ -525,7 +529,9 @@ class TestGetAggregatedPortfolio:
     @pytest.mark.asyncio
     @pytest.mark.unit
     @pytest.mark.journey_portfolio
-    async def test_registered_third_broker_snapshot_is_aggregated_without_name_branch(self) -> None:
+    async def test_registered_third_broker_snapshot_is_aggregated_without_name_branch(
+        self,
+    ) -> None:
         """A third broker registered under a new name is aggregated if it implements snapshots."""
         mock_registry = MagicMock()
         mock_registry.list_brokers.return_value = ["paper"]

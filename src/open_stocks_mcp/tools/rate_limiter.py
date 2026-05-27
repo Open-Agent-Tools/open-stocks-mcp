@@ -351,7 +351,9 @@ def get_broker_rate_limit_defaults(broker_name: str) -> tuple[int, int, int]:
             _int_env(
                 "OPEN_STOCKS_SCHWAB_CALLS_PER_MINUTE", DEFAULT_SCHWAB_CALLS_PER_MINUTE
             ),
-            _int_env("OPEN_STOCKS_SCHWAB_CALLS_PER_HOUR", DEFAULT_SCHWAB_CALLS_PER_HOUR),
+            _int_env(
+                "OPEN_STOCKS_SCHWAB_CALLS_PER_HOUR", DEFAULT_SCHWAB_CALLS_PER_HOUR
+            ),
             _int_env("OPEN_STOCKS_SCHWAB_BURST_SIZE", DEFAULT_SCHWAB_BURST_SIZE),
         )
     return (

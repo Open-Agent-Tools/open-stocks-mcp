@@ -287,7 +287,9 @@ class BaseBroker(ABC):
         """
         pass
 
-    async def get_portfolio_snapshot(self) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    async def get_portfolio_snapshot(
+        self,
+    ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
         """Get a normalized snapshot of the broker's portfolio and positions.
 
         This method provides a standard interface for cross-broker aggregation.
@@ -309,9 +311,13 @@ class BaseBroker(ABC):
 
         portfolio_data = portfolio_result.get("result", {})
         if "error" not in portfolio_data:
-            summary["market_value"] = self._safe_float(portfolio_data.get("market_value"))
+            summary["market_value"] = self._safe_float(
+                portfolio_data.get("market_value")
+            )
             summary["equity"] = self._safe_float(portfolio_data.get("equity"))
-            summary["buying_power"] = self._safe_float(portfolio_data.get("buying_power"))
+            summary["buying_power"] = self._safe_float(
+                portfolio_data.get("buying_power")
+            )
 
         positions_data = positions_result.get("result", {})
         if "error" not in positions_data:

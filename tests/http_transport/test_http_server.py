@@ -485,7 +485,9 @@ class TestMCPIntegration:
         """Test SSE endpoint wiring and first connected event payload."""
         app = create_http_server(mcp_server)
 
-        sse_route = next(route for route in app.routes if getattr(route, "path", None) == "/sse")
+        sse_route = next(
+            route for route in app.routes if getattr(route, "path", None) == "/sse"
+        )
         assert "GET" in getattr(sse_route, "methods", set())
         assert callable(getattr(sse_route, "endpoint", None))
         assert sse_route.endpoint.__name__ == "sse_endpoint"

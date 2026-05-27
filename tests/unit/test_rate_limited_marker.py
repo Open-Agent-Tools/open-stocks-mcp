@@ -281,6 +281,7 @@ def test_pytester_explicit_m_not_rate_limited_selects_unmarked(
 
     result.assert_outcomes(passed=1, deselected=1)
 
+
 @pytest.mark.unit
 def test_subprocess_rate_limited_marker_tests_are_marked_slow() -> None:
     """Ensure subprocess tests are marked slow to avoid running in fast sessions."""

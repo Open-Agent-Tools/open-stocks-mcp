@@ -425,13 +425,17 @@ class TestBrokerRegistry:
 
     @pytest.mark.asyncio
     async def test_broker_rate_limiters_are_independent(self, registry, monkeypatch):
-        monkeypatch.setattr("open_stocks_mcp.tools.rate_limiter.time.time", lambda: 1000.0)
+        monkeypatch.setattr(
+            "open_stocks_mcp.tools.rate_limiter.time.time", lambda: 1000.0
+        )
         sleep_calls: list[float] = []
 
         async def fake_sleep(seconds: float) -> None:
             sleep_calls.append(seconds)
 
-        monkeypatch.setattr("open_stocks_mcp.tools.rate_limiter.asyncio.sleep", fake_sleep)
+        monkeypatch.setattr(
+            "open_stocks_mcp.tools.rate_limiter.asyncio.sleep", fake_sleep
+        )
 
         robinhood = registry.get_rate_limiter("robinhood")
         schwab = registry.get_rate_limiter("schwab")
