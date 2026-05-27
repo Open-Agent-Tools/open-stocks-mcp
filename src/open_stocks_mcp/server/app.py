@@ -147,6 +147,7 @@ from open_stocks_mcp.tools.schwab_options_tools import (
     get_schwab_option_chain_by_expiration,
     get_schwab_option_expirations,
     get_schwab_options_positions,
+    schwab_get_option_orders,
     schwab_get_open_option_orders,
     schwab_get_option_quote as _schwab_get_option_quote_impl,
 )
@@ -1858,6 +1859,20 @@ async def schwab_options_positions(account_hash: str) -> dict[str, Any]:
         account_hash: Account hash from schwab_account_numbers
     """
     return await get_schwab_options_positions(account_hash)
+
+
+@mcp.tool()
+async def schwab_option_orders(
+    account_hash: str, max_results: int = 50, status: str | None = None
+) -> dict[str, Any]:
+    """Get option orders for a Schwab account.
+
+    Args:
+        account_hash: Account hash from get_schwab_account_numbers()
+        max_results: Maximum number of orders to return (default: 50)
+        status: Optional order status filter (e.g. FILLED, WORKING, CANCELED)
+    """
+    return await schwab_get_option_orders(account_hash, max_results, status)
 
 
 @mcp.tool()
