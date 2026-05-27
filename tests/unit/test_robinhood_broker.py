@@ -445,3 +445,157 @@ class TestOtherRobinhoodDelegations:
 
         mock_tool.assert_awaited_once_with("AAPL", 1)
         assert result == expected
+
+
+class TestRobinhoodGetPortfolioSnapshotEnrichment:
+    """Robinhood positions get market_value computed from live quote data."""
+
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    async def test_robinhood_position_market_value_is_populated_from_quote(
+        self, broker: RobinhoodBroker
+    ) -> None:
+        """Robinhood positions get market_value computed from live quote data."""
+        rh_portfolio = {
+            "result": {
+                "market_value": "10000.00",
+                "equity": "9500.00",
+                "buying_power": "3000.00",
+                "status": "success",
+            }
+        }
+        rh_positions = {
+            "result": {
+                "positions": [
+                    {
+                        "symbol": "AAPL",
+                        "quantity": "10",
+                        "average_buy_price": "150.00",
+                    }
+                ],
+                "count": 1,
+                "status": "success",
+            }
+        }
+        rh_quotes = [{"symbol": "AAPL", "last_trade_price": "175.50"}]
+
+        with (
+            patch.object(
+                RobinhoodBroker, "get_portfolio", new=AsyncMock(return_value=rh_portfolio)
+            ),
+            patch.object(
+                RobinhoodBroker, "get_positions", new=AsyncMock(return_value=rh_positions)
+            ),
+            patch(
+                "open_stocks_mcp.brokers.robinhood.execute_with_retry",
+                new=AsyncMock(return_value=rh_quotes),
+            ),
+        ):
+            summary, positions = await broker.get_portfolio_snapshot()
+
+        assert len(positions) == 1
+        assert positions[0]["symbol"] == "AAPL"
+        assert positions[0]["market_value"] == pytest.approx(1755.0)
+
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    async def test_robinhood_position_market_value_none_when_quote_missing(
+        self, broker: RobinhoodBroker
+    ) -> None:
+        """Robinhood positions keep market_value=None when no quote is available."""
+        rh_portfolio = {"result": {"market_value": "10000.00"}}
+        rh_positions = {
+            "result": {
+                "positions": [
+                    {"symbol": "AAPL", "quantity": "10", "average_buy_price": "150.00"}
+                ]
+            }
+        }
+        rh_quotes = []
+
+        with (
+            patch.object(
+                RobinhoodBroker, "get_portfolio", new=AsyncMock(return_value=rh_portfolio)
+            ),
+            patch.object(
+                RobinhoodBroker, "get_positions", new=AsyncMock(return_value=rh_positions)
+            ),
+            patch(
+                "open_stocks_mcp.brokers.robinhood.execute_with_retry",
+                new=AsyncMock(return_value=rh_quotes),
+            ),
+        ):
+            summary, positions = await broker.get_portfolio_snapshot()
+
+        assert len(positions) == 1
+        assert positions[0]["market_value"] is None
+
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    async def test_robinhood_market_value_none_when_quote_fetch_raises(
+        self, broker: RobinhoodBroker
+    ) -> None:
+        """Quote fetch failure doesn't break aggregation; market_value stays None."""
+        rh_portfolio = {"result": {"market_value": "10000.00"}}
+        rh_positions = {
+            "result": {
+                "positions": [
+                    {"symbol": "AAPL", "quantity": "10", "average_buy_price": "150.00"}
+                ]
+            }
+        }
+
+        with (
+            patch.object(
+                RobinhoodBroker, "get_portfolio", new=AsyncMock(return_value=rh_portfolio)
+            ),
+            patch.object(
+                RobinhoodBroker, "get_positions", new=AsyncMock(return_value=rh_positions)
+            ),
+            patch(
+                "open_stocks_mcp.brokers.robinhood.execute_with_retry",
+                new=AsyncMock(side_effect=RuntimeError("quote fetch failed")),
+            ),
+        ):
+            summary, positions = await broker.get_portfolio_snapshot()
+
+        assert len(positions) == 1
+        assert positions[0]["market_value"] is None
+
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    async def test_robinhood_market_value_with_multiple_positions(
+        self, broker: RobinhoodBroker
+    ) -> None:
+        """Bulk quote fetch maps correctly to multiple positions."""
+        rh_portfolio = {"result": {"market_value": "20000.00"}}
+        rh_positions = {
+            "result": {
+                "positions": [
+                    {"symbol": "AAPL", "quantity": "10", "average_buy_price": "150.00"},
+                    {"symbol": "TSLA", "quantity": "5", "average_buy_price": "200.00"},
+                ]
+            }
+        }
+        rh_quotes = [
+            {"symbol": "AAPL", "last_trade_price": "175.50"},
+            {"symbol": "TSLA", "last_trade_price": "250.00"},
+        ]
+
+        with (
+            patch.object(
+                RobinhoodBroker, "get_portfolio", new=AsyncMock(return_value=rh_portfolio)
+            ),
+            patch.object(
+                RobinhoodBroker, "get_positions", new=AsyncMock(return_value=rh_positions)
+            ),
+            patch(
+                "open_stocks_mcp.brokers.robinhood.execute_with_retry",
+                new=AsyncMock(return_value=rh_quotes),
+            ),
+        ):
+            summary, positions = await broker.get_portfolio_snapshot()
+
+        by_symbol = {p["symbol"]: p for p in positions}
+        assert by_symbol["AAPL"]["market_value"] == pytest.approx(1755.0)
+        assert by_symbol["TSLA"]["market_value"] == pytest.approx(1250.0)

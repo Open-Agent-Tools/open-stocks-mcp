@@ -3,11 +3,16 @@
 from datetime import datetime
 from typing import Any
 
+import math
+
+import robin_stocks.robinhood as rh
+
 from open_stocks_mcp.brokers.base import BaseBroker, BrokerAuthStatus
 from open_stocks_mcp.brokers.request_policy import install_robinhood_request_timeout
 from open_stocks_mcp.brokers.session_state import SessionManager
 from open_stocks_mcp.config import get_config
 from open_stocks_mcp.logging_config import logger
+from open_stocks_mcp.tools.error_handling import execute_with_retry
 from open_stocks_mcp.tools.robinhood_account_tools import (
     get_account_info,
     get_portfolio,
@@ -177,3 +182,40 @@ class RobinhoodBroker(BaseBroker):
             return self.create_unavailable_response(f"place sell order for {symbol}")
 
         return await order_sell_market(symbol, int(quantity))
+
+    async def get_portfolio_snapshot(self) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+        """Get enriched portfolio snapshot from Robinhood."""
+        summary, positions = await super().get_portfolio_snapshot()
+
+        symbols_list = [p["symbol"] for p in positions if p.get("symbol")]
+        if symbols_list:
+            try:
+                quote_results = await execute_with_retry(rh.get_quotes, symbols_list)
+                if isinstance(quote_results, list):
+                    quote_by_symbol: dict[str, dict[str, Any]] = {
+                        str(q["symbol"]).upper(): q
+                        for q in quote_results
+                        if isinstance(q, dict) and q.get("symbol")
+                    }
+                    for pos in positions:
+                        sym = pos.get("symbol")
+                        if not sym:
+                            continue
+                        quote = quote_by_symbol.get(sym.upper())
+                        if quote is None:
+                            continue
+
+                        # Calculate market value = price * quantity, only set if result is finite
+                        price = self._safe_float(
+                            quote.get("last_trade_price"), default=float("nan")
+                        )
+                        qty = pos["quantity"]
+                        mv = price * qty
+                        if math.isfinite(mv):
+                            pos["market_value"] = mv
+            except Exception:
+                logger.warning(
+                    "Failed to fetch quotes for Robinhood position enrichment"
+                )
+
+        return summary, positions
