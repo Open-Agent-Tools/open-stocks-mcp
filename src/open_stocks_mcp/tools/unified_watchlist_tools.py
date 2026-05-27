@@ -10,6 +10,18 @@ from open_stocks_mcp.tools.watchlists.read import (
 from open_stocks_mcp.tools.watchlists.read import (
     get_watchlist_by_name as get_rh_watchlist_by_name,
 )
+from open_stocks_mcp.tools.watchlists.schwab_local_store import (
+    add_symbols as add_schwab_symbols,
+)
+from open_stocks_mcp.tools.watchlists.schwab_local_store import (
+    get_watchlist as get_schwab_watchlist,
+)
+from open_stocks_mcp.tools.watchlists.schwab_local_store import (
+    load_watchlists as load_schwab_watchlists,
+)
+from open_stocks_mcp.tools.watchlists.schwab_local_store import (
+    remove_symbols as remove_schwab_symbols,
+)
 from open_stocks_mcp.tools.watchlists.write import (
     add_symbols_to_watchlist as add_rh_symbols,
 )
@@ -48,14 +60,39 @@ def _compute_mutation_status(per_broker: dict[str, dict[str, Any]]) -> str:
     return "error"
 
 
+def _append_or_merge_watchlist(
+    unified_watchlists: list[dict[str, Any]], name: str, symbols: list[str], broker: str
+) -> None:
+    """Merge watchlist rows with the same name across brokers."""
+    for row in unified_watchlists:
+        if row.get("name") != name:
+            continue
+
+        merged_symbols = sorted(set(row.get("symbols", [])) | set(symbols))
+        row["symbols"] = merged_symbols
+        row["symbol_count"] = len(merged_symbols)
+        if broker not in row["brokers"]:
+            row["brokers"].append(broker)
+        return
+
+    unified_watchlists.append(
+        {
+            "name": name,
+            "symbols": symbols,
+            "symbol_count": len(symbols),
+            "brokers": [broker],
+        }
+    )
+
+
 async def get_unified_watchlists(brokers: list[str] | None = None) -> dict[str, Any]:
     """Get all watchlists across supported brokers."""
     registry = await get_broker_registry()
     all_broker_names = registry.list_brokers()
     broker_names = brokers if brokers is not None else all_broker_names
 
-    brokers_out = {}
-    unified_watchlists = []
+    brokers_out: dict[str, dict[str, Any]] = {}
+    unified_watchlists: list[dict[str, Any]] = []
     warnings = []
     partial_failure = False
 
@@ -94,16 +131,24 @@ async def get_unified_watchlists(brokers: list[str] | None = None) -> dict[str, 
                 brokers_out[name] = {"status": "unavailable"}
                 partial_failure = True
         elif name == "schwab":
-            brokers_out[name] = {
-                "status": "unsupported",
-                "message": "Schwab does not currently expose a watchlist API.",
-            }
-            warnings.append(
-                {
-                    "broker": "schwab",
-                    "message": "Watchlists are not supported on Schwab.",
+            schwab_watchlists, load_error = load_schwab_watchlists()
+            if load_error:
+                brokers_out[name] = {"status": "error", "message": load_error}
+                warnings.append({"broker": "schwab", "message": load_error})
+                partial_failure = True
+            else:
+                brokers_out[name] = {
+                    "status": "success",
+                    "watchlist_count": len(schwab_watchlists),
+                    "storage_backend": "local_file",
                 }
-            )
+                for watchlist_name, watchlist_symbols in schwab_watchlists.items():
+                    _append_or_merge_watchlist(
+                        unified_watchlists,
+                        name=watchlist_name,
+                        symbols=watchlist_symbols,
+                        broker="schwab",
+                    )
         else:
             brokers_out[name] = {"status": "unsupported"}
 
@@ -130,8 +175,8 @@ async def get_unified_watchlist_by_name(
     all_broker_names = registry.list_brokers()
     broker_names = brokers if brokers is not None else all_broker_names
 
-    per_broker = {}
-    combined_symbols = set()
+    per_broker: dict[str, dict[str, Any]] = {}
+    combined_symbols: set[str] = set()
     warnings = []
     found_any = False
 
@@ -162,13 +207,16 @@ async def get_unified_watchlist_by_name(
             else:
                 per_broker[name] = {"status": "unavailable"}
         elif name == "schwab":
-            per_broker[name] = {"status": "unsupported"}
-            warnings.append(
-                {
-                    "broker": "schwab",
-                    "message": "Watchlists are not supported on Schwab.",
-                }
-            )
+            schwab_symbols, load_error = get_schwab_watchlist(watchlist_name)
+            if load_error:
+                per_broker[name] = {"status": "error", "message": load_error}
+                warnings.append({"broker": "schwab", "message": load_error})
+            elif schwab_symbols is None:
+                per_broker[name] = {"status": "not_found"}
+            else:
+                per_broker[name] = {"status": "success", "symbols": schwab_symbols}
+                combined_symbols.update(schwab_symbols)
+                found_any = True
 
     symbols = sorted(combined_symbols)
     return create_success_response(
@@ -193,8 +241,8 @@ async def add_symbols_to_unified_watchlist(
     broker_names = brokers if brokers is not None else all_broker_names
 
     normalized = _normalize_symbols(symbols)
-    per_broker = {}
-    warnings = []
+    per_broker: dict[str, dict[str, Any]] = {}
+    warnings: list[dict[str, str]] = []
 
     for name in broker_names:
         if name not in all_broker_names:
@@ -214,14 +262,21 @@ async def add_symbols_to_unified_watchlist(
             else:
                 per_broker[name] = {"status": "unavailable", "success": False}
         elif name == "schwab":
-            per_broker[name] = {
-                "status": "unsupported",
-                "success": False,
-                "message": "Schwab does not support watchlist mutations via API.",
-            }
-            warnings.append(
-                {"broker": "schwab", "message": "Add operation ignored for Schwab."}
-            )
+            combined_symbols, save_error = add_schwab_symbols(watchlist_name, normalized)
+            if save_error:
+                per_broker[name] = {
+                    "status": "error",
+                    "success": False,
+                    "message": save_error,
+                }
+                warnings.append({"broker": "schwab", "message": save_error})
+            else:
+                per_broker[name] = {
+                    "status": "success",
+                    "success": True,
+                    "symbols": combined_symbols,
+                    "storage_backend": "local_file",
+                }
 
     status = _compute_mutation_status(per_broker)
 
@@ -245,8 +300,8 @@ async def remove_symbols_from_unified_watchlist(
     broker_names = brokers if brokers is not None else all_broker_names
 
     normalized = _normalize_symbols(symbols)
-    per_broker = {}
-    warnings = []
+    per_broker: dict[str, dict[str, Any]] = {}
+    warnings: list[dict[str, str]] = []
 
     for name in broker_names:
         if name not in all_broker_names:
@@ -266,14 +321,21 @@ async def remove_symbols_from_unified_watchlist(
             else:
                 per_broker[name] = {"status": "unavailable", "success": False}
         elif name == "schwab":
-            per_broker[name] = {
-                "status": "unsupported",
-                "success": False,
-                "message": "Schwab does not support watchlist mutations via API.",
-            }
-            warnings.append(
-                {"broker": "schwab", "message": "Remove operation ignored for Schwab."}
-            )
+            remaining_symbols, save_error = remove_schwab_symbols(watchlist_name, normalized)
+            if save_error:
+                per_broker[name] = {
+                    "status": "error",
+                    "success": False,
+                    "message": save_error,
+                }
+                warnings.append({"broker": "schwab", "message": save_error})
+            else:
+                per_broker[name] = {
+                    "status": "success",
+                    "success": True,
+                    "symbols": remaining_symbols,
+                    "storage_backend": "local_file",
+                }
 
     status = _compute_mutation_status(per_broker)
 
