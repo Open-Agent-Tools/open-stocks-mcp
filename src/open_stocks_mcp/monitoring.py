@@ -277,7 +277,7 @@ class MetricsCollector:
                 tool_stats[tool] = {
                     "calls": total,
                     "success_rate": (successful / total * 100.0) if total > 0 else 0.0,
-                    "calls_per_minute": (
+                    "avg_calls_per_minute": (
                         round(total / (self.window_size.total_seconds() / 60), 2)
                         if total > 0
                         else 0.0
@@ -420,8 +420,8 @@ class MetricsCollector:
             f"open_stocks_mcp_errors_in_window {metrics['errors_in_window']}",
             "# HELP open_stocks_mcp_tool_calls_total Total calls per tool.",
             "# TYPE open_stocks_mcp_tool_calls_total counter",
-            "# HELP open_stocks_mcp_tool_calls_per_minute Calls per minute per tool.",
-            "# TYPE open_stocks_mcp_tool_calls_per_minute gauge",
+            "# HELP open_stocks_mcp_tool_avg_calls_per_minute Average calls per minute over the rolling window.",
+            "# TYPE open_stocks_mcp_tool_avg_calls_per_minute gauge",
             "# HELP open_stocks_mcp_tool_latency_ms Tool latency percentile in milliseconds.",
             "# TYPE open_stocks_mcp_tool_latency_ms gauge",
         ]
@@ -433,8 +433,8 @@ class MetricsCollector:
                 f"{tool_metrics['calls']}"
             )
             lines.append(
-                f'open_stocks_mcp_tool_calls_per_minute{{tool="{escaped_tool}"}} '
-                f"{tool_metrics['calls_per_minute']}"
+                f'open_stocks_mcp_tool_avg_calls_per_minute{{tool="{escaped_tool}"}} '
+                f"{tool_metrics['avg_calls_per_minute']}"
             )
             lines.append(
                 f'open_stocks_mcp_tool_latency_ms{{tool="{escaped_tool}",quantile="0.50"}} '

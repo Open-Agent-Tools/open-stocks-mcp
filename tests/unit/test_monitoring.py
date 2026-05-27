@@ -85,12 +85,12 @@ async def test_get_metrics_includes_per_tool_latency_and_throughput() -> None:
     assert "tool_b" in tool_usage
     assert tool_usage["tool_a"]["calls"] == 3
     assert tool_usage["tool_a"]["success_rate"] == pytest.approx(66.666, rel=1e-2)
-    assert tool_usage["tool_a"]["calls_per_minute"] == pytest.approx(3.0)
+    assert tool_usage["tool_a"]["avg_calls_per_minute"] == pytest.approx(3.0)
     assert tool_usage["tool_a"]["p50_response_time_ms"] == 200.0
     assert tool_usage["tool_a"]["p95_response_time_ms"] == 300.0
     assert tool_usage["tool_a"]["p99_response_time_ms"] == 300.0
     assert tool_usage["tool_b"]["calls"] == 1
-    assert tool_usage["tool_b"]["calls_per_minute"] == pytest.approx(1.0)
+    assert tool_usage["tool_b"]["avg_calls_per_minute"] == pytest.approx(1.0)
     assert metrics["total_errors"] == 1
     assert metrics["error_types"]["RuntimeError"] == 1
 
@@ -103,7 +103,7 @@ async def test_prometheus_output_contains_tool_metrics() -> None:
     output = await collector.format_prometheus_metrics()
 
     assert "open_stocks_mcp_tool_calls_total" in output
-    assert "open_stocks_mcp_tool_calls_per_minute" in output
+    assert "open_stocks_mcp_tool_avg_calls_per_minute" in output
     assert "open_stocks_mcp_tool_latency_ms" in output
     assert 'tool="tool\\"name\\\\x"' in output
     assert 'quantile="0.50"' in output

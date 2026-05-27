@@ -136,7 +136,7 @@ class TestMetricsEndpoint:
             in metrics_response.text
         )
         assert (
-            'open_stocks_mcp_tool_calls_per_minute{tool="account_info"} '
+            'open_stocks_mcp_tool_avg_calls_per_minute{tool="account_info"} '
             in metrics_response.text
         )
         assert (
