@@ -181,7 +181,6 @@ class RetryConfig:
     initial_delay: float = 1.0
     backoff_factor: float = 2.0
     auth_max_retries: int = 1
-    authentication_max_retries: int | None = None
     network_max_retries: int | None = None
     rate_limit_max_retries: int | None = None
     api_max_retries: int | None = None
@@ -189,7 +188,6 @@ class RetryConfig:
 
     def max_retries_for(self, error_type: str) -> int:
         overrides = {
-            "authentication": self.authentication_max_retries,
             "network": self.network_max_retries,
             "rate_limit": self.rate_limit_max_retries,
             "api": self.api_max_retries,
@@ -500,9 +498,6 @@ def load_config(config_path: Path | str | None = None) -> ServerConfig:
             auth_max_retries=_parse_int(
                 os.getenv("OPEN_STOCKS_MCP_RETRY_AUTH_MAX_RETRIES", "1"),
                 "OPEN_STOCKS_MCP_RETRY_AUTH_MAX_RETRIES",
-            ),
-            authentication_max_retries=_env_optional_int(
-                "OPEN_STOCKS_MCP_RETRY_AUTHENTICATION_MAX_RETRIES"
             ),
             network_max_retries=_env_optional_int(
                 "OPEN_STOCKS_MCP_RETRY_NETWORK_MAX_RETRIES"
