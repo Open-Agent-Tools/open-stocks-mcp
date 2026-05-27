@@ -356,3 +356,61 @@ async def test_schwab_stream_manager_start_registers_book_handlers(
         await manager.start()
         mock_stream_client.add_nasdaq_book_handler.assert_called_once()
         mock_stream_client.add_nyse_book_handler.assert_called_once()
+
+
+@patch("schwab.streaming.StreamClient")
+@pytest.mark.asyncio
+async def test_schwab_stream_manager_start_handles_missing_stream_client(
+    mock_stream_client_class: MagicMock,
+) -> None:
+    """Guard path: StreamClient() unexpectedly returns None."""
+    from open_stocks_mcp.brokers.schwab_stream import SchwabStreamManager
+
+    mock_broker = MagicMock()
+    mock_broker.is_available.return_value = True
+    mock_broker.client = MagicMock()
+
+    mock_stream_client_class.return_value = None  # StreamClient(...) → None
+
+    manager = SchwabStreamManager(mock_broker)
+
+    with patch("asyncio.create_task") as mock_create_task:
+        result = await manager.start()
+
+    assert result is False
+    assert manager.is_running is False
+    mock_create_task.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_schwab_stream_manager_run_loop_skips_relogin_when_stream_client_disappears() -> (
+    None
+):
+    """Guard path: stream_client cleared between handle_responses() and login()."""
+    from open_stocks_mcp.brokers.schwab_stream import SchwabStreamManager
+
+    mock_broker = MagicMock()
+    manager = SchwabStreamManager(mock_broker)
+    manager._is_running = True
+
+    call_count = 0
+
+    async def handle_responses_then_clear() -> None:
+        nonlocal call_count
+        call_count += 1
+        manager.stream_client = None  # simulate client disappearing
+        raise RuntimeError("connection dropped")
+
+    fake_client = AsyncMock()
+    fake_client.handle_responses = handle_responses_then_clear
+    manager.stream_client = fake_client
+
+    async def noop_sleep(_: float) -> None:
+        pass  # do not touch _is_running; the guard must clear it
+
+    with patch("asyncio.sleep", side_effect=noop_sleep):
+        await manager._run_loop()
+
+    # Loop must exit cleanly — guard sets _is_running=False and breaks
+    assert call_count == 1
+    assert manager.is_running is False
