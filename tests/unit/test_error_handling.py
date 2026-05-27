@@ -10,7 +10,9 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 import pytest
 from mcp.server.fastmcp import FastMCP
 
+import open_stocks_mcp.tools.retry as retry_module
 from open_stocks_mcp.brokers import session_state as session_manager_module
+from open_stocks_mcp.config import RetryConfig
 from open_stocks_mcp.server.app import mcp as production_mcp
 from open_stocks_mcp.tools.error_handling import (
     APIError,
@@ -41,6 +43,7 @@ pytestmark = [pytest.mark.unit, pytest.mark.journey_system]
 def _patch_retry_dependencies(
     monkeypatch: pytest.MonkeyPatch,
 ) -> list[float]:
+    retry_module._get_retry_config.cache_clear()
     session_manager = Mock()
     session_manager.update_last_successful_call = Mock()
     session_manager.refresh_session = Mock()
@@ -531,6 +534,26 @@ async def test_execute_with_retry_explicit_arguments_override_config(
 
     assert len(attempts) == 1
     assert sleep_calls == []
+
+
+@pytest.mark.asyncio
+async def test_execute_with_retry_caches_retry_config(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    retry_module._get_retry_config.cache_clear()
+    mock_load_config = Mock(
+        return_value=SimpleNamespace(retry=RetryConfig(max_retries=0, initial_delay=0.01, backoff_factor=2.0))
+    )
+    monkeypatch.setattr("open_stocks_mcp.tools.retry.load_config", mock_load_config)
+    _patch_retry_dependencies(monkeypatch)
+
+    def ok() -> str:
+        return "ok"
+
+    await execute_with_retry(ok)
+    await execute_with_retry(ok)
+
+    mock_load_config.assert_called_once()
 
 
 @pytest.mark.asyncio

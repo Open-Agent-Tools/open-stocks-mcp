@@ -5,7 +5,7 @@ import functools
 from collections.abc import Callable
 from typing import Any
 
-from open_stocks_mcp.config import load_config
+from open_stocks_mcp.config import RetryConfig, load_config
 from open_stocks_mcp.logging_config import logger
 from open_stocks_mcp.tools.exceptions import (
     AuthenticationError,
@@ -15,6 +15,14 @@ from open_stocks_mcp.tools.exceptions import (
 )
 
 DEFAULT_MAX_RETRIES = 3
+
+
+@functools.lru_cache(maxsize=1)
+def _get_retry_config() -> RetryConfig:
+    config = load_config().retry
+    if config is None:
+        raise RuntimeError("Retry configuration unavailable")
+    return config
 
 
 async def execute_with_retry(
@@ -65,9 +73,7 @@ async def execute_with_retry(
     from open_stocks_mcp.brokers.session_state import get_session_manager
     from open_stocks_mcp.tools.circuit_breaker import get_broker_circuit_breaker
     last_exception = None
-    retry_config = load_config().retry
-    if retry_config is None:
-        raise RuntimeError("Retry configuration unavailable")
+    retry_config = _get_retry_config()
     configured_max_retries = (
         retry_config.max_retries if max_retries is None else max_retries
     )
