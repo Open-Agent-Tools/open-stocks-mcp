@@ -201,13 +201,11 @@ def test_rate_limited_collection_nodeids() -> None:
     assert "test_api_error_handling" not in result.stdout
 
     # Also check count to be sure no extra tests are selected
-    # Tree format usually has <Function ...> or <Coroutine ...>
-    count = result.stdout.count("<Function") + result.stdout.count("<Coroutine")
-    # If it's nodeid format, it might not have those, so we fallback
-    if count == 0:
-        # Fallback for nodeid format (one per line)
-        lines = [line for line in result.stdout.splitlines() if "::" in line]
-        count = len(lines)
+    count = sum(
+        1
+        for line in result.stdout.splitlines()
+        if "::" in line and not line.startswith("no tests ran")
+    )
 
     assert count == 4, f"Expected 4 tests, found {count}. Output:\n{result.stdout}"
 
