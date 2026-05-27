@@ -60,6 +60,19 @@ ROBINHOOD_USERNAME=your_robinhood_username
 ROBINHOOD_PASSWORD=your_robinhood_password
 ```
 
+**Optional: Schwab broker** (requires a [Schwab developer account](https://developer.schwab.com/)):
+
+```env
+# Schwab credentials (add to .env for multi-broker support)
+SCHWAB_API_KEY=your_schwab_api_key
+SCHWAB_APP_SECRET=your_schwab_app_secret
+SCHWAB_CALLBACK_URL=https://127.0.0.1:8182/
+SCHWAB_TOKEN_PATH=/home/mcp/.tokens/schwab_token.json
+ENABLED_BROKERS=robinhood,schwab
+```
+
+See [Multi-Broker Setup](#multi-broker-setup-robinhood--schwab) for the full OAuth first-run flow.
+
 ⚠️ **Security Note**: Never commit the `.env` file to version control. It's already included in `.gitignore`.
 
 ### 4. Device Verification Setup
@@ -253,7 +266,7 @@ curl http://localhost:3001/status
 
 # Available tools list
 curl http://localhost:3001/tools
-# Returns: Complete list of 83 available MCP tools
+# Returns: Complete list of 152 available MCP tools
 ```
 
 ✅ **Security features validated:**
@@ -269,7 +282,7 @@ curl http://localhost:3001/tools
 
 ### Available Tools
 
-The server provides **83 MCP tools** across **11 categories**:
+The server provides **152 MCP tools** across **12 categories**:
 
 - **Account Management**: `account_info`, `portfolio`, `account_details`, `positions`
 - **Market Data**: `stock_price`, `stock_info`, `search_stocks_tool`, `market_hours`, `price_history`
@@ -282,6 +295,7 @@ The server provides **83 MCP tools** across **11 categories**:
 - **Trading Operations**: `buy_stock_market`, `buy_stock_limit`, `sell_stock_market`, `cancel_stock_order_by_id`
 - **System Management**: `session_status`, `rate_limit_status`, `metrics_summary`, `health_check`
 - **Utility**: `list_tools`
+- **Schwab Broker**: `schwab_account_numbers`, `schwab_quote`, `schwab_buy_stock_market`, `schwab_option_chain`, `schwab_get_dividends`
 
 ## Management
 
@@ -369,7 +383,7 @@ Adjust these in `docker-compose.yml` based on your needs.
 - ✅ FastAPI-based server with comprehensive middleware
 - ✅ Security headers and CORS support
 - ✅ Health check and monitoring endpoints
-- ✅ Complete trading functionality (83 MCP tools)
+- ✅ Complete trading functionality (152 MCP tools)
 - ✅ Live trading validation (market/limit orders tested)
 - ✅ Trading API bugs fixed (`rh.get_quotes()` corrections)
 - ✅ Full backward compatibility with STDIO transport
