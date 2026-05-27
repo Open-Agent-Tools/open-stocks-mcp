@@ -23,13 +23,11 @@ class TestTopMoversSP500:
     @pytest.mark.unit
     @patch("open_stocks_mcp.tools.market.movers.execute_with_retry")
     @patch("open_stocks_mcp.tools.market.movers.get_session_manager")
-    @patch("open_stocks_mcp.tools.market.movers.get_rate_limiter")
     @pytest.mark.journey_research
     @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_top_movers_sp500_up_success(
         self,
-        mock_rate_limiter: Any,
         mock_session_manager: Any,
         mock_execute_with_retry: Any,
     ) -> None:
@@ -37,10 +35,6 @@ class TestTopMoversSP500:
         # Mock authentication - make it async
         mock_session = mock_session_manager.return_value
         mock_session.ensure_authenticated = AsyncMock(return_value=True)
-
-        # Mock rate limiter - make it async
-        mock_limiter = mock_rate_limiter.return_value
-        mock_limiter.acquire = AsyncMock(return_value=None)
 
         # Mock API response
         mock_execute_with_retry.return_value = [
@@ -80,22 +74,18 @@ class TestTopMoversSP500:
     @pytest.mark.unit
     @patch("open_stocks_mcp.tools.market.movers.execute_with_retry")
     @patch("open_stocks_mcp.tools.market.movers.get_session_manager")
-    @patch("open_stocks_mcp.tools.market.movers.get_rate_limiter")
     @pytest.mark.journey_research
     @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_top_movers_sp500_down_success(
         self,
-        mock_rate_limiter: Any,
         mock_session_manager: Any,
         mock_execute_with_retry: Any,
     ) -> None:
         """Test successful retrieval of S&P 500 down movers."""
-        # Mock authentication and rate limiting
+        # Mock authentication
         mock_session = mock_session_manager.return_value
         mock_session.ensure_authenticated = AsyncMock(return_value=True)
-        mock_limiter = mock_rate_limiter.return_value
-        mock_limiter.acquire = AsyncMock(return_value=None)
 
         # Mock API response
         mock_execute_with_retry.return_value = [
@@ -140,22 +130,18 @@ class TestTopMoversSP500:
     @pytest.mark.unit
     @patch("open_stocks_mcp.tools.market.movers.execute_with_retry")
     @patch("open_stocks_mcp.tools.market.movers.get_session_manager")
-    @patch("open_stocks_mcp.tools.market.movers.get_rate_limiter")
     @pytest.mark.journey_research
     @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_top_movers_sp500_no_data(
         self,
-        mock_rate_limiter: Any,
         mock_session_manager: Any,
         mock_execute_with_retry: Any,
     ) -> None:
         """Test when no movers data is available."""
-        # Mock authentication and rate limiting
+        # Mock authentication
         mock_session = mock_session_manager.return_value
         mock_session.ensure_authenticated = AsyncMock(return_value=True)
-        mock_limiter = mock_rate_limiter.return_value
-        mock_limiter.acquire = AsyncMock(return_value=None)
 
         mock_execute_with_retry.return_value = None
 
@@ -195,22 +181,18 @@ class TestStockRatings:
     @pytest.mark.unit
     @patch("open_stocks_mcp.tools.market.ratings.execute_with_retry")
     @patch("open_stocks_mcp.tools.market.ratings.get_session_manager")
-    @patch("open_stocks_mcp.tools.market.ratings.get_rate_limiter")
     @pytest.mark.journey_research
     @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_stock_ratings_success(
         self,
-        mock_rate_limiter: Any,
         mock_session_manager: Any,
         mock_execute_with_retry: Any,
     ) -> None:
         """Test successful stock ratings retrieval."""
-        # Mock authentication and rate limiting
+        # Mock authentication
         mock_session = mock_session_manager.return_value
         mock_session.ensure_authenticated = AsyncMock(return_value=True)
-        mock_limiter = mock_rate_limiter.return_value
-        mock_limiter.acquire = AsyncMock(return_value=None)
 
         # Mock API response
         mock_execute_with_retry.return_value = {
@@ -262,22 +244,18 @@ class TestStockRatings:
     @pytest.mark.unit
     @patch("open_stocks_mcp.tools.market.ratings.execute_with_retry")
     @patch("open_stocks_mcp.tools.market.ratings.get_session_manager")
-    @patch("open_stocks_mcp.tools.market.ratings.get_rate_limiter")
     @pytest.mark.journey_research
     @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_stock_ratings_no_data(
         self,
-        mock_rate_limiter: Any,
         mock_session_manager: Any,
         mock_execute_with_retry: Any,
     ) -> None:
         """Test when no ratings data is available."""
-        # Mock authentication and rate limiting
+        # Mock authentication
         mock_session = mock_session_manager.return_value
         mock_session.ensure_authenticated = AsyncMock(return_value=True)
-        mock_limiter = mock_rate_limiter.return_value
-        mock_limiter.acquire = AsyncMock(return_value=None)
 
         mock_execute_with_retry.return_value = None
 
@@ -296,22 +274,18 @@ class TestStockEarnings:
     @pytest.mark.unit
     @patch("open_stocks_mcp.tools.market.earnings.execute_with_retry")
     @patch("open_stocks_mcp.tools.market.earnings.get_session_manager")
-    @patch("open_stocks_mcp.tools.market.earnings.get_rate_limiter")
     @pytest.mark.journey_research
     @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_stock_earnings_success(
         self,
-        mock_rate_limiter: Any,
         mock_session_manager: Any,
         mock_execute_with_retry: Any,
     ) -> None:
         """Test successful stock earnings retrieval."""
-        # Mock authentication and rate limiting
+        # Mock authentication
         mock_session = mock_session_manager.return_value
         mock_session.ensure_authenticated = AsyncMock(return_value=True)
-        mock_limiter = mock_rate_limiter.return_value
-        mock_limiter.acquire = AsyncMock(return_value=None)
 
         # Mock API response
         mock_execute_with_retry.return_value = [
@@ -369,22 +343,18 @@ class TestStockEarnings:
     @pytest.mark.unit
     @patch("open_stocks_mcp.tools.market.earnings.execute_with_retry")
     @patch("open_stocks_mcp.tools.market.earnings.get_session_manager")
-    @patch("open_stocks_mcp.tools.market.earnings.get_rate_limiter")
     @pytest.mark.journey_research
     @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_stock_earnings_no_data(
         self,
-        mock_rate_limiter: Any,
         mock_session_manager: Any,
         mock_execute_with_retry: Any,
     ) -> None:
         """Test when no earnings data is available."""
-        # Mock authentication and rate limiting
+        # Mock authentication
         mock_session = mock_session_manager.return_value
         mock_session.ensure_authenticated = AsyncMock(return_value=True)
-        mock_limiter = mock_rate_limiter.return_value
-        mock_limiter.acquire = AsyncMock(return_value=None)
 
         mock_execute_with_retry.return_value = None
 
@@ -401,22 +371,18 @@ class TestStockNews:
 
     @patch("open_stocks_mcp.tools.market.news.execute_with_retry")
     @patch("open_stocks_mcp.tools.market.news.get_session_manager")
-    @patch("open_stocks_mcp.tools.market.news.get_rate_limiter")
     @pytest.mark.journey_research
     @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_stock_news_success(
         self,
-        mock_rate_limiter: Any,
         mock_session_manager: Any,
         mock_execute_with_retry: Any,
     ) -> None:
         """Test successful stock news retrieval."""
-        # Mock authentication and rate limiting
+        # Mock authentication
         mock_session = mock_session_manager.return_value
         mock_session.ensure_authenticated = AsyncMock(return_value=True)
-        mock_limiter = mock_rate_limiter.return_value
-        mock_limiter.acquire = AsyncMock(return_value=None)
 
         # Mock API response
         mock_execute_with_retry.return_value = [
@@ -472,22 +438,18 @@ class TestStockNews:
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.market.news.execute_with_retry")
     @patch("open_stocks_mcp.tools.market.news.get_session_manager")
-    @patch("open_stocks_mcp.tools.market.news.get_rate_limiter")
     @pytest.mark.journey_research
     @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_stock_news_no_data(
         self,
-        mock_rate_limiter: Any,
         mock_session_manager: Any,
         mock_execute_with_retry: Any,
     ) -> None:
         """Test when no news data is available."""
-        # Mock authentication and rate limiting
+        # Mock authentication
         mock_session = mock_session_manager.return_value
         mock_session.ensure_authenticated = AsyncMock(return_value=True)
-        mock_limiter = mock_rate_limiter.return_value
-        mock_limiter.acquire = AsyncMock(return_value=None)
 
         mock_execute_with_retry.return_value = None
 
@@ -504,22 +466,18 @@ class TestStockSplits:
 
     @patch("open_stocks_mcp.tools.market.earnings.execute_with_retry")
     @patch("open_stocks_mcp.tools.market.earnings.get_session_manager")
-    @patch("open_stocks_mcp.tools.market.earnings.get_rate_limiter")
     @pytest.mark.journey_research
     @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_stock_splits_success(
         self,
-        mock_rate_limiter: Any,
         mock_session_manager: Any,
         mock_execute_with_retry: Any,
     ) -> None:
         """Test successful stock splits retrieval."""
-        # Mock authentication and rate limiting
+        # Mock authentication
         mock_session = mock_session_manager.return_value
         mock_session.ensure_authenticated = AsyncMock(return_value=True)
-        mock_limiter = mock_rate_limiter.return_value
-        mock_limiter.acquire = AsyncMock(return_value=None)
 
         # Mock API response
         mock_execute_with_retry.return_value = [
@@ -567,22 +525,18 @@ class TestStockSplits:
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.market.earnings.execute_with_retry")
     @patch("open_stocks_mcp.tools.market.earnings.get_session_manager")
-    @patch("open_stocks_mcp.tools.market.earnings.get_rate_limiter")
     @pytest.mark.journey_research
     @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_stock_splits_no_data(
         self,
-        mock_rate_limiter: Any,
         mock_session_manager: Any,
         mock_execute_with_retry: Any,
     ) -> None:
         """Test when no splits data is available."""
-        # Mock authentication and rate limiting
+        # Mock authentication
         mock_session = mock_session_manager.return_value
         mock_session.ensure_authenticated = AsyncMock(return_value=True)
-        mock_limiter = mock_rate_limiter.return_value
-        mock_limiter.acquire = AsyncMock(return_value=None)
 
         mock_execute_with_retry.return_value = None
 
@@ -599,22 +553,18 @@ class TestStockEvents:
 
     @patch("open_stocks_mcp.tools.market.earnings.execute_with_retry")
     @patch("open_stocks_mcp.tools.market.earnings.get_session_manager")
-    @patch("open_stocks_mcp.tools.market.earnings.get_rate_limiter")
     @pytest.mark.journey_research
     @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_stock_events_success(
         self,
-        mock_rate_limiter: Any,
         mock_session_manager: Any,
         mock_execute_with_retry: Any,
     ) -> None:
         """Test successful stock events retrieval."""
-        # Mock authentication and rate limiting
+        # Mock authentication
         mock_session = mock_session_manager.return_value
         mock_session.ensure_authenticated = AsyncMock(return_value=True)
-        mock_limiter = mock_rate_limiter.return_value
-        mock_limiter.acquire = AsyncMock(return_value=None)
 
         # Mock API response
         mock_execute_with_retry.return_value = [
@@ -658,22 +608,18 @@ class TestStockEvents:
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.market.earnings.execute_with_retry")
     @patch("open_stocks_mcp.tools.market.earnings.get_session_manager")
-    @patch("open_stocks_mcp.tools.market.earnings.get_rate_limiter")
     @pytest.mark.journey_research
     @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_stock_events_no_data(
         self,
-        mock_rate_limiter: Any,
         mock_session_manager: Any,
         mock_execute_with_retry: Any,
     ) -> None:
         """Test when no events data is available."""
-        # Mock authentication and rate limiting
+        # Mock authentication
         mock_session = mock_session_manager.return_value
         mock_session.ensure_authenticated = AsyncMock(return_value=True)
-        mock_limiter = mock_rate_limiter.return_value
-        mock_limiter.acquire = AsyncMock(return_value=None)
 
         mock_execute_with_retry.return_value = None
 
@@ -690,22 +636,18 @@ class TestStockLevel2Data:
 
     @patch("open_stocks_mcp.tools.market.level2.execute_with_retry")
     @patch("open_stocks_mcp.tools.market.level2.get_session_manager")
-    @patch("open_stocks_mcp.tools.market.level2.get_rate_limiter")
     @pytest.mark.journey_research
     @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_stock_level2_data_success(
         self,
-        mock_rate_limiter: Any,
         mock_session_manager: Any,
         mock_execute_with_retry: Any,
     ) -> None:
         """Test successful Level II data retrieval."""
-        # Mock authentication and rate limiting
+        # Mock authentication
         mock_session = mock_session_manager.return_value
         mock_session.ensure_authenticated = AsyncMock(return_value=True)
-        mock_limiter = mock_rate_limiter.return_value
-        mock_limiter.acquire = AsyncMock(return_value=None)
 
         # Mock API response
         mock_execute_with_retry.return_value = {
@@ -750,22 +692,18 @@ class TestStockLevel2Data:
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.market.level2.execute_with_retry")
     @patch("open_stocks_mcp.tools.market.level2.get_session_manager")
-    @patch("open_stocks_mcp.tools.market.level2.get_rate_limiter")
     @pytest.mark.journey_research
     @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_stock_level2_data_no_data(
         self,
-        mock_rate_limiter: Any,
         mock_session_manager: Any,
         mock_execute_with_retry: Any,
     ) -> None:
         """Test when no Level II data is available (Gold subscription required)."""
-        # Mock authentication and rate limiting
+        # Mock authentication
         mock_session = mock_session_manager.return_value
         mock_session.ensure_authenticated = AsyncMock(return_value=True)
-        mock_limiter = mock_rate_limiter.return_value
-        mock_limiter.acquire = AsyncMock(return_value=None)
 
         mock_execute_with_retry.return_value = None
 
@@ -781,22 +719,18 @@ class TestStockLevel2Data:
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
     @patch("open_stocks_mcp.tools.market.level2.execute_with_retry")
     @patch("open_stocks_mcp.tools.market.level2.get_session_manager")
-    @patch("open_stocks_mcp.tools.market.level2.get_rate_limiter")
     @pytest.mark.journey_research
     @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_stock_level2_data_api_error(
         self,
-        mock_rate_limiter: Any,
         mock_session_manager: Any,
         mock_execute_with_retry: Any,
     ) -> None:
         """Test API error handling for Level II data."""
-        # Mock authentication and rate limiting
+        # Mock authentication
         mock_session = mock_session_manager.return_value
         mock_session.ensure_authenticated = AsyncMock(return_value=True)
-        mock_limiter = mock_rate_limiter.return_value
-        mock_limiter.acquire = AsyncMock(return_value=None)
 
         mock_execute_with_retry.side_effect = Exception("Gold subscription required")
 
