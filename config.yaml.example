@@ -25,6 +25,11 @@ cache:
   ttl_account_seconds: 60
   max_size: 1024
 
+timeout:
+  # Maximum seconds a single MCP tool call may run before returning a structured
+  # timeout error. Override at runtime with OPEN_STOCKS_MCP_TOOL_EXECUTION_TIMEOUT_SECONDS.
+  tool_execution_timeout_seconds: 30
+
 circuit_breaker:
   enabled: true
   failure_threshold: 5

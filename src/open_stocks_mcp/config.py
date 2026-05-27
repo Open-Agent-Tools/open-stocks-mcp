@@ -204,6 +204,7 @@ class RetryConfig:
 @dataclass
 class TimeoutConfig:
     request_timeout_seconds: float = 120.0
+    tool_execution_timeout_seconds: float = 30.0
 
 
 @dataclass
@@ -518,7 +519,20 @@ def load_config(config_path: Path | str | None = None) -> ServerConfig:
             request_timeout_seconds=_parse_float(
                 os.getenv("OPEN_STOCKS_MCP_HTTP_REQUEST_TIMEOUT_SECONDS", "120.0"),
                 "OPEN_STOCKS_MCP_HTTP_REQUEST_TIMEOUT_SECONDS",
-            )
+            ),
+            tool_execution_timeout_seconds=_parse_float(
+                os.getenv(
+                    "OPEN_STOCKS_MCP_TOOL_EXECUTION_TIMEOUT_SECONDS",
+                    str(
+                        (
+                            raw.get("timeout", {})
+                            if isinstance(raw.get("timeout"), dict)
+                            else {}
+                        ).get("tool_execution_timeout_seconds", 30.0)
+                    ),
+                ),
+                "OPEN_STOCKS_MCP_TOOL_EXECUTION_TIMEOUT_SECONDS",
+            ),
         ),
         circuit_breaker=CircuitBreakerConfig(
             enabled=_parse_bool(

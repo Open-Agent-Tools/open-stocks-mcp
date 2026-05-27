@@ -84,6 +84,29 @@ The `/metrics` endpoint exposes:
 Distributed tracing setup (OpenTelemetry, Jaeger, Tempo):
 - [docs/OPENTELEMETRY_TRACING.md](docs/OPENTELEMETRY_TRACING.md)
 
+### MCP Tool Execution Timeout
+
+Each MCP `tools/call` invocation is bounded by a configurable deadline. Tools that exceed the
+deadline return a structured JSON error instead of blocking the server indefinitely.
+
+- **YAML key**: `timeout.tool_execution_timeout_seconds` (default: `30`)
+- **Environment override**: `OPEN_STOCKS_MCP_TOOL_EXECUTION_TIMEOUT_SECONDS` (e.g., `60`)
+
+When a tool times out its response body is:
+```json
+{
+  "status": "error",
+  "error_type": "ToolExecutionTimeout",
+  "failure_class": "timeout",
+  "tool": "<tool_name>",
+  "timeout_seconds": 30,
+  "error": "Tool '...' exceeded the 30s execution limit"
+}
+```
+The MCP result has `isError: true`; HTTP `/mcp` returns status 200 (not 500) so the
+client can inspect the structured error. Broker-level request timeouts (Robinhood 16 s,
+Schwab 30 s) remain in effect independently and count toward this deadline.
+
 ### Operational Circuit Breaker Defaults
 
 Broker call protection is enabled by default and reports state in MCP `health_check`,

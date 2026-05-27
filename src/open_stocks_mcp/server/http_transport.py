@@ -127,6 +127,20 @@ READ_ONLY_HTTP_TOOL_NAMES = frozenset(
 )
 
 
+def _tool_result_error_type(result: dict[str, Any]) -> str:
+    """Extract error_type from a serialized tool result's content."""
+    content_list = result.get("content", [])
+    if content_list:
+        text = content_list[0].get("text", "")
+        try:
+            data = json.loads(text)
+            if isinstance(data, dict) and "error_type" in data:
+                return str(data["error_type"])
+        except (json.JSONDecodeError, AttributeError, TypeError):
+            pass
+    return "ToolExecutionError"
+
+
 def _mcp_log_value(value: object) -> str:
     if value is None:
         return "null"
@@ -721,11 +735,12 @@ def create_http_server(
 
                     duration = time.perf_counter() - start
                     is_error = bool(result.get("isError", False))
+                    error_type = _tool_result_error_type(result) if is_error else None
                     await metrics_collector.record_api_call(
                         tool_name=tool_name,
                         duration=duration,
                         success=not is_error,
-                        error_type="ToolExecutionError" if is_error else None,
+                        error_type=error_type,
                     )
 
                 elif method == "notifications/initialized":

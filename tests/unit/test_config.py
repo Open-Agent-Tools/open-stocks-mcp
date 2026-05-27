@@ -280,3 +280,45 @@ feature_flags:
 
     with pytest.raises(ConfigError, match=r"brokers\.robinhood"):
         load_config(config_path=path)
+
+
+@pytest.mark.unit
+@pytest.mark.journey_system
+def test_timeout_tool_execution_timeout_seconds_parsed_from_yaml(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "config.yaml"
+    path.write_text("timeout:\n  tool_execution_timeout_seconds: 45.0")
+
+    cfg = load_config(config_path=path)
+
+    assert cfg.timeout is not None
+    assert cfg.timeout.tool_execution_timeout_seconds == 45.0
+
+
+@pytest.mark.unit
+@pytest.mark.journey_system
+def test_tool_execution_timeout_env_overrides_yaml(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    path = tmp_path / "config.yaml"
+    path.write_text("timeout:\n  tool_execution_timeout_seconds: 45.0")
+    monkeypatch.setenv("OPEN_STOCKS_MCP_TOOL_EXECUTION_TIMEOUT_SECONDS", "99.0")
+
+    cfg = load_config(config_path=path)
+
+    assert cfg.timeout is not None
+    assert cfg.timeout.tool_execution_timeout_seconds == 99.0
+
+
+@pytest.mark.unit
+@pytest.mark.journey_system
+def test_tool_execution_timeout_defaults_to_30(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("OPEN_STOCKS_MCP_TOOL_EXECUTION_TIMEOUT_SECONDS", raising=False)
+
+    cfg = load_config(config_path=Path("/tmp/definitely-missing-config.yaml"))
+
+    assert cfg.timeout is not None
+    assert cfg.timeout.tool_execution_timeout_seconds == 30.0
