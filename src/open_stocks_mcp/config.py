@@ -271,7 +271,7 @@ class SchwabConfig:
     token_path: str | None = None
 
 
-_KNOWN_BROKERS: frozenset[str] = frozenset({"robinhood", "schwab"})
+_BUILTIN_BROKERS: frozenset[str] = frozenset({"robinhood", "schwab"})
 
 
 @dataclass
@@ -338,7 +338,9 @@ def _parse_enabled_brokers_config(
 ) -> list[str]:
     """Parse ENABLED_BROKERS env var or YAML list into a normalized broker list.
 
-    Unknown names are warned-and-dropped. Empty result is allowed.
+    Unrecognised broker names are passed through with a warning so that
+    third-party broker plugins (registered via the factory registry) can be
+    enabled without modifying this file.  Empty result is allowed.
     """
     if raw is not None:
         tokens = [t.strip().lower() for t in raw.split(",") if t.strip()]
@@ -353,14 +355,14 @@ def _parse_enabled_brokers_config(
         if name in seen:
             continue
         seen.add(name)
-        if name not in _KNOWN_BROKERS:
+        if name not in _BUILTIN_BROKERS:
             _config_logger.warning(
-                "Unknown broker '%s' in ENABLED_BROKERS; ignoring. Known brokers: %s",
+                "Broker '%s' is not a built-in broker. It will be enabled if a "
+                "factory is registered for it. Built-in brokers: %s",
                 name,
-                sorted(_KNOWN_BROKERS),
+                sorted(_BUILTIN_BROKERS),
             )
-        else:
-            result.append(name)
+        result.append(name)
     return result
 
 

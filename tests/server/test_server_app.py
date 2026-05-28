@@ -430,8 +430,7 @@ async def test_setup_brokers_registers_robinhood_when_flag_enabled() -> None:
             AsyncMock(return_value=mock_registry),
         ),
         patch("open_stocks_mcp.server.app.attempt_broker_logins", AsyncMock()),
-        patch("open_stocks_mcp.server.app.RobinhoodBroker", MagicMock()),
-        patch("open_stocks_mcp.server.app.get_session_manager", MagicMock()),
+        patch("open_stocks_mcp.server.app.build_broker", return_value=MagicMock()),
     ):
         await setup_brokers("user", "pass", config=config)
 
@@ -454,7 +453,7 @@ async def test_setup_brokers_registers_schwab_when_enabled_and_configured() -> N
             AsyncMock(return_value=mock_registry),
         ),
         patch("open_stocks_mcp.server.app.attempt_broker_logins", AsyncMock()),
-        patch("open_stocks_mcp.server.app.SchwabBroker", MagicMock()),
+        patch("open_stocks_mcp.server.app.build_broker", return_value=MagicMock()),
     ):
         await setup_brokers(None, None, config=config)
 
@@ -477,8 +476,7 @@ class TestSetupBrokers:
                 "open_stocks_mcp.server.app.get_broker_registry",
                 AsyncMock(return_value=mock_registry),
             ),
-            patch("open_stocks_mcp.server.app.RobinhoodBroker", MagicMock()),
-            patch("open_stocks_mcp.server.app.get_session_manager", MagicMock()),
+            patch("open_stocks_mcp.server.app.build_broker", return_value=MagicMock()),
             patch("open_stocks_mcp.server.app.attempt_broker_logins", AsyncMock()),
         ):
             await setup_brokers("user", "pass")
@@ -500,13 +498,12 @@ class TestSetupBrokers:
                 "open_stocks_mcp.server.app.get_broker_registry",
                 AsyncMock(return_value=mock_registry),
             ),
-            patch("open_stocks_mcp.server.app.RobinhoodBroker", MagicMock()),
-            patch("open_stocks_mcp.server.app.get_session_manager", MagicMock()),
+            patch("open_stocks_mcp.server.app.build_broker", return_value=None),
             patch("open_stocks_mcp.server.app.attempt_broker_logins", AsyncMock()),
         ):
             await setup_brokers("user", "pass")
 
-        # Should NOT register Robinhood
+        # Should NOT register anything (schwab factory returns None for unconfigured schwab)
         mock_registry.register.assert_not_called()
 
     @pytest.mark.asyncio
@@ -535,19 +532,27 @@ class TestSetupBrokers:
         monkeypatch.setenv("ENABLED_BROKERS", " Robinhood , schwab ")
         mock_registry = MagicMock()
         mock_registry.register = MagicMock()
+        call_count = 0
+
+        def _fake_build(name, ctx):
+            nonlocal call_count
+            if name == "robinhood":
+                call_count += 1
+                return MagicMock()
+            return None
 
         with (
             patch(
                 "open_stocks_mcp.server.app.get_broker_registry",
                 AsyncMock(return_value=mock_registry),
             ),
-            patch("open_stocks_mcp.server.app.RobinhoodBroker", MagicMock()),
-            patch("open_stocks_mcp.server.app.get_session_manager", MagicMock()),
+            patch("open_stocks_mcp.server.app.build_broker", side_effect=_fake_build),
             patch("open_stocks_mcp.server.app.attempt_broker_logins", AsyncMock()),
         ):
             await setup_brokers("user", "pass")
 
-        # Robinhood should be registered
+        # Robinhood should be registered; schwab returns None (not configured)
+        assert call_count == 1
         mock_registry.register.assert_called_once()
 
     @pytest.mark.asyncio
@@ -563,13 +568,17 @@ class TestSetupBrokers:
 
         caplog.set_level(logging.WARNING, logger="open_stocks_mcp")
 
+        def _fake_build(name, ctx):
+            if name == "robinhood":
+                return MagicMock()
+            return None
+
         with (
             patch(
                 "open_stocks_mcp.server.app.get_broker_registry",
                 AsyncMock(return_value=mock_registry),
             ),
-            patch("open_stocks_mcp.server.app.RobinhoodBroker", MagicMock()),
-            patch("open_stocks_mcp.server.app.get_session_manager", MagicMock()),
+            patch("open_stocks_mcp.server.app.build_broker", side_effect=_fake_build),
             patch("open_stocks_mcp.server.app.attempt_broker_logins", AsyncMock()),
         ):
             await setup_brokers("user", "pass")
@@ -591,8 +600,7 @@ class TestSetupBrokers:
                 "open_stocks_mcp.server.app.get_broker_registry",
                 AsyncMock(return_value=mock_registry),
             ),
-            patch("open_stocks_mcp.server.app.RobinhoodBroker", MagicMock()),
-            patch("open_stocks_mcp.server.app.get_session_manager", MagicMock()),
+            patch("open_stocks_mcp.server.app.build_broker", return_value=MagicMock()),
             patch("open_stocks_mcp.server.app.attempt_broker_logins", AsyncMock()),
         ):
             await setup_brokers("user", "pass")
@@ -618,8 +626,7 @@ class TestSetupBrokers:
                 "open_stocks_mcp.server.app.get_broker_registry",
                 AsyncMock(return_value=mock_registry),
             ),
-            patch("open_stocks_mcp.server.app.RobinhoodBroker", MagicMock()),
-            patch("open_stocks_mcp.server.app.get_session_manager", MagicMock()),
+            patch("open_stocks_mcp.server.app.build_broker", return_value=MagicMock()),
             patch("open_stocks_mcp.server.app.attempt_broker_logins", AsyncMock()),
         ):
             await setup_brokers("user", "pass")
@@ -630,7 +637,7 @@ class TestSetupBrokers:
 
 @pytest.mark.asyncio
 async def test_setup_brokers_uses_configured_robinhood_credentials() -> None:
-    """setup_brokers uses config.brokers.robinhood credentials when no CLI args given."""
+    """setup_brokers passes config credentials in BrokerBuildContext when no CLI args."""
     config = ServerConfig(
         brokers=BrokerSettings(
             enabled_brokers=["robinhood"],
@@ -638,7 +645,11 @@ async def test_setup_brokers_uses_configured_robinhood_credentials() -> None:
         )
     )
     mock_registry = MagicMock()
-    mock_rh_broker_cls = MagicMock()
+    captured: list = []
+
+    def _fake_build(name, ctx):
+        captured.append(ctx)
+        return MagicMock()
 
     with (
         patch(
@@ -646,21 +657,22 @@ async def test_setup_brokers_uses_configured_robinhood_credentials() -> None:
             AsyncMock(return_value=mock_registry),
         ),
         patch("open_stocks_mcp.server.app.attempt_broker_logins", AsyncMock()),
-        patch("open_stocks_mcp.server.app.RobinhoodBroker", mock_rh_broker_cls),
-        patch("open_stocks_mcp.server.app.get_session_manager", MagicMock()),
+        patch("open_stocks_mcp.server.app.build_broker", side_effect=_fake_build),
     ):
         await setup_brokers(None, None, config=config)
 
-    mock_rh_broker_cls.assert_called_once()
-    call_kwargs = mock_rh_broker_cls.call_args[1]
-    assert call_kwargs["username"] == "cfg_user"
-    assert call_kwargs["password"] == "cfg_pass"
+    assert len(captured) == 1
+    ctx = captured[0]
+    # No CLI credentials provided: factory receives empty cli_credentials and must use config
+    assert ctx.cli_credentials == {}
+    assert ctx.config.brokers.robinhood.username == "cfg_user"
+    assert ctx.config.brokers.robinhood.password == "cfg_pass"
     mock_registry.register.assert_called_once()
 
 
 @pytest.mark.asyncio
 async def test_setup_brokers_cli_credentials_override_config() -> None:
-    """CLI username/password override configured Robinhood credentials."""
+    """CLI username/password are placed in cli_credentials, overriding config in the factory."""
     config = ServerConfig(
         brokers=BrokerSettings(
             enabled_brokers=["robinhood"],
@@ -668,7 +680,11 @@ async def test_setup_brokers_cli_credentials_override_config() -> None:
         )
     )
     mock_registry = MagicMock()
-    mock_rh_broker_cls = MagicMock()
+    captured: list = []
+
+    def _fake_build(name, ctx):
+        captured.append(ctx)
+        return MagicMock()
 
     with (
         patch(
@@ -676,19 +692,18 @@ async def test_setup_brokers_cli_credentials_override_config() -> None:
             AsyncMock(return_value=mock_registry),
         ),
         patch("open_stocks_mcp.server.app.attempt_broker_logins", AsyncMock()),
-        patch("open_stocks_mcp.server.app.RobinhoodBroker", mock_rh_broker_cls),
-        patch("open_stocks_mcp.server.app.get_session_manager", MagicMock()),
+        patch("open_stocks_mcp.server.app.build_broker", side_effect=_fake_build),
     ):
         await setup_brokers("cli_user", "cli_pass", config=config)
 
-    call_kwargs = mock_rh_broker_cls.call_args[1]
-    assert call_kwargs["username"] == "cli_user"
-    assert call_kwargs["password"] == "cli_pass"
+    assert len(captured) == 1
+    ctx = captured[0]
+    assert ctx.cli_credentials == {"username": "cli_user", "password": "cli_pass"}
 
 
 @pytest.mark.asyncio
 async def test_setup_brokers_schwab_uses_broker_config_settings() -> None:
-    """setup_brokers passes centralized Schwab settings to SchwabBroker."""
+    """setup_brokers passes the full Schwab config in BrokerBuildContext."""
     config = ServerConfig(
         brokers=BrokerSettings(
             enabled_brokers=["schwab"],
@@ -701,7 +716,11 @@ async def test_setup_brokers_schwab_uses_broker_config_settings() -> None:
         )
     )
     mock_registry = MagicMock()
-    mock_schwab_cls = MagicMock()
+    captured: list = []
+
+    def _fake_build(name, ctx):
+        captured.append((name, ctx))
+        return MagicMock()
 
     with (
         patch(
@@ -709,16 +728,18 @@ async def test_setup_brokers_schwab_uses_broker_config_settings() -> None:
             AsyncMock(return_value=mock_registry),
         ),
         patch("open_stocks_mcp.server.app.attempt_broker_logins", AsyncMock()),
-        patch("open_stocks_mcp.server.app.SchwabBroker", mock_schwab_cls),
+        patch("open_stocks_mcp.server.app.build_broker", side_effect=_fake_build),
     ):
         await setup_brokers(None, None, config=config)
 
-    mock_schwab_cls.assert_called_once_with(
-        api_key="mykey",
-        app_secret="mysecret",
-        callback_url="https://my.cb/",
-        token_path="/tmp/tok.json",
-    )
+    assert len(captured) == 1
+    name, ctx = captured[0]
+    assert name == "schwab"
+    sc = ctx.config.brokers.schwab
+    assert sc.api_key == "mykey"
+    assert sc.app_secret == "mysecret"
+    assert sc.callback_url == "https://my.cb/"
+    assert sc.token_path == "/tmp/tok.json"
     mock_registry.register.assert_called_once()
 
 
@@ -741,7 +762,7 @@ async def test_setup_brokers_default_broker_from_config() -> None:
             AsyncMock(return_value=mock_registry),
         ),
         patch("open_stocks_mcp.server.app.attempt_broker_logins", AsyncMock()),
-        patch("open_stocks_mcp.server.app.SchwabBroker", MagicMock()),
+        patch("open_stocks_mcp.server.app.build_broker", return_value=MagicMock()),
     ):
         await setup_brokers(None, None, config=config)
 
@@ -750,7 +771,7 @@ async def test_setup_brokers_default_broker_from_config() -> None:
 
 @pytest.mark.asyncio
 async def test_setup_brokers_disabled_broker_skipped_even_with_creds() -> None:
-    """Brokers not in enabled_brokers are not registered even if credentials exist."""
+    """Brokers not in enabled_brokers are not built, even if credentials exist."""
     config = ServerConfig(
         brokers=BrokerSettings(
             enabled_brokers=["schwab"],
@@ -759,8 +780,11 @@ async def test_setup_brokers_disabled_broker_skipped_even_with_creds() -> None:
         )
     )
     mock_registry = MagicMock()
-    mock_rh_cls = MagicMock()
-    mock_schwab_cls = MagicMock()
+    called_names: list[str] = []
+
+    def _fake_build(name, ctx):
+        called_names.append(name)
+        return MagicMock()
 
     with (
         patch(
@@ -768,13 +792,12 @@ async def test_setup_brokers_disabled_broker_skipped_even_with_creds() -> None:
             AsyncMock(return_value=mock_registry),
         ),
         patch("open_stocks_mcp.server.app.attempt_broker_logins", AsyncMock()),
-        patch("open_stocks_mcp.server.app.RobinhoodBroker", mock_rh_cls),
-        patch("open_stocks_mcp.server.app.SchwabBroker", mock_schwab_cls),
+        patch("open_stocks_mcp.server.app.build_broker", side_effect=_fake_build),
     ):
         await setup_brokers(None, None, config=config)
 
-    mock_rh_cls.assert_not_called()
-    mock_schwab_cls.assert_called_once()
+    assert "robinhood" not in called_names
+    assert "schwab" in called_names
 
 
 def test_main_debug_flag_passes_debug_config_to_server() -> None:
