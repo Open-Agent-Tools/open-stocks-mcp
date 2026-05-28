@@ -82,6 +82,9 @@ class MetricsCollector:
         # Counter for sink delivery failures
         self.degraded_sink_total = 0
 
+    async def aclose(self) -> None:
+        await self._alert_manager.aclose()
+
     async def record_api_call(
         self,
         tool_name: str,

@@ -100,6 +100,20 @@ async def test_webhook_alerter_aclose_closes_client() -> None:
     mock_instance.aclose.assert_awaited_once()
 
 
+@pytest.mark.asyncio
+async def test_alert_manager_aclose_closes_closeable_sinks() -> None:
+    closeable = AsyncMock()
+    closeable.send = AsyncMock()
+    closeable.aclose = AsyncMock()
+
+    plain = AsyncMock(spec=["send"])
+
+    manager = AlertManager(enabled=True, sinks=[closeable, plain])
+    await manager.aclose()
+
+    closeable.aclose.assert_awaited_once()
+
+
 def test_webhook_sink_url_validation() -> None:
     # Valid
     WebhookAlertSink("https://example.com/alert")

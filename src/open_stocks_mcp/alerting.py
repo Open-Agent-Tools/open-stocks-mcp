@@ -116,3 +116,11 @@ class AlertManager:
                 await sink.send(event)
             except Exception as exc:
                 logger.warning(f"Alert sink failed: {exc}")
+
+    async def aclose(self) -> None:
+        for sink in self._sinks:
+            if hasattr(sink, "aclose"):
+                try:
+                    await sink.aclose()
+                except Exception as exc:
+                    logger.warning(f"Alert sink close failed: {exc}")
