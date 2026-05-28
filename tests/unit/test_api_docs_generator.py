@@ -62,22 +62,24 @@ def test_committed_api_tools_doc_matches_live_registry(tmp_path):
 def test_tools_from_eval_file(tmp_path):
     eval_file = tmp_path / "test_schwab_eval.json"
     eval_file.write_text(
-        json.dumps({
-            "eval_cases": [
-                {
-                    "conversation": [
-                        {
-                            "intermediate_data": {
-                                "tool_uses": [
-                                    {"name": "schwab_account_numbers"},
-                                    {"name": "schwab_quote"},
-                                ]
+        json.dumps(
+            {
+                "eval_cases": [
+                    {
+                        "conversation": [
+                            {
+                                "intermediate_data": {
+                                    "tool_uses": [
+                                        {"name": "schwab_account_numbers"},
+                                        {"name": "schwab_quote"},
+                                    ]
+                                }
                             }
-                        }
-                    ]
-                }
-            ]
-        })
+                        ]
+                    }
+                ]
+            }
+        )
     )
 
     result = schwab_coverage.tools_from_eval_file(eval_file)
@@ -90,19 +92,21 @@ def test_tools_from_eval_file(tmp_path):
 def test_build_coverage_maps_tool_to_filename(tmp_path):
     eval_file = tmp_path / "test_schwab_account_test.json"
     eval_file.write_text(
-        json.dumps({
-            "eval_cases": [
-                {
-                    "conversation": [
-                        {
-                            "intermediate_data": {
-                                "tool_uses": [{"name": "schwab_account_numbers"}]
+        json.dumps(
+            {
+                "eval_cases": [
+                    {
+                        "conversation": [
+                            {
+                                "intermediate_data": {
+                                    "tool_uses": [{"name": "schwab_account_numbers"}]
+                                }
                             }
-                        }
-                    ]
-                }
-            ]
-        })
+                        ]
+                    }
+                ]
+            }
+        )
     )
 
     coverage = schwab_coverage.build_coverage(tmp_path)
