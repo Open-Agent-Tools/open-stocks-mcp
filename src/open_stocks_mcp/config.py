@@ -240,7 +240,6 @@ class AlertConfig:
     latency_p95_threshold_ms: float = 5000.0
     error_rate_degraded_threshold_percent: float = 10.0
     error_rate_unhealthy_threshold_percent: float = 25.0
-    avg_response_time_degraded_ms: float = 5000.0
     avg_response_time_unhealthy_ms: float = 10000.0
     dedup_window_seconds: float = 300.0
 
@@ -759,13 +758,6 @@ def load_config(config_path: Path | str | None = None) -> ServerConfig:
                     os.getenv("ALERT_ERROR_RATE_UNHEALTHY_THRESHOLD", "25.0"),
                 ),
                 "ALERT_ERROR_RATE_UNHEALTHY_THRESHOLD_PERCENT",
-            ),
-            avg_response_time_degraded_ms=_parse_float(
-                os.getenv(
-                    "ALERT_AVG_RESPONSE_TIME_DEGRADED_MS",
-                    os.getenv("ALERT_LATENCY_P95_THRESHOLD_MS", "5000.0"),
-                ),
-                "ALERT_AVG_RESPONSE_TIME_DEGRADED_MS",
             ),
             avg_response_time_unhealthy_ms=_parse_float(
                 os.getenv("ALERT_AVG_RESPONSE_TIME_UNHEALTHY_MS", "10000.0"),
