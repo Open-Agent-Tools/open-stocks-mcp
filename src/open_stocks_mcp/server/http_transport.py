@@ -351,6 +351,11 @@ def create_http_server(
                 logger.warning(
                     "Logout failed during shutdown; session state already cleared"
                 )
+        # Close metrics collector (releases WebhookAlertSink HTTP connection pool)
+        try:
+            await get_metrics_collector().aclose()
+        except Exception:
+            logger.warning("Metrics collector cleanup failed during shutdown")
 
     app = FastAPI(
         title="Open Stocks MCP Server",

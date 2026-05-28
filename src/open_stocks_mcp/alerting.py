@@ -64,17 +64,20 @@ class WebhookAlertSink:
 
         self._webhook_url = webhook_url
         self._timeout_seconds = timeout_seconds
+        self._client = httpx.AsyncClient(timeout=self._timeout_seconds)
 
     async def send(self, event: AlertEvent) -> None:
         payload = event.as_dict()
         try:
-            async with httpx.AsyncClient(timeout=self._timeout_seconds) as client:
-                response = await client.post(self._webhook_url, json=payload)
-                response.raise_for_status()
+            response = await self._client.post(self._webhook_url, json=payload)
+            response.raise_for_status()
         except httpx.HTTPError as exc:
             logger.warning(f"Webhook alert failed: {exc}")
         except Exception as exc:
             logger.error(f"Unexpected error sending webhook alert: {exc}")
+
+    async def aclose(self) -> None:
+        await self._client.aclose()
 
 
 class LogAlertSink:
@@ -113,3 +116,11 @@ class AlertManager:
                 await sink.send(event)
             except Exception as exc:
                 logger.warning(f"Alert sink failed: {exc}")
+
+    async def aclose(self) -> None:
+        for sink in self._sinks:
+            if hasattr(sink, "aclose"):
+                try:
+                    await sink.aclose()
+                except Exception as exc:
+                    logger.warning(f"Alert sink close failed: {exc}")
