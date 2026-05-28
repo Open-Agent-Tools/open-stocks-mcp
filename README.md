@@ -34,8 +34,8 @@ Create a `.env` file:
 
 **For Robinhood:**
 ```bash
-ROBINHOOD_USERNAME=your_email@example.com
-ROBINHOOD_PASSWORD=your_password
+ROBINHOOD_USERNAME=<robinhood-email>
+ROBINHOOD_PASSWORD=<robinhood-password>
 ```
 
 **For Schwab (optional):**
@@ -320,9 +320,9 @@ See `config.yaml.example` for the supported schema.
 ### Google ADK Evaluation
 ```bash
 # Set environment variables
-export GOOGLE_API_KEY="your-google-api-key"
-export ROBINHOOD_USERNAME="email@example.com"
-export ROBINHOOD_PASSWORD="password"
+export GOOGLE_API_KEY="<google-api-key>"
+export ROBINHOOD_USERNAME="<robinhood-email>"
+export ROBINHOOD_PASSWORD="<robinhood-password>"
 
 # Start Docker server
 cd examples/open-stocks-mcp-docker && docker-compose up -d
