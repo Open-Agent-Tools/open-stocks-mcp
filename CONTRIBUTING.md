@@ -22,6 +22,18 @@ uv run ruff format .
 uv run mypy .
 ```
 
+> **Dependency bump rule:** whenever you update a version constraint in
+> `pyproject.toml [project] dependencies`, update the matching entry in
+> `.pre-commit-config.yaml` `additional_dependencies` for the `mypy` hook to
+> the same specifier. The two lists must stay in sync so the isolated pre-commit
+> mypy environment resolves the same transitive stubs as the project venv.
+> A local pre-commit hook (`check-precommit-deps`) enforces this automatically
+> when either file is staged — you can also run it directly:
+>
+> ```bash
+> python scripts/check_precommit_deps.py
+> ```
+
 The VS Code task list in `.vscode/tasks.json` exposes those commands as one-shot tasks, along with `uv sync` and the fast pytest loop.
 
 ## Testing

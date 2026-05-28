@@ -18,6 +18,16 @@ repos:
       - id: debug-statements
       - id: mixed-line-ending
 
+  - repo: local
+    hooks:
+      - id: check-precommit-deps
+        name: mypy additional_dependencies drift check
+        language: python
+        entry: python scripts/check_precommit_deps.py
+        pass_filenames: false
+        files: ^(pyproject\.toml|\.pre-commit-config\.yaml)$
+        additional_dependencies: [pyyaml]
+
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v2.1.0
     hooks:
@@ -25,25 +35,25 @@ repos:
         exclude: ^(examples|tests)/
         additional_dependencies: [
           aiofiles>=25.1.0,
-          anyio>=4.12.0,
-          cachetools>=6.2.0,
-          click>=8.3.0,
-          cryptography>=46.0.0,
-          fastapi~=0.128.0,
-          httpx>=0.28.0,
+          anyio>=4.13.0,
+          cachetools>=7.1.0,
+          click>=8.4.1,
+          cryptography>=48.0.0,
+          fastapi~=0.136.3,
+          httpx>=0.28.1,
           jsonrpclib-pelix>=1.0.0,
-          mcp>=1.25.0,
+          mcp>=1.27.1,
           opentelemetry-exporter-otlp>=1.20.0,
           opentelemetry-sdk>=1.20.0,
-          pydantic>=2.12.0,
-          python-dotenv>=1.2.0,
+          pydantic>=2.13.4,
+          python-dotenv>=1.2.2,
           PyYAML>=6.0.0,
-          requests>=2.32.0,
+          requests>=2.34.2,
           robin-stocks~=3.4.0,
-          schwab-py~=1.5.0,
-          sse-starlette>=3.1.0,
+          schwab-py~=1.5.1,
+          sse-starlette>=3.4.4,
           types-requests,
           types-setuptools,
-          uvicorn~=0.40.0,
+          uvicorn~=0.48.0,
         ]
         args: [--strict, --ignore-missing-imports]
