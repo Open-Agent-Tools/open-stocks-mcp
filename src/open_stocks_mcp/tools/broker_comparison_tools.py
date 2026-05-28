@@ -4,6 +4,7 @@ from typing import Any
 
 from open_stocks_mcp.brokers.registry import get_broker_registry
 from open_stocks_mcp.logging_config import logger
+from open_stocks_mcp.tools.batch_fetch import gather_bounded
 from open_stocks_mcp.tools.responses import create_success_response
 from open_stocks_mcp.tools.robinhood_account_tools import get_portfolio, get_positions
 from open_stocks_mcp.tools.robinhood_order_tools import get_stock_orders
@@ -46,10 +47,17 @@ async def _collect_robinhood_comparison(
         },
     }
 
-    # 1. Pricing
+    # 1. Pricing — fan out per-symbol lookups concurrently
     if symbols:
-        for symbol in symbols:
-            price_result = await get_stock_price(symbol)
+        price_results = await gather_bounded(
+            [get_stock_price(symbol) for symbol in symbols]
+        )
+        for symbol, price_result in zip(symbols, price_results, strict=True):
+            if isinstance(price_result, BaseException):
+                logger.warning(
+                    f"Failed to get Robinhood price for {symbol}: {price_result}"
+                )
+                continue
             price_data = price_result.get("result", {})
             if "error" not in price_data:
                 data["pricing"][symbol] = {
@@ -132,10 +140,17 @@ async def _collect_schwab_comparison(
 
     account_hash = accounts_data["accounts"][0]["hash_value"]
 
-    # 1. Pricing
+    # 1. Pricing — fan out per-symbol Schwab quotes concurrently
     if symbols:
-        for symbol in symbols:
-            quote_result = await get_schwab_quote(symbol)
+        quote_results = await gather_bounded(
+            [get_schwab_quote(symbol) for symbol in symbols]
+        )
+        for symbol, quote_result in zip(symbols, quote_results, strict=True):
+            if isinstance(quote_result, BaseException):
+                logger.warning(
+                    f"Failed to get Schwab quote for {symbol}: {quote_result}"
+                )
+                continue
             quote_data = quote_result.get("result", {})
             if "error" not in quote_data:
                 data["pricing"][symbol] = {

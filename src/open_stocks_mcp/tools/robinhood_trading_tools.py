@@ -5,6 +5,7 @@ from typing import Any
 import robin_stocks.robinhood as rh
 
 from open_stocks_mcp.logging_config import logger
+from open_stocks_mcp.tools.batch_fetch import dedupe_preserving_order, gather_bounded
 from open_stocks_mcp.tools.error_handling import (
     create_success_response,
     execute_with_retry,
@@ -763,20 +764,29 @@ async def get_all_open_stock_orders() -> dict[str, Any]:
             {"orders": [], "count": 0, "message": "No open stock orders found"}
         )
 
-    order_list = []
-    for order in orders:
-        order = sanitize_api_response(order)
+    sanitized_orders = [sanitize_api_response(order) for order in orders]
 
-        # Get symbol from instrument URL
+    # Resolve every distinct instrument URL once, concurrently — multiple open
+    # orders for the same ticker would otherwise repeat the same lookup.
+    instrument_urls = dedupe_preserving_order(
+        order.get("instrument") for order in sanitized_orders
+    )
+    url_to_symbol: dict[str, str] = {}
+    if instrument_urls:
+        symbol_results = await gather_bounded(
+            [execute_with_retry(rh.get_symbol_by_url, url) for url in instrument_urls]
+        )
+        for url, value in zip(instrument_urls, symbol_results, strict=True):
+            if isinstance(value, BaseException):
+                logger.warning(f"Failed to get symbol for instrument {url}: {value}")
+                continue
+            if isinstance(value, str) and value:
+                url_to_symbol[url] = value
+
+    order_list = []
+    for order in sanitized_orders:
         instrument_url = order.get("instrument")
-        symbol = "N/A"
-        if instrument_url:
-            try:
-                symbol = await execute_with_retry(rh.get_symbol_by_url, instrument_url)
-            except Exception as e:
-                logger.warning(
-                    f"Failed to get symbol for instrument {instrument_url}: {e}"
-                )
+        symbol = url_to_symbol.get(instrument_url, "N/A") if instrument_url else "N/A"
 
         order_data = {
             "order_id": order.get("id"),
