@@ -16,6 +16,7 @@ class TestMarketTools:
     """Test market data tools with mocked responses."""
 
     @pytest.mark.journey_market_data
+    @pytest.mark.journey_market_intelligence
     @pytest.mark.unit
     @patch("open_stocks_mcp.tools.market.movers.rh.get_top_movers")
     @pytest.mark.asyncio
@@ -32,6 +33,7 @@ class TestMarketTools:
         # The actual structure depends on how the tool processes the data
 
     @pytest.mark.journey_market_data
+    @pytest.mark.journey_market_intelligence
     @pytest.mark.unit
     @patch("open_stocks_mcp.tools.market.movers.rh.get_top_100")
     @pytest.mark.asyncio

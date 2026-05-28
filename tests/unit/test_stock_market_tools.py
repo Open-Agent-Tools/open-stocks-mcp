@@ -762,6 +762,7 @@ class TestAdvancedInstrumentTools:
         assert "empty" in result["result"]["error"].lower()
 
     @pytest.mark.journey_market_data
+    @pytest.mark.journey_advanced_data
     @pytest.mark.unit
     @patch("open_stocks_mcp.tools.stocks.quote.rh.get_pricebook_by_symbol")
     @pytest.mark.asyncio
@@ -795,6 +796,7 @@ class TestAdvancedInstrumentTools:
         assert result["result"]["bids"][0]["price"] == 150.20
 
     @pytest.mark.journey_market_data
+    @pytest.mark.journey_advanced_data
     @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_pricebook_by_symbol_invalid_symbol(self) -> None:
