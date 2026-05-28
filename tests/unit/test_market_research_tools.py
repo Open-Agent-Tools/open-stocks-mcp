@@ -20,10 +20,12 @@ class TestTopMoversSP500:
     """Test top S&P 500 movers functionality."""
 
     @pytest.mark.journey_research
+    @pytest.mark.journey_market_intelligence
     @pytest.mark.unit
     @patch("open_stocks_mcp.tools.market.movers.execute_with_retry")
     @patch("open_stocks_mcp.tools.market.movers.get_session_manager")
     @pytest.mark.journey_research
+    @pytest.mark.journey_market_intelligence
     @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_top_movers_sp500_up_success(
@@ -71,10 +73,12 @@ class TestTopMoversSP500:
         assert result["result"]["status"] == "success"
 
     @pytest.mark.journey_research
+    @pytest.mark.journey_market_intelligence
     @pytest.mark.unit
     @patch("open_stocks_mcp.tools.market.movers.execute_with_retry")
     @patch("open_stocks_mcp.tools.market.movers.get_session_manager")
     @pytest.mark.journey_research
+    @pytest.mark.journey_market_intelligence
     @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_top_movers_sp500_down_success(
@@ -637,6 +641,7 @@ class TestStockLevel2Data:
     @patch("open_stocks_mcp.tools.market.level2.execute_with_retry")
     @patch("open_stocks_mcp.tools.market.level2.get_session_manager")
     @pytest.mark.journey_research
+    @pytest.mark.journey_advanced_data
     @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_get_stock_level2_data_success(

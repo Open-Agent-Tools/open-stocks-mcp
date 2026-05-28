@@ -212,6 +212,7 @@ async def test_schwab_stream_account_activity_unavailable(
 
 
 @pytest.mark.journey_market_data
+@pytest.mark.journey_advanced_data
 @pytest.mark.asyncio
 async def test_schwab_stream_level2_success() -> None:
     mock_broker = MagicMock()
@@ -246,6 +247,7 @@ async def test_schwab_stream_level2_success() -> None:
 
 
 @pytest.mark.journey_market_data
+@pytest.mark.journey_advanced_data
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "symbol,venue,capability,manager_exists,is_running,sub_success,snapshot,expected_reason",
