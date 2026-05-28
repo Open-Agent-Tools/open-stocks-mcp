@@ -151,8 +151,13 @@ class TestAccountTools:
         """Test successful positions retrieval."""
         mock_positions.return_value = robinhood_positions_payload
 
-        # Mock symbol lookup for each instrument URL
-        mock_symbol.side_effect = ["AAPL", "GOOGL"]
+        # Concurrent gather may invoke the underlying mock in any thread
+        # order, so map URL → symbol explicitly.
+        symbol_by_url = {
+            "https://robinhood.com/instruments/aapl123/": "AAPL",
+            "https://robinhood.com/instruments/googl456/": "GOOGL",
+        }
+        mock_symbol.side_effect = lambda url: symbol_by_url[url]
 
         result = await get_positions()
 

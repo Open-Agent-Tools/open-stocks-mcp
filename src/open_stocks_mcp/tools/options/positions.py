@@ -6,10 +6,56 @@ from typing import Any
 import robin_stocks.robinhood as rh
 
 from open_stocks_mcp.logging_config import logger
+from open_stocks_mcp.tools.batch_fetch import dedupe_preserving_order, gather_bounded
 from open_stocks_mcp.tools.error_handling import (
     execute_with_retry,
     handle_robin_stocks_errors,
 )
+
+
+def _extract_option_id(position: Any) -> str | None:
+    """Return the option_id for ``position`` if present, otherwise None.
+
+    Accepts both ``option_id`` directly and a trailing-segment ID parsed from
+    the ``option`` URL field (matching the prior inline extraction).
+    """
+    if not isinstance(position, dict):
+        return None
+    option_id = position.get("option_id")
+    if option_id:
+        return str(option_id)
+    option_url = position.get("option")
+    if option_url and isinstance(option_url, str):
+        url_parts = option_url.rstrip("/").split("/")
+        return url_parts[-1] if url_parts else None
+    return None
+
+
+async def _resolve_option_instruments(
+    option_ids: list[str],
+) -> dict[str, dict[str, Any]]:
+    """Look up option-instrument metadata for each ``option_id`` concurrently."""
+    if not option_ids:
+        return {}
+
+    results = await gather_bounded(
+        [
+            execute_with_retry(
+                rh.options.get_option_instrument_data_by_id,
+                option_id,
+                max_retries=2,
+            )
+            for option_id in option_ids
+        ]
+    )
+    resolved: dict[str, dict[str, Any]] = {}
+    for option_id, value in zip(option_ids, results, strict=True):
+        if isinstance(value, BaseException):
+            logger.warning(f"Failed to fetch option details for {option_id}: {value}")
+            continue
+        if isinstance(value, dict):
+            resolved[option_id] = value
+    return resolved
 
 
 @handle_robin_stocks_errors
@@ -398,69 +444,51 @@ async def get_open_option_positions_with_details() -> dict[str, Any]:
     total_positions = len(positions_data) if isinstance(positions_data, list) else 0
 
     if isinstance(positions_data, list):
-        for position in positions_data:
+        # Pre-resolve every distinct option_id concurrently so large option
+        # books don't fan out into N+1 serial broker calls.
+        option_id_for_position = [
+            _extract_option_id(position) for position in positions_data
+        ]
+        unique_option_ids = dedupe_preserving_order(option_id_for_position)
+        option_details_by_id = await _resolve_option_instruments(unique_option_ids)
+
+        for position, option_id in zip(
+            positions_data, option_id_for_position, strict=True
+        ):
             if not isinstance(position, dict):
                 enriched_positions.append(position)
                 continue
-
-            # Extract option_id from position
-            option_id = position.get("option_id")
-            if not option_id:
-                # Try to extract from option URL
-                option_url = position.get("option")
-                if option_url and isinstance(option_url, str):
-                    # Extract ID from URL like "https://api.robinhood.com/options/instruments/845df489.../""
-                    url_parts = option_url.rstrip("/").split("/")
-                    option_id = url_parts[-1] if url_parts else None
 
             # Create enriched position starting with original data
             enriched_position = position.copy()
 
             if option_id:
-                try:
-                    # Step 3: Fetch option instrument details
-                    logger.debug(f"Fetching option details for ID: {option_id}")
-                    option_details = await execute_with_retry(
-                        rh.options.get_option_instrument_data_by_id,
-                        option_id,
-                        max_retries=2,
+                option_details = option_details_by_id.get(option_id)
+                if option_details:
+                    # Step 4: Add enriched fields to position
+                    enriched_position.update(
+                        {
+                            "option_type": option_details.get("type", "unknown"),
+                            "strike_price": option_details.get(
+                                "strike_price", "0.0000"
+                            ),
+                            "option_symbol": option_details.get("occ_symbol", ""),
+                            "tradability": option_details.get("tradability", "unknown"),
+                            "state": option_details.get("state", "unknown"),
+                            "underlying_symbol": option_details.get("chain_symbol", ""),
+                            "expiration_date": option_details.get(
+                                "expiration_date", ""
+                            ),
+                            "rhs_tradability": option_details.get(
+                                "rhs_tradability", "unknown"
+                            ),
+                        }
                     )
-
-                    if option_details and isinstance(option_details, dict):
-                        # Step 4: Add enriched fields to position
-                        enriched_position.update(
-                            {
-                                "option_type": option_details.get("type", "unknown"),
-                                "strike_price": option_details.get(
-                                    "strike_price", "0.0000"
-                                ),
-                                "option_symbol": option_details.get("occ_symbol", ""),
-                                "tradability": option_details.get(
-                                    "tradability", "unknown"
-                                ),
-                                "state": option_details.get("state", "unknown"),
-                                "underlying_symbol": option_details.get(
-                                    "chain_symbol", ""
-                                ),
-                                "expiration_date": option_details.get(
-                                    "expiration_date", ""
-                                ),
-                                "rhs_tradability": option_details.get(
-                                    "rhs_tradability", "unknown"
-                                ),
-                            }
-                        )
-                        enrichment_successes += 1
-                        logger.debug(f"Successfully enriched position for {option_id}")
-                    else:
-                        logger.warning(
-                            f"No option details found for option_id: {option_id}"
-                        )
-                        enriched_position["option_type"] = "unknown"
-
-                except Exception as e:
+                    enrichment_successes += 1
+                    logger.debug(f"Successfully enriched position for {option_id}")
+                else:
                     logger.warning(
-                        f"Failed to fetch option details for {option_id}: {e}"
+                        f"No option details found for option_id: {option_id}"
                     )
                     enriched_position["option_type"] = "unknown"
             else:
