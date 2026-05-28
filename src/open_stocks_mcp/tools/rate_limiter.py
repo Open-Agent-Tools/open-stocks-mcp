@@ -4,8 +4,8 @@ import asyncio
 import os
 import time
 from collections import defaultdict, deque
-from collections.abc import Callable, Coroutine
-from typing import Any
+from collections.abc import Awaitable, Callable, Coroutine
+from typing import Any, TypeVar, cast
 
 from open_stocks_mcp.logging_config import logger
 from open_stocks_mcp.tools.exceptions import RateLimitError
@@ -19,6 +19,8 @@ DEFAULT_BURST_SIZE = 5
 DEFAULT_SCHWAB_CALLS_PER_MINUTE = 120
 DEFAULT_SCHWAB_CALLS_PER_HOUR = 3600
 DEFAULT_SCHWAB_BURST_SIZE = 20
+
+_T = TypeVar("_T")
 
 
 class RateLimiter:
@@ -189,30 +191,31 @@ class RequestCoordinator:
     """
 
     def __init__(self) -> None:
-        self._in_flight: dict[str, asyncio.Future[Any]] = {}
-        self._lock = asyncio.Lock()
+        self._in_flight: dict[str, asyncio.Future[object]] = {}
+        self._lock: asyncio.Lock = asyncio.Lock()
         self.coalesced_count: int = 0
 
     async def execute(
         self,
         key: str,
-        coro_factory: Callable[[], Coroutine[Any, Any, Any]],
-    ) -> Any:
+        coro_factory: Callable[[], Awaitable[_T]],
+    ) -> _T:
         """Execute *coro_factory* unless a call with *key* is already in-flight.
 
         When a duplicate key is detected the caller awaits the existing future
         instead of launching a new coroutine, so the underlying broker call runs
         only once regardless of how many concurrent callers arrive.
         """
-        waiter: asyncio.Future[Any]
+        waiter: asyncio.Future[_T]
         async with self._lock:
-            if key in self._in_flight:
+            existing_waiter = self._in_flight.get(key)
+            if existing_waiter is not None:
                 self.coalesced_count += 1
-                waiter = self._in_flight[key]
+                waiter = cast("asyncio.Future[_T]", existing_waiter)
                 is_new = False
             else:
                 waiter = asyncio.get_running_loop().create_future()
-                self._in_flight[key] = waiter
+                self._in_flight[key] = cast("asyncio.Future[object]", waiter)
                 is_new = True
 
         if not is_new:
