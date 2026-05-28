@@ -92,9 +92,10 @@ def add_symbols(name: str, symbols: list[str]) -> tuple[list[str], str | None]:
     merged = list(existing)
     seen = set(existing)
     for symbol in symbols:
-        if symbol not in seen:
-            seen.add(symbol)
-            merged.append(symbol)
+        value = symbol.strip().upper()
+        if value and value not in seen:
+            seen.add(value)
+            merged.append(value)
 
     watchlists[name] = merged
     error = save_watchlists(watchlists)
@@ -108,7 +109,8 @@ def remove_symbols(name: str, symbols: list[str]) -> tuple[list[str], str | None
         return [], error
 
     existing = watchlists.get(name, [])
-    remaining = [symbol for symbol in existing if symbol not in set(symbols)]
+    to_remove = {s.strip().upper() for s in symbols}
+    remaining = [symbol for symbol in existing if symbol not in to_remove]
 
     if remaining:
         watchlists[name] = remaining
