@@ -10,9 +10,12 @@ from dotenv import load_dotenv
 from mcp.server.fastmcp import FastMCP
 
 from open_stocks_mcp.brokers.auth_coordinator import attempt_broker_logins
+from open_stocks_mcp.brokers.factory import (
+    BrokerBuildContext,
+    build_broker,
+    is_broker_factory_registered,
+)
 from open_stocks_mcp.brokers.registry import get_broker_registry
-from open_stocks_mcp.brokers.robinhood import RobinhoodBroker
-from open_stocks_mcp.brokers.schwab import SchwabBroker
 from open_stocks_mcp.config import ServerConfig, load_config
 from open_stocks_mcp.logging_config import logger, setup_logging
 from open_stocks_mcp.server.tool_execution_limits import install_tool_execution_limit
@@ -2046,46 +2049,6 @@ def create_mcp_server(config: ServerConfig | None = None) -> FastMCP:
     return mcp
 
 
-KNOWN_BROKERS = {"robinhood", "schwab"}
-
-
-def _parse_enabled_brokers(raw: str | None) -> list[str]:
-    """Parse comma-separated list of enabled brokers.
-
-    Args:
-        raw: Raw environment variable value
-
-    Returns:
-        List of normalized broker names
-    """
-    if raw is None:
-        return ["robinhood"]
-
-    tokens = [t.strip().lower() for t in raw.split(",") if t.strip()]
-    return list(dict.fromkeys(tokens))
-
-
-def _apply_default_broker(registry: Any, raw: str | None) -> None:
-    """Apply the default broker if specified.
-
-    Args:
-        registry: Broker registry
-        raw: Raw environment variable value
-    """
-    if not raw:
-        return
-
-    name = raw.strip().lower()
-    registered = registry.list_brokers()
-
-    if name in registered:
-        registry.set_active_broker(name)
-    else:
-        logger.warning(
-            f"⚠️  DEFAULT_BROKER '{name}' not in registered brokers: {registered}"
-        )
-
-
 async def setup_brokers(
     username: str | None,
     password: str | None,
@@ -2113,50 +2076,38 @@ async def setup_brokers(
     # Use centralized broker config for enabled brokers
     enabled = config.brokers.enabled_brokers
 
-    # Setup Robinhood broker if enabled
-    if "robinhood" in enabled:
-        # CLI credentials override configured credentials
-        rh_username = username or config.brokers.robinhood.username
-        rh_password = password or config.brokers.robinhood.password
-        if rh_username and rh_password:
-            logger.info("Configuring Robinhood broker...")
-            session_manager = get_session_manager()
-            robinhood_broker = RobinhoodBroker(
-                username=rh_username,
-                password=rh_password,
-                session_manager=session_manager,
-            )
-            registry.register(robinhood_broker)
-            logger.info("✓ Robinhood broker registered")
-        else:
-            logger.warning(
-                "⚠️  Robinhood credentials not provided - skipping Robinhood integration"
-            )
-            logger.info(
-                "   Set ROBINHOOD_USERNAME and ROBINHOOD_PASSWORD to enable Robinhood"
-            )
-    elif username or password:
+    # Warn if Robinhood credentials were supplied on CLI but Robinhood is disabled
+    if (username or password) and "robinhood" not in enabled:
         logger.info(
             "Robinhood credentials supplied but Robinhood is disabled via ENABLED_BROKERS"
         )
 
-    # Setup Schwab broker if enabled
-    if "schwab" in enabled:
-        sc = config.brokers.schwab
-        if sc.api_key and sc.app_secret:
-            logger.info("Configuring Schwab broker...")
-            schwab_broker = SchwabBroker(
-                api_key=sc.api_key,
-                app_secret=sc.app_secret,
-                callback_url=sc.callback_url,
-                token_path=sc.token_path,
+    # Build context: carries CLI overrides so broker factories can merge them with config
+    ctx = BrokerBuildContext(
+        config=config,
+        cli_credentials={
+            k: v for k, v in {"username": username, "password": password}.items() if v
+        },
+    )
+
+    # Dispatch each enabled broker through the factory registry.
+    # Built-in brokers (robinhood, schwab) self-register their factories when their
+    # modules are imported at the top of this file.  Third-party brokers can be
+    # added without modifying this file by calling register_broker_factory() before
+    # the server starts.
+    for broker_name in enabled:
+        if not is_broker_factory_registered(broker_name):
+            logger.warning(
+                f"⚠️  No factory registered for broker '{broker_name}' — skipping. "
+                "Register a factory via "
+                "open_stocks_mcp.brokers.factory.register_broker_factory()."
             )
-            registry.register(schwab_broker)
-            logger.info("✓ Schwab broker registered")
-        else:
-            logger.info(
-                "Schwab enablement gate honored, but Schwab registration is tracked in #54"
-            )
+            continue
+        logger.info(f"Configuring {broker_name} broker...")
+        broker = build_broker(broker_name, ctx)
+        if broker is not None:
+            registry.register(broker)
+            logger.info(f"✓ {broker_name} broker registered")
 
     # Apply default broker from centralized config
     default = config.brokers.default_broker

@@ -458,13 +458,14 @@ def test_enabled_brokers_empty_string(monkeypatch: pytest.MonkeyPatch) -> None:
 
 @pytest.mark.unit
 @pytest.mark.journey_system
-def test_enabled_brokers_unknown_dropped(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_enabled_brokers_non_builtin_kept(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Non-built-in broker names are kept so third-party factory plugins can use them."""
     monkeypatch.setenv("ENABLED_BROKERS", "bogus,robinhood")
 
     cfg = load_config(config_path=Path("/tmp/definitely-missing-config.yaml"))
 
-    assert cfg.brokers.enabled_brokers == ["robinhood"]
-    assert "bogus" not in cfg.brokers.enabled_brokers
+    assert "robinhood" in cfg.brokers.enabled_brokers
+    assert "bogus" in cfg.brokers.enabled_brokers
 
 
 @pytest.mark.unit
