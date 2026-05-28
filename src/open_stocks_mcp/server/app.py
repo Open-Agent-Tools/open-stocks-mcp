@@ -15,6 +15,7 @@ from open_stocks_mcp.brokers.robinhood import RobinhoodBroker
 from open_stocks_mcp.brokers.schwab import SchwabBroker
 from open_stocks_mcp.config import ServerConfig, load_config
 from open_stocks_mcp.logging_config import logger, setup_logging
+from open_stocks_mcp.server.broker_filter import install_broker_filter
 from open_stocks_mcp.server.tool_execution_limits import install_tool_execution_limit
 from open_stocks_mcp.server.tool_helpers import (
     get_broker_status_data,
@@ -2298,6 +2299,13 @@ def main(
     # Setup broker authentication (non-blocking)
     logger.info("Initializing broker authentication...")
     asyncio.run(setup_brokers(username, password, config=config))
+
+    # Gate tool access to enabled brokers only (applied after broker setup)
+    install_broker_filter(
+        server,
+        config.brokers.enabled_brokers,
+        default_broker=config.brokers.default_broker,
+    )
 
     # Start server regardless of authentication status
     try:
