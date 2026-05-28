@@ -64,7 +64,9 @@ def render_coverage_markdown(
         else:
             lines.append(f"- [ ] `{tool}` — *no eval*")
     total = len(schwab_tools)
-    header = f"**Coverage: {covered}/{total} schwab_* tools have ADK eval fixtures**\n\n"
+    header = (
+        f"**Coverage: {covered}/{total} schwab_* tools have ADK eval fixtures**\n\n"
+    )
     return header + "\n".join(lines) + "\n"
 
 
