@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 import pytest
 
 from open_stocks_mcp.tools.watchlists import schwab_local_store as store
+from open_stocks_mcp.tools.watchlists.schwab_local_store import add_symbols, remove_symbols
 
 
 @pytest.mark.unit
@@ -142,3 +144,75 @@ def test_remove_symbols_deletes_empty_watchlist_key(
     persisted = json.loads(path.read_text(encoding="utf-8"))
     assert "Tech" not in persisted["watchlists"]
     assert persisted["watchlists"]["Income"] == ["SCHD"]
+
+
+@pytest.fixture(autouse=True)
+def _tmp_store(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    local_store = tmp_path / "watchlists.json"
+    monkeypatch.setenv("OPEN_STOCKS_SCHWAB_WATCHLIST_STORE", str(local_store))
+
+
+def _seed(watchlists: dict[str, list[str]]) -> None:
+    path = Path(os.environ["OPEN_STOCKS_SCHWAB_WATCHLIST_STORE"])
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({"watchlists": watchlists}), encoding="utf-8")
+
+
+class TestAddSymbolsNormalization:
+    @pytest.mark.journey_watchlists
+    @pytest.mark.unit
+    def test_lowercase_symbol_not_duplicated(self) -> None:
+        _seed({"Tech": ["MSFT", "AAPL"]})
+        result, error = add_symbols("Tech", ["msft"])
+        assert error is None
+        assert result == ["MSFT", "AAPL"]
+
+    @pytest.mark.journey_watchlists
+    @pytest.mark.unit
+    def test_whitespace_symbol_not_duplicated(self) -> None:
+        _seed({"Tech": ["MSFT"]})
+        result, error = add_symbols("Tech", ["  msft  "])
+        assert error is None
+        assert result == ["MSFT"]
+
+    @pytest.mark.journey_watchlists
+    @pytest.mark.unit
+    def test_new_symbol_added_normalized(self) -> None:
+        _seed({"Tech": ["MSFT"]})
+        result, error = add_symbols("Tech", ["goog"])
+        assert error is None
+        assert result == ["MSFT", "GOOG"]
+
+    @pytest.mark.journey_watchlists
+    @pytest.mark.unit
+    def test_mixed_case_duplicates_collapsed(self) -> None:
+        _seed({"Tech": ["AAPL"]})
+        result, error = add_symbols("Tech", ["msft", "Msft", "MSFT"])
+        assert error is None
+        assert result == ["AAPL", "MSFT"]
+
+
+class TestRemoveSymbolsNormalization:
+    @pytest.mark.journey_watchlists
+    @pytest.mark.unit
+    def test_lowercase_removes_uppercase(self) -> None:
+        _seed({"Tech": ["MSFT", "AAPL"]})
+        result, error = remove_symbols("Tech", ["msft"])
+        assert error is None
+        assert result == ["AAPL"]
+
+    @pytest.mark.journey_watchlists
+    @pytest.mark.unit
+    def test_whitespace_removes_symbol(self) -> None:
+        _seed({"Tech": ["MSFT", "AAPL"]})
+        result, error = remove_symbols("Tech", ["  msft  "])
+        assert error is None
+        assert result == ["AAPL"]
+
+    @pytest.mark.journey_watchlists
+    @pytest.mark.unit
+    def test_nonexistent_symbol_no_op(self) -> None:
+        _seed({"Tech": ["MSFT", "AAPL"]})
+        result, error = remove_symbols("Tech", ["GOOG"])
+        assert error is None
+        assert result == ["MSFT", "AAPL"]
