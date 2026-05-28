@@ -4,11 +4,11 @@ This directory contains a complete example of how to run the Open Stocks MCP ser
 
 ## Architecture
 
-This setup uses a production-ready approach:
-1. **Dockerfile**: Creates a secure base image with the `open-stocks-mcp` library installed and verified
-2. **docker-compose.yml**: Orchestrates the server deployment with HTTP transport and proper configuration
-3. **Enhanced Authentication**: Automatic device verification and MFA support for seamless Robinhood integration
-4. **HTTP Transport**: Uses HTTP transport (port 3001) for better reliability and session management
+This setup includes concrete deployment safeguards:
+1. **Dockerfile**: Creates a non-root container image with the `open-stocks-mcp` library installed and verified
+2. **docker-compose.yml**: Orchestrates the server with HTTP transport, resource limits, health checks, and persistent volumes
+3. **Authentication Requirements**: Uses `.env` credentials plus an `MCP_API_KEY` requirement when binding HTTP transport to `0.0.0.0`
+4. **HTTP Transport**: Uses HTTP transport (port 3001) with session and log storage that persist across container restarts
 
 ## Prerequisites
 

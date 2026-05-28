@@ -134,7 +134,7 @@ class RobinhoodBroker(BaseBroker):
 2. Create MCP server
 3. Call setup_brokers(username, password)
    ├─ Register RobinhoodBroker (if credentials provided)
-   ├─ Register SchwabBroker (TODO: when implemented)
+   ├─ Register SchwabBroker (if enabled and configured)
    └─ attempt_broker_logins() - NON-BLOCKING
        ├─ Logs detailed authentication results
        └─ Returns success/failure counts
