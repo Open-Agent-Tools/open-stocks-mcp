@@ -16,6 +16,7 @@ from mcp.server.fastmcp import FastMCP
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from open_stocks_mcp import __version__
+from open_stocks_mcp.brokers.registry import get_broker_registry_sync
 from open_stocks_mcp.brokers.session_state import get_session_manager
 from open_stocks_mcp.config import load_config
 from open_stocks_mcp.health import get_health_service
@@ -27,7 +28,6 @@ from open_stocks_mcp.server.tool_docs import (
     build_tool_openapi_paths,
 )
 from open_stocks_mcp.tools.circuit_breaker import get_broker_circuit_breaker
-from open_stocks_mcp.tools.rate_limiter import get_rate_limiter
 
 MAX_MCP_REQUEST_BODY_SIZE = 1024 * 1024  # 1 MiB
 
@@ -334,8 +334,7 @@ def create_http_server(
         """Lifespan context manager for startup/shutdown"""
         logger.info("Starting HTTP MCP server")
 
-        # Initialize rate limiter and session manager
-        get_rate_limiter()
+        # Initialize session manager
         get_session_manager()
         app.state.tool_docs_payload = await build_tool_docs_payload(mcp_server)
 
@@ -437,8 +436,14 @@ def create_http_server(
             metrics_collector = _require_metrics_collector()
             metrics = await metrics_collector.get_metrics()
 
-            rate_limiter = get_rate_limiter()
-            rate_stats = rate_limiter.get_stats()
+            try:
+                registry = get_broker_registry_sync()
+                rate_stats = {
+                    broker: registry.get_rate_limiter(broker).get_stats()
+                    for broker in ("robinhood", "schwab")
+                }
+            except Exception:
+                rate_stats = {}
 
             session_manager = _require_session_manager()
             session_info = session_manager.get_session_info()

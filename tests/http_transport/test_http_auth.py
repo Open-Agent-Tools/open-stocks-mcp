@@ -170,12 +170,12 @@ class TestHTTPSessionStatus:
     """Test session status reporting"""
 
     @patch("open_stocks_mcp.server.http_transport.get_session_manager")
-    @patch("open_stocks_mcp.server.http_transport.get_rate_limiter")
+    @patch("open_stocks_mcp.server.http_transport.get_broker_registry_sync")
     @patch("open_stocks_mcp.server.http_transport.get_metrics_collector")
     async def test_server_status_comprehensive(
         self,
         mock_get_metrics_collector: Mock,
-        mock_get_rate_limiter: Mock,
+        mock_get_broker_registry_sync: Mock,
         mock_get_session_manager: Mock,
         http_client: httpx.AsyncClient,
     ) -> None:
@@ -189,13 +189,21 @@ class TestHTTPSessionStatus:
         }
         mock_get_session_manager.return_value = mock_session_manager
 
-        mock_rate_limiter = Mock()
-        mock_rate_limiter.get_stats.return_value = {
-            "total_requests": 100,
-            "rate_limited_requests": 5,
-            "current_tokens": 95,
+        mock_registry = Mock()
+        mock_rh_limiter = Mock()
+        mock_rh_limiter.get_stats.return_value = {
+            "calls_last_minute": 10,
+            "limit_per_minute": 30,
         }
-        mock_get_rate_limiter.return_value = mock_rate_limiter
+        mock_schwab_limiter = Mock()
+        mock_schwab_limiter.get_stats.return_value = {
+            "calls_last_minute": 2,
+            "limit_per_minute": 120,
+        }
+        mock_registry.get_rate_limiter.side_effect = lambda name: (
+            mock_rh_limiter if name == "robinhood" else mock_schwab_limiter
+        )
+        mock_get_broker_registry_sync.return_value = mock_registry
 
         mock_metrics_collector = AsyncMock()
         mock_metrics_collector.get_metrics.return_value = {
@@ -213,7 +221,8 @@ class TestHTTPSessionStatus:
         assert data["server"]["version"] == __version__
         assert data["server"]["transport"] == "http"
         assert data["session"]["authenticated"] is True
-        assert data["rate_limiting"]["total_requests"] == 100
+        assert data["rate_limiting"]["robinhood"]["calls_last_minute"] == 10
+        assert data["rate_limiting"]["schwab"]["calls_last_minute"] == 2
         assert data["metrics"]["tool_calls"] == 50
 
     @patch("open_stocks_mcp.tools.robinhood_tools.list_available_tools")
