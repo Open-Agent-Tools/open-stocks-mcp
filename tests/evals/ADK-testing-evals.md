@@ -345,9 +345,43 @@ Run individual Schwab evals with:
 
 ```bash
 adk eval examples/google_adk_agent tests/evals/1_acc_schwab_account_numbers_test.json --config_file_path tests/evals/test_config.json
-# Replace the filename with any schwab eval listed above
-SCHWAB_EVAL_FILE=2_mkt_schwab_quote_test.json
-adk eval examples/google_adk_agent "tests/evals/${SCHWAB_EVAL_FILE}" --config_file_path tests/evals/test_config.json
+
+# Order/Transaction fixtures (5_ord_schwab_*)
+adk eval examples/google_adk_agent tests/evals/5_ord_schwab_orders_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/5_ord_schwab_get_open_stock_orders_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/5_ord_schwab_get_order_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/5_ord_schwab_transactions_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/5_ord_schwab_transactions_by_date_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/5_ord_schwab_get_transaction_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/5_ord_schwab_buy_stock_market_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/5_ord_schwab_sell_stock_market_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/5_ord_schwab_buy_stock_limit_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/5_ord_schwab_sell_stock_limit_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/5_ord_schwab_place_order_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/5_ord_schwab_cancel_order_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/5_ord_schwab_order_sell_stop_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/5_ord_schwab_cancel_all_stock_orders_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/5_ord_schwab_order_buy_option_limit_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/5_ord_schwab_order_sell_option_limit_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/5_ord_schwab_cancel_option_order_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/5_ord_schwab_cancel_all_option_orders_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/5_ord_schwab_order_option_credit_spread_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/5_ord_schwab_order_option_debit_spread_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/5_ord_schwab_replace_order_test.json --config_file_path tests/evals/test_config.json
+
+# Options fixtures (8_opt_schwab_*)
+adk eval examples/google_adk_agent tests/evals/8_opt_schwab_option_chain_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/8_opt_schwab_option_chain_by_expiration_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/8_opt_schwab_option_expirations_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/8_opt_schwab_options_positions_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/8_opt_schwab_option_orders_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/8_opt_schwab_open_option_orders_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/8_opt_schwab_get_all_option_positions_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/8_opt_schwab_get_open_option_positions_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/8_opt_schwab_find_tradable_options_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/8_opt_schwab_option_quote_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/8_opt_schwab_option_buy_to_open_test.json --config_file_path tests/evals/test_config.json
+adk eval examples/google_adk_agent tests/evals/8_opt_schwab_option_sell_to_close_test.json --config_file_path tests/evals/test_config.json
 ```
 
 #### Schwab Tool-to-Eval Coverage Matrix
