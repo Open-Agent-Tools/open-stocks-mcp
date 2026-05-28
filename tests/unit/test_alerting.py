@@ -41,9 +41,6 @@ async def test_alert_manager_emits_to_registered_hook() -> None:
 
 @pytest.mark.asyncio
 async def test_webhook_alerter_sends_json_payload() -> None:
-    sink = WebhookAlertSink(
-        webhook_url="https://example.test/alert", timeout_seconds=1.0
-    )
     event = AlertEvent(
         alert_type="threshold_breach",
         status="unhealthy",
@@ -52,24 +49,55 @@ async def test_webhook_alerter_sends_json_payload() -> None:
         threshold_value=100.0,
     )
 
-    with patch("httpx.AsyncClient") as mock_client:
-        post = AsyncMock()
-        client = AsyncMock()
-        client.post = post
+    with patch("httpx.AsyncClient") as mock_client_class:
+        mock_instance = AsyncMock()
+        mock_client_class.return_value = mock_instance
         response = Mock()
-        post.return_value = response
-        mock_client.return_value.__aenter__.return_value = client
-        mock_client.return_value.__aexit__.return_value = False
+        response.raise_for_status = Mock()
+        mock_instance.post = AsyncMock(return_value=response)
 
+        sink = WebhookAlertSink(
+            webhook_url="https://example.test/alert", timeout_seconds=1.0
+        )
         await sink.send(event)
 
-    post.assert_awaited_once()
-    payload = post.await_args.kwargs["json"]
+    mock_instance.post.assert_awaited_once()
+    payload = mock_instance.post.await_args.kwargs["json"]
     assert payload["alert_type"] == "threshold_breach"
     assert payload["status"] == "unhealthy"
     assert payload["metric_value"] == 155.0
     assert payload["threshold_value"] == 100.0
     assert "timestamp" in payload
+
+
+@pytest.mark.asyncio
+async def test_webhook_alerter_reuses_client_across_sends() -> None:
+    event = AlertEvent(alert_type="test", status="ok", message="ping")
+
+    with patch("httpx.AsyncClient") as mock_client_class:
+        mock_instance = AsyncMock()
+        mock_client_class.return_value = mock_instance
+        mock_instance.post = AsyncMock(return_value=Mock(raise_for_status=Mock()))
+
+        sink = WebhookAlertSink("https://example.test/alert")
+        await sink.send(event)
+        await sink.send(event)
+
+    # Constructor called once; post called twice with the same client
+    mock_client_class.assert_called_once()
+    assert mock_instance.post.await_count == 2
+
+
+@pytest.mark.asyncio
+async def test_webhook_alerter_aclose_closes_client() -> None:
+    with patch("httpx.AsyncClient") as mock_client_class:
+        mock_instance = AsyncMock()
+        mock_client_class.return_value = mock_instance
+
+        sink = WebhookAlertSink("https://example.test/alert")
+        await sink.aclose()
+
+    mock_instance.aclose.assert_awaited_once()
 
 
 def test_webhook_sink_url_validation() -> None:
