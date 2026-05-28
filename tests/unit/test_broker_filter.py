@@ -24,25 +24,26 @@ from open_stocks_mcp.server.broker_filter import (
 class TestToolBrokerMapping:
     def test_agnostic_tools_return_none(self) -> None:
         for name in _BROKER_AGNOSTIC_TOOLS:
-            assert _tool_broker(name) is None, f"{name} should be agnostic"
+            assert _tool_broker(name, "robinhood") is None, f"{name} should be agnostic"
 
     def test_schwab_tool_detected_by_name_prefix(self) -> None:
-        assert _tool_broker("schwab_quote") == "schwab"
-        assert _tool_broker("schwab_buy_stock_market") == "schwab"
-        assert _tool_broker("schwab_account_numbers") == "schwab"
+        assert _tool_broker("schwab_quote", "robinhood") == "schwab"
+        assert _tool_broker("schwab_buy_stock_market", "robinhood") == "schwab"
+        assert _tool_broker("schwab_account_numbers", "robinhood") == "schwab"
 
     def test_schwab_tool_detected_by_substring(self) -> None:
         # Any tool whose name contains "schwab" maps to schwab broker
-        assert _tool_broker("get_schwab_portfolio") == "schwab"
+        assert _tool_broker("get_schwab_portfolio", "robinhood") == "schwab"
 
-    def test_robinhood_tool_is_default(self) -> None:
-        assert _tool_broker("account_info") == "robinhood"
-        assert _tool_broker("portfolio") == "robinhood"
-        assert _tool_broker("stock_quote") == "robinhood"
-        assert _tool_broker("positions") == "robinhood"
+    def test_default_broker_used_for_non_schwab_tools(self) -> None:
+        assert _tool_broker("account_info", "robinhood") == "robinhood"
+        assert _tool_broker("portfolio", "robinhood") == "robinhood"
+        assert _tool_broker("stock_quote", "schwab") == "schwab"
+        assert _tool_broker("positions", "schwab") == "schwab"
 
-    def test_unknown_tool_defaults_to_robinhood(self) -> None:
-        assert _tool_broker("some_new_tool") == "robinhood"
+    def test_unknown_tool_uses_configured_default_broker(self) -> None:
+        assert _tool_broker("some_new_tool", "robinhood") == "robinhood"
+        assert _tool_broker("some_new_tool", "schwab") == "schwab"
 
 
 # ---------------------------------------------------------------------------
@@ -140,6 +141,28 @@ class TestInstallBrokerFilter:
         assert "schwab" in payload["error"]
         assert "ENABLED_BROKERS" in payload["error"]
 
+    @pytest.mark.asyncio
+    async def test_default_broker_schwab_blocks_generic_tool_when_schwab_disabled(
+        self,
+    ) -> None:
+        server = _make_server("portfolio")
+        install_broker_filter(
+            server, ["robinhood"], default_broker="schwab"
+        )
+
+        result = await server.call_tool("portfolio", {})
+        assert _is_blocked(result)
+        payload = json.loads(result.content[0].text)  # type: ignore[union-attr]
+        assert "schwab" in payload["error"]
+
+    @pytest.mark.asyncio
+    async def test_default_broker_schwab_allows_generic_tool_when_enabled(self) -> None:
+        server = _make_server("portfolio")
+        install_broker_filter(server, ["schwab"], default_broker="schwab")
+
+        result = await server.call_tool("portfolio", {})
+        assert _is_allowed(result)
+
 
 # ---------------------------------------------------------------------------
 # install_broker_filter — list_tools filtering
@@ -181,6 +204,18 @@ class TestBrokerFilterListTools:
         assert "schwab_quote" in names
         assert "portfolio" in names
 
+    @pytest.mark.asyncio
+    async def test_default_broker_hides_generic_tools_when_disabled(self) -> None:
+        server = _make_server("portfolio", "schwab_quote")
+        install_broker_filter(
+            server, ["robinhood"], default_broker="schwab"
+        )
+
+        tools = await server.list_tools()
+        names = {t.name for t in tools}
+        assert "portfolio" not in names
+        assert "schwab_quote" not in names
+
 
 # ---------------------------------------------------------------------------
 # Idempotency
@@ -216,3 +251,13 @@ class TestBrokerFilterIdempotency:
         first_wrapper = server.call_tool
         install_broker_filter(server, ["robinhood", "schwab"])
         assert server.call_tool is first_wrapper
+
+    @pytest.mark.asyncio
+    async def test_reinstall_updates_default_broker(self) -> None:
+        server = _make_server("portfolio")
+        install_broker_filter(server, ["robinhood"], default_broker="robinhood")
+        assert _is_allowed(await server.call_tool("portfolio", {}))
+
+        install_broker_filter(server, ["robinhood"], default_broker="schwab")
+        result = await server.call_tool("portfolio", {})
+        assert _is_blocked(result)

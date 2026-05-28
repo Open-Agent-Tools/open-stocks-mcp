@@ -2301,7 +2301,11 @@ def main(
     asyncio.run(setup_brokers(username, password, config=config))
 
     # Gate tool access to enabled brokers only (applied after broker setup)
-    install_broker_filter(server, config.brokers.enabled_brokers)
+    install_broker_filter(
+        server,
+        config.brokers.enabled_brokers,
+        default_broker=config.brokers.default_broker,
+    )
 
     # Start server regardless of authentication status
     try:
