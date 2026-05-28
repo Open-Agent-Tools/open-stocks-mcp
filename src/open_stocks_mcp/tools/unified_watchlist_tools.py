@@ -179,10 +179,12 @@ async def get_unified_watchlist_by_name(
     combined_symbols: set[str] = set()
     warnings = []
     found_any = False
+    partial_failure = False
 
     for name in broker_names:
         if name not in all_broker_names:
             per_broker[name] = {"status": "error", "message": "Broker not registered"}
+            partial_failure = True
             continue
 
         broker = registry.get_broker(name)
@@ -204,8 +206,10 @@ async def get_unified_watchlist_by_name(
                         "status": "error",
                         "message": rh_data.get("message", "Error"),
                     }
+                    partial_failure = True
             else:
                 per_broker[name] = {"status": "unavailable"}
+                partial_failure = True
         elif name == "schwab":
             schwab_symbols, load_error = get_schwab_watchlist(watchlist_name)
             if load_error:
@@ -219,6 +223,14 @@ async def get_unified_watchlist_by_name(
                 found_any = True
 
     symbols = sorted(combined_symbols)
+
+    if found_any:
+        status = "success"
+    elif partial_failure:
+        status = "partial_failure"
+    else:
+        status = "not_found"
+
     return create_success_response(
         {
             "watchlist_name": watchlist_name,
@@ -227,7 +239,7 @@ async def get_unified_watchlist_by_name(
             "brokers": list(per_broker.keys()),
             "per_broker": per_broker,
             "warnings": warnings,
-            "status": "success" if found_any else "not_found",
+            "status": status,
         }
     )
 
