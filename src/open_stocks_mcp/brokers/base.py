@@ -301,7 +301,11 @@ class BaseBroker(ABC):
             Summary dict keys: market_value, equity, buying_power
             Position dict keys: symbol, quantity, average_buy_price, market_value, broker
         """
-        summary: dict[str, Any] = {"market_value": 0.0, "equity": 0.0, "buying_power": 0.0}
+        summary: dict[str, Any] = {
+            "market_value": 0.0,
+            "equity": 0.0,
+            "buying_power": 0.0,
+        }
         positions: list[dict[str, Any]] = []
 
         portfolio_result, positions_result = await asyncio.gather(

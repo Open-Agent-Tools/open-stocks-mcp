@@ -349,7 +349,9 @@ class TestBaseBroker:
         assert positions[0]["broker"] == "mock"
 
     @pytest.mark.asyncio
-    async def test_portfolio_snapshot_returns_zeroed_summary_when_portfolio_errors(self):
+    async def test_portfolio_snapshot_returns_zeroed_summary_when_portfolio_errors(
+        self,
+    ):
         """Test that a zeroed summary dict is returned when get_portfolio() errors."""
         broker = MockBroker("mock")
 
@@ -368,7 +370,9 @@ class TestBaseBroker:
         assert positions == []
 
     @pytest.mark.asyncio
-    async def test_portfolio_snapshot_returns_zeroed_summary_when_positions_errors(self):
+    async def test_portfolio_snapshot_returns_zeroed_summary_when_positions_errors(
+        self,
+    ):
         """Test that positions list is empty when get_positions() errors."""
         broker = MockBroker("mock")
 
