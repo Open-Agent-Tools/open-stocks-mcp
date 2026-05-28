@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "schwab_build_user_profile_test_set",
+  "name": "Schwab Build User Profile Test",
+  "description": "Test case for building a comprehensive Schwab user profile aggregating account and portfolio data via schwab_build_user_profile",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_build_user_profile_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-build-user-profile-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Build my complete Schwab user profile with account summary."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here is your Schwab user profile summary:\n\n* **Total Equity**: $10,500.00\n* **Cash Balance**: $500.00\n* **Number of Accounts**: 1\n* **Holdings**: AAPL (10 shares), MSFT (5 shares)\n* **Status**: success"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "schwab_build_user_profile"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

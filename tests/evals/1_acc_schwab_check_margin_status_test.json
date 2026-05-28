@@ -1,0 +1,53 @@
+{
+  "eval_set_id": "schwab_check_margin_status_test_set",
+  "name": "Schwab Check Margin Status Test",
+  "description": "Multi-step test: agent resolves account hash via schwab_account_numbers, then checks margin status via schwab_check_margin_status",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_check_margin_status_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-check-margin-status-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Check my Schwab margin account status."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here is your Schwab margin status:\n\n* **Margin Enabled**: Yes\n* **Margin Balance**: $0.00\n* **Maintenance Margin**: $5,000.00\n* **Status**: success"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "schwab_account_numbers"
+              },
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "account_hash": "resolved-account-hash"
+                },
+                "name": "schwab_check_margin_status"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

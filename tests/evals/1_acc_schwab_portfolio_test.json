@@ -1,0 +1,53 @@
+{
+  "eval_set_id": "schwab_portfolio_test_set",
+  "name": "Schwab Portfolio Test",
+  "description": "Multi-step test: agent resolves account hash via schwab_account_numbers, then retrieves portfolio via schwab_portfolio",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_portfolio_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-portfolio-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me my Schwab portfolio holdings."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here are your Schwab portfolio holdings:\n\n* **AAPL**: 10 shares @ $150.00\n* **MSFT**: 5 shares @ $280.00\n* **Status**: success"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "schwab_account_numbers"
+              },
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "account_hash": "resolved-account-hash"
+                },
+                "name": "schwab_portfolio"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

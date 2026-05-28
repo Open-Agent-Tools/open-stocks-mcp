@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "schwab_get_aggregate_positions_test_set",
+  "name": "Schwab Get Aggregate Positions Test",
+  "description": "Test case for retrieving aggregated Schwab positions across all accounts via schwab_get_aggregate_positions",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_get_aggregate_positions_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-get-aggregate-positions-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me my aggregated Schwab positions across all accounts."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here are your aggregated Schwab positions across all accounts:\n\n* **AAPL**: 10 shares total, Avg Cost: $150.00\n* **MSFT**: 5 shares total, Avg Cost: $280.00\n* **Total Invested**: $2,900.00\n* **Status**: success"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "schwab_get_aggregate_positions"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

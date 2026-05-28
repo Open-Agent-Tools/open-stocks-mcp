@@ -1,0 +1,53 @@
+{
+  "eval_set_id": "schwab_options_positions_test_set",
+  "name": "Schwab Options Positions Test",
+  "description": "Multi-step test: agent resolves account hash via schwab_account_numbers, then retrieves option positions via schwab_options_positions",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_options_positions_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-options-positions-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me my Schwab options positions for my account."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here are your Schwab options positions:\n\n* **AAPL 200C 2025-01-17**: 2 contracts, P&L: +$50.00\n* **MSFT 300P 2025-03-21**: 1 contract, P&L: -$20.00\n* **Status**: success"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "schwab_account_numbers"
+              },
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "account_hash": "resolved-account-hash"
+                },
+                "name": "schwab_options_positions"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

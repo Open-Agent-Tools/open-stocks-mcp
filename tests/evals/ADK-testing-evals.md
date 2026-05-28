@@ -252,27 +252,85 @@ adk eval examples/google_adk_agent tests/evals/9_adv_broker_status_test.json --c
 
 Evaluations for Schwab-specific tools. These typically require live Schwab OAuth credentials and a running MCP server.
 
+> **Coverage gate**: `tests/unit/test_schwab_eval_coverage.py` enforces that every registered `schwab_*` MCP tool has an eval fixture here or an entry in `EVAL_OMISSION_ALLOWLIST`. Run `pytest tests/unit/test_schwab_eval_coverage.py` to verify coverage.
+
+> **Note on Schwab Evaluations**: All Schwab evaluations require live OAuth credentials. The `final_response` examples are illustrative placeholders only — update them to match real account output before running against a live Schwab account.
+
+#### Account Evals (`1_acc_schwab_*`)
+
 - `tests/evals/1_acc_schwab_account_numbers_test.json` — exercises `schwab_account_numbers`.
+- `tests/evals/1_acc_schwab_account_test.json` — multi-step: `schwab_account_numbers` then `schwab_account` to retrieve account details.
+- `tests/evals/1_acc_schwab_accounts_test.json` — exercises `schwab_accounts` to list all accounts with balances.
+- `tests/evals/1_acc_schwab_portfolio_test.json` — multi-step: `schwab_account_numbers` then `schwab_portfolio` to retrieve portfolio holdings.
+- `tests/evals/1_acc_schwab_account_balances_test.json` — multi-step: `schwab_account_numbers` then `schwab_account_balances`.
+- `tests/evals/1_acc_schwab_check_margin_status_test.json` — multi-step: `schwab_account_numbers` then `schwab_check_margin_status`.
+- `tests/evals/1_acc_schwab_get_margin_interest_test.json` — multi-step: `schwab_account_numbers` then `schwab_get_margin_interest`.
+- `tests/evals/1_acc_schwab_get_user_preferences_test.json` — exercises `schwab_get_user_preferences`.
+- `tests/evals/1_acc_schwab_get_all_account_data_test.json` — exercises `schwab_get_all_account_data`.
+- `tests/evals/1_acc_schwab_get_build_holdings_test.json` — exercises `schwab_get_build_holdings`.
+- `tests/evals/1_acc_schwab_get_day_trades_test.json` — exercises `schwab_get_day_trades`.
+- `tests/evals/1_acc_schwab_get_aggregate_positions_test.json` — exercises `schwab_get_aggregate_positions`.
+
+#### Market Evals (`2_mkt_schwab_*`)
+
 - `tests/evals/2_mkt_schwab_quote_test.json` — exercises `schwab_quote`.
+- `tests/evals/2_mkt_schwab_quotes_test.json` — exercises `schwab_quotes` for multiple symbols.
 - `tests/evals/2_mkt_schwab_price_history_test.json` — exercises `schwab_price_history`.
 - `tests/evals/2_mkt_schwab_search_instruments_test.json` — exercises `schwab_search_instruments`.
+- `tests/evals/2_mkt_schwab_instrument_test.json` — exercises `schwab_instrument`.
+- `tests/evals/2_mkt_schwab_get_market_hours_test.json` — exercises `schwab_get_market_hours`.
+- `tests/evals/2_mkt_schwab_get_movers_test.json` — exercises `schwab_get_movers`.
+- `tests/evals/2_mkt_schwab_get_movers_sp500_test.json` — exercises `schwab_get_movers_sp500`.
+- `tests/evals/2_mkt_schwab_get_instrument_by_cusip_test.json` — exercises `schwab_get_instrument_by_cusip`.
+
+#### Order/Transaction Evals (`5_ord_schwab_*`)
+
+- `tests/evals/5_ord_schwab_orders_test.json` — multi-step: `schwab_account_numbers` then `schwab_orders`.
+- `tests/evals/5_ord_schwab_get_open_stock_orders_test.json` — multi-step: `schwab_account_numbers` then `schwab_get_open_stock_orders`.
+- `tests/evals/5_ord_schwab_get_order_test.json` — multi-step: `schwab_account_numbers` then `schwab_get_order`.
+- `tests/evals/5_ord_schwab_transactions_test.json` — multi-step: `schwab_account_numbers` then `schwab_transactions`.
+- `tests/evals/5_ord_schwab_transactions_by_date_test.json` — multi-step: `schwab_account_numbers` then `schwab_transactions_by_date`.
+- `tests/evals/5_ord_schwab_get_transaction_test.json` — multi-step: `schwab_account_numbers` then `schwab_get_transaction`.
+
+#### Payment Evals (`7_pmt_schwab_*`)
+
+- `tests/evals/7_pmt_schwab_get_dividends_test.json` — multi-step: `schwab_account_numbers` then `schwab_get_dividends`.
+- `tests/evals/7_pmt_schwab_get_dividends_by_symbol_test.json` — multi-step: `schwab_account_numbers` then `schwab_get_dividends_by_symbol`.
+- `tests/evals/7_pmt_schwab_get_stock_loan_payments_test.json` — multi-step: `schwab_account_numbers` then `schwab_get_stock_loan_payments`.
+- `tests/evals/7_pmt_schwab_get_interest_payments_test.json` — multi-step: `schwab_account_numbers` then `schwab_get_interest_payments`.
+- `tests/evals/7_pmt_schwab_get_total_dividends_test.json` — multi-step: `schwab_account_numbers` then `schwab_get_total_dividends`.
+
+#### Options Evals (`8_opt_schwab_*`)
+
 - `tests/evals/8_opt_schwab_option_chain_test.json` — exercises `schwab_option_chain`.
+- `tests/evals/8_opt_schwab_option_chain_by_expiration_test.json` — exercises `schwab_option_chain_by_expiration`.
 - `tests/evals/8_opt_schwab_option_expirations_test.json` — exercises `schwab_option_expirations`.
-- `tests/evals/5_ord_schwab_orders_test.json` — multi-step: `schwab_account_numbers` then `schwab_orders` to retrieve recent orders without requiring a raw account hash in the user message.
+- `tests/evals/8_opt_schwab_options_positions_test.json` — multi-step: `schwab_account_numbers` then `schwab_options_positions`.
+- `tests/evals/8_opt_schwab_option_orders_test.json` — multi-step: `schwab_account_numbers` then `schwab_option_orders`.
+- `tests/evals/8_opt_schwab_open_option_orders_test.json` — multi-step: `schwab_account_numbers` then `schwab_open_option_orders`.
+- `tests/evals/8_opt_schwab_get_all_option_positions_test.json` — exercises `schwab_get_all_option_positions`.
+- `tests/evals/8_opt_schwab_get_open_option_positions_test.json` — exercises `schwab_get_open_option_positions`.
+- `tests/evals/8_opt_schwab_find_tradable_options_test.json` — exercises `schwab_find_tradable_options`.
+- `tests/evals/8_opt_schwab_option_quote_test.json` — exercises `schwab_option_quote`.
 
-> **Note on Schwab Evaluations**: Most Schwab evaluations require live OAuth credentials.
->
-> The `final_response` examples in Schwab eval JSON files are illustrative placeholders only. Before running against a live Schwab account, update those expected values (account numbers, account hashes, quotes, and other account-specific fields) to match real output from your account, or ADK eval assertions will fail.
+#### Advanced/Profile Evals (`9_adv_schwab_*`)
 
-Run with:
+- `tests/evals/9_adv_schwab_build_user_profile_test.json` — exercises `schwab_build_user_profile`.
+
+#### Omitted Tools (no eval — see coverage gate for justification)
+
+The following `schwab_*` tools are intentionally excluded from ADK eval coverage. See `EVAL_OMISSION_ALLOWLIST` in `tests/unit/test_schwab_eval_coverage.py` for the documented rationale.
+
+- **Streaming** (`schwab_stream_*`): real-time WebSocket subscriptions; no stable request/response pattern for eval assertions.
+- **Trading mutations** (`schwab_buy_*`, `schwab_sell_*`, `schwab_cancel_*`, `schwab_order_*`, `schwab_option_buy_*`, `schwab_option_sell_*`, `schwab_place_order`, `schwab_replace_order`): require live credentials and execute real market orders or destructive cancellations; covered by integration journey tests.
+
+Run individual Schwab evals with:
 
 ```bash
 adk eval examples/google_adk_agent tests/evals/1_acc_schwab_account_numbers_test.json --config_file_path tests/evals/test_config.json
-SCHWAB_EVAL_FILE=<schwab-market-eval-json>
+# Replace the filename with any schwab eval listed above
+SCHWAB_EVAL_FILE=2_mkt_schwab_quote_test.json
 adk eval examples/google_adk_agent "tests/evals/${SCHWAB_EVAL_FILE}" --config_file_path tests/evals/test_config.json
-adk eval examples/google_adk_agent tests/evals/8_opt_schwab_option_chain_test.json --config_file_path tests/evals/test_config.json
-adk eval examples/google_adk_agent tests/evals/8_opt_schwab_option_expirations_test.json --config_file_path tests/evals/test_config.json
-adk eval examples/google_adk_agent tests/evals/5_ord_schwab_orders_test.json --config_file_path tests/evals/test_config.json
 ```
 
 ### 4. Watchlist Read-Only Evaluations (`3_wth_*`)

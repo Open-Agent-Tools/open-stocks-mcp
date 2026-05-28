@@ -1,0 +1,53 @@
+{
+  "eval_set_id": "schwab_get_stock_loan_payments_test_set",
+  "name": "Schwab Get Stock Loan Payments Test",
+  "description": "Multi-step test: agent resolves account hash via schwab_account_numbers, then retrieves stock loan payments via schwab_get_stock_loan_payments",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_get_stock_loan_payments_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-get-stock-loan-payments-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me my Schwab stock loan payment history."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here are your Schwab stock loan payments:\n\n* No stock loan payments found for this period.\n* **Status**: success"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "schwab_account_numbers"
+              },
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "account_hash": "resolved-account-hash"
+                },
+                "name": "schwab_get_stock_loan_payments"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

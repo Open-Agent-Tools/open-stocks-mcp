@@ -1,0 +1,53 @@
+{
+  "eval_set_id": "schwab_get_interest_payments_test_set",
+  "name": "Schwab Get Interest Payments Test",
+  "description": "Multi-step test: agent resolves account hash via schwab_account_numbers, then retrieves interest payments via schwab_get_interest_payments",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_get_interest_payments_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-get-interest-payments-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me my Schwab interest payment history."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here are your Schwab interest payments:\n\n* **2025-01-15**: $1.25 (Cash sweep interest)\n* **2024-12-16**: $1.10 (Cash sweep interest)\n* **Total**: $2.35\n* **Status**: success"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "schwab_account_numbers"
+              },
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "account_hash": "resolved-account-hash"
+                },
+                "name": "schwab_get_interest_payments"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

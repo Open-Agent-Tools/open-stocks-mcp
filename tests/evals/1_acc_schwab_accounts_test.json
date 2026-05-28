@@ -1,0 +1,48 @@
+{
+  "eval_set_id": "schwab_accounts_test_set",
+  "name": "Schwab Accounts Test",
+  "description": "Test case for retrieving all Schwab accounts with balances and positions via schwab_accounts",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_accounts_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-accounts-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "List all my Schwab accounts with their current balances."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here are all your Schwab accounts:\n\n* **Account 1**:\n  * Account Hash: abc123hash\n  * Equity: $10,000.00\n  * Cash: $500.00\n* **Status**: success"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "include_positions": true
+                },
+                "name": "schwab_accounts"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "eval_set_id": "schwab_get_order_test_set",
+  "name": "Schwab Get Order Test",
+  "description": "Multi-step test: agent resolves account hash via schwab_account_numbers, then retrieves a specific order via schwab_get_order",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_get_order_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-get-order-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Look up the details of my Schwab order with ID 123456789."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here are the details for Schwab order 123456789:\n\n* **Order ID**: 123456789\n* **Symbol**: AAPL\n* **Type**: Limit Buy\n* **Quantity**: 10\n* **Price**: $220.00\n* **Status**: WORKING"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "schwab_account_numbers"
+              },
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "account_hash": "resolved-account-hash",
+                  "order_id": "123456789"
+                },
+                "name": "schwab_get_order"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

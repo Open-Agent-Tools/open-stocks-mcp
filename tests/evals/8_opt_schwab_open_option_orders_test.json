@@ -1,0 +1,53 @@
+{
+  "eval_set_id": "schwab_open_option_orders_test_set",
+  "name": "Schwab Open Option Orders Test",
+  "description": "Multi-step test: agent resolves account hash via schwab_account_numbers, then retrieves open option orders via schwab_open_option_orders",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_open_option_orders_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-open-option-orders-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me my open Schwab option orders."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here are your open Schwab option orders:\n\n* **Order 1**: Sell 1 MSFT 300P 2025-03-21 @ $4.50 - WORKING\n* **Status**: success"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "schwab_account_numbers"
+              },
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "account_hash": "resolved-account-hash"
+                },
+                "name": "schwab_open_option_orders"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

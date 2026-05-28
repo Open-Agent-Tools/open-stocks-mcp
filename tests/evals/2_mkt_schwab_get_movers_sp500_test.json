@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "schwab_get_movers_sp500_test_set",
+  "name": "Schwab Get Movers SP500 Test",
+  "description": "Test case for retrieving top S&P 500 market movers via schwab_get_movers_sp500",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_get_movers_sp500_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-get-movers-sp500-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "What are the top S&P 500 movers today on Schwab?"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here are the top S&P 500 movers today via Schwab:\n\n* **NVDA**: +5.2% (Top Gainer)\n* **TSLA**: -3.1% (Top Loser)\n* **AAPL**: +1.5%\n* **Status**: success"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "schwab_get_movers_sp500"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

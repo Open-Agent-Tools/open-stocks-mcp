@@ -1,0 +1,48 @@
+{
+  "eval_set_id": "schwab_get_market_hours_test_set",
+  "name": "Schwab Get Market Hours Test",
+  "description": "Test case for retrieving market hours for a given exchange via schwab_get_market_hours",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_get_market_hours_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-get-market-hours-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "What are the Schwab market hours for the equity market today?"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here are the Schwab equity market hours for today:\n\n* **Market**: equity\n* **Session Open**: 09:30 AM ET\n* **Session Close**: 04:00 PM ET\n* **Is Open**: Yes\n* **Status**: success"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "market": "equity"
+                },
+                "name": "schwab_get_market_hours"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

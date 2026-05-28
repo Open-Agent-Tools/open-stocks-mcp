@@ -1,0 +1,53 @@
+{
+  "eval_set_id": "schwab_get_dividends_test_set",
+  "name": "Schwab Get Dividends Test",
+  "description": "Multi-step test: agent resolves account hash via schwab_account_numbers, then retrieves dividend payments via schwab_get_dividends",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_get_dividends_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-get-dividends-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me my Schwab dividend payments for this year."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here are your Schwab dividend payments:\n\n* **AAPL**: $25.00 on 2025-01-08\n* **MSFT**: $35.00 on 2025-01-12\n* **Total**: $60.00\n* **Status**: success"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "schwab_account_numbers"
+              },
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "account_hash": "resolved-account-hash"
+                },
+                "name": "schwab_get_dividends"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "eval_set_id": "schwab_transactions_test_set",
+  "name": "Schwab Transactions Test",
+  "description": "Multi-step test: agent resolves account hash via schwab_account_numbers, then retrieves transaction history via schwab_transactions",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_transactions_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-transactions-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me my recent Schwab transaction history."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here are your recent Schwab transactions:\n\n* **Trade**: Bought 10 AAPL @ $220.00 on 2025-01-15\n* **Trade**: Sold 5 MSFT @ $410.00 on 2025-01-10\n* **Dividend**: AAPL $0.25/share on 2025-01-08\n* **Status**: success"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "schwab_account_numbers"
+              },
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "account_hash": "resolved-account-hash"
+                },
+                "name": "schwab_transactions"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}
