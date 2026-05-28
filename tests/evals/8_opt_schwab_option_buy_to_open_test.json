@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "schwab_option_buy_to_open_test_set",
+  "name": "Schwab Option Buy To Open Test",
+  "description": "Test case for placing a Schwab option buy-to-open order through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_option_buy_to_open_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-option-buy-to-open-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Buy to open 1 AAPL call at strike 150 expiring 2026-12-18 in Schwab."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "I attempted to place a Schwab buy-to-open option order for AAPL. Schwab authentication, options approval, and valid contract parameters are required for live execution."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {"account_hash":"resolved-account-hash","symbol":"AAPL","quantity":1,"option_type":"CALL","strike":150.0,"expiration":"2026-12-18"},
+                "name": "schwab_option_buy_to_open"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

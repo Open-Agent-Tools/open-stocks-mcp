@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "schwab_cancel_all_option_orders_test_set",
+  "name": "Schwab Cancel All Option Orders Test",
+  "description": "Test case for canceling all open Schwab option orders through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_cancel_all_option_orders_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-cancel-all-option-orders-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Cancel all my open Schwab option orders."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "I attempted to cancel all open Schwab option orders. Schwab authentication and existing open option orders are required for cancellation activity."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {"account_hash":"resolved-account-hash","max_results":50},
+                "name": "schwab_cancel_all_option_orders"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

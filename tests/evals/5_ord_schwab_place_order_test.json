@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "schwab_place_order_test_set",
+  "name": "Schwab Place Order Test",
+  "description": "Test case for submitting a raw Schwab order spec through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_place_order_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-place-order-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Submit a Schwab order spec to buy 1 share of AAPL at market."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "I attempted to submit the provided Schwab order specification. Schwab authentication and a valid account hash are required for live execution."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {"account_hash":"resolved-account-hash","order_spec":{"orderType":"MARKET","session":"NORMAL","duration":"DAY","orderStrategyType":"SINGLE","orderLegCollection":[{"instruction":"BUY","quantity":1,"instrument":{"assetType":"EQUITY","symbol":"AAPL"}}]}},
+                "name": "schwab_place_order"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}
