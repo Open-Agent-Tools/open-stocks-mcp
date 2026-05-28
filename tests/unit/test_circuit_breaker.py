@@ -8,6 +8,8 @@ import pytest
 
 from open_stocks_mcp.config import (
     CircuitBreakerConfig as CanonicalCircuitBreakerConfig,
+)
+from open_stocks_mcp.config import (
     load_config,
     reset_cache_config,
 )
