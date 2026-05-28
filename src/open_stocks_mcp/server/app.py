@@ -55,7 +55,6 @@ from open_stocks_mcp.tools.options.market_data import (
     get_option_historicals,
     get_option_market_data,
 )
-from open_stocks_mcp.tools.rate_limiter import configure_global_rate_limiter
 from open_stocks_mcp.tools.robinhood_account_feature_summary_tools import (
     get_account_features,
 )
@@ -2034,11 +2033,6 @@ def create_mcp_server(config: ServerConfig | None = None) -> FastMCP:
         config = load_config()
 
     setup_logging(config)
-    configure_global_rate_limiter(
-        config.rate_limits.calls_per_minute,
-        config.rate_limits.calls_per_hour,
-        config.rate_limits.burst_size,
-    )
     setup_tracing(config)
     instrument_mcp_tool_calls(mcp)
     if config.timeout is not None:

@@ -12,13 +12,13 @@ from mcp.server.fastmcp import FastMCP
 from open_stocks_mcp.brokers.registry import (
     RegistryNotInitializedError,
     get_broker_registry,
+    get_broker_registry_sync,
 )
 from open_stocks_mcp.brokers.session_state import get_session_manager
 from open_stocks_mcp.health import get_health_service
 from open_stocks_mcp.logging_config import logger
 from open_stocks_mcp.monitoring import get_metrics_collector
 from open_stocks_mcp.tools.circuit_breaker import get_broker_circuit_breaker
-from open_stocks_mcp.tools.rate_limiter import get_rate_limiter
 from open_stocks_mcp.tools.robinhood_tools import list_available_tools
 
 
@@ -119,21 +119,35 @@ async def get_list_brokers_data() -> dict[str, Any]:
 
 
 async def get_rate_limit_status_data() -> dict[str, Any]:
-    """Return current rate limit usage and statistics."""
+    """Return current rate limit usage and statistics, per broker."""
+    _known_brokers = ("robinhood", "schwab")
     fallback_note: str | None = None
+    broker_stats: dict[str, Any] = {}
+
     try:
-        rate_limiter = get_rate_limiter("robinhood")
+        registry = get_broker_registry_sync()
+        for broker_name in _known_brokers:
+            broker_stats[broker_name] = registry.get_rate_limiter(
+                broker_name
+            ).get_stats()
     except RegistryNotInitializedError:
         # Early startup can hit this before broker registry lifespan init.
-        rate_limiter = get_rate_limiter()
-        fallback_note = (
-            "broker registry not initialized; using global rate limiter fallback"
+        from open_stocks_mcp.tools.rate_limiter import (
+            RateLimiter,
+            get_broker_rate_limit_defaults,
         )
-    stats = rate_limiter.get_stats()
+
+        for broker_name in _known_brokers:
+            cpm, cph, burst = get_broker_rate_limit_defaults(broker_name)
+            broker_stats[broker_name] = RateLimiter(
+                calls_per_minute=cpm, calls_per_hour=cph, burst_size=burst
+            ).get_stats()
+        fallback_note = (
+            "broker registry not initialized; showing default limits without live stats"
+        )
 
     result: dict[str, Any] = {
-        **stats,
-        "endpoint_usage": stats.get("endpoint_usage", {}),
+        "brokers": broker_stats,
         "circuit_breaker": get_broker_circuit_breaker().snapshot(),
         "status": "success",
     }

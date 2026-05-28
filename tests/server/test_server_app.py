@@ -36,7 +36,6 @@ class TestServerApp:
         with (
             patch("open_stocks_mcp.server.app.load_config") as mock_config,
             patch("open_stocks_mcp.server.app.setup_logging") as mock_logging,
-            patch("open_stocks_mcp.server.app.configure_global_rate_limiter"),
         ):
             mock_cfg = MagicMock()
             mock_cfg.otel.enabled = False
@@ -52,10 +51,7 @@ class TestServerApp:
         mock_config = MagicMock()
         mock_config.otel.enabled = False
 
-        with (
-            patch("open_stocks_mcp.server.app.setup_logging") as mock_logging,
-            patch("open_stocks_mcp.server.app.configure_global_rate_limiter"),
-        ):
+        with patch("open_stocks_mcp.server.app.setup_logging") as mock_logging:
             result = create_mcp_server(mock_config)
 
             assert result is mcp
@@ -366,7 +362,9 @@ class TestToolRegistration:
         assert "broker_health" in broker["result"]
         assert "broker_health" in metrics["result"]
         assert "account_health" in metrics["result"]
-        assert "endpoint_usage" in rate["result"]
+        assert "brokers" in rate["result"]
+        assert "robinhood" in rate["result"]["brokers"]
+        assert "endpoint_usage" in rate["result"]["brokers"]["robinhood"]
 
 
 def test_create_mcp_server_propagates_config_error() -> None:
@@ -384,22 +382,22 @@ def test_create_mcp_server_propagates_config_error() -> None:
         mock_logging.assert_not_called()
 
 
-def test_create_mcp_server_applies_rate_limiter_from_config() -> None:
+def test_create_mcp_server_does_not_configure_global_rate_limiter() -> None:
+    """Per-broker design: create_mcp_server must not set up a shared global rate limiter."""
     mock_config = MagicMock()
     mock_config.otel.enabled = False
-    mock_config.rate_limits.calls_per_minute = 77
-    mock_config.rate_limits.calls_per_hour = 1700
-    mock_config.rate_limits.burst_size = 13
 
-    with (
-        patch("open_stocks_mcp.server.app.setup_logging") as mock_logging,
-        patch("open_stocks_mcp.server.app.configure_global_rate_limiter") as mock_rl,
-    ):
+    with patch("open_stocks_mcp.server.app.setup_logging"):
         result = create_mcp_server(mock_config)
 
     assert result is mcp
-    mock_logging.assert_called_once_with(mock_config)
-    mock_rl.assert_called_once_with(77, 1700, 13)
+    # Verify the old global rate-limiter path is gone — import should fail.
+    import importlib
+
+    app_mod = importlib.import_module("open_stocks_mcp.server.app")
+    assert not hasattr(app_mod, "configure_global_rate_limiter"), (
+        "configure_global_rate_limiter should not be re-exported from app"
+    )
 
 
 @pytest.mark.asyncio

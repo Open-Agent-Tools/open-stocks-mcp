@@ -75,12 +75,12 @@ class TestHTTPIntegration:
     """Integration tests for HTTP transport functionality"""
 
     @patch("open_stocks_mcp.server.http_transport.get_session_manager")
-    @patch("open_stocks_mcp.server.http_transport.get_rate_limiter")
+    @patch("open_stocks_mcp.server.http_transport.get_broker_registry_sync")
     @patch("open_stocks_mcp.server.http_transport.get_metrics_collector")
     async def test_full_server_startup_sequence(
         self,
         mock_get_metrics_collector: Mock,
-        mock_get_rate_limiter: Mock,
+        mock_get_broker_registry_sync: Mock,
         mock_get_session_manager: Mock,
         mock_http_client: httpx.AsyncClient,
     ) -> None:
@@ -93,12 +93,14 @@ class TestHTTPIntegration:
         }
         mock_get_session_manager.return_value = mock_session_manager
 
-        mock_rate_limiter = Mock()
-        mock_rate_limiter.get_stats.return_value = {
-            "total_requests": 0,
-            "rate_limited_requests": 0,
+        mock_registry = Mock()
+        mock_limiter = Mock()
+        mock_limiter.get_stats.return_value = {
+            "calls_last_minute": 0,
+            "limit_per_minute": 30,
         }
-        mock_get_rate_limiter.return_value = mock_rate_limiter
+        mock_registry.get_rate_limiter.return_value = mock_limiter
+        mock_get_broker_registry_sync.return_value = mock_registry
 
         mock_metrics_collector = AsyncMock()
         mock_metrics_collector.get_health_status.return_value = {
