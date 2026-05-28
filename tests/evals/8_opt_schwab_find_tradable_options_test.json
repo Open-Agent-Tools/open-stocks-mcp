@@ -1,0 +1,51 @@
+{
+  "eval_set_id": "schwab_find_tradable_options_test_set",
+  "name": "Schwab Find Tradable Options Test",
+  "description": "Test case for finding tradable Schwab options for a symbol via schwab_find_tradable_options",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_find_tradable_options_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-find-tradable-options-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Find tradable AAPL call options on Schwab expiring in January 2025 with strikes near $200."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here are tradable AAPL call options on Schwab near your criteria:\n\n* **AAPL 200C 2025-01-17**: Ask $5.50, Delta: 0.45, Volume: 12,340\n* **AAPL 205C 2025-01-17**: Ask $3.20, Delta: 0.35, Volume: 8,510\n* **Status**: success"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "symbol": "AAPL",
+                  "option_type": "CALL",
+                  "expiration_date": "2025-01-17",
+                  "strike_price": 200.0
+                },
+                "name": "schwab_find_tradable_options"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

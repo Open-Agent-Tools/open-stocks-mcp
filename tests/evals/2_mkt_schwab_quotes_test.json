@@ -1,0 +1,48 @@
+{
+  "eval_set_id": "schwab_quotes_test_set",
+  "name": "Schwab Quotes Test",
+  "description": "Test case for retrieving multiple Schwab stock quotes in a single call via schwab_quotes",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_quotes_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-quotes-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Get me Schwab quotes for AAPL, MSFT, and GOOGL."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here are the Schwab quotes for your requested symbols:\n\n* **AAPL**: $223.09\n* **MSFT**: $415.50\n* **GOOGL**: $178.25\n* **Status**: success"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "symbols": ["AAPL", "MSFT", "GOOGL"]
+                },
+                "name": "schwab_quotes"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

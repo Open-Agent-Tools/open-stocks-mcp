@@ -1,0 +1,49 @@
+{
+  "eval_set_id": "schwab_option_chain_by_expiration_test_set",
+  "name": "Schwab Option Chain By Expiration Test",
+  "description": "Test case for retrieving Schwab option chain filtered by expiration date via schwab_option_chain_by_expiration",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_option_chain_by_expiration_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-option-chain-by-expiration-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Get me the Schwab AAPL option chain for the January 2025 expiration."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here is the Schwab AAPL option chain for the January 2025 expiration:\n\n* **Calls**:\n  * Strike $200: Ask $5.50, Bid $5.20, Delta: 0.45\n  * Strike $210: Ask $2.10, Bid $1.90, Delta: 0.30\n* **Puts**:\n  * Strike $200: Ask $4.80, Bid $4.50, Delta: -0.55\n* **Status**: success"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "symbol": "AAPL",
+                  "expiration_date": "2025-01-17"
+                },
+                "name": "schwab_option_chain_by_expiration"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

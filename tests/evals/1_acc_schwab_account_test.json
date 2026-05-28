@@ -1,0 +1,54 @@
+{
+  "eval_set_id": "schwab_account_test_set",
+  "name": "Schwab Account Test",
+  "description": "Multi-step test: agent resolves account hash via schwab_account_numbers, then retrieves account details via schwab_account",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_account_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-account-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me my Schwab account details including balances and positions."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here are your Schwab account details:\n\n* **Account Hash**: abc123hash\n* **Equity**: $10,000.00\n* **Cash**: $500.00\n* **Status**: success"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "schwab_account_numbers"
+              },
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "account_hash": "resolved-account-hash",
+                  "include_positions": true
+                },
+                "name": "schwab_account"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

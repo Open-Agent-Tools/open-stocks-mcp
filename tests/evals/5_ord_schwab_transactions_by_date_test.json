@@ -1,0 +1,55 @@
+{
+  "eval_set_id": "schwab_transactions_by_date_test_set",
+  "name": "Schwab Transactions By Date Test",
+  "description": "Multi-step test: agent resolves account hash via schwab_account_numbers, then retrieves transactions for a date range via schwab_transactions_by_date",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_transactions_by_date_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-transactions-by-date-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me my Schwab transactions from January 1 to January 15, 2025."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here are your Schwab transactions from January 1 to January 15, 2025:\n\n* **Trade**: Bought 10 AAPL @ $220.00 on 2025-01-15\n* **Trade**: Sold 5 MSFT @ $410.00 on 2025-01-10\n* **Status**: success"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "schwab_account_numbers"
+              },
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "account_hash": "resolved-account-hash",
+                  "start_date": "2025-01-01",
+                  "end_date": "2025-01-15"
+                },
+                "name": "schwab_transactions_by_date"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

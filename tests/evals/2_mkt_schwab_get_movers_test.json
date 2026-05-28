@@ -1,0 +1,48 @@
+{
+  "eval_set_id": "schwab_get_movers_test_set",
+  "name": "Schwab Get Movers Test",
+  "description": "Test case for retrieving top market movers via schwab_get_movers",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_get_movers_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-get-movers-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me the top market movers on Schwab for the NASDAQ today."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here are the top NASDAQ movers today via Schwab:\n\n* **NVDA**: +5.2%\n* **TSLA**: -3.1%\n* **META**: +2.8%\n* **Status**: success"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "index": "$COMPX"
+                },
+                "name": "schwab_get_movers"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "eval_set_id": "schwab_instrument_test_set",
+  "name": "Schwab Instrument Test",
+  "description": "Test case for retrieving Schwab instrument details for a symbol via schwab_instrument",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_instrument_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-instrument-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Get me the Schwab instrument details for AAPL."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here are the Schwab instrument details for AAPL:\n\n* **Symbol**: AAPL\n* **Description**: Apple Inc.\n* **Exchange**: NASDAQ\n* **Asset Type**: EQUITY\n* **Status**: success"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "symbol": "AAPL"
+                },
+                "name": "schwab_instrument"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

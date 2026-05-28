@@ -1,0 +1,48 @@
+{
+  "eval_set_id": "schwab_get_instrument_by_cusip_test_set",
+  "name": "Schwab Get Instrument By CUSIP Test",
+  "description": "Test case for retrieving Schwab instrument details by CUSIP identifier via schwab_get_instrument_by_cusip",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_get_instrument_by_cusip_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-get-instrument-by-cusip-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Look up the Schwab instrument for CUSIP 037833100 (Apple)."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here are the Schwab instrument details for CUSIP 037833100:\n\n* **Symbol**: AAPL\n* **Description**: Apple Inc.\n* **CUSIP**: 037833100\n* **Exchange**: NASDAQ\n* **Status**: success"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "cusip": "037833100"
+                },
+                "name": "schwab_get_instrument_by_cusip"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

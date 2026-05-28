@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "schwab_get_open_option_positions_test_set",
+  "name": "Schwab Get Open Option Positions Test",
+  "description": "Test case for retrieving open Schwab option positions via schwab_get_open_option_positions",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_get_open_option_positions_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-get-open-option-positions-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me my open Schwab option positions."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here are your open Schwab option positions:\n\n* **AAPL 200C 2025-01-17**: 2 contracts, Delta: 0.45, Current Value: $450.00\n* **Status**: success"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "schwab_get_open_option_positions"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

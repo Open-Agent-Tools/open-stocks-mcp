@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "schwab_get_user_preferences_test_set",
+  "name": "Schwab Get User Preferences Test",
+  "description": "Test case for retrieving Schwab user preferences and settings via schwab_get_user_preferences",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_get_user_preferences_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-get-user-preferences-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me my Schwab account preferences and settings."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here are your Schwab user preferences:\n\n* **Default Account**: abc123hash\n* **Streaming Preferences**: enabled\n* **Status**: success"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "schwab_get_user_preferences"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

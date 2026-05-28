@@ -1,0 +1,53 @@
+{
+  "eval_set_id": "schwab_get_open_stock_orders_test_set",
+  "name": "Schwab Get Open Stock Orders Test",
+  "description": "Multi-step test: agent resolves account hash via schwab_account_numbers, then retrieves open stock orders via schwab_get_open_stock_orders",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_get_open_stock_orders_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-get-open-stock-orders-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me my open Schwab stock orders."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Here are your open Schwab stock orders:\n\n* **Order 1**: Buy 10 AAPL @ $220.00 Limit - WORKING\n* **Order 2**: Sell 5 MSFT @ $430.00 Limit - WORKING\n* **Status**: success"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {},
+                "name": "schwab_account_numbers"
+              },
+              {
+                "id": "adk-tool-use-id",
+                "args": {
+                  "account_hash": "resolved-account-hash"
+                },
+                "name": "schwab_get_open_stock_orders"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}
