@@ -9,7 +9,10 @@ from pathlib import Path
 import pytest
 
 from open_stocks_mcp.tools.watchlists import schwab_local_store as store
-from open_stocks_mcp.tools.watchlists.schwab_local_store import add_symbols, remove_symbols
+from open_stocks_mcp.tools.watchlists.schwab_local_store import (
+    add_symbols,
+    remove_symbols,
+)
 
 
 @pytest.mark.unit
