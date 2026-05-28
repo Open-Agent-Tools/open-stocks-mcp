@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "schwab_order_sell_stop_test_set",
+  "name": "Schwab Sell Stop Order Test",
+  "description": "Test case for placing a Schwab sell stop order through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_order_sell_stop_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-order-sell-stop-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Place a Schwab stop sell for 1 share of AAPL at stop 148.00."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "I attempted to place a Schwab stop sell order for AAPL with stop price 148.00. Schwab authentication and an eligible position are required for live execution."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {"account_hash":"resolved-account-hash","symbol":"AAPL","quantity":1,"stop_price":"148.00"},
+                "name": "schwab_order_sell_stop"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

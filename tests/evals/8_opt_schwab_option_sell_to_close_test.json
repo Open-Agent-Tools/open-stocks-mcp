@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "schwab_option_sell_to_close_test_set",
+  "name": "Schwab Option Sell To Close Test",
+  "description": "Test case for placing a Schwab option sell-to-close order through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_option_sell_to_close_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-option-sell-to-close-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Sell to close 1 AAPL call at strike 150 expiring 2026-12-18 in Schwab."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "I attempted to place a Schwab sell-to-close option order for AAPL. Schwab authentication, options approval, and an existing position are required for live execution."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {"account_hash":"resolved-account-hash","symbol":"AAPL","quantity":1,"option_type":"CALL","strike":150.0,"expiration":"2026-12-18"},
+                "name": "schwab_option_sell_to_close"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

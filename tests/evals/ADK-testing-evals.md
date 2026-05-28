@@ -291,6 +291,21 @@ Evaluations for Schwab-specific tools. These typically require live Schwab OAuth
 - `tests/evals/5_ord_schwab_transactions_test.json` — multi-step: `schwab_account_numbers` then `schwab_transactions`.
 - `tests/evals/5_ord_schwab_transactions_by_date_test.json` — multi-step: `schwab_account_numbers` then `schwab_transactions_by_date`.
 - `tests/evals/5_ord_schwab_get_transaction_test.json` — multi-step: `schwab_account_numbers` then `schwab_get_transaction`.
+- `tests/evals/5_ord_schwab_buy_stock_market_test.json` — exercises `schwab_buy_stock_market`.
+- `tests/evals/5_ord_schwab_sell_stock_market_test.json` — exercises `schwab_sell_stock_market`.
+- `tests/evals/5_ord_schwab_buy_stock_limit_test.json` — exercises `schwab_buy_stock_limit`.
+- `tests/evals/5_ord_schwab_sell_stock_limit_test.json` — exercises `schwab_sell_stock_limit`.
+- `tests/evals/5_ord_schwab_place_order_test.json` — exercises `schwab_place_order`.
+- `tests/evals/5_ord_schwab_cancel_order_test.json` — exercises `schwab_cancel_order`.
+- `tests/evals/5_ord_schwab_order_sell_stop_test.json` — exercises `schwab_order_sell_stop`.
+- `tests/evals/5_ord_schwab_cancel_all_stock_orders_test.json` — exercises `schwab_cancel_all_stock_orders`.
+- `tests/evals/5_ord_schwab_order_buy_option_limit_test.json` — exercises `schwab_order_buy_option_limit`.
+- `tests/evals/5_ord_schwab_order_sell_option_limit_test.json` — exercises `schwab_order_sell_option_limit`.
+- `tests/evals/5_ord_schwab_cancel_option_order_test.json` — exercises `schwab_cancel_option_order`.
+- `tests/evals/5_ord_schwab_cancel_all_option_orders_test.json` — exercises `schwab_cancel_all_option_orders`.
+- `tests/evals/5_ord_schwab_order_option_credit_spread_test.json` — exercises `schwab_order_option_credit_spread`.
+- `tests/evals/5_ord_schwab_order_option_debit_spread_test.json` — exercises `schwab_order_option_debit_spread`.
+- `tests/evals/5_ord_schwab_replace_order_test.json` — exercises `schwab_replace_order`.
 
 #### Payment Evals (`7_pmt_schwab_*`)
 
@@ -312,6 +327,8 @@ Evaluations for Schwab-specific tools. These typically require live Schwab OAuth
 - `tests/evals/8_opt_schwab_get_open_option_positions_test.json` — exercises `schwab_get_open_option_positions`.
 - `tests/evals/8_opt_schwab_find_tradable_options_test.json` — exercises `schwab_find_tradable_options`.
 - `tests/evals/8_opt_schwab_option_quote_test.json` — exercises `schwab_option_quote`.
+- `tests/evals/8_opt_schwab_option_buy_to_open_test.json` — exercises `schwab_option_buy_to_open`.
+- `tests/evals/8_opt_schwab_option_sell_to_close_test.json` — exercises `schwab_option_sell_to_close`.
 
 #### Advanced/Profile Evals (`9_adv_schwab_*`)
 
@@ -339,21 +356,21 @@ The checklist below maps every registered `schwab_*` MCP tool to the eval fixtur
 Regenerate with `uv run python scripts/schwab_coverage.py`.
 Check a row when a fixture for that tool is authored and merged.
 
-**Coverage: 7/64 schwab_* tools have ADK eval fixtures**
+**Coverage: 32/64 schwab_* tools have ADK eval fixtures**
 
 - [x] `schwab_account_numbers` — `1_acc_schwab_account_numbers_test.json`, `5_ord_schwab_orders_test.json`
 - [ ] `schwab_account` — *no eval*
 - [ ] `schwab_account_balances` — *no eval*
 - [ ] `schwab_accounts` — *no eval*
 - [ ] `schwab_build_user_profile` — *no eval*
-- [ ] `schwab_buy_stock_limit` — *no eval*
-- [ ] `schwab_buy_stock_market` — *no eval*
-- [ ] `schwab_cancel_all_option_orders` — *no eval*
-- [ ] `schwab_cancel_all_stock_orders` — *no eval*
-- [ ] `schwab_cancel_option_order` — *no eval*
-- [ ] `schwab_cancel_order` — *no eval*
+- [x] `schwab_buy_stock_limit` — `5_ord_schwab_buy_stock_limit_test.json`
+- [x] `schwab_buy_stock_market` — `5_ord_schwab_buy_stock_market_test.json`
+- [x] `schwab_cancel_all_option_orders` — `5_ord_schwab_cancel_all_option_orders_test.json`
+- [x] `schwab_cancel_all_stock_orders` — `5_ord_schwab_cancel_all_stock_orders_test.json`
+- [x] `schwab_cancel_option_order` — `5_ord_schwab_cancel_option_order_test.json`
+- [x] `schwab_cancel_order` — `5_ord_schwab_cancel_order_test.json`
 - [ ] `schwab_check_margin_status` — *no eval*
-- [ ] `schwab_find_tradable_options` — *no eval*
+- [x] `schwab_find_tradable_options` — `8_opt_schwab_find_tradable_options_test.json`
 - [ ] `schwab_get_aggregate_positions` — *no eval*
 - [ ] `schwab_get_all_account_data` — *no eval*
 - [ ] `schwab_get_all_option_positions` — *no eval*
@@ -368,37 +385,37 @@ Check a row when a fixture for that tool is authored and merged.
 - [ ] `schwab_get_movers` — *no eval*
 - [ ] `schwab_get_movers_sp500` — *no eval*
 - [ ] `schwab_get_open_option_positions` — *no eval*
-- [ ] `schwab_get_open_stock_orders` — *no eval*
-- [ ] `schwab_get_order` — *no eval*
+- [x] `schwab_get_open_stock_orders` — `5_ord_schwab_get_open_stock_orders_test.json`
+- [x] `schwab_get_order` — `5_ord_schwab_get_order_test.json`
 - [ ] `schwab_get_stock_loan_payments` — *no eval*
 - [ ] `schwab_get_total_dividends` — *no eval*
 - [ ] `schwab_get_transaction` — *no eval*
 - [ ] `schwab_get_user_preferences` — *no eval*
 - [ ] `schwab_instrument` — *no eval*
-- [ ] `schwab_open_option_orders` — *no eval*
-- [ ] `schwab_option_buy_to_open` — *no eval*
+- [x] `schwab_open_option_orders` — `8_opt_schwab_open_option_orders_test.json`
+- [x] `schwab_option_buy_to_open` — `8_opt_schwab_option_buy_to_open_test.json`
 - [x] `schwab_option_chain` — `8_opt_schwab_option_chain_test.json`
-- [ ] `schwab_option_chain_by_expiration` — *no eval*
+- [x] `schwab_option_chain_by_expiration` — `8_opt_schwab_option_chain_by_expiration_test.json`
 - [x] `schwab_option_expirations` — `8_opt_schwab_option_expirations_test.json`
-- [ ] `schwab_option_orders` — *no eval*
-- [ ] `schwab_option_quote` — *no eval*
-- [ ] `schwab_option_sell_to_close` — *no eval*
-- [ ] `schwab_options_positions` — *no eval*
-- [ ] `schwab_order_buy_option_limit` — *no eval*
-- [ ] `schwab_order_option_credit_spread` — *no eval*
-- [ ] `schwab_order_option_debit_spread` — *no eval*
-- [ ] `schwab_order_sell_option_limit` — *no eval*
-- [ ] `schwab_order_sell_stop` — *no eval*
+- [x] `schwab_option_orders` — `8_opt_schwab_option_orders_test.json`
+- [x] `schwab_option_quote` — `8_opt_schwab_option_quote_test.json`
+- [x] `schwab_option_sell_to_close` — `8_opt_schwab_option_sell_to_close_test.json`
+- [x] `schwab_options_positions` — `8_opt_schwab_options_positions_test.json`
+- [x] `schwab_order_buy_option_limit` — `5_ord_schwab_order_buy_option_limit_test.json`
+- [x] `schwab_order_option_credit_spread` — `5_ord_schwab_order_option_credit_spread_test.json`
+- [x] `schwab_order_option_debit_spread` — `5_ord_schwab_order_option_debit_spread_test.json`
+- [x] `schwab_order_sell_option_limit` — `5_ord_schwab_order_sell_option_limit_test.json`
+- [x] `schwab_order_sell_stop` — `5_ord_schwab_order_sell_stop_test.json`
 - [x] `schwab_orders` — `5_ord_schwab_orders_test.json`
-- [ ] `schwab_place_order` — *no eval*
+- [x] `schwab_place_order` — `5_ord_schwab_place_order_test.json`
 - [ ] `schwab_portfolio` — *no eval*
 - [x] `schwab_price_history` — `2_mkt_schwab_price_history_test.json`
 - [x] `schwab_quote` — `2_mkt_schwab_quote_test.json`
 - [ ] `schwab_quotes` — *no eval*
-- [ ] `schwab_replace_order` — *no eval*
+- [x] `schwab_replace_order` — `5_ord_schwab_replace_order_test.json`
 - [x] `schwab_search_instruments` — `2_mkt_schwab_search_instruments_test.json`
-- [ ] `schwab_sell_stock_limit` — *no eval*
-- [ ] `schwab_sell_stock_market` — *no eval*
+- [x] `schwab_sell_stock_limit` — `5_ord_schwab_sell_stock_limit_test.json`
+- [x] `schwab_sell_stock_market` — `5_ord_schwab_sell_stock_market_test.json`
 - [ ] `schwab_stream_account_activity` — *no eval*
 - [ ] `schwab_stream_level2` — *no eval*
 - [ ] `schwab_stream_option_quotes` — *no eval*

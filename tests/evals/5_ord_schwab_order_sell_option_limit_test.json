@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "schwab_order_sell_option_limit_test_set",
+  "name": "Schwab Sell Option Limit Order Test",
+  "description": "Test case for placing a Schwab option sell limit order through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_order_sell_option_limit_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-order-sell-option-limit-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Place a Schwab limit order to sell 1 AAPL call contract AAPL  251219C00150000 at 4.00."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "I attempted to place a Schwab sell-to-close option limit order. Schwab authentication, options approval, and a matching held position are required for live execution."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {"account_hash":"resolved-account-hash","option_symbol":"AAPL  251219C00150000","quantity":1,"price":"4.00"},
+                "name": "schwab_order_sell_option_limit"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "schwab_buy_stock_market_test_set",
+  "name": "Schwab Buy Stock Market Test",
+  "description": "Test case for placing a Schwab market buy order through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_buy_stock_market_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-buy-stock-market-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Buy 1 share of AAPL in my Schwab account at market."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "I attempted to place a Schwab market buy order for 1 share of AAPL. Schwab authentication and an eligible funded account are required for live execution."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {"account_hash":"resolved-account-hash","symbol":"AAPL","quantity":1},
+                "name": "schwab_buy_stock_market"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

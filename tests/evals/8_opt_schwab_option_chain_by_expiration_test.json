@@ -30,7 +30,8 @@
                 "id": "adk-tool-use-id",
                 "args": {
                   "symbol": "AAPL",
-                  "expiration_date": "2025-01-17"
+                  "from_date": "2025-01-17",
+                  "to_date": "2025-01-17"
                 },
                 "name": "schwab_option_chain_by_expiration"
               }

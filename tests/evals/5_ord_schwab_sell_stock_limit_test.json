@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "schwab_sell_stock_limit_test_set",
+  "name": "Schwab Sell Stock Limit Test",
+  "description": "Test case for placing a Schwab limit sell order through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_sell_stock_limit_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-sell-stock-limit-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Place a Schwab limit sell for 1 share of AAPL at 250.00."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "I attempted to place a Schwab limit sell order for AAPL at 250.00. Schwab authentication and available holdings are required for live execution."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {"account_hash":"resolved-account-hash","symbol":"AAPL","quantity":1,"price":250.0},
+                "name": "schwab_sell_stock_limit"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "schwab_order_option_debit_spread_test_set",
+  "name": "Schwab Option Debit Spread Order Test",
+  "description": "Test case for placing a Schwab option debit spread order through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_order_option_debit_spread_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-order-option-debit-spread-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Place a Schwab CALL debit spread using long AAPL  251219C00150000 and short AAPL  251219C00160000 for 1 contract at 3.00 debit."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "I attempted to place a Schwab option debit spread order. Schwab authentication, options approval, and valid option legs are required for live execution."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {"account_hash":"resolved-account-hash","option_type":"CALL","long_symbol":"AAPL  251219C00150000","short_symbol":"AAPL  251219C00160000","quantity":1,"net_debit":"3.00"},
+                "name": "schwab_order_option_debit_spread"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

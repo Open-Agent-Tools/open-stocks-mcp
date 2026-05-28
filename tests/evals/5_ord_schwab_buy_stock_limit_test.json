@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "schwab_buy_stock_limit_test_set",
+  "name": "Schwab Buy Stock Limit Test",
+  "description": "Test case for placing a Schwab limit buy order through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_buy_stock_limit_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-buy-stock-limit-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Place a Schwab limit buy for 1 share of AAPL at 150.00."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "I attempted to place a Schwab limit buy order for AAPL at 150.00. Schwab authentication and account trading permissions are required for live execution."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {"account_hash":"resolved-account-hash","symbol":"AAPL","quantity":1,"price":150.0},
+                "name": "schwab_buy_stock_limit"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

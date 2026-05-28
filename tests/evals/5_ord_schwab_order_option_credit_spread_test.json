@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "schwab_order_option_credit_spread_test_set",
+  "name": "Schwab Option Credit Spread Order Test",
+  "description": "Test case for placing a Schwab option credit spread order through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_order_option_credit_spread_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-order-option-credit-spread-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Place a Schwab CALL credit spread using short AAPL  251219C00190000 and long AAPL  251219C00200000 for 1 contract at 2.00 credit."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "I attempted to place a Schwab option credit spread order. Schwab authentication, options approval, and valid option legs are required for live execution."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {"account_hash":"resolved-account-hash","option_type":"CALL","short_symbol":"AAPL  251219C00190000","long_symbol":"AAPL  251219C00200000","quantity":1,"net_credit":"2.00"},
+                "name": "schwab_order_option_credit_spread"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "eval_set_id": "schwab_cancel_option_order_test_set",
+  "name": "Schwab Cancel Option Order Test",
+  "description": "Test case for canceling a Schwab option order through agent interaction",
+  "eval_cases": [
+    {
+      "eval_id": "schwab_cancel_option_order_test",
+      "conversation": [
+        {
+          "invocation_id": "schwab-cancel-option-order-001",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Cancel Schwab option order 987654321."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "I attempted to cancel Schwab option order 987654321. Schwab authentication and a cancellable option order are required for success."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "id": "adk-tool-use-id",
+                "args": {"account_hash":"resolved-account-hash","order_id":"987654321"},
+                "name": "schwab_cancel_option_order"
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "stock_trader_agent",
+        "user_id": "test_user",
+        "state": {}
+      }
+    }
+  ]
+}
