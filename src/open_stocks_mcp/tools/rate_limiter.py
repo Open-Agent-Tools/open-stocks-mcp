@@ -5,7 +5,7 @@ import os
 import time
 from collections import defaultdict, deque
 from collections.abc import Awaitable, Callable, Coroutine
-from typing import Any, TypeVar, cast
+from typing import Any, Generic, TypeVar, cast
 
 from open_stocks_mcp.logging_config import logger
 from open_stocks_mcp.tools.exceptions import RateLimitError
@@ -237,7 +237,7 @@ class RequestCoordinator:
                 self._in_flight.pop(key, None)
 
 
-class Batcher:
+class Batcher(Generic[_T]):
     """Async batching helper for coalescing multiple requests into one API call."""
 
     def __init__(
@@ -249,7 +249,7 @@ class Batcher:
         self.name = name
         self.batch_size = batch_size
         self.queue_max_wait = queue_max_wait
-        self._queue: list[tuple[str, asyncio.Future[Any]]] = []
+        self._queue: list[tuple[str, asyncio.Future[_T | None]]] = []
         self._lock = asyncio.Lock()
         self._flush_task: asyncio.Task[None] | None = None
 
@@ -257,9 +257,9 @@ class Batcher:
         self,
         symbol: str,
         fetch_many_callable: Callable[
-            [list[str]], dict[str, Any] | Coroutine[Any, Any, dict[str, Any]]
+            [list[str]], dict[str, _T] | Coroutine[Any, Any, dict[str, _T]]
         ],
-    ) -> Any:
+    ) -> _T | None:
         """Add a symbol to the batch and wait for the result.
 
         Args:
@@ -270,7 +270,7 @@ class Batcher:
             The data for the requested symbol
         """
         symbol = symbol.upper()
-        waiter = asyncio.get_running_loop().create_future()
+        waiter: asyncio.Future[_T | None] = asyncio.get_running_loop().create_future()
 
         async with self._lock:
             self._queue.append((symbol, waiter))
@@ -288,7 +288,12 @@ class Batcher:
 
         return await waiter
 
-    async def _delayed_flush(self, fetch_many_callable: Any) -> None:
+    async def _delayed_flush(
+        self,
+        fetch_many_callable: Callable[
+            [list[str]], dict[str, _T] | Coroutine[Any, Any, dict[str, _T]]
+        ],
+    ) -> None:
         try:
             await asyncio.sleep(self.queue_max_wait)
             async with self._lock:
@@ -298,7 +303,12 @@ class Batcher:
         finally:
             self._flush_task = None
 
-    async def _flush(self, fetch_many_callable: Any) -> None:
+    async def _flush(
+        self,
+        fetch_many_callable: Callable[
+            [list[str]], dict[str, _T] | Coroutine[Any, Any, dict[str, _T]]
+        ],
+    ) -> None:
         if not self._queue:
             return
 
@@ -309,10 +319,18 @@ class Batcher:
 
         try:
             if asyncio.iscoroutinefunction(fetch_many_callable):
-                results = await fetch_many_callable(symbols)
+                async_fn = cast(
+                    Callable[[list[str]], Coroutine[Any, Any, dict[str, _T]]],
+                    fetch_many_callable,
+                )
+                results = await async_fn(symbols)
             else:
+                sync_fn = cast(
+                    Callable[[list[str]], dict[str, _T]],
+                    fetch_many_callable,
+                )
                 results = await asyncio.get_running_loop().run_in_executor(
-                    None, fetch_many_callable, symbols
+                    None, sync_fn, symbols
                 )
 
             for symbol, waiter in current_batch:
@@ -331,7 +349,7 @@ _rate_limiter: RateLimiter | None = None
 _request_coordinator: RequestCoordinator | None = None
 
 # Global batchers
-_batchers: dict[str, Batcher] = {}
+_batchers: dict[str, Batcher[Any]] = {}
 
 
 def _int_env(name: str, default: int) -> int:
@@ -370,7 +388,7 @@ def get_batcher(
     name: str,
     batch_size: int = 10,
     queue_max_wait: float = 0.5,
-) -> Batcher:
+) -> Batcher[Any]:
     """Get or create a named batcher instance."""
     if name not in _batchers:
         _batchers[name] = Batcher(name, batch_size, queue_max_wait)
