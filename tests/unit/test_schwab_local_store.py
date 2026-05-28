@@ -36,7 +36,9 @@ def test_normalize_payload_handles_malformed_root() -> None:
 
 
 @pytest.mark.unit
-def test_load_watchlists_missing_file_returns_empty(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_load_watchlists_missing_file_returns_empty(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     missing = Path("/tmp/does-not-exist-schwab-watchlists.json")
     monkeypatch.setattr(store, "get_store_path", lambda: missing)
 
@@ -47,7 +49,9 @@ def test_load_watchlists_missing_file_returns_empty(monkeypatch: pytest.MonkeyPa
 
 
 @pytest.mark.unit
-def test_load_watchlists_reads_and_normalizes(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_load_watchlists_reads_and_normalizes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     path = tmp_path / "schwab_watchlists.json"
     path.write_text(
         json.dumps({"watchlists": {"Tech": ["aapl", " AAPL ", "msft", 1]}}),
@@ -77,7 +81,9 @@ def test_load_watchlists_returns_error_for_invalid_json(
 
 
 @pytest.mark.unit
-def test_save_watchlists_writes_expected_payload(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_save_watchlists_writes_expected_payload(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     path = tmp_path / "nested" / "schwab_watchlists.json"
     monkeypatch.setattr(store, "get_store_path", lambda: path)
 

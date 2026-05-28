@@ -152,7 +152,9 @@ class TestRateLimitStatusHelper:
         assert response["result"]["limit"] == 100
 
     @pytest.mark.asyncio
-    async def test_falls_back_to_global_limiter_when_registry_uninitialized(self) -> None:
+    async def test_falls_back_to_global_limiter_when_registry_uninitialized(
+        self,
+    ) -> None:
         global_limiter = MagicMock()
         global_limiter.get_stats.return_value = {"requests_made": 7, "limit": 99}
 

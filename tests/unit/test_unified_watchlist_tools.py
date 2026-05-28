@@ -57,12 +57,15 @@ async def test_get_unified_watchlists_success(
         }
     }
 
-    with patch(
-        "open_stocks_mcp.tools.unified_watchlist_tools.get_rh_watchlists",
-        return_value=rh_watchlists,
-    ), patch(
-        "open_stocks_mcp.tools.unified_watchlist_tools.load_schwab_watchlists",
-        return_value=({"Income": ["SCHD", "VYM"]}, None),
+    with (
+        patch(
+            "open_stocks_mcp.tools.unified_watchlist_tools.get_rh_watchlists",
+            return_value=rh_watchlists,
+        ),
+        patch(
+            "open_stocks_mcp.tools.unified_watchlist_tools.load_schwab_watchlists",
+            return_value=({"Income": ["SCHD", "VYM"]}, None),
+        ),
     ):
         result = await get_unified_watchlists()
 
@@ -92,12 +95,15 @@ async def test_get_unified_watchlists_merges_same_name_across_brokers(
         }
     }
 
-    with patch(
-        "open_stocks_mcp.tools.unified_watchlist_tools.get_rh_watchlists",
-        return_value=rh_watchlists,
-    ), patch(
-        "open_stocks_mcp.tools.unified_watchlist_tools.load_schwab_watchlists",
-        return_value=({"Tech": ["MSFT", "AAPL"]}, None),
+    with (
+        patch(
+            "open_stocks_mcp.tools.unified_watchlist_tools.get_rh_watchlists",
+            return_value=rh_watchlists,
+        ),
+        patch(
+            "open_stocks_mcp.tools.unified_watchlist_tools.load_schwab_watchlists",
+            return_value=({"Tech": ["MSFT", "AAPL"]}, None),
+        ),
     ):
         result = await get_unified_watchlists()
 
@@ -125,12 +131,15 @@ async def test_get_unified_watchlist_by_name_success(
         }
     }
 
-    with patch(
-        "open_stocks_mcp.tools.unified_watchlist_tools.get_rh_watchlist_by_name",
-        return_value=rh_watchlist,
-    ), patch(
-        "open_stocks_mcp.tools.unified_watchlist_tools.get_schwab_watchlist",
-        return_value=(["SCHD"], None),
+    with (
+        patch(
+            "open_stocks_mcp.tools.unified_watchlist_tools.get_rh_watchlist_by_name",
+            return_value=rh_watchlist,
+        ),
+        patch(
+            "open_stocks_mcp.tools.unified_watchlist_tools.get_schwab_watchlist",
+            return_value=(["SCHD"], None),
+        ),
     ):
         result = await get_unified_watchlist_by_name("Tech")
 
@@ -229,7 +238,9 @@ async def test_get_unified_watchlist_by_name_unregistered_broker_partial_failure
         "open_stocks_mcp.tools.unified_watchlist_tools.get_rh_watchlist_by_name",
         return_value=rh_not_found,
     ):
-        result = await get_unified_watchlist_by_name("Tech", brokers=["robinhood", "fakeBroker"])
+        result = await get_unified_watchlist_by_name(
+            "Tech", brokers=["robinhood", "fakeBroker"]
+        )
 
     assert result["result"]["status"] == "partial_failure"
     assert result["result"]["per_broker"]["fakeBroker"]["status"] == "error"
@@ -249,12 +260,15 @@ async def test_add_symbols_to_unified_watchlist_partial_success(
         "result": {"success": True, "symbols_added": ["AAPL"], "status": "success"}
     }
 
-    with patch(
-        "open_stocks_mcp.tools.unified_watchlist_tools.add_rh_symbols",
-        return_value=rh_result,
-    ), patch(
-        "open_stocks_mcp.tools.unified_watchlist_tools.add_schwab_symbols",
-        return_value=(["AAPL"], None),
+    with (
+        patch(
+            "open_stocks_mcp.tools.unified_watchlist_tools.add_rh_symbols",
+            return_value=rh_result,
+        ),
+        patch(
+            "open_stocks_mcp.tools.unified_watchlist_tools.add_schwab_symbols",
+            return_value=(["AAPL"], None),
+        ),
     ):
         result = await add_symbols_to_unified_watchlist("Tech", ["aapl", "AAPL "])
 
@@ -279,12 +293,15 @@ async def test_remove_symbols_from_unified_watchlist_success(
         "result": {"success": True, "symbols_removed": ["AAPL"], "status": "success"}
     }
 
-    with patch(
-        "open_stocks_mcp.tools.unified_watchlist_tools.remove_rh_symbols",
-        return_value=rh_result,
-    ), patch(
-        "open_stocks_mcp.tools.unified_watchlist_tools.remove_schwab_symbols",
-        return_value=([], None),
+    with (
+        patch(
+            "open_stocks_mcp.tools.unified_watchlist_tools.remove_rh_symbols",
+            return_value=rh_result,
+        ),
+        patch(
+            "open_stocks_mcp.tools.unified_watchlist_tools.remove_schwab_symbols",
+            return_value=([], None),
+        ),
     ):
         result = await remove_symbols_from_unified_watchlist("Tech", ["AAPL"])
 
@@ -305,12 +322,15 @@ async def test_get_unified_watchlists_handles_corrupt_schwab_store(
 
     rh_watchlists = {"result": {"watchlists": [], "status": "success"}}
 
-    with patch(
-        "open_stocks_mcp.tools.unified_watchlist_tools.get_rh_watchlists",
-        return_value=rh_watchlists,
-    ), patch(
-        "open_stocks_mcp.tools.unified_watchlist_tools.load_schwab_watchlists",
-        return_value=({}, "Unable to read Schwab watchlist store"),
+    with (
+        patch(
+            "open_stocks_mcp.tools.unified_watchlist_tools.get_rh_watchlists",
+            return_value=rh_watchlists,
+        ),
+        patch(
+            "open_stocks_mcp.tools.unified_watchlist_tools.load_schwab_watchlists",
+            return_value=({}, "Unable to read Schwab watchlist store"),
+        ),
     ):
         result = await get_unified_watchlists()
 

@@ -274,7 +274,9 @@ async def add_symbols_to_unified_watchlist(
             else:
                 per_broker[name] = {"status": "unavailable", "success": False}
         elif name == "schwab":
-            combined_symbols, save_error = add_schwab_symbols(watchlist_name, normalized)
+            combined_symbols, save_error = add_schwab_symbols(
+                watchlist_name, normalized
+            )
             if save_error:
                 per_broker[name] = {
                     "status": "error",
@@ -333,7 +335,9 @@ async def remove_symbols_from_unified_watchlist(
             else:
                 per_broker[name] = {"status": "unavailable", "success": False}
         elif name == "schwab":
-            remaining_symbols, save_error = remove_schwab_symbols(watchlist_name, normalized)
+            remaining_symbols, save_error = remove_schwab_symbols(
+                watchlist_name, normalized
+            )
             if save_error:
                 per_broker[name] = {
                     "status": "error",
