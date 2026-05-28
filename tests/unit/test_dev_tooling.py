@@ -128,9 +128,7 @@ def test_dependency_floors_and_pre_commit_revisions() -> None:
     assert "pytest-cov>=7.1.0" in group_dev_dependencies
 
     repo_revs = {
-        repo["repo"]: repo["rev"]
-        for repo in pre_commit["repos"]
-        if "rev" in repo
+        repo["repo"]: repo["rev"] for repo in pre_commit["repos"] if "rev" in repo
     }
     assert repo_revs["https://github.com/astral-sh/ruff-pre-commit"] == "v0.15.14"
     assert repo_revs["https://github.com/pre-commit/pre-commit-hooks"] == "v6.0.0"
