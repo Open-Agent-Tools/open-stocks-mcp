@@ -377,12 +377,12 @@ adk eval examples/google_adk_agent tests/evals/8_opt_schwab_option_sell_to_close
 
 - `tests/evals/9_adv_schwab_build_user_profile_test.json` — exercises `schwab_build_user_profile`.
 
-#### Omitted Tools (no eval — see coverage gate for justification)
+#### Omitted Tools (see coverage gate for justification)
 
 The following `schwab_*` tools are intentionally excluded from ADK eval coverage. See `EVAL_OMISSION_ALLOWLIST` in `tests/unit/test_schwab_eval_coverage.py` for the documented rationale.
 
 - **Streaming** (`schwab_stream_*`): real-time WebSocket subscriptions; no stable request/response pattern for eval assertions.
-- **Trading mutations** (`schwab_buy_*`, `schwab_sell_*`, `schwab_cancel_*`, `schwab_order_*`, `schwab_option_buy_*`, `schwab_option_sell_*`, `schwab_place_order`, `schwab_replace_order`): require live credentials and execute real market orders or destructive cancellations; covered by integration journey tests.
+- **Trading mutations** (`schwab_buy_*`, `schwab_sell_*`, `schwab_cancel_*`, `schwab_order_*`, `schwab_option_buy_*`, `schwab_option_sell_*`, `schwab_place_order`, `schwab_replace_order`): fixture evals exist in `tests/evals/5_ord_schwab_*`; meaningful execution still requires live credentials/sandbox safety controls because these calls place/modify/cancel orders.
 
 Run individual Schwab evals with:
 
