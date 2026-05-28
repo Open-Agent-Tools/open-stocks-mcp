@@ -275,6 +275,79 @@ adk eval examples/google_adk_agent tests/evals/8_opt_schwab_option_expirations_t
 adk eval examples/google_adk_agent tests/evals/5_ord_schwab_orders_test.json --config_file_path tests/evals/test_config.json
 ```
 
+#### Schwab Tool-to-Eval Coverage Matrix
+
+The checklist below maps every registered `schwab_*` MCP tool to the eval fixture(s) that exercise it.
+Regenerate with `uv run python scripts/schwab_coverage.py`.
+Check a row when a fixture for that tool is authored and merged.
+
+**Coverage: 7/64 schwab_* tools have ADK eval fixtures**
+
+- [x] `schwab_account_numbers` — `1_acc_schwab_account_numbers_test.json`, `5_ord_schwab_orders_test.json`
+- [ ] `schwab_account` — *no eval*
+- [ ] `schwab_account_balances` — *no eval*
+- [ ] `schwab_accounts` — *no eval*
+- [ ] `schwab_build_user_profile` — *no eval*
+- [ ] `schwab_buy_stock_limit` — *no eval*
+- [ ] `schwab_buy_stock_market` — *no eval*
+- [ ] `schwab_cancel_all_option_orders` — *no eval*
+- [ ] `schwab_cancel_all_stock_orders` — *no eval*
+- [ ] `schwab_cancel_option_order` — *no eval*
+- [ ] `schwab_cancel_order` — *no eval*
+- [ ] `schwab_check_margin_status` — *no eval*
+- [ ] `schwab_find_tradable_options` — *no eval*
+- [ ] `schwab_get_aggregate_positions` — *no eval*
+- [ ] `schwab_get_all_account_data` — *no eval*
+- [ ] `schwab_get_all_option_positions` — *no eval*
+- [ ] `schwab_get_build_holdings` — *no eval*
+- [ ] `schwab_get_day_trades` — *no eval*
+- [ ] `schwab_get_dividends` — *no eval*
+- [ ] `schwab_get_dividends_by_symbol` — *no eval*
+- [ ] `schwab_get_instrument_by_cusip` — *no eval*
+- [ ] `schwab_get_interest_payments` — *no eval*
+- [ ] `schwab_get_margin_interest` — *no eval*
+- [ ] `schwab_get_market_hours` — *no eval*
+- [ ] `schwab_get_movers` — *no eval*
+- [ ] `schwab_get_movers_sp500` — *no eval*
+- [ ] `schwab_get_open_option_positions` — *no eval*
+- [ ] `schwab_get_open_stock_orders` — *no eval*
+- [ ] `schwab_get_order` — *no eval*
+- [ ] `schwab_get_stock_loan_payments` — *no eval*
+- [ ] `schwab_get_total_dividends` — *no eval*
+- [ ] `schwab_get_transaction` — *no eval*
+- [ ] `schwab_get_user_preferences` — *no eval*
+- [ ] `schwab_instrument` — *no eval*
+- [ ] `schwab_open_option_orders` — *no eval*
+- [ ] `schwab_option_buy_to_open` — *no eval*
+- [x] `schwab_option_chain` — `8_opt_schwab_option_chain_test.json`
+- [ ] `schwab_option_chain_by_expiration` — *no eval*
+- [x] `schwab_option_expirations` — `8_opt_schwab_option_expirations_test.json`
+- [ ] `schwab_option_orders` — *no eval*
+- [ ] `schwab_option_quote` — *no eval*
+- [ ] `schwab_option_sell_to_close` — *no eval*
+- [ ] `schwab_options_positions` — *no eval*
+- [ ] `schwab_order_buy_option_limit` — *no eval*
+- [ ] `schwab_order_option_credit_spread` — *no eval*
+- [ ] `schwab_order_option_debit_spread` — *no eval*
+- [ ] `schwab_order_sell_option_limit` — *no eval*
+- [ ] `schwab_order_sell_stop` — *no eval*
+- [x] `schwab_orders` — `5_ord_schwab_orders_test.json`
+- [ ] `schwab_place_order` — *no eval*
+- [ ] `schwab_portfolio` — *no eval*
+- [x] `schwab_price_history` — `2_mkt_schwab_price_history_test.json`
+- [x] `schwab_quote` — `2_mkt_schwab_quote_test.json`
+- [ ] `schwab_quotes` — *no eval*
+- [ ] `schwab_replace_order` — *no eval*
+- [x] `schwab_search_instruments` — `2_mkt_schwab_search_instruments_test.json`
+- [ ] `schwab_sell_stock_limit` — *no eval*
+- [ ] `schwab_sell_stock_market` — *no eval*
+- [ ] `schwab_stream_account_activity` — *no eval*
+- [ ] `schwab_stream_level2` — *no eval*
+- [ ] `schwab_stream_option_quotes` — *no eval*
+- [ ] `schwab_stream_quotes` — *no eval*
+- [ ] `schwab_transactions` — *no eval*
+- [ ] `schwab_transactions_by_date` — *no eval*
+
 ### 4. Watchlist Read-Only Evaluations (`3_wth_*`)
 
 Read-only evals that exercise the three Robinhood watchlist query tools. These do not invoke `add_to_watchlist`, `remove_from_watchlist`, or any order-placement or account-mutation tool.
