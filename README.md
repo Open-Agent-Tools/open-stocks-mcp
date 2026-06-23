@@ -121,6 +121,9 @@ State meanings:
 - `open`: broker calls fail fast until cooldown expires.
 - `half_open`: one probe call is allowed; success resets to `closed`, failure returns to `open`.
 
+## Multi-Agent Deployments
+
+For agent identity verification and per-tool authorization patterns when running multiple agents, see [docs/AGENT-IDENTITY.md](docs/AGENT-IDENTITY.md).
 ## Docker Deployment
 
 **Production Docker Setup:**
