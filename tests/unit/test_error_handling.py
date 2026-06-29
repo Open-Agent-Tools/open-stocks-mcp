@@ -693,6 +693,18 @@ async def test_execute_with_retry_runs_sync_in_executor(
 
 
 @pytest.mark.asyncio
+async def test_execute_with_retry_consumes_func_name_metadata(
+    retry_patch: dict[str, Any],
+) -> None:
+    def no_kwargs() -> str:
+        return "ok"
+
+    result = await execute_with_retry(no_kwargs, func_name="no_kwargs")
+
+    assert result == "ok"
+
+
+@pytest.mark.asyncio
 async def test_execute_with_retry_retries_then_succeeds(
     retry_patch: dict[str, Any],
 ) -> None:

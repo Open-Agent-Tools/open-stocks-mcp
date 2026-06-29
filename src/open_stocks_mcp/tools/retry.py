@@ -37,6 +37,7 @@ async def execute_with_retry(
     broker_name: str = "robinhood",
     account_id: str | None = None,
     coalesce_key: str | None = None,
+    func_name: str | None = None,
     **kwargs: Any,
 ) -> Any:
     """Execute a function with retry logic for transient errors.
@@ -45,6 +46,10 @@ async def execute_with_retry(
     coordinator: if an identical key is already in-flight the caller shares
     that result instead of triggering a new broker call. Only supply a key for
     read-only operations; never use it for mutating/trading calls.
+
+    *func_name* is optional caller metadata used by tool modules for readability
+    and future logging. It is intentionally consumed here so it is not forwarded
+    to broker client functions that do not accept it.
     """
     if coalesce_key is not None:
         from open_stocks_mcp.tools.rate_limiter import get_request_coordinator
@@ -64,6 +69,7 @@ async def execute_with_retry(
                 broker_name=broker_name,
                 account_id=account_id,
                 coalesce_key=None,
+                func_name=func_name,
                 **kwargs,
             )
 
