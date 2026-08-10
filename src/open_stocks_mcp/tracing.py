@@ -92,7 +92,7 @@ async def trace_tool_call(tool_name: str) -> AsyncIterator[None]:
 
 
 def instrument_mcp_tool_calls(mcp_server: object) -> None:
-    """Wrap FastMCP.call_tool once so each tool call emits a tracing span."""
+    """Wrap MCPServer.call_tool once so each tool call emits a tracing span."""
     server_id = id(mcp_server)
     if server_id in _instrumented_servers:
         return

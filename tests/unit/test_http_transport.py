@@ -8,7 +8,7 @@ from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 from fastapi.testclient import TestClient
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
 from open_stocks_mcp import __version__
 from open_stocks_mcp.server.http_transport import (
@@ -19,9 +19,9 @@ from open_stocks_mcp.server.tool_execution_limits import install_tool_execution_
 
 
 @pytest.fixture(scope="session")
-def mcp_server() -> FastMCP:
-    """Create a minimal FastMCP server for HTTP transport unit tests."""
-    server = FastMCP("Test")
+def mcp_server() -> MCPServer:
+    """Create a minimal MCPServer server for HTTP transport unit tests."""
+    server = MCPServer("Test")
 
     @server.tool()
     async def account_info() -> dict[str, Any]:
@@ -31,7 +31,7 @@ def mcp_server() -> FastMCP:
 
 
 @pytest.fixture
-def client(mcp_server: FastMCP) -> Iterator[TestClient]:
+def client(mcp_server: MCPServer) -> Iterator[TestClient]:
     """Create a synchronous TestClient for fast unit testing."""
     with TestClient(create_http_server(mcp_server)) as test_client:
         yield test_client
@@ -243,9 +243,9 @@ class TestHttpTransportUnit:
 
 
 @pytest.fixture(scope="module")
-def slow_timeout_mcp_server() -> FastMCP:
-    """FastMCP server with a slow account_info tool and tiny execution timeout."""
-    server = FastMCP("SlowTimeoutTest")
+def slow_timeout_mcp_server() -> MCPServer:
+    """MCPServer server with a slow account_info tool and tiny execution timeout."""
+    server = MCPServer("SlowTimeoutTest")
 
     @server.tool()
     async def account_info() -> dict[str, Any]:
@@ -257,7 +257,7 @@ def slow_timeout_mcp_server() -> FastMCP:
 
 
 @pytest.fixture
-def timeout_client(slow_timeout_mcp_server: FastMCP) -> Iterator[TestClient]:
+def timeout_client(slow_timeout_mcp_server: MCPServer) -> Iterator[TestClient]:
     with TestClient(create_http_server(slow_timeout_mcp_server)) as test_client:
         yield test_client
 

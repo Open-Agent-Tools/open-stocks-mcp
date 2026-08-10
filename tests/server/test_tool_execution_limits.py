@@ -8,14 +8,14 @@ from typing import Any
 
 import mcp.types
 import pytest
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
 from open_stocks_mcp.server.tool_execution_limits import install_tool_execution_limit
 
 
 @pytest.fixture
-def slow_mcp_server() -> FastMCP:
-    server = FastMCP("SlowTest")
+def slow_mcp_server() -> MCPServer:
+    server = MCPServer("SlowTest")
 
     @server.tool()
     async def account_info() -> dict[str, Any]:
@@ -28,13 +28,13 @@ def slow_mcp_server() -> FastMCP:
 @pytest.mark.unit
 @pytest.mark.journey_system
 async def test_slow_tool_returns_structured_timeout_error(
-    slow_mcp_server: FastMCP,
+    slow_mcp_server: MCPServer,
 ) -> None:
     install_tool_execution_limit(slow_mcp_server, timeout_seconds=0.05)
 
     result = await slow_mcp_server.call_tool("account_info", {})
 
-    assert result.isError is True
+    assert result.is_error is True
     assert len(result.content) == 1
     data = json.loads(result.content[0].text)
     assert data["error_type"] == "ToolExecutionTimeout"
@@ -46,13 +46,13 @@ async def test_slow_tool_returns_structured_timeout_error(
 
 @pytest.mark.unit
 @pytest.mark.journey_system
-async def test_install_is_idempotent(slow_mcp_server: FastMCP) -> None:
+async def test_install_is_idempotent(slow_mcp_server: MCPServer) -> None:
     install_tool_execution_limit(slow_mcp_server, timeout_seconds=0.05)
     install_tool_execution_limit(slow_mcp_server, timeout_seconds=0.05)
 
     result = await slow_mcp_server.call_tool("account_info", {})
 
-    assert result.isError is True
+    assert result.is_error is True
     content_text = result.content[0].text
     data = json.loads(content_text)
     # Exactly one timeout error, not a nested/doubled result
@@ -63,13 +63,13 @@ async def test_install_is_idempotent(slow_mcp_server: FastMCP) -> None:
 
 @pytest.mark.unit
 @pytest.mark.journey_system
-async def test_reinstall_updates_timeout_value(slow_mcp_server: FastMCP) -> None:
+async def test_reinstall_updates_timeout_value(slow_mcp_server: MCPServer) -> None:
     install_tool_execution_limit(slow_mcp_server, timeout_seconds=20.0)
     install_tool_execution_limit(slow_mcp_server, timeout_seconds=0.05)
 
     result = await slow_mcp_server.call_tool("account_info", {})
 
-    assert result.isError is True
+    assert result.is_error is True
     data = json.loads(result.content[0].text)
     assert data["error_type"] == "ToolExecutionTimeout"
     assert data["timeout_seconds"] == 0.05
@@ -78,7 +78,7 @@ async def test_reinstall_updates_timeout_value(slow_mcp_server: FastMCP) -> None
 @pytest.mark.unit
 @pytest.mark.journey_system
 async def test_fast_tool_completes_normally() -> None:
-    server = FastMCP("FastTest")
+    server = MCPServer("FastTest")
 
     @server.tool()
     async def account_info() -> dict[str, Any]:
@@ -89,4 +89,4 @@ async def test_fast_tool_completes_normally() -> None:
     result = await server.call_tool("account_info", {})
 
     # Fast tool returns the normal call_tool result (not a timeout CallToolResult)
-    assert not (isinstance(result, mcp.types.CallToolResult) and result.isError is True)
+    assert not (isinstance(result, mcp.types.CallToolResult) and result.is_error is True)

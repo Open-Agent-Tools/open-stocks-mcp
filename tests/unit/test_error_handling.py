@@ -8,7 +8,7 @@ from typing import Any, cast
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
 import open_stocks_mcp.tools.retry as retry_module
 from open_stocks_mcp.brokers import session_state as session_manager_module
@@ -409,7 +409,7 @@ def test_classify_schwab_error_returns_broker_error_subclass() -> None:
 
 @pytest.mark.asyncio
 async def test_decorated_tool_schema_is_not_collapsed() -> None:
-    test_mcp = FastMCP("test")
+    test_mcp = MCPServer("test")
 
     @test_mcp.tool()
     @handle_robin_stocks_errors
@@ -419,9 +419,9 @@ async def test_decorated_tool_schema_is_not_collapsed() -> None:
     tools = await test_mcp.list_tools()
     entry = next(tool for tool in tools if tool.name == "decorated_price")
     schema = (
-        entry.inputSchema.model_dump()
-        if hasattr(entry.inputSchema, "model_dump")
-        else entry.inputSchema
+        entry.input_schema.model_dump()
+        if hasattr(entry.input_schema, "model_dump")
+        else entry.input_schema
     )
     assert schema["properties"]["symbol"]["type"] == "string"
 

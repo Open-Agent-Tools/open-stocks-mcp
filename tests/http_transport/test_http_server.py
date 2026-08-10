@@ -8,7 +8,7 @@ from unittest.mock import AsyncMock, Mock, patch
 
 import httpx
 import pytest
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 from sse_starlette import EventSourceResponse
 from starlette.requests import Request
 
@@ -24,9 +24,9 @@ from open_stocks_mcp.tracing import instrument_mcp_tool_calls, setup_tracing
 
 
 @pytest.fixture
-def mcp_server() -> FastMCP:
+def mcp_server() -> MCPServer:
     """Create a test MCP server instance"""
-    server = FastMCP("Test Open Stocks MCP")
+    server = MCPServer("Test Open Stocks MCP")
 
     # Use production tool names so tests exercise the HTTP authorization policy.
     @server.tool()
@@ -43,7 +43,7 @@ def mcp_server() -> FastMCP:
 
 
 def test_timeout_middleware_uses_configured_timeout(
-    monkeypatch: pytest.MonkeyPatch, mcp_server: FastMCP
+    monkeypatch: pytest.MonkeyPatch, mcp_server: MCPServer
 ) -> None:
     """Configured HTTP request timeout is wired into middleware."""
     monkeypatch.setenv("OPEN_STOCKS_MCP_HTTP_REQUEST_TIMEOUT_SECONDS", "7.5")
@@ -87,7 +87,7 @@ async def test_http_allow_list_matches_production_registry_sample() -> None:
 
 
 @pytest.fixture
-async def http_client(mcp_server: FastMCP) -> Any:
+async def http_client(mcp_server: MCPServer) -> Any:
     """Create an HTTP client for testing"""
     from httpx import ASGITransport
 
@@ -383,7 +383,7 @@ class TestHTTPEndpoints:
             assert "description" in item
 
     async def test_tools_docs_serves_from_lifespan_cache(
-        self, mcp_server: FastMCP
+        self, mcp_server: MCPServer
     ) -> None:
         """Verify /tools/docs reads app.state cache, not rebuilding on each request."""
         from httpx import ASGITransport
@@ -412,7 +412,7 @@ class TestHTTPEndpoints:
         mock_build.assert_not_called()
 
     async def test_openapi_contains_all_mcp_tools(
-        self, http_client: httpx.AsyncClient, mcp_server: FastMCP
+        self, http_client: httpx.AsyncClient, mcp_server: MCPServer
     ) -> None:
         response = await http_client.get("/openapi.json")
         assert response.status_code == 200
@@ -510,7 +510,7 @@ class TestMCPIntegration:
         assert "error_type=method_not_found" in messages
         assert "do-not-log" not in messages
 
-    async def test_sse_endpoint(self, mcp_server: FastMCP) -> None:
+    async def test_sse_endpoint(self, mcp_server: MCPServer) -> None:
         """Test SSE endpoint wiring and first connected event payload."""
         app = create_http_server(mcp_server)
 
@@ -546,7 +546,7 @@ class TestMCPIntegration:
         assert first_event["data"]["version"] == __version__
 
     async def test_sse_connected_event_includes_timestamp(
-        self, mcp_server: FastMCP
+        self, mcp_server: MCPServer
     ) -> None:
         """SSE connected event data includes a numeric timestamp field."""
         app = create_http_server(mcp_server)
@@ -568,7 +568,7 @@ class TestMCPIntegration:
         assert isinstance(event["data"]["timestamp"], (int, float))
 
     async def test_sse_heartbeat_delivered_after_connected(
-        self, mcp_server: FastMCP
+        self, mcp_server: MCPServer
     ) -> None:
         """After the initial connected event, a heartbeat event is delivered."""
         app = create_http_server(mcp_server)
@@ -594,7 +594,7 @@ class TestMCPIntegration:
         assert isinstance(heartbeat["data"]["timestamp"], (int, float))
 
     async def test_sse_disconnection_stops_event_stream(
-        self, mcp_server: FastMCP
+        self, mcp_server: MCPServer
     ) -> None:
         """When the client disconnects immediately after connection, only the connected event is delivered."""
         app = create_http_server(mcp_server)
@@ -672,7 +672,7 @@ class TestMCPIntegration:
 
     @pytest.mark.anyio
     async def test_mcp_endpoint_allows_mutating_tools_when_enabled(
-        self, mcp_server: FastMCP
+        self, mcp_server: MCPServer
     ) -> None:
         """Test MCP endpoint allows mutating tools when allow_trading is enabled"""
         from httpx import ASGITransport
@@ -697,7 +697,7 @@ class TestMCPIntegration:
 
     @pytest.mark.anyio
     async def test_tools_call_emits_tracing_span_on_success(
-        self, monkeypatch: pytest.MonkeyPatch, mcp_server: FastMCP
+        self, monkeypatch: pytest.MonkeyPatch, mcp_server: MCPServer
     ) -> None:
         """tools/call emits a span with success outcome when tracing is enabled."""
         from httpx import ASGITransport
@@ -748,7 +748,7 @@ class TestMCPIntegration:
             InMemorySpanExporter,
         )
 
-        failing_server = FastMCP("Failing Open Stocks MCP")
+        failing_server = MCPServer("Failing Open Stocks MCP")
 
         @failing_server.tool()
         async def account_info() -> dict[str, Any]:
@@ -796,7 +796,7 @@ class TestErrorHandling:
         response = await http_client.get("/nonexistent")
         assert response.status_code == 404
 
-    async def test_invalid_origin_blocked(self, mcp_server: FastMCP) -> None:
+    async def test_invalid_origin_blocked(self, mcp_server: MCPServer) -> None:
         """Test that invalid origins are blocked"""
         from httpx import ASGITransport
 
@@ -818,7 +818,7 @@ class TestLiveHTTPServer:
     """Integration tests with actual HTTP server"""
 
     @pytest.mark.asyncio
-    async def test_server_startup(self, mcp_server: FastMCP) -> None:
+    async def test_server_startup(self, mcp_server: MCPServer) -> None:
         """Test that HTTP server starts up correctly"""
         from open_stocks_mcp.server.http_transport import run_http_server
 
@@ -860,7 +860,7 @@ class TestSessionManagement:
 
     @patch("open_stocks_mcp.server.http_transport.get_session_manager")
     def test_lifespan_shutdown_suppresses_logout_failure(
-        self, mock_get_session_manager: Mock, mcp_server: FastMCP
+        self, mock_get_session_manager: Mock, mcp_server: MCPServer
     ) -> None:
         """Shutdown should remain best-effort when Robin Stocks logout fails."""
         mock_session_manager = AsyncMock()

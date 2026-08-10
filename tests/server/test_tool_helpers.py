@@ -3,7 +3,7 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
 from open_stocks_mcp.brokers.registry import RegistryNotInitializedError
 from open_stocks_mcp.server.tool_helpers import (
@@ -238,7 +238,7 @@ class TestListToolsHelper:
 
     @pytest.mark.asyncio
     async def test_returns_empty_tool_list_for_fresh_server(self) -> None:
-        fresh_mcp = FastMCP("test-empty")
+        fresh_mcp = MCPServer("test-empty")
 
         response = await get_list_tools_data(fresh_mcp)
 

@@ -7,15 +7,15 @@ from unittest.mock import AsyncMock, Mock, patch
 
 import httpx
 import pytest
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
 from open_stocks_mcp.server.http_transport import create_http_server
 
 
 @pytest.fixture
-def mcp_server() -> FastMCP:
+def mcp_server() -> MCPServer:
     """Create a test MCP server instance"""
-    server = FastMCP("Test Open Stocks MCP")
+    server = MCPServer("Test Open Stocks MCP")
 
     @server.tool()
     async def stable_tool() -> dict[str, Any]:
@@ -37,7 +37,7 @@ def mcp_server() -> FastMCP:
 
 
 @pytest.fixture
-async def http_client(mcp_server: FastMCP) -> Any:
+async def http_client(mcp_server: MCPServer) -> Any:
     """Create an HTTP client for testing"""
     from httpx import ASGITransport
 
@@ -301,7 +301,7 @@ class TestConnectionHandling:
 class TestSecurityErrorHandling:
     """Test security-related error handling"""
 
-    async def test_blocked_origin_handling(self, mcp_server: FastMCP) -> None:
+    async def test_blocked_origin_handling(self, mcp_server: MCPServer) -> None:
         """Test handling of requests from blocked origins"""
         from httpx import ASGITransport
 

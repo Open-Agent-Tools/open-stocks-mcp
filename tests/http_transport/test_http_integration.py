@@ -8,15 +8,15 @@ from unittest.mock import AsyncMock, Mock, patch
 
 import httpx
 import pytest
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
 from open_stocks_mcp.server.http_transport import create_http_server
 
 
 @pytest.fixture
-def mcp_server_with_tools() -> FastMCP:
+def mcp_server_with_tools() -> MCPServer:
     """Create a test MCP server instance with mock tools"""
-    server = FastMCP("Test Open Stocks MCP")
+    server = MCPServer("Test Open Stocks MCP")
 
     @server.tool()
     async def mock_stock_price(symbol: str) -> dict[str, Any]:
@@ -59,7 +59,7 @@ def mcp_server_with_tools() -> FastMCP:
 
 
 @pytest.fixture
-async def mock_http_client(mcp_server_with_tools: FastMCP) -> Any:
+async def mock_http_client(mcp_server_with_tools: MCPServer) -> Any:
     """Create an HTTP client with mock server for integration testing"""
     from httpx import ASGITransport
 
@@ -125,7 +125,7 @@ class TestHTTPIntegration:
         assert root_response.status_code == 200
 
     async def test_mcp_endpoint_accessibility(
-        self, mock_http_client: httpx.AsyncClient, mcp_server_with_tools: FastMCP
+        self, mock_http_client: httpx.AsyncClient, mcp_server_with_tools: MCPServer
     ) -> None:
         """Test that MCP endpoints are properly mounted and accessible"""
         # Test MCP JSON-RPC endpoint
@@ -187,7 +187,7 @@ class TestHTTPIntegration:
         ]  # Bad request or validation error
 
     async def test_security_middleware_integration(
-        self, mcp_server_with_tools: FastMCP
+        self, mcp_server_with_tools: MCPServer
     ) -> None:
         """Test security middleware with blocked origins"""
         from httpx import ASGITransport

@@ -12,7 +12,7 @@ from typing import Any
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from open_stocks_mcp import __version__
@@ -306,14 +306,14 @@ class SecurityMiddleware(BaseHTTPMiddleware):
 
 
 def create_http_server(
-    mcp_server: FastMCP,
+    mcp_server: MCPServer,
     api_key: str | None = None,
     allow_trading: bool = False,
 ) -> FastAPI:
     """Create FastAPI server with MCP integration and enhancements.
 
     Args:
-        mcp_server: The FastMCP server whose tools should be exposed over HTTP.
+        mcp_server: The MCPServer server whose tools should be exposed over HTTP.
         api_key: When set, requests to :data:`PROTECTED_PATHS` must carry an
             ``Authorization: Bearer <api_key>`` header. Required when the
             server is reachable from non-loopback interfaces.
@@ -649,7 +649,7 @@ def create_http_server(
                         },
                     }
                 elif method == "tools/list":
-                    # Use FastMCP's built-in list_tools method
+                    # Use MCPServer's built-in list_tools method
                     tools_list = await mcp_server.list_tools()
 
                     # Convert Tool objects to MCP protocol format
@@ -660,9 +660,9 @@ def create_http_server(
                             "name": tool.name,
                             "description": tool.description,
                             "inputSchema": (
-                                tool.inputSchema.model_dump()
-                                if hasattr(tool.inputSchema, "model_dump")
-                                else tool.inputSchema
+                                tool.input_schema.model_dump()
+                                if hasattr(tool.input_schema, "model_dump")
+                                else tool.input_schema
                             ),
                         }
                         serialized_tools.append(tool_dict)
@@ -670,7 +670,7 @@ def create_http_server(
                     result = {"tools": serialized_tools}
 
                 elif method == "tools/call":
-                    # Use FastMCP's built-in call_tool method
+                    # Use MCPServer's built-in call_tool method
                     tool_name = params.get("name")
                     arguments = params.get("arguments", {})
 
@@ -753,8 +753,8 @@ def create_http_server(
                         result = {"content": content_list}
 
                         # Add isError if present
-                        if hasattr(tool_result, "isError"):
-                            result["isError"] = tool_result.isError
+                        if hasattr(tool_result, "is_error"):
+                            result["isError"] = tool_result.is_error
                     else:
                         # Fallback to string representation
                         result = {
@@ -911,7 +911,7 @@ def create_http_server(
 
 
 async def run_http_server(
-    mcp_server: FastMCP,
+    mcp_server: MCPServer,
     host: str = "127.0.0.1",
     port: int = 3000,
     api_key: str | None = None,
@@ -935,10 +935,6 @@ async def run_http_server(
             "environment variable) to require bearer-token auth on the "
             "/mcp endpoint."
         )
-
-    # Configure MCP server for HTTP
-    mcp_server.settings.host = host
-    mcp_server.settings.port = port
 
     # Create the FastAPI app with our enhancements
     app = create_http_server(

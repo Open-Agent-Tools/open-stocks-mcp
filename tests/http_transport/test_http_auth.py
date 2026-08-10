@@ -5,16 +5,16 @@ from unittest.mock import AsyncMock, Mock, patch
 
 import httpx
 import pytest
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
 from open_stocks_mcp import __version__
 from open_stocks_mcp.server.http_transport import create_http_server
 
 
 @pytest.fixture
-def mcp_server() -> FastMCP:
+def mcp_server() -> MCPServer:
     """Create a test MCP server instance"""
-    server = FastMCP("Test Open Stocks MCP")
+    server = MCPServer("Test Open Stocks MCP")
 
     @server.tool()
     async def test_tool() -> dict[str, Any]:
@@ -25,7 +25,7 @@ def mcp_server() -> FastMCP:
 
 
 @pytest.fixture
-async def http_client(mcp_server: FastMCP) -> Any:
+async def http_client(mcp_server: MCPServer) -> Any:
     """Create an HTTP client for testing"""
     from httpx import ASGITransport
 
@@ -307,7 +307,7 @@ class TestBearerTokenAuth:
     """Test bearer-token enforcement on protected MCP endpoints."""
 
     @pytest.fixture
-    async def authed_client(self, mcp_server: FastMCP) -> Any:
+    async def authed_client(self, mcp_server: MCPServer) -> Any:
         from httpx import ASGITransport
 
         app = create_http_server(mcp_server, api_key="secret-token")
@@ -379,7 +379,7 @@ class TestNonLoopbackBindingRequiresAuth:
     """Refuse to expose the MCP endpoint on a non-loopback host without auth."""
 
     async def test_non_loopback_without_api_key_raises(
-        self, mcp_server: FastMCP
+        self, mcp_server: MCPServer
     ) -> None:
         from open_stocks_mcp.server.http_transport import run_http_server
 
@@ -387,7 +387,7 @@ class TestNonLoopbackBindingRequiresAuth:
             await run_http_server(mcp_server, host="0.0.0.0", port=0, api_key=None)
 
     async def test_loopback_without_api_key_is_allowed(
-        self, mcp_server: FastMCP
+        self, mcp_server: MCPServer
     ) -> None:
         """``run_http_server`` must accept loopback hosts without an API key.
 

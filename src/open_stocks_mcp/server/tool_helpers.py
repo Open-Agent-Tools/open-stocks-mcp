@@ -7,7 +7,7 @@ corresponding `@mcp.tool()` wrapper used to return inline.
 
 from typing import Any
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
 from open_stocks_mcp.brokers.registry import (
     RegistryNotInitializedError,
@@ -22,8 +22,8 @@ from open_stocks_mcp.tools.rate_limiter import get_rate_limiter
 from open_stocks_mcp.tools.robinhood_tools import list_available_tools
 
 
-async def get_list_tools_data(mcp: FastMCP) -> dict[str, Any]:
-    """Return the list of tools registered on the given FastMCP server."""
+async def get_list_tools_data(mcp: MCPServer) -> dict[str, Any]:
+    """Return the list of tools registered on the given MCPServer server."""
     return await list_available_tools(mcp)
 
 

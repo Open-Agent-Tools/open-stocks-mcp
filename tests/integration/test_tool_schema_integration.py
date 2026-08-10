@@ -14,8 +14,8 @@ async def test_production_stock_price_tool_schema_includes_symbol() -> None:
     tools = await production_mcp.list_tools()
     stock_price_tool = next(tool for tool in tools if tool.name == "stock_price")
     schema: dict[str, Any] = (
-        stock_price_tool.inputSchema.model_dump()
-        if hasattr(stock_price_tool.inputSchema, "model_dump")
-        else stock_price_tool.inputSchema
+        stock_price_tool.input_schema.model_dump()
+        if hasattr(stock_price_tool.input_schema, "model_dump")
+        else stock_price_tool.input_schema
     )
     assert schema["properties"]["symbol"]["type"] == "string"

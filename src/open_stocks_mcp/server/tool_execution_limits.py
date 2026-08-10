@@ -7,13 +7,13 @@ import json
 from typing import Any
 
 import mcp.types
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
 _WRAPPER_ATTR = "_tool_execution_limit_installed"
 _TIMEOUT_ATTR = "_tool_execution_limit_timeout_seconds"
 
 
-def install_tool_execution_limit(mcp_server: FastMCP, timeout_seconds: float) -> None:
+def install_tool_execution_limit(mcp_server: MCPServer, timeout_seconds: float) -> None:
     """Wrap call_tool to apply a per-call asyncio deadline.
 
     Idempotent: calling this more than once does not stack wrappers.
@@ -50,7 +50,7 @@ def install_tool_execution_limit(mcp_server: FastMCP, timeout_seconds: float) ->
                         text=json.dumps(error_data),
                     )
                 ],
-                isError=True,
+                is_error=True,
             )
 
     mcp_server.call_tool = _bounded_call_tool  # type: ignore[assignment]

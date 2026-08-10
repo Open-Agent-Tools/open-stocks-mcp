@@ -7,7 +7,7 @@ from typing import Any
 
 import click
 from dotenv import load_dotenv
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
 from open_stocks_mcp.brokers.auth_coordinator import attempt_broker_logins
 from open_stocks_mcp.brokers.registry import get_broker_registry
@@ -284,7 +284,7 @@ from open_stocks_mcp.tracing import (
 load_dotenv()
 
 # Create global MCP server instance for Inspector
-mcp = FastMCP("Open Stocks MCP")
+mcp = MCPServer("Open Stocks MCP")
 
 
 # Register tools at module level for Inspector
@@ -2028,7 +2028,7 @@ async def schwab_stream_account_activity() -> dict[str, Any]:
     return await _schwab_stream_account_activity_impl()
 
 
-def create_mcp_server(config: ServerConfig | None = None) -> FastMCP:
+def create_mcp_server(config: ServerConfig | None = None) -> MCPServer:
     """Create and configure the MCP server instance"""
     if config is None:
         config = load_config()

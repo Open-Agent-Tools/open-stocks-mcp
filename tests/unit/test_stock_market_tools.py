@@ -468,7 +468,7 @@ class TestStockMarketTools:
     @pytest.mark.asyncio
     async def test_list_available_tools_success(self) -> None:
         """Test successful tools listing."""
-        # Create a mock FastMCP instance
+        # Create a mock MCPServer instance
         mock_mcp = AsyncMock()
 
         # Create mock tool objects
