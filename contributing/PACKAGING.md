@@ -11,8 +11,8 @@ This document describes how to package and distribute the open-stocks-mcp projec
 uv build
 
 # Output will be in dist/
-# - open_stocks_mcp-0.1.1-py3-none-any.whl (wheel)
-# - open_stocks_mcp-0.1.1.tar.gz (source distribution)
+# - open_stocks_mcp-0.6.5-py3-none-any.whl (wheel)
+# - open_stocks_mcp-0.6.5.tar.gz (source distribution)
 ```
 
 ### Using pip-tools
@@ -41,10 +41,10 @@ pip install open-stocks-mcp
 
 ```bash
 # Using UV
-uv pip install dist/open_stocks_mcp-0.1.1-py3-none-any.whl
+uv pip install dist/open_stocks_mcp-<version>-py3-none-any.whl
 
 # Using pip
-pip install dist/open_stocks_mcp-0.1.1-py3-none-any.whl
+pip install dist/open_stocks_mcp-<version>-py3-none-any.whl
 ```
 
 ### Development Installation
@@ -62,37 +62,43 @@ pip install -e ".[dev]"
 ### Prerequisites
 
 1. Create an account on [PyPI](https://pypi.org)
-2. Generate an API token
-3. Install twine: `uv pip install twine`
+2. Configure trusted publishing for this repository in the `pypi` environment.
+3. Ensure package version in `pyproject.toml` and `src/open_stocks_mcp/__init__.py` matches the release tag.
 
-### Publishing
+### Publishing workflow
+
+Releases are published by GitHub Actions via [`.github/workflows/publish.yml`](../.github/workflows/publish.yml) when a GitHub Release is published.
 
 ```bash
-# Test on TestPyPI first
-twine upload --repository testpypi dist/*
+# 1) Update versions and commit
+git add pyproject.toml src/open_stocks_mcp/__init__.py
+git commit -m "chore: bump version to <version>"
 
-# Publish to PyPI
-twine upload dist/*
+# 2) Create and push the tag
+git tag v<version>
+git push origin v<version>
+
+# 3) Publish a GitHub Release for that tag
+gh release create v<version> --generate-notes
 ```
 
-### Using UV to publish (when supported)
-
-UV may add publishing support in the future. Check the UV documentation for updates.
+The publish workflow validates tag/package version consistency, builds artifacts, and publishes to PyPI via trusted publishing.
 
 ## Version Management
 
 The version is defined in `src/open_stocks_mcp/__init__.py`:
 
 ```python
-__version__ = "0.1.1"
+__version__ = "0.6.5"
 ```
 
 To bump the version:
 1. Update `__version__` in `src/open_stocks_mcp/__init__.py`
 2. Update `version` in `pyproject.toml`
 3. Commit the changes
-4. Tag the release: `git tag v0.1.1`
-5. Push the tag: `git push origin v0.1.1`
+4. Tag the release: `git tag v<new-version>`
+5. Push the tag: `git push origin v<new-version>`
+6. Create a GitHub Release for that tag to trigger publish automation
 
 ## Package Structure
 
@@ -115,7 +121,7 @@ uv venv test-env
 source test-env/bin/activate
 
 # Install the wheel
-uv pip install dist/open_stocks_mcp-0.1.1-py3-none-any.whl
+uv pip install dist/open_stocks_mcp-<version>-py3-none-any.whl
 
 # Test the command
 open-stocks-mcp --help
