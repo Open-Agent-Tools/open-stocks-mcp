@@ -7,10 +7,39 @@ import robin_stocks.robinhood as rh
 
 from open_stocks_mcp.brokers.session_state import get_session_manager
 from open_stocks_mcp.logging_config import logger
+from open_stocks_mcp.tools.batch_fetch import dedupe_preserving_order, gather_bounded
 from open_stocks_mcp.tools.error_handling import (
     execute_with_retry,
     handle_robin_stocks_errors,
 )
+
+
+async def _resolve_instruments(
+    instrument_urls: list[str],
+) -> dict[str, dict[str, Any]]:
+    """Look up Robinhood instrument metadata for ``instrument_urls`` concurrently.
+
+    Returns a ``{url: instrument_dict}`` map; URLs that fail or return
+    non-dict responses are silently dropped after a warning log. Empty input
+    returns an empty dict.
+    """
+    if not instrument_urls:
+        return {}
+
+    results = await gather_bounded(
+        [
+            execute_with_retry(rh.stocks.get_instrument_by_url, url)
+            for url in instrument_urls
+        ]
+    )
+    resolved: dict[str, dict[str, Any]] = {}
+    for url, value in zip(instrument_urls, results, strict=True):
+        if isinstance(value, BaseException):
+            logger.warning(f"Failed to get instrument data for {url}: {value}")
+            continue
+        if isinstance(value, dict):
+            resolved[url] = value
+    return resolved
 
 
 @handle_robin_stocks_errors
@@ -56,6 +85,13 @@ async def get_dividends() -> dict[str, Any]:
         if not dividends or not isinstance(dividends, list):
             dividends = []
 
+        # Resolve all unique instrument URLs concurrently. Large dividend
+        # histories share many of the same instruments, so dedupe first.
+        instrument_urls = dedupe_preserving_order(
+            d.get("instrument") for d in dividends
+        )
+        url_to_instrument = await _resolve_instruments(instrument_urls)
+
         # Process dividend data
         processed_dividends = []
         total_amount = 0.0
@@ -76,18 +112,13 @@ async def get_dividends() -> dict[str, Any]:
                 "payable_date": dividend.get("payable_date"),
             }
 
-            # Get symbol from instrument URL if available
             instrument_url = dividend.get("instrument")
-            if instrument_url:
-                try:
-                    instrument_data = await execute_with_retry(
-                        rh.stocks.get_instrument_by_url, instrument_url
-                    )
-                    if instrument_data and isinstance(instrument_data, dict):
-                        processed["symbol"] = instrument_data.get("symbol")
-                        processed["name"] = instrument_data.get("simple_name")
-                except Exception as e:
-                    logger.warning(f"Failed to get instrument data: {e}")
+            instrument_data = (
+                url_to_instrument.get(instrument_url) if instrument_url else None
+            )
+            if instrument_data:
+                processed["symbol"] = instrument_data.get("symbol")
+                processed["name"] = instrument_data.get("simple_name")
 
             # Calculate total for paid dividends
             if dividend.get("state") == "paid" and dividend.get("amount"):
@@ -385,6 +416,11 @@ async def get_stock_loan_payments() -> dict[str, Any]:
         total_amount = 0.0
 
         if loan_payments and isinstance(loan_payments, list):
+            instrument_urls = dedupe_preserving_order(
+                p.get("instrument") for p in loan_payments
+            )
+            url_to_instrument = await _resolve_instruments(instrument_urls)
+
             for payment in loan_payments:
                 processed = {
                     "id": payment.get("id"),
@@ -397,18 +433,13 @@ async def get_stock_loan_payments() -> dict[str, Any]:
                     "created_at": payment.get("created_at"),
                 }
 
-                # Get symbol from instrument URL if available
                 instrument_url = payment.get("instrument")
-                if instrument_url:
-                    try:
-                        instrument_data = await execute_with_retry(
-                            rh.stocks.get_instrument_by_url, instrument_url
-                        )
-                        if instrument_data and isinstance(instrument_data, dict):
-                            processed["symbol"] = instrument_data.get("symbol")
-                            processed["name"] = instrument_data.get("simple_name")
-                    except Exception as e:
-                        logger.warning(f"Failed to get instrument data: {e}")
+                instrument_data = (
+                    url_to_instrument.get(instrument_url) if instrument_url else None
+                )
+                if instrument_data:
+                    processed["symbol"] = instrument_data.get("symbol")
+                    processed["name"] = instrument_data.get("simple_name")
 
                 # Calculate total for paid loans
                 if payment.get("state") == "paid" and payment.get("amount"):

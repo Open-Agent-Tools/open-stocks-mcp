@@ -399,10 +399,19 @@ class TestStockLoanPayments:
             },
         ]
 
-        mock_instrument.side_effect = [
-            {"symbol": "AMC", "simple_name": "AMC Entertainment"},
-            {"symbol": "GME", "simple_name": "GameStop Corp"},
-        ]
+        # Concurrent gather may invoke this mock in any thread order, so map
+        # URL → instrument data explicitly to avoid relying on call sequence.
+        instrument_by_url = {
+            "https://robinhood.com/instruments/abc123/": {
+                "symbol": "AMC",
+                "simple_name": "AMC Entertainment",
+            },
+            "https://robinhood.com/instruments/def456/": {
+                "symbol": "GME",
+                "simple_name": "GameStop Corp",
+            },
+        }
+        mock_instrument.side_effect = lambda url: instrument_by_url[url]
 
         # Mock session manager
         mock_session_instance = AsyncMock()

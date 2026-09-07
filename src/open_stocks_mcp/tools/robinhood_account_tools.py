@@ -6,6 +6,7 @@ import robin_stocks.robinhood as rh
 
 from open_stocks_mcp.config import load_config
 from open_stocks_mcp.logging_config import logger
+from open_stocks_mcp.tools.batch_fetch import dedupe_preserving_order, gather_bounded
 from open_stocks_mcp.tools.cache import cached_async
 from open_stocks_mcp.tools.error_handling import (
     create_no_data_response,
@@ -213,18 +214,27 @@ async def get_positions() -> dict[str, Any]:
             {"positions": [], "count": 0, "message": "No open stock positions found."}
         )
 
+    # Resolve all unique instrument URLs concurrently so large portfolios
+    # don't pay N round-trips serially.
+    instrument_urls = dedupe_preserving_order(
+        position.get("instrument") for position in positions
+    )
+    url_to_symbol: dict[str, str] = {}
+    if instrument_urls:
+        symbol_results = await gather_bounded(
+            [execute_with_retry(rh.get_symbol_by_url, url) for url in instrument_urls]
+        )
+        for url, value in zip(instrument_urls, symbol_results, strict=True):
+            if isinstance(value, BaseException):
+                logger.warning(f"Failed to get symbol for instrument {url}: {value}")
+                continue
+            if isinstance(value, str) and value:
+                url_to_symbol[url] = value
+
     position_list = []
     for position in positions:
-        # Get symbol from instrument URL with retry logic
         instrument_url = position.get("instrument")
-        symbol = "N/A"
-        if instrument_url:
-            try:
-                symbol = await execute_with_retry(rh.get_symbol_by_url, instrument_url)
-            except Exception as e:
-                logger.warning(
-                    f"Failed to get symbol for instrument {instrument_url}: {e}"
-                )
+        symbol = url_to_symbol.get(instrument_url, "N/A") if instrument_url else "N/A"
 
         quantity = position.get("quantity", "0")
 
