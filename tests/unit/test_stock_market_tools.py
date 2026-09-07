@@ -531,14 +531,15 @@ class TestServerTools:
 
     @pytest.mark.journey_system
     @pytest.mark.unit
-    @patch("open_stocks_mcp.server.tool_helpers.get_rate_limiter")
+    @patch("open_stocks_mcp.server.tool_helpers.get_broker_registry_sync")
     @pytest.mark.asyncio
-    async def test_rate_limit_status_success(self, mock_get_rate_limiter: Any) -> None:
-        """Test successful rate limit status retrieval."""
+    async def test_rate_limit_status_success(
+        self, mock_get_broker_registry_sync: Any
+    ) -> None:
+        """Test successful rate limit status retrieval returns per-broker stats."""
         from open_stocks_mcp.server.app import rate_limit_status
 
-        mock_rate_limiter = MagicMock()
-        mock_rate_limiter.get_stats.return_value = {
+        rh_stats = {
             "calls_last_minute": 5,
             "calls_last_hour": 150,
             "limit_per_minute": 30,
@@ -546,16 +547,34 @@ class TestServerTools:
             "minute_usage_percent": 16.67,
             "hour_usage_percent": 15.0,
         }
-        mock_get_rate_limiter.return_value = mock_rate_limiter
+        schwab_stats = {
+            "calls_last_minute": 2,
+            "calls_last_hour": 40,
+            "limit_per_minute": 120,
+            "limit_per_hour": 3600,
+            "minute_usage_percent": 1.67,
+            "hour_usage_percent": 1.11,
+        }
+
+        mock_registry = MagicMock()
+        mock_rh_limiter = MagicMock()
+        mock_rh_limiter.get_stats.return_value = rh_stats
+        mock_schwab_limiter = MagicMock()
+        mock_schwab_limiter.get_stats.return_value = schwab_stats
+        mock_registry.get_rate_limiter.side_effect = lambda name: (
+            mock_rh_limiter if name == "robinhood" else mock_schwab_limiter
+        )
+        mock_get_broker_registry_sync.return_value = mock_registry
 
         result = await rate_limit_status()
 
         assert "result" in result
-        assert result["result"]["calls_last_minute"] == 5
-        assert result["result"]["calls_last_hour"] == 150
-        assert result["result"]["limit_per_minute"] == 30
-        assert result["result"]["minute_usage_percent"] == 16.67
         assert result["result"]["status"] == "success"
+        assert "brokers" in result["result"]
+        assert result["result"]["brokers"]["robinhood"]["calls_last_minute"] == 5
+        assert result["result"]["brokers"]["robinhood"]["limit_per_minute"] == 30
+        assert result["result"]["brokers"]["schwab"]["calls_last_minute"] == 2
+        assert result["result"]["brokers"]["schwab"]["limit_per_minute"] == 120
 
     @pytest.mark.journey_system
     @pytest.mark.unit

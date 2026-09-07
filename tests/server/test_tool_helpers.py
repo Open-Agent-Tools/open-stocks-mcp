@@ -136,44 +136,45 @@ class TestRateLimitStatusHelper:
 
     @pytest.mark.asyncio
     async def test_returns_rate_limiter_stats(self) -> None:
-        with patch(
-            "open_stocks_mcp.server.tool_helpers.get_rate_limiter"
-        ) as mock_get_rl:
-            rl = MagicMock()
-            rl.get_stats.return_value = {"requests_made": 5, "limit": 100}
-            mock_get_rl.return_value = rl
+        rh_stats = {"calls_last_minute": 5, "limit_per_minute": 30}
+        schwab_stats = {"calls_last_minute": 2, "limit_per_minute": 120}
 
+        mock_registry = MagicMock()
+        mock_rh = MagicMock()
+        mock_rh.get_stats.return_value = rh_stats
+        mock_schwab = MagicMock()
+        mock_schwab.get_stats.return_value = schwab_stats
+        mock_registry.get_rate_limiter.side_effect = lambda name: (
+            mock_rh if name == "robinhood" else mock_schwab
+        )
+
+        with patch(
+            "open_stocks_mcp.server.tool_helpers.get_broker_registry_sync",
+            return_value=mock_registry,
+        ):
             response = await get_rate_limit_status_data()
 
-        mock_get_rl.assert_called_once_with("robinhood")
-
         assert response["result"]["status"] == "success"
-        assert response["result"]["requests_made"] == 5
-        assert response["result"]["limit"] == 100
+        assert "brokers" in response["result"]
+        assert response["result"]["brokers"]["robinhood"]["calls_last_minute"] == 5
+        assert response["result"]["brokers"]["schwab"]["calls_last_minute"] == 2
 
     @pytest.mark.asyncio
-    async def test_falls_back_to_global_limiter_when_registry_uninitialized(
+    async def test_falls_back_to_default_limits_when_registry_uninitialized(
         self,
     ) -> None:
-        global_limiter = MagicMock()
-        global_limiter.get_stats.return_value = {"requests_made": 7, "limit": 99}
-
         with patch(
-            "open_stocks_mcp.server.tool_helpers.get_rate_limiter"
-        ) as mock_get_rl:
-            mock_get_rl.side_effect = [
-                RegistryNotInitializedError("not initialized"),
-                global_limiter,
-            ]
-
+            "open_stocks_mcp.server.tool_helpers.get_broker_registry_sync",
+            side_effect=RegistryNotInitializedError("not initialized"),
+        ):
             response = await get_rate_limit_status_data()
 
-        assert mock_get_rl.call_args_list[0].args == ("robinhood",)
-        assert mock_get_rl.call_args_list[1].args == ()
         assert response["result"]["status"] == "success"
-        assert response["result"]["requests_made"] == 7
-        assert response["result"]["limit"] == 99
-        assert "global rate limiter fallback" in response["result"]["note"]
+        assert "brokers" in response["result"]
+        assert "robinhood" in response["result"]["brokers"]
+        assert "schwab" in response["result"]["brokers"]
+        assert "note" in response["result"]
+        assert "not initialized" in response["result"]["note"]
 
 
 @pytest.mark.journey_system
