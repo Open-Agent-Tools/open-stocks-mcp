@@ -156,14 +156,14 @@ and `RUN_RATE_LIMITED=1 --run-live-market` were explicitly provided.
 
 ### Required for Robinhood Live Testing
 ```bash
-ROBINHOOD_USERNAME="email@example.com"
-ROBINHOOD_PASSWORD="password"
+ROBINHOOD_USERNAME="<robinhood-email>"
+ROBINHOOD_PASSWORD="<robinhood-password>"
 ```
 
 ### Required for Schwab Live Testing
 ```bash
-SCHWAB_API_KEY="your-api-key"
-SCHWAB_APP_SECRET="your-app-secret"
+SCHWAB_API_KEY="<schwab-api-key>"
+SCHWAB_APP_SECRET="<schwab-app-secret>"
 SCHWAB_CALLBACK_URL="https://127.0.0.1:8182/"
 SCHWAB_TOKEN_PATH="~/.tokens/schwab_token.json"
 ENABLED_BROKERS="robinhood,schwab"
@@ -175,9 +175,9 @@ Docker or CI runs should mount a token that was created interactively first.
 
 ### Required for ADK Evaluation  
 ```bash
-GOOGLE_API_KEY="your-google-api-key"
-ROBINHOOD_USERNAME="email@example.com" 
-ROBINHOOD_PASSWORD="password"
+GOOGLE_API_KEY="<google-api-key>"
+ROBINHOOD_USERNAME="<robinhood-email>"
+ROBINHOOD_PASSWORD="<robinhood-password>"
 # Include Schwab variables above when evaluating Schwab tools.
 ```
 

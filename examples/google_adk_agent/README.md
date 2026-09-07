@@ -10,16 +10,16 @@ A comprehensive stock trading agent that uses Google ADK to connect with our ope
 2. **Install open-stocks-mcp**: This package should be available in your environment
 3. **Set up environment variables**:
    ```bash
-   export GOOGLE_API_KEY="your-google-api-key"
+   export GOOGLE_API_KEY="<google-api-key>"
    export GOOGLE_MODEL="gemini-2.0-flash"  # Optional, defaults to gemini-2.0-flash
    
    # For Robinhood authentication (optional - enables environment-based login)
-   export ROBINHOOD_USERNAME="your_email@example.com"
-   export ROBINHOOD_PASSWORD="your_robinhood_password"
+   export ROBINHOOD_USERNAME="<robinhood-email>"
+   export ROBINHOOD_PASSWORD="<robinhood-password>"
    
    # For Schwab authentication (optional - enables Schwab tools)
-   export SCHWAB_API_KEY="your-schwab-api-key"
-   export SCHWAB_APP_SECRET="your-schwab-app-secret"
+   export SCHWAB_API_KEY="<schwab-api-key>"
+   export SCHWAB_APP_SECRET="<schwab-app-secret>"
    export SCHWAB_CALLBACK_URL="https://127.0.0.1"
    export SCHWAB_TOKEN_PATH="schwab_token.json"
    export ENABLED_BROKERS="robinhood,schwab"
@@ -30,11 +30,11 @@ A comprehensive stock trading agent that uses Google ADK to connect with our ope
 
    Or create a `.env` file in the project root:
    ```
-   GOOGLE_API_KEY=your-google-api-key
-   ROBINHOOD_USERNAME=your_email@example.com
-   ROBINHOOD_PASSWORD=your_robinhood_password
-   SCHWAB_API_KEY=your-schwab-api-key
-   SCHWAB_APP_SECRET=your-schwab-app-secret
+   GOOGLE_API_KEY=<google-api-key>
+   ROBINHOOD_USERNAME=<robinhood-email>
+   ROBINHOOD_PASSWORD=<robinhood-password>
+   SCHWAB_API_KEY=<schwab-api-key>
+   SCHWAB_APP_SECRET=<schwab-app-secret>
    SCHWAB_CALLBACK_URL=https://127.0.0.1
    SCHWAB_TOKEN_PATH=schwab_token.json
    ENABLED_BROKERS=robinhood,schwab

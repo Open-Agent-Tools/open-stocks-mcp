@@ -107,8 +107,8 @@ tests/
 ### Environment Variables
 For integration tests, set:
 ```bash
-ROBINHOOD_USERNAME="email@example.com"
-ROBINHOOD_PASSWORD="password"
+ROBINHOOD_USERNAME="<robinhood-email>"
+ROBINHOOD_PASSWORD="<robinhood-password>"
 ```
 
 ### Test Commands

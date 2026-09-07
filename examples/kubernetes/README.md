@@ -47,20 +47,20 @@ The Secret is intentionally excluded from `kustomization.yaml` to prevent placeh
 
 ```bash
 kubectl create secret generic open-stocks-mcp-secrets \
-  --from-literal=ROBINHOOD_USERNAME='your-email@example.com' \
-  --from-literal=ROBINHOOD_PASSWORD='your-password' \
-  --from-literal=MCP_API_KEY='a-long-random-secret'
+  --from-literal=ROBINHOOD_USERNAME='<robinhood-email>' \
+  --from-literal=ROBINHOOD_PASSWORD='<robinhood-password>' \
+  --from-literal=MCP_API_KEY='<generate-a-long-random-secret>'
 ```
 
 For Schwab credentials, add them to the same secret:
 
 ```bash
 kubectl create secret generic open-stocks-mcp-secrets \
-  --from-literal=ROBINHOOD_USERNAME='your-email@example.com' \
-  --from-literal=ROBINHOOD_PASSWORD='your-password' \
-  --from-literal=MCP_API_KEY='a-long-random-secret' \
-  --from-literal=SCHWAB_API_KEY='your-api-key' \
-  --from-literal=SCHWAB_APP_SECRET='your-app-secret' \
+  --from-literal=ROBINHOOD_USERNAME='<robinhood-email>' \
+  --from-literal=ROBINHOOD_PASSWORD='<robinhood-password>' \
+  --from-literal=MCP_API_KEY='<generate-a-long-random-secret>' \
+  --from-literal=SCHWAB_API_KEY='<schwab-api-key>' \
+  --from-literal=SCHWAB_APP_SECRET='<schwab-app-secret>' \
   --from-literal=SCHWAB_CALLBACK_URL='https://127.0.0.1:8182/' \
   --from-literal=SCHWAB_TOKEN_PATH='/home/mcp/.tokens/schwab_token.json'
 ```
