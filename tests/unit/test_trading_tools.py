@@ -160,6 +160,25 @@ class TestOrderBuyMarket:
     @pytest.mark.unit
     @pytest.mark.asyncio
     @patch("open_stocks_mcp.tools.trading.orders_stock.execute_with_retry")
+    async def test_missing_order_id_requires_history_check(
+        self, mock_execute: AsyncMock
+    ) -> None:
+        mock_execute.side_effect = [
+            MOCK_QUOTE,
+            MOCK_ACCOUNT,
+            {"detail": "Bad request", "state": "unconfirmed"},
+        ]
+
+        result = await order_buy_market("AAPL", 5)
+
+        assert result["result"]["status"] == "error"
+        assert result["result"]["check_order_history"] is True
+        assert "before resubmitting" in result["result"]["error"]
+
+    @pytest.mark.journey_trading
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    @patch("open_stocks_mcp.tools.trading.orders_stock.execute_with_retry")
     async def test_order_placement_exception(self, mock_execute: AsyncMock) -> None:
         """Exception during order placement returns decorator error response."""
         mock_execute.side_effect = [
@@ -785,6 +804,41 @@ class TestFractionalStockOrders:
     @pytest.mark.unit
     @pytest.mark.asyncio
     @patch("open_stocks_mcp.tools.trading.orders_stock.execute_with_retry")
+    async def test_fractional_buy_rejection_without_order_id_is_not_success(
+        self, mock_execute: AsyncMock
+    ) -> None:
+        mock_execute.side_effect = [
+            MOCK_QUOTE,
+            MOCK_ACCOUNT,
+            {"detail": "Forbidden", "state": "failed"},
+        ]
+
+        result = await order_buy_fractional_by_price("AAPL", 125.0)
+
+        assert result["result"]["status"] == "error"
+        assert result["result"]["check_order_history"] is True
+
+    @pytest.mark.journey_trading
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    @patch("open_stocks_mcp.tools.trading.orders_stock.execute_with_retry")
+    async def test_fractional_sell_rejection_without_order_id_is_not_success(
+        self, mock_execute: AsyncMock
+    ) -> None:
+        mock_execute.side_effect = [
+            MOCK_HOLDINGS,
+            {"detail": "Forbidden", "state": "failed"},
+        ]
+
+        result = await order_sell_fractional_by_price("AAPL", 125.0)
+
+        assert result["result"]["status"] == "error"
+        assert result["result"]["check_order_history"] is True
+
+    @pytest.mark.journey_trading
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    @patch("open_stocks_mcp.tools.trading.orders_stock.execute_with_retry")
     async def test_fractional_quantity_sell_closes_exact_shares(
         self, mock_execute: AsyncMock
     ) -> None:
@@ -802,6 +856,23 @@ class TestFractionalStockOrders:
             "max_retries": 0,
             "handle_auth_errors": False,
         }
+
+    @pytest.mark.journey_trading
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    @patch("open_stocks_mcp.tools.trading.orders_stock.execute_with_retry")
+    async def test_fractional_quantity_rejection_without_order_id_is_not_success(
+        self, mock_execute: AsyncMock
+    ) -> None:
+        mock_execute.side_effect = [
+            MOCK_HOLDINGS,
+            {"detail": "Bad request", "state": "rejected"},
+        ]
+
+        result = await order_sell_fractional_by_quantity("AAPL", 2.5)
+
+        assert result["result"]["status"] == "error"
+        assert result["result"]["check_order_history"] is True
 
     @pytest.mark.journey_trading
     @pytest.mark.unit

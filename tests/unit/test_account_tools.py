@@ -381,8 +381,65 @@ class TestAccountTools:
         assert result["result"]["orders"][0]["symbol"] == "AAPL"
         assert result["result"]["orders"][0]["order_id"] == "order-aapl"
         assert result["result"]["orders"][0]["side"] == "BUY"
+        assert result["result"]["orders"][0]["quantity"] == "10.0000"
+        assert result["result"]["orders"][0]["executed_quantity"] == "10.0000"
         assert result["result"]["orders"][1]["symbol"] == "GOOGL"
         assert result["result"]["orders"][1]["side"] == "SELL"
+
+    @pytest.mark.journey_trading
+    @pytest.mark.unit
+    @patch("open_stocks_mcp.tools.robinhood_order_tools.execute_with_retry")
+    @pytest.mark.asyncio
+    async def test_get_stock_orders_does_not_infer_partial_fill_from_request(
+        self, mock_execute: Any
+    ) -> None:
+        mock_execute.side_effect = [
+            [
+                {
+                    "id": "partial-1",
+                    "instrument": "instrument-url",
+                    "side": "buy",
+                    "quantity": "10.0000",
+                    "state": "partially_filled",
+                    "created_at": "2026-11-20T14:00:00Z",
+                    "executions": [{"quantity": "2.0000"}],
+                }
+            ],
+            "AAPL",
+        ]
+
+        result = await get_stock_orders()
+        order = result["result"]["orders"][0]
+
+        assert order["quantity"] == "10.0000"
+        assert order["executed_quantity"] == "2.0"
+
+    @pytest.mark.journey_trading
+    @pytest.mark.unit
+    @patch("open_stocks_mcp.tools.robinhood_order_tools.execute_with_retry")
+    @pytest.mark.asyncio
+    async def test_get_stock_orders_leaves_unknown_partial_fill_unknown(
+        self, mock_execute: Any
+    ) -> None:
+        mock_execute.side_effect = [
+            [
+                {
+                    "id": "partial-2",
+                    "instrument": "instrument-url",
+                    "side": "buy",
+                    "quantity": "10.0000",
+                    "state": "partially_filled",
+                    "created_at": "2026-11-20T14:00:00Z",
+                }
+            ],
+            "AAPL",
+        ]
+
+        result = await get_stock_orders()
+        order = result["result"]["orders"][0]
+
+        assert order["quantity"] == "10.0000"
+        assert order["executed_quantity"] is None
 
     @pytest.mark.journey_trading
     @pytest.mark.unit

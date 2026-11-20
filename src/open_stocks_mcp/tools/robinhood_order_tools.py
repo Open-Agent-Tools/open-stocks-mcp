@@ -14,6 +14,31 @@ from open_stocks_mcp.tools.error_handling import (
 )
 
 
+def _executed_quantity(order: dict[str, Any]) -> Any:
+    cumulative = order.get("cumulative_quantity")
+    if cumulative not in (None, ""):
+        return cumulative
+
+    execution_total = 0.0
+    has_executions = False
+    for execution in order.get("executions") or []:
+        if not isinstance(execution, dict):
+            continue
+        quantity = execution.get("quantity")
+        if not isinstance(quantity, str | int | float):
+            continue
+        try:
+            execution_total += float(quantity)
+        except (TypeError, ValueError):
+            continue
+        has_executions = True
+    if has_executions:
+        return str(execution_total)
+    if str(order.get("state") or "").lower() == "filled":
+        return order.get("quantity")
+    return None
+
+
 @handle_robin_stocks_errors
 async def get_stock_orders(
     start_date: str | None = None, limit: int = 100
@@ -66,23 +91,14 @@ async def get_stock_orders(
                     f"Failed to get symbol for instrument {instrument_url}: {e}"
                 )
 
-        cumulative_quantity = order.get("cumulative_quantity")
         state = order.get("state", "N/A")
-        executed_quantity = (
-            cumulative_quantity
-            if cumulative_quantity not in (None, "")
-            else (
-                order.get("quantity", "0")
-                if str(state).lower() in ("filled", "partially_filled")
-                else "0"
-            )
-        )
         order_data = {
             "order_id": order.get("id"),
             "symbol": symbol,
             "side": order.get("side", "N/A").upper(),
-            "quantity": executed_quantity,
+            "quantity": order.get("quantity", "N/A"),
             "requested_quantity": order.get("quantity"),
+            "executed_quantity": _executed_quantity(order),
             "average_price": order.get("average_price", "N/A"),
             "price": order.get("price"),
             "order_type": order.get("type"),

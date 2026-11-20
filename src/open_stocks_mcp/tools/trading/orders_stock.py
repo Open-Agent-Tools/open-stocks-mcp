@@ -28,6 +28,48 @@ async def _execute_order_once(func: Any, *args: Any, **kwargs: Any) -> Any:
     )
 
 
+def _order_submission_error(order_result: Any) -> dict[str, Any] | None:
+    """Reject missing or explicitly failed broker order confirmations."""
+    if not isinstance(order_result, dict) or not order_result:
+        return {
+            "error": (
+                "Order status is unknown because the broker returned no order "
+                "confirmation. Check stock order history before resubmitting."
+            ),
+            "status": "error",
+            "check_order_history": True,
+        }
+
+    if order_result.get("non_field_errors"):
+        messages = order_result["non_field_errors"]
+        if not isinstance(messages, list):
+            messages = [messages]
+        return {
+            "error": f"Order failed: {'; '.join(str(message) for message in messages)}",
+            "status": "error",
+        }
+
+    order_id = order_result.get("id")
+    state = str(order_result.get("state") or "").lower()
+    if not order_id:
+        return {
+            "error": (
+                "Order status is uncertain because the broker response did not "
+                "include an order ID. Check stock order history before resubmitting."
+            ),
+            "status": "error",
+            "check_order_history": True,
+        }
+    if state in {"cancelled", "canceled", "failed", "rejected"}:
+        return {
+            "error": f"Order {order_id} was not accepted ({state}).",
+            "status": "error",
+            "order_id": order_id,
+            "state": state,
+        }
+    return None
+
+
 @handle_robin_stocks_errors
 async def order_buy_market(symbol: str, quantity: int) -> dict[str, Any]:
     """
@@ -79,17 +121,9 @@ async def order_buy_market(symbol: str, quantity: int) -> dict[str, Any]:
         rh.order_buy_market, symbol, quantity, timeInForce="gfd"
     )
 
-    if not order_result:
-        return create_success_response(
-            {"error": "Order placement failed", "status": "error"}
-        )
-
-    # Check for Robin Stocks API errors
-    if isinstance(order_result, dict) and "non_field_errors" in order_result:
-        error_msgs = order_result["non_field_errors"]
-        return create_success_response(
-            {"error": f"Order failed: {'; '.join(error_msgs)}", "status": "error"}
-        )
+    order_error = _order_submission_error(order_result)
+    if order_error:
+        return create_success_response(order_error)
 
     order_result = sanitize_api_response(order_result)
 
@@ -161,17 +195,9 @@ async def order_sell_market(symbol: str, quantity: int) -> dict[str, Any]:
         rh.order_sell_market, symbol, quantity, timeInForce="gfd"
     )
 
-    if not order_result:
-        return create_success_response(
-            {"error": "Order placement failed", "status": "error"}
-        )
-
-    # Check for Robin Stocks API errors
-    if isinstance(order_result, dict) and "non_field_errors" in order_result:
-        error_msgs = order_result["non_field_errors"]
-        return create_success_response(
-            {"error": f"Order failed: {'; '.join(error_msgs)}", "status": "error"}
-        )
+    order_error = _order_submission_error(order_result)
+    if order_error:
+        return create_success_response(order_error)
 
     order_result = sanitize_api_response(order_result)
 
@@ -260,17 +286,9 @@ async def order_buy_limit(
         rh.order_buy_limit, symbol, quantity, limit_price
     )
 
-    if not order_result:
-        return create_success_response(
-            {"error": "Order placement failed", "status": "error"}
-        )
-
-    # Check for Robin Stocks API errors
-    if isinstance(order_result, dict) and "non_field_errors" in order_result:
-        error_msgs = order_result["non_field_errors"]
-        return create_success_response(
-            {"error": f"Order failed: {'; '.join(error_msgs)}", "status": "error"}
-        )
+    order_error = _order_submission_error(order_result)
+    if order_error:
+        return create_success_response(order_error)
 
     order_result = sanitize_api_response(order_result)
 
@@ -356,17 +374,9 @@ async def order_sell_limit(
     logger.info(f"DEBUG: Raw limit sell order_result = {order_result}")
     logger.info(f"DEBUG: order_result type = {type(order_result)}")
 
-    if not order_result:
-        return create_success_response(
-            {"error": "Order placement failed", "status": "error"}
-        )
-
-    # Check for Robin Stocks API errors
-    if isinstance(order_result, dict) and "non_field_errors" in order_result:
-        error_msgs = order_result["non_field_errors"]
-        return create_success_response(
-            {"error": f"Order failed: {'; '.join(error_msgs)}", "status": "error"}
-        )
+    order_error = _order_submission_error(order_result)
+    if order_error:
+        return create_success_response(order_error)
 
     order_result = sanitize_api_response(order_result)
     logger.info(f"DEBUG: Sanitized limit sell order_result = {order_result}")
@@ -445,10 +455,9 @@ async def order_buy_stop_loss(
         rh.order_buy_stop_loss, symbol, quantity, stop_price
     )
 
-    if not order_result:
-        return create_success_response(
-            {"error": "Order placement failed", "status": "error"}
-        )
+    order_error = _order_submission_error(order_result)
+    if order_error:
+        return create_success_response(order_error)
 
     order_result = sanitize_api_response(order_result)
 
@@ -544,10 +553,9 @@ async def order_sell_stop_loss(
         rh.order_sell_stop_loss, symbol, quantity, stop_price
     )
 
-    if not order_result:
-        return create_success_response(
-            {"error": "Order placement failed", "status": "error"}
-        )
+    order_error = _order_submission_error(order_result)
+    if order_error:
+        return create_success_response(order_error)
 
     order_result = sanitize_api_response(order_result)
 
@@ -621,10 +629,9 @@ async def order_buy_trailing_stop(
         rh.order_buy_trailing_stop, symbol, quantity, trail_amount
     )
 
-    if not order_result:
-        return create_success_response(
-            {"error": "Order placement failed", "status": "error"}
-        )
+    order_error = _order_submission_error(order_result)
+    if order_error:
+        return create_success_response(order_error)
 
     order_result = sanitize_api_response(order_result)
 
@@ -713,10 +720,9 @@ async def order_sell_trailing_stop(
         rh.order_sell_trailing_stop, symbol, quantity, trail_amount
     )
 
-    if not order_result:
-        return create_success_response(
-            {"error": "Order placement failed", "status": "error"}
-        )
+    order_error = _order_submission_error(order_result)
+    if order_error:
+        return create_success_response(order_error)
 
     order_result = sanitize_api_response(order_result)
 
@@ -799,19 +805,9 @@ async def order_buy_fractional_by_price(
         market_hours="regular_hours",
     )
 
-    if not order_result:
-        return create_success_response(
-            {"error": "Order placement failed", "status": "error"}
-        )
-
-    if isinstance(order_result, dict) and "non_field_errors" in order_result:
-        error_msgs = order_result["non_field_errors"]
-        return create_success_response(
-            {
-                "error": f"Order failed: {'; '.join(error_msgs)}",
-                "status": "error",
-            }
-        )
+    order_error = _order_submission_error(order_result)
+    if order_error:
+        return create_success_response(order_error)
 
     order_result = sanitize_api_response(order_result)
 
@@ -879,18 +875,9 @@ async def order_sell_fractional_by_price(
         amount_in_dollars,
         timeInForce="gfd",
     )
-    if not order_result:
-        return create_success_response(
-            {"error": "Order placement failed", "status": "error"}
-        )
-    if isinstance(order_result, dict) and "non_field_errors" in order_result:
-        error_msgs = order_result["non_field_errors"]
-        return create_success_response(
-            {
-                "error": f"Order failed: {'; '.join(error_msgs)}",
-                "status": "error",
-            }
-        )
+    order_error = _order_submission_error(order_result)
+    if order_error:
+        return create_success_response(order_error)
 
     order_result = sanitize_api_response(order_result)
     logger.info(f"Fractional sell order placed for ${amount_in_dollars} of {symbol}")
@@ -958,18 +945,9 @@ async def order_sell_fractional_by_quantity(
         timeInForce="gfd",
         market_hours="regular_hours",
     )
-    if not order_result:
-        return create_success_response(
-            {"error": "Order placement failed", "status": "error"}
-        )
-    if isinstance(order_result, dict) and "non_field_errors" in order_result:
-        error_msgs = order_result["non_field_errors"]
-        return create_success_response(
-            {
-                "error": f"Order failed: {'; '.join(error_msgs)}",
-                "status": "error",
-            }
-        )
+    order_error = _order_submission_error(order_result)
+    if order_error:
+        return create_success_response(order_error)
 
     order_result = sanitize_api_response(order_result)
     logger.info(f"Fractional sell order placed for {quantity} shares of {symbol}")
