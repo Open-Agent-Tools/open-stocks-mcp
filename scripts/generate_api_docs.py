@@ -17,6 +17,7 @@ async def build_doc(mcp: Any) -> str:
     lines = [HEADER, f"{len(tool_entries)} tools registered\n"]
     for tool in tool_entries:
         description = tool.description or "No description provided."
+        description = "\n".join(line.rstrip() for line in description.splitlines())
         lines.extend([f"### {tool.name}\n", f"{description}\n"])
 
     return "\n".join(lines).rstrip() + "\n"

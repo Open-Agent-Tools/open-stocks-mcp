@@ -5,6 +5,7 @@ from typing import Any
 from unittest.mock import patch
 
 import pytest
+import robin_stocks.robinhood as rh
 
 from open_stocks_mcp.config import reset_cache_config
 from open_stocks_mcp.tools.cache import clear_all_caches
@@ -350,6 +351,7 @@ class TestAccountTools:
         mock_orders.return_value = [
             {
                 "instrument": "https://robinhood.com/instruments/aapl123/",
+                "id": "order-aapl",
                 "side": "buy",
                 "quantity": "10.0000",
                 "average_price": "150.00",
@@ -377,9 +379,83 @@ class TestAccountTools:
         assert result["result"]["count"] == 2
         assert len(result["result"]["orders"]) == 2
         assert result["result"]["orders"][0]["symbol"] == "AAPL"
+        assert result["result"]["orders"][0]["order_id"] == "order-aapl"
         assert result["result"]["orders"][0]["side"] == "BUY"
+        assert result["result"]["orders"][0]["quantity"] == "10.0000"
+        assert result["result"]["orders"][0]["executed_quantity"] == "10.0000"
         assert result["result"]["orders"][1]["symbol"] == "GOOGL"
         assert result["result"]["orders"][1]["side"] == "SELL"
+
+    @pytest.mark.journey_trading
+    @pytest.mark.unit
+    @patch("open_stocks_mcp.tools.robinhood_order_tools.execute_with_retry")
+    @pytest.mark.asyncio
+    async def test_get_stock_orders_does_not_infer_partial_fill_from_request(
+        self, mock_execute: Any
+    ) -> None:
+        mock_execute.side_effect = [
+            [
+                {
+                    "id": "partial-1",
+                    "instrument": "instrument-url",
+                    "side": "buy",
+                    "quantity": "10.0000",
+                    "state": "partially_filled",
+                    "created_at": "2026-11-20T14:00:00Z",
+                    "executions": [{"quantity": "2.0000"}],
+                }
+            ],
+            "AAPL",
+        ]
+
+        result = await get_stock_orders()
+        order = result["result"]["orders"][0]
+
+        assert order["quantity"] == "10.0000"
+        assert order["executed_quantity"] == "2.0"
+
+    @pytest.mark.journey_trading
+    @pytest.mark.unit
+    @patch("open_stocks_mcp.tools.robinhood_order_tools.execute_with_retry")
+    @pytest.mark.asyncio
+    async def test_get_stock_orders_leaves_unknown_partial_fill_unknown(
+        self, mock_execute: Any
+    ) -> None:
+        mock_execute.side_effect = [
+            [
+                {
+                    "id": "partial-2",
+                    "instrument": "instrument-url",
+                    "side": "buy",
+                    "quantity": "10.0000",
+                    "state": "partially_filled",
+                    "created_at": "2026-11-20T14:00:00Z",
+                }
+            ],
+            "AAPL",
+        ]
+
+        result = await get_stock_orders()
+        order = result["result"]["orders"][0]
+
+        assert order["quantity"] == "10.0000"
+        assert order["executed_quantity"] is None
+
+    @pytest.mark.journey_trading
+    @pytest.mark.unit
+    @patch("open_stocks_mcp.tools.robinhood_order_tools.execute_with_retry")
+    @pytest.mark.asyncio
+    async def test_get_stock_orders_passes_start_date_and_limit(
+        self, mock_execute: Any
+    ) -> None:
+        mock_execute.return_value = []
+
+        result = await get_stock_orders(start_date="2026-11-20", limit=25)
+
+        assert result["result"]["count"] == 0
+        mock_execute.assert_called_once()
+        assert mock_execute.call_args.args[0] is rh.get_all_stock_orders
+        assert mock_execute.call_args.kwargs["start_date"] == "2026-11-20"
 
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")

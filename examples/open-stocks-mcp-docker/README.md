@@ -255,7 +255,7 @@ curl http://localhost:3001/status
 
 # Available tools list
 curl http://localhost:3001/tools
-# Returns: Complete list of 152 available MCP tools
+# Returns: Complete list of 155 available MCP tools
 ```
 
 ✅ **Security features validated:**
@@ -271,7 +271,7 @@ curl http://localhost:3001/tools
 
 ### Available Tools
 
-The server provides **152 MCP tools** across **12 categories**:
+The server provides **155 MCP tools** across **12 categories**:
 
 **Robinhood tools:**
 - **Account Management**: `account_info`, `portfolio`, `account_details`, `positions`
@@ -379,7 +379,7 @@ Adjust these in `docker-compose.yml` based on your needs.
 - ✅ FastAPI-based server with comprehensive middleware
 - ✅ Security headers and CORS support
 - ✅ Health check and monitoring endpoints
-- ✅ Complete trading functionality (152 MCP tools)
+- ✅ Complete trading functionality (155 MCP tools)
 - ✅ Live trading validation (market/limit orders tested)
 - ✅ Trading API bugs fixed (`rh.get_quotes()` corrections)
 - ✅ Full backward compatibility with STDIO transport

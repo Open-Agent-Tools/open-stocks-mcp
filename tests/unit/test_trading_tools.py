@@ -22,9 +22,12 @@ from open_stocks_mcp.tools.robinhood_trading_tools import (
     get_all_open_stock_orders,
 )
 from open_stocks_mcp.tools.trading.orders_stock import (
+    order_buy_fractional_by_price,
     order_buy_limit,
     order_buy_market,
     order_buy_stop_loss,
+    order_sell_fractional_by_price,
+    order_sell_fractional_by_quantity,
     order_sell_limit,
     order_sell_market,
     order_sell_stop_loss,
@@ -42,6 +45,7 @@ MOCK_ORDER = {
     "state": "confirmed",
     "created_at": "2024-01-01T00:00:00Z",
 }
+MOCK_HOLDINGS = {"AAPL": {"equity": "1500.00", "quantity": "10.0000"}}
 
 
 def assert_decorator_error_response(
@@ -151,6 +155,25 @@ class TestOrderBuyMarket:
         assert "error" in result["result"]
         assert "Insufficient shares available" in result["result"]["error"]
         assert result["result"]["status"] == "error"
+
+    @pytest.mark.journey_trading
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    @patch("open_stocks_mcp.tools.trading.orders_stock.execute_with_retry")
+    async def test_missing_order_id_requires_history_check(
+        self, mock_execute: AsyncMock
+    ) -> None:
+        mock_execute.side_effect = [
+            MOCK_QUOTE,
+            MOCK_ACCOUNT,
+            {"detail": "Bad request", "state": "unconfirmed"},
+        ]
+
+        result = await order_buy_market("AAPL", 5)
+
+        assert result["result"]["status"] == "error"
+        assert result["result"]["check_order_history"] is True
+        assert "before resubmitting" in result["result"]["error"]
 
     @pytest.mark.journey_trading
     @pytest.mark.unit
@@ -718,6 +741,148 @@ class TestCancelAllOptionOrders:
 # ---------------------------------------------------------------------------
 # get_all_open_stock_orders / get_all_open_option_orders
 # ---------------------------------------------------------------------------
+
+
+class TestFractionalStockOrders:
+    """Tests for dollar-based regular-hours stock orders."""
+
+    @pytest.mark.journey_trading
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    @patch("open_stocks_mcp.tools.trading.orders_stock.execute_with_retry")
+    async def test_fractional_buy_submits_once(self, mock_execute: AsyncMock) -> None:
+        mock_execute.side_effect = [MOCK_QUOTE, MOCK_ACCOUNT, MOCK_ORDER]
+
+        result = await order_buy_fractional_by_price("AAPL", 125.0)
+
+        assert result["result"]["status"] == "success"
+        order_call = mock_execute.call_args_list[2]
+        assert order_call.args[0] is rh.order_buy_fractional_by_price
+        assert order_call.args[1:] == ("AAPL", 125.0)
+        assert order_call.kwargs == {
+            "timeInForce": "gfd",
+            "market_hours": "regular_hours",
+            "max_retries": 0,
+            "handle_auth_errors": False,
+        }
+
+    @pytest.mark.journey_trading
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    @patch("open_stocks_mcp.tools.trading.orders_stock.execute_with_retry")
+    async def test_fractional_sell_submits_once(self, mock_execute: AsyncMock) -> None:
+        mock_execute.side_effect = [MOCK_HOLDINGS, MOCK_ORDER]
+
+        result = await order_sell_fractional_by_price("AAPL", 125.0)
+
+        assert result["result"]["status"] == "success"
+        order_call = mock_execute.call_args_list[1]
+        assert order_call.args[0] is rh.order_sell_fractional_by_price
+        assert order_call.args[1:] == ("AAPL", 125.0)
+        assert order_call.kwargs == {
+            "timeInForce": "gfd",
+            "max_retries": 0,
+            "handle_auth_errors": False,
+        }
+
+    @pytest.mark.journey_trading
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    @patch("open_stocks_mcp.tools.trading.orders_stock.execute_with_retry")
+    async def test_fractional_sell_rejects_more_than_position(
+        self, mock_execute: AsyncMock
+    ) -> None:
+        mock_execute.return_value = MOCK_HOLDINGS
+
+        result = await order_sell_fractional_by_price("AAPL", 2000.0)
+
+        assert result["result"]["status"] == "error"
+        assert "Insufficient position value" in result["result"]["error"]
+        assert mock_execute.call_count == 1
+
+    @pytest.mark.journey_trading
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    @patch("open_stocks_mcp.tools.trading.orders_stock.execute_with_retry")
+    async def test_fractional_buy_rejection_without_order_id_is_not_success(
+        self, mock_execute: AsyncMock
+    ) -> None:
+        mock_execute.side_effect = [
+            MOCK_QUOTE,
+            MOCK_ACCOUNT,
+            {"detail": "Forbidden", "state": "failed"},
+        ]
+
+        result = await order_buy_fractional_by_price("AAPL", 125.0)
+
+        assert result["result"]["status"] == "error"
+        assert result["result"]["check_order_history"] is True
+
+    @pytest.mark.journey_trading
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    @patch("open_stocks_mcp.tools.trading.orders_stock.execute_with_retry")
+    async def test_fractional_sell_rejection_without_order_id_is_not_success(
+        self, mock_execute: AsyncMock
+    ) -> None:
+        mock_execute.side_effect = [
+            MOCK_HOLDINGS,
+            {"detail": "Forbidden", "state": "failed"},
+        ]
+
+        result = await order_sell_fractional_by_price("AAPL", 125.0)
+
+        assert result["result"]["status"] == "error"
+        assert result["result"]["check_order_history"] is True
+
+    @pytest.mark.journey_trading
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    @patch("open_stocks_mcp.tools.trading.orders_stock.execute_with_retry")
+    async def test_fractional_quantity_sell_closes_exact_shares(
+        self, mock_execute: AsyncMock
+    ) -> None:
+        mock_execute.side_effect = [MOCK_HOLDINGS, MOCK_ORDER]
+
+        result = await order_sell_fractional_by_quantity("AAPL", 2.5)
+
+        assert result["result"]["status"] == "success"
+        order_call = mock_execute.call_args_list[1]
+        assert order_call.args[0] is rh.order_sell_fractional_by_quantity
+        assert order_call.args[1:] == ("AAPL", 2.5)
+        assert order_call.kwargs == {
+            "timeInForce": "gfd",
+            "market_hours": "regular_hours",
+            "max_retries": 0,
+            "handle_auth_errors": False,
+        }
+
+    @pytest.mark.journey_trading
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    @patch("open_stocks_mcp.tools.trading.orders_stock.execute_with_retry")
+    async def test_fractional_quantity_rejection_without_order_id_is_not_success(
+        self, mock_execute: AsyncMock
+    ) -> None:
+        mock_execute.side_effect = [
+            MOCK_HOLDINGS,
+            {"detail": "Bad request", "state": "rejected"},
+        ]
+
+        result = await order_sell_fractional_by_quantity("AAPL", 2.5)
+
+        assert result["result"]["status"] == "error"
+        assert result["result"]["check_order_history"] is True
+
+    @pytest.mark.journey_trading
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    async def test_fractional_orders_reject_non_finite_amounts(self) -> None:
+        buy = await order_buy_fractional_by_price("AAPL", float("nan"))
+        sell = await order_sell_fractional_by_price("AAPL", float("inf"))
+
+        assert buy["result"]["status"] == "error"
+        assert sell["result"]["status"] == "error"
 
 
 class TestGetOpenOrders:

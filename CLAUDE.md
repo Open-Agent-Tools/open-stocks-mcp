@@ -114,7 +114,7 @@ curl http://localhost:3001/health  # Test health endpoint
 ## MCP Architecture
 
 ### Tool Structure
-The server currently exposes 152 active MCP tools across Robinhood and Schwab.
+The server currently exposes 155 active MCP tools across Robinhood and Schwab.
 Use [Tool Reference](docs/MCP_TOOLS_REFERENCE.md) for the generated breakdown.
 
 All tools return JSON with `result` field:

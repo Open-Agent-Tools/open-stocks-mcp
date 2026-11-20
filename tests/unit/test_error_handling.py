@@ -693,6 +693,18 @@ async def test_execute_with_retry_runs_sync_in_executor(
 
 
 @pytest.mark.asyncio
+async def test_execute_with_retry_consumes_func_name_metadata(
+    retry_patch: dict[str, Any],
+) -> None:
+    def requires_only_value(value: int) -> int:
+        return value
+
+    result = await execute_with_retry(requires_only_value, 7, func_name="legacy_read")
+
+    assert result == 7
+
+
+@pytest.mark.asyncio
 async def test_execute_with_retry_retries_then_succeeds(
     retry_patch: dict[str, Any],
 ) -> None:

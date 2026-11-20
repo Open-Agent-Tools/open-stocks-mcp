@@ -1,6 +1,6 @@
 # Open Stocks MCP — Tool Reference
 
-Total tools: 152
+Total tools: 155
 
 ## account_details
 
@@ -103,6 +103,15 @@ Places a limit buy order for an option.
         instrument_id: The option instrument ID
         quantity: The number of option contracts to buy
         limit_price: The maximum price per contract
+
+
+## buy_stock_fractional
+
+Places a regular-hours fractional stock buy by dollar amount.
+
+    Args:
+        symbol: The stock symbol to buy (e.g., "AAPL")
+        amount_in_dollars: The dollar amount to invest
 
 
 ## buy_stock_limit
@@ -939,6 +948,24 @@ Places a limit sell order for an option.
         limit_price: The minimum price per contract
 
 
+## sell_stock_fractional
+
+Places a regular-hours fractional stock sell by dollar amount.
+
+    Args:
+        symbol: The stock symbol to sell (e.g., "AAPL")
+        amount_in_dollars: The dollar value to sell
+
+
+## sell_stock_fractional_quantity
+
+Closes an exact whole or fractional stock quantity in regular hours.
+
+    Args:
+        symbol: The stock symbol to sell (e.g., "AAPL")
+        quantity: The exact number of shares to sell
+
+
 ## sell_stock_limit
 
 Places a limit sell order for a stock.
@@ -1018,7 +1045,12 @@ Gets news stories for a stock.
 
 ## stock_orders
 
-Retrieves a list of recent stock order history and their statuses.
+Retrieves stock order history and statuses, optionally from a date.
+
+    Args:
+        start_date: Optional inclusive ISO date (YYYY-MM-DD)
+        limit: Maximum number of orders to return, from 1 to 1000
+
 
 ## stock_price
 
