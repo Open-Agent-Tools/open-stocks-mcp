@@ -45,6 +45,7 @@ def render_tool_docs_markdown(payload: dict[str, Any]) -> str:
     lines = [DOCS_HEADER, "", f"Total tools: {count}", ""]
     for tool in tools:
         description = tool["description"] or "No description provided."
+        description = "\n".join(line.rstrip() for line in description.splitlines())
         lines.extend([f"## {tool['name']}", "", description, ""])
 
     return "\n".join(lines).rstrip() + "\n"

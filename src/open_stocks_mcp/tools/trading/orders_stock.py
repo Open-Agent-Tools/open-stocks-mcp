@@ -1,5 +1,6 @@
 """MCP tools for stock order placement."""
 
+import math
 from typing import Any
 
 import robin_stocks.robinhood as rh
@@ -14,6 +15,17 @@ from open_stocks_mcp.tools.error_handling import (
 )
 
 # Stock Order Placement Tools
+
+
+async def _execute_order_once(func: Any, *args: Any, **kwargs: Any) -> Any:
+    """Submit one order attempt without retrying an ambiguous mutation."""
+    return await execute_with_retry(
+        func,
+        *args,
+        max_retries=0,
+        handle_auth_errors=False,
+        **kwargs,
+    )
 
 
 @handle_robin_stocks_errors
@@ -63,7 +75,7 @@ async def order_buy_market(symbol: str, quantity: int) -> dict[str, Any]:
         )
 
     # Place order
-    order_result = await execute_with_retry(
+    order_result = await _execute_order_once(
         rh.order_buy_market, symbol, quantity, timeInForce="gfd"
     )
 
@@ -145,7 +157,7 @@ async def order_sell_market(symbol: str, quantity: int) -> dict[str, Any]:
         )
 
     # Place order
-    order_result = await execute_with_retry(
+    order_result = await _execute_order_once(
         rh.order_sell_market, symbol, quantity, timeInForce="gfd"
     )
 
@@ -244,7 +256,7 @@ async def order_buy_limit(
         )
 
     # Place order
-    order_result = await execute_with_retry(
+    order_result = await _execute_order_once(
         rh.order_buy_limit, symbol, quantity, limit_price
     )
 
@@ -336,7 +348,7 @@ async def order_sell_limit(
         )
 
     # Place order
-    order_result = await execute_with_retry(
+    order_result = await _execute_order_once(
         rh.order_sell_limit, symbol, quantity, limit_price
     )
 
@@ -429,7 +441,7 @@ async def order_buy_stop_loss(
         )
 
     # Place order
-    order_result = await execute_with_retry(
+    order_result = await _execute_order_once(
         rh.order_buy_stop_loss, symbol, quantity, stop_price
     )
 
@@ -528,7 +540,7 @@ async def order_sell_stop_loss(
         )
 
     # Place order
-    order_result = await execute_with_retry(
+    order_result = await _execute_order_once(
         rh.order_sell_stop_loss, symbol, quantity, stop_price
     )
 
@@ -605,7 +617,7 @@ async def order_buy_trailing_stop(
         )
 
     # Place order
-    order_result = await execute_with_retry(
+    order_result = await _execute_order_once(
         rh.order_buy_trailing_stop, symbol, quantity, trail_amount
     )
 
@@ -697,7 +709,7 @@ async def order_sell_trailing_stop(
         )
 
     # Place order
-    order_result = await execute_with_retry(
+    order_result = await _execute_order_once(
         rh.order_sell_trailing_stop, symbol, quantity, trail_amount
     )
 
@@ -750,7 +762,11 @@ async def order_buy_fractional_by_price(
             {"error": "Invalid symbol provided", "status": "error"}
         )
 
-    if not isinstance(amount_in_dollars, int | float) or amount_in_dollars <= 0:
+    if (
+        not isinstance(amount_in_dollars, int | float)
+        or not math.isfinite(amount_in_dollars)
+        or amount_in_dollars <= 0
+    ):
         return create_success_response(
             {"error": "Amount must be a positive number", "status": "error"}
         )
@@ -775,13 +791,26 @@ async def order_buy_fractional_by_price(
         )
 
     # Place order
-    order_result = await execute_with_retry(
-        rh.order_buy_fractional_by_price, symbol, amount_in_dollars
+    order_result = await _execute_order_once(
+        rh.order_buy_fractional_by_price,
+        symbol,
+        amount_in_dollars,
+        timeInForce="gfd",
+        market_hours="regular_hours",
     )
 
     if not order_result:
         return create_success_response(
             {"error": "Order placement failed", "status": "error"}
+        )
+
+    if isinstance(order_result, dict) and "non_field_errors" in order_result:
+        error_msgs = order_result["non_field_errors"]
+        return create_success_response(
+            {
+                "error": f"Order failed: {'; '.join(error_msgs)}",
+                "status": "error",
+            }
         )
 
     order_result = sanitize_api_response(order_result)
@@ -794,6 +823,163 @@ async def order_buy_fractional_by_price(
             "amount_in_dollars": amount_in_dollars,
             "order_type": "fractional",
             "side": "buy",
+            "state": order_result.get("state"),
+            "created_at": order_result.get("created_at"),
+            "status": "success",
+        }
+    )
+
+
+@handle_robin_stocks_errors
+async def order_sell_fractional_by_price(
+    symbol: str, amount_in_dollars: float
+) -> dict[str, Any]:
+    """Place a regular-hours fractional sell using a dollar amount."""
+    log_api_call(
+        "order_sell_fractional_by_price",
+        symbol,
+        amount_in_dollars=amount_in_dollars,
+    )
+
+    if not symbol or not isinstance(symbol, str):
+        return create_success_response(
+            {"error": "Invalid symbol provided", "status": "error"}
+        )
+    if (
+        not isinstance(amount_in_dollars, int | float)
+        or not math.isfinite(amount_in_dollars)
+        or amount_in_dollars <= 0
+    ):
+        return create_success_response(
+            {"error": "Amount must be a positive number", "status": "error"}
+        )
+
+    holdings = await execute_with_retry(rh.build_holdings)
+    holding = holdings.get(symbol.upper()) if isinstance(holdings, dict) else None
+    if not isinstance(holding, dict):
+        return create_success_response(
+            {"error": f"No position found for {symbol}", "status": "error"}
+        )
+
+    equity = float(holding.get("equity") or 0)
+    if equity + 1e-6 < float(amount_in_dollars):
+        return create_success_response(
+            {
+                "error": (
+                    f"Insufficient position value. Position ${equity:.2f}, "
+                    f"trying to sell ${float(amount_in_dollars):.2f}"
+                ),
+                "status": "error",
+            }
+        )
+
+    order_result = await _execute_order_once(
+        rh.order_sell_fractional_by_price,
+        symbol,
+        amount_in_dollars,
+        timeInForce="gfd",
+    )
+    if not order_result:
+        return create_success_response(
+            {"error": "Order placement failed", "status": "error"}
+        )
+    if isinstance(order_result, dict) and "non_field_errors" in order_result:
+        error_msgs = order_result["non_field_errors"]
+        return create_success_response(
+            {
+                "error": f"Order failed: {'; '.join(error_msgs)}",
+                "status": "error",
+            }
+        )
+
+    order_result = sanitize_api_response(order_result)
+    logger.info(f"Fractional sell order placed for ${amount_in_dollars} of {symbol}")
+    return create_success_response(
+        {
+            "order_id": order_result.get("id"),
+            "symbol": symbol,
+            "amount_in_dollars": amount_in_dollars,
+            "order_type": "fractional",
+            "side": "sell",
+            "state": order_result.get("state"),
+            "created_at": order_result.get("created_at"),
+            "status": "success",
+        }
+    )
+
+
+@handle_robin_stocks_errors
+async def order_sell_fractional_by_quantity(
+    symbol: str, quantity: float
+) -> dict[str, Any]:
+    """Place a regular-hours sell for an exact fractional share quantity."""
+    log_api_call(
+        "order_sell_fractional_by_quantity",
+        symbol,
+        quantity=quantity,
+    )
+
+    if not symbol or not isinstance(symbol, str):
+        return create_success_response(
+            {"error": "Invalid symbol provided", "status": "error"}
+        )
+    if (
+        not isinstance(quantity, int | float)
+        or not math.isfinite(quantity)
+        or quantity <= 0
+    ):
+        return create_success_response(
+            {"error": "Quantity must be a positive number", "status": "error"}
+        )
+
+    holdings = await execute_with_retry(rh.build_holdings)
+    holding = holdings.get(symbol.upper()) if isinstance(holdings, dict) else None
+    if not isinstance(holding, dict):
+        return create_success_response(
+            {"error": f"No position found for {symbol}", "status": "error"}
+        )
+
+    shares_owned = float(holding.get("quantity") or 0)
+    if shares_owned + 1e-9 < float(quantity):
+        return create_success_response(
+            {
+                "error": (
+                    f"Insufficient shares. Own {shares_owned:.6f}, "
+                    f"trying to sell {float(quantity):.6f}"
+                ),
+                "status": "error",
+            }
+        )
+
+    order_result = await _execute_order_once(
+        rh.order_sell_fractional_by_quantity,
+        symbol,
+        quantity,
+        timeInForce="gfd",
+        market_hours="regular_hours",
+    )
+    if not order_result:
+        return create_success_response(
+            {"error": "Order placement failed", "status": "error"}
+        )
+    if isinstance(order_result, dict) and "non_field_errors" in order_result:
+        error_msgs = order_result["non_field_errors"]
+        return create_success_response(
+            {
+                "error": f"Order failed: {'; '.join(error_msgs)}",
+                "status": "error",
+            }
+        )
+
+    order_result = sanitize_api_response(order_result)
+    logger.info(f"Fractional sell order placed for {quantity} shares of {symbol}")
+    return create_success_response(
+        {
+            "order_id": order_result.get("id"),
+            "symbol": symbol,
+            "quantity": quantity,
+            "order_type": "fractional_quantity",
+            "side": "sell",
             "state": order_result.get("state"),
             "created_at": order_result.get("created_at"),
             "status": "success",

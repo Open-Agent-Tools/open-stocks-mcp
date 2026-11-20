@@ -28,6 +28,7 @@ def _get_retry_config() -> RetryConfig:
 async def execute_with_retry(
     func: Callable[..., Any],
     *args: Any,
+    func_name: str | None = None,
     max_retries: int | None = None,
     delay: float | None = None,
     backoff_factor: float | None = None,
@@ -55,6 +56,7 @@ async def execute_with_retry(
             return await execute_with_retry(
                 func,
                 *args,
+                func_name=func_name,
                 max_retries=max_retries,
                 delay=delay,
                 backoff_factor=backoff_factor,
@@ -75,6 +77,7 @@ async def execute_with_retry(
 
     last_exception = None
     retry_config = _get_retry_config()
+    operation_name = func_name or getattr(func, "__name__", "broker operation")
     configured_max_retries = (
         retry_config.max_retries if max_retries is None else max_retries
     )
@@ -121,7 +124,8 @@ async def execute_with_retry(
             if isinstance(classified_error, AuthenticationError) and handle_auth_errors:
                 if session_manager.should_block_auth_retries():
                     logger.critical(
-                        "Blocking authentication retry due to persistent session cache clear failures"
+                        f"Blocking authentication retry for {operation_name} due to "
+                        "persistent session cache clear failures"
                     )
                     raise AuthenticationError(
                         "Session cache clear failures prevent safe authentication retry"
@@ -166,12 +170,16 @@ async def execute_with_retry(
             if attempt < configured_max_retries:
                 wait_time = retry_delay * (retry_backoff_factor**attempt)
                 logger.warning(
-                    f"Attempt {attempt + 1} failed, retrying in {wait_time}s: {e}"
+                    f"{operation_name} attempt {attempt + 1} failed, retrying in "
+                    f"{wait_time}s: {e}"
                 )
                 await asyncio.sleep(wait_time)
                 attempt += 1
             else:
-                logger.error(f"All {configured_max_retries + 1} attempts failed: {e}")
+                logger.error(
+                    f"All {configured_max_retries + 1} attempts for "
+                    f"{operation_name} failed: {e}"
+                )
                 await circuit_breaker.record_failure(classified_error.error_type)
                 raise classified_error from e
 

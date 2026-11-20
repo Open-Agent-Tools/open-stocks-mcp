@@ -253,8 +253,11 @@ from open_stocks_mcp.tools.stocks import (
     search_stocks,
 )
 from open_stocks_mcp.tools.trading.orders_stock import (
+    order_buy_fractional_by_price,
     order_buy_limit,
     order_buy_market,
+    order_sell_fractional_by_price,
+    order_sell_fractional_by_quantity,
     order_sell_limit,
     order_sell_market,
     order_sell_stop_loss,
@@ -307,9 +310,16 @@ async def portfolio() -> dict[str, Any]:
 
 
 @mcp.tool()
-async def stock_orders() -> dict[str, Any]:
-    """Retrieves a list of recent stock order history and their statuses."""
-    return await get_stock_orders()
+async def stock_orders(
+    start_date: str | None = None, limit: int = 100
+) -> dict[str, Any]:
+    """Retrieves stock order history and statuses, optionally from a date.
+
+    Args:
+        start_date: Optional inclusive ISO date (YYYY-MM-DD)
+        limit: Maximum number of orders to return, from 1 to 1000
+    """
+    return await get_stock_orders(start_date, limit)
 
 
 @mcp.tool()
@@ -1033,18 +1043,41 @@ async def sell_stock_stop_loss(
 #     return await order_sell_trailing_stop(symbol, quantity, trail_amount)  # type: ignore[no-any-return]
 
 
-# DEPRECATED: buy_fractional_stock removed - uncommon use case for most traders
-# Fractional share trading is useful but represents a small subset of trading activity
-# and most retail traders prefer whole share purchases for clearer position management
-# @mcp.tool()
-# async def buy_fractional_stock(symbol: str, amount_in_dollars: float) -> dict[str, Any]:
-#     """Places a fractional share buy order using dollar amount.
-#
-#     Args:
-#         symbol: The stock symbol to buy (e.g., "AAPL")
-#         amount_in_dollars: The dollar amount to invest
-#     """
-#     return await order_buy_fractional_by_price(symbol, amount_in_dollars)  # type: ignore[no-any-return]
+@mcp.tool()
+async def buy_stock_fractional(symbol: str, amount_in_dollars: float) -> dict[str, Any]:
+    """Places a regular-hours fractional stock buy by dollar amount.
+
+    Args:
+        symbol: The stock symbol to buy (e.g., "AAPL")
+        amount_in_dollars: The dollar amount to invest
+    """
+    return await order_buy_fractional_by_price(symbol, amount_in_dollars)
+
+
+@mcp.tool()
+async def sell_stock_fractional(
+    symbol: str, amount_in_dollars: float
+) -> dict[str, Any]:
+    """Places a regular-hours fractional stock sell by dollar amount.
+
+    Args:
+        symbol: The stock symbol to sell (e.g., "AAPL")
+        amount_in_dollars: The dollar value to sell
+    """
+    return await order_sell_fractional_by_price(symbol, amount_in_dollars)
+
+
+@mcp.tool()
+async def sell_stock_fractional_quantity(
+    symbol: str, quantity: float
+) -> dict[str, Any]:
+    """Closes an exact whole or fractional stock quantity in regular hours.
+
+    Args:
+        symbol: The stock symbol to sell (e.g., "AAPL")
+        quantity: The exact number of shares to sell
+    """
+    return await order_sell_fractional_by_quantity(symbol, quantity)
 
 
 # Options Order Placement Tools

@@ -245,8 +245,11 @@ All Schwab tools use `schwab_` prefix (e.g., `schwab_get_portfolio`, `schwab_buy
 - ✅ Market orders - Buy/sell tested with XOM and AMC
 - ✅ Limit orders - Buy/sell tested with XOM ($106) and AMC ($3)
 - ✅ Stop-loss orders - Sell tested with AMC (25 shares at $2.50)
+- Fractional/dollar orders - Regular-hours buy/sell by dollar amount and exact
+  fractional-quantity closes
+  (unit-tested; live-account validation remains required before production use)
 - Individual and bulk order cancellation
-- ❌ **Deprecated**: Trailing stop orders, fractional shares (uncommon use cases)
+- ❌ **Deprecated**: Trailing stop orders (uncommon use cases)
 
 **Options Orders (✅ Live Tested):**
 - ✅ Options limit orders (buy/sell) - **API bugs fixed**
@@ -344,7 +347,8 @@ MCP_HTTP_URL="http://localhost:3001/mcp" adk eval examples/google_adk_agent test
 - ✅ **Enhanced Options Tools** - New `open_option_positions_with_details()` enriches positions with call/put type
 - ✅ **Stock trading API fixes** - Market, limit, and stop-loss buy/sell functions now working correctly
 - ✅ **Live stock trading validation** - XOM and AMC orders successfully placed (market, limit, stop-loss)
-- ✅ **Tool deprecation** - Removed 4 uncommon trading functions (buy_stock_stop_loss, trailing stops, fractional shares)
+- ✅ **Tool compatibility** - Restored fractional/dollar stock buys and sells as `buy_stock_fractional` and `sell_stock_fractional`
+- ✅ **Order safety** - Stock order submissions use one broker attempt so uncertain outcomes are reconciled instead of automatically duplicated
 - ✅ **Options trading API fixes** - `buy_option_limit`, `sell_option_limit`, and spread strategies now working
 - ✅ **Live options validation** - F $9 put successfully traded
 - ✅ **Options discovery** - `find_options` function working correctly
