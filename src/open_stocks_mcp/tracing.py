@@ -58,7 +58,7 @@ def setup_tracing(config: ServerConfig) -> TracerProvider | None:
             exporter = OTLPSpanExporter(endpoint=config.otel.exporter_endpoint)
             provider.add_span_processor(BatchSpanProcessor(exporter))
         except ImportError:
-            pass  # OTLP exporter optional — spans still recorded in-process
+            pass
 
     _tracer_provider = provider
     return provider

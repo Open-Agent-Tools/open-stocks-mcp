@@ -43,12 +43,10 @@ class RateLimiter:
         self.calls_per_hour = calls_per_hour
         self.burst_size = burst_size
 
-        # Track call timestamps
         self.call_times: deque[float] = deque(maxlen=calls_per_hour)
         self._lock = asyncio.Lock()
         self._waiters: deque[asyncio.Future[None]] = deque()
 
-        # Track per-endpoint limits
         self.endpoint_buckets: dict[str, deque[float]] = defaultdict(
             lambda: deque(maxlen=100)
         )
@@ -78,19 +76,16 @@ class RateLimiter:
             async with self._lock:
                 now = time.time()
 
-                # Remove old timestamps (older than 1 hour)
                 cutoff_hour = now - SECONDS_PER_HOUR
                 while self.call_times and self.call_times[0] < cutoff_hour:
                     self.call_times.popleft()
 
                 wait_time = 0.0
 
-                # Check hourly limit
                 if len(self.call_times) >= self.calls_per_hour:
                     oldest_call = self.call_times[0]
                     wait_time = max(wait_time, (oldest_call + SECONDS_PER_HOUR) - now)
 
-                # Check minute limit
                 cutoff_minute = now - SECONDS_PER_MINUTE
                 minute_calls = [t for t in self.call_times if t > cutoff_minute]
                 if len(minute_calls) >= self.calls_per_minute:
@@ -98,7 +93,6 @@ class RateLimiter:
                         wait_time, (minute_calls[0] + SECONDS_PER_MINUTE) - now
                     )
 
-                # Check burst limit
                 cutoff_burst = now - BURST_WINDOW_SECONDS
                 burst_calls = [t for t in self.call_times if t > cutoff_burst]
                 if len(burst_calls) >= self.burst_size:
@@ -107,7 +101,6 @@ class RateLimiter:
                     )
 
                 if wait_time <= 0:
-                    # Capacity available
                     for _ in range(int(weight)):
                         self.call_times.append(now)
                     if endpoint:
@@ -116,18 +109,14 @@ class RateLimiter:
                         self.broker_buckets[broker].append(now)
                     return
 
-                # Check if we've exceeded max_wait
                 if deadline is not None and (now + wait_time) > deadline:
                     raise RateLimitError(
                         f"Rate limit wait time {wait_time:.1f}s exceeds max_wait {max_wait}s"
                     )
 
-            # Need to wait.
             if wait_time > 0:
                 logger.debug(f"Rate limit reached. Waiting {wait_time:.3f}s")
                 await asyncio.sleep(wait_time)
-
-            # Loop again to re-check capacity and potentially wait more or acquire
 
     def reset(self) -> None:
         """Reset rate limiter state."""
@@ -147,7 +136,6 @@ class RateLimiter:
         """
         now = time.time()
 
-        # Calculate current usage
         cutoff_minute = now - SECONDS_PER_MINUTE
 
         calls_last_minute = sum(1 for t in self.call_times if t > cutoff_minute)
@@ -276,12 +264,10 @@ class Batcher(Generic[_T]):
             self._queue.append((symbol, waiter))
 
             if len(self._queue) >= self.batch_size:
-                # Trigger immediate flush if batch size reached
                 if self._flush_task:
                     self._flush_task.cancel()
                 await self._flush(fetch_many_callable)
             elif not self._flush_task:
-                # Start a timer to flush after queue_max_wait
                 self._flush_task = asyncio.create_task(
                     self._delayed_flush(fetch_many_callable)
                 )
@@ -342,13 +328,10 @@ class Batcher(Generic[_T]):
                     waiter.set_exception(exc)
 
 
-# Global rate limiter instance
 _rate_limiter: RateLimiter | None = None
 
-# Global request coordinator instance
 _request_coordinator: RequestCoordinator | None = None
 
-# Global batchers
 _batchers: dict[str, Batcher[Any]] = {}
 
 
@@ -367,7 +350,6 @@ def get_broker_rate_limit_defaults(broker_name: str) -> tuple[int, int, int]:
     """Return broker-specific (per-minute, per-hour, burst) rate-limit defaults."""
     normalized = broker_name.strip().lower()
     if normalized == "schwab":
-        # Schwab integration docs call out ~120 req/min as the intended baseline.
         return (
             _int_env(
                 "OPEN_STOCKS_SCHWAB_CALLS_PER_MINUTE", DEFAULT_SCHWAB_CALLS_PER_MINUTE
@@ -440,7 +422,6 @@ def get_rate_limiter(broker_name: str | None = None) -> RateLimiter:
 
         return get_broker_registry_sync().get_rate_limiter(broker_name)
     if _rate_limiter is None:
-        # Initialize with conservative defaults
         _rate_limiter = RateLimiter(
             calls_per_minute=DEFAULT_CALLS_PER_MINUTE,
             calls_per_hour=DEFAULT_CALLS_PER_HOUR,

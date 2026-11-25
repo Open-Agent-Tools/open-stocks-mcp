@@ -76,12 +76,10 @@ async def get_options_chains(symbol: str) -> dict[str, Any]:
     """
     logger.info(f"Getting option chains for symbol: {symbol}")
 
-    # Validate and format symbol
     symbol = symbol.upper().strip()
     if not symbol:
         return {"result": {"error": "Symbol is required", "status": "error"}}
 
-    # Get option chains data
     chains_data = await execute_with_retry(rh.options.get_chains, symbol)
 
     if not chains_data:
@@ -170,12 +168,10 @@ async def find_tradable_options(
         f"Finding tradable options for {symbol} with filters: expiration={expiration_date}, type={option_type}"
     )
 
-    # Validate and format symbol
     symbol = symbol.upper().strip()
     if not symbol:
         return {"result": {"error": "Symbol is required", "status": "error"}}
 
-    # Validate option type if provided
     if option_type:
         option_type = option_type.lower()
         if option_type not in ["call", "put"]:
@@ -186,7 +182,6 @@ async def find_tradable_options(
                 }
             }
 
-    # Find tradable options using correct Robin Stocks API
     try:
         options_data = await execute_with_retry(
             rh.find_options_by_expiration,
@@ -195,7 +190,6 @@ async def find_tradable_options(
             option_type,
         )
     except AttributeError:
-        # Fallback: try alternative API function names
         try:
             options_data = await execute_with_retry(
                 rh.get_option_contracts_by_ticker,

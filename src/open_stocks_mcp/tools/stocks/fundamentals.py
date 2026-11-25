@@ -31,7 +31,6 @@ async def get_stock_info(symbol: str) -> dict[str, Any]:
     Returns:
         A JSON object containing company information in the result field.
     """
-    # Input validation
     if not validate_symbol(symbol):
         return create_error_response(
             ValueError(f"Invalid symbol format: {symbol}"), "symbol validation"
@@ -40,8 +39,6 @@ async def get_stock_info(symbol: str) -> dict[str, Any]:
     symbol = symbol.strip().upper()
     log_api_call("get_stock_info", symbol=symbol)
 
-    # Get fundamentals and instrument data with retry logic
-    # Use batching for instruments lookup
     cfg = get_config()
     batcher = get_batcher(
         "robinhood_instruments",
@@ -61,7 +58,6 @@ async def get_stock_info(symbol: str) -> dict[str, Any]:
 
     fundamental = fundamentals[0] if fundamentals else {}
 
-    # Get company name with retry logic
     company_name = await execute_with_retry(rh.get_name_by_symbol, symbol)
 
     logger.info(f"Successfully retrieved stock info for {symbol}")
@@ -93,15 +89,13 @@ async def get_market_hours() -> dict[str, Any]:
     """
     log_api_call("get_market_hours")
 
-    # Get market information with retry logic
     markets = await execute_with_retry(rh.get_markets)
 
     if not markets:
         return create_no_data_response("No market data available")
 
-    # Process market data - focus on main markets
     market_data = []
-    for market in markets[:5]:  # Limit to top 5 markets
+    for market in markets[:5]:
         market_data.append(
             {
                 "name": market.get("name", "N/A"),

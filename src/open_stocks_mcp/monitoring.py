@@ -37,7 +37,6 @@ class MetricsCollector:
         """Initialize metrics collector."""
         self.window_size = timedelta(minutes=window_size_minutes)
 
-        # Metrics storage
         self.api_calls: deque[tuple[datetime, str, bool]] = deque()
         self.errors: deque[tuple[datetime, str, str | None]] = deque()
         self.response_times: deque[tuple[datetime, float]] = deque()
@@ -48,18 +47,15 @@ class MetricsCollector:
         self.error_types: dict[str, int] = defaultdict(int)
         self.broker_operations: deque[dict[str, Any]] = deque()
 
-        # Counters
         self.total_calls = 0
         self.total_errors = 0
         self.session_refreshes = 0
 
-        # Cache hit/miss counters, keyed by cache name
         self.cache_hits: dict[str, int] = defaultdict(int)
         self.cache_misses: dict[str, int] = defaultdict(int)
 
         self._lock = asyncio.Lock()
 
-        # Alerting
         self._alerts_enabled = alerts_enabled
         self._alert_dedup_window = timedelta(seconds=alert_dedup_window_seconds)
         sinks: list[AlertSink] = [LogAlertSink()]
@@ -74,12 +70,9 @@ class MetricsCollector:
         self._error_rate_unhealthy_threshold = error_rate_unhealthy_threshold
         self._avg_response_time_unhealthy_ms = avg_response_time_unhealthy_ms
         self._latency_p95_threshold_ms = latency_p95_threshold_ms
-        # Maps signal -> timestamp of last emission (for dedup)
         self._last_alert_at: dict[str, datetime] = {}
-        # Current active alerts keyed by signal name
         self._active_alerts: dict[str, AlertEvent] = {}
         self._last_health_status = "healthy"
-        # Counter for sink delivery failures
         self.degraded_sink_total = 0
 
     async def aclose(self) -> None:
@@ -103,30 +96,22 @@ class MetricsCollector:
         async with self._lock:
             now = datetime.now()
 
-            # Clean old entries
             self._clean_old_entries(now)
 
-            # Record call
             self.api_calls.append((now, tool_name, success))
             self.total_calls += 1
 
-            # Record response time
             self.response_times.append((now, duration))
 
-            # Record tool usage
             self.tool_usage[tool_name].append((now, success))
             self.tool_response_times[tool_name].append((now, duration))
 
-            # Record error if failed
             if not success:
                 self.errors.append((now, tool_name, error_type))
                 self.total_errors += 1
                 if error_type:
                     self.error_types[error_type] += 1
 
-        # Evaluate alert conditions after every recorded call so live traffic
-        # drives both `active_alerts` state and sink delivery. Runs outside the
-        # lock so `get_metrics()` (which acquires it) does not deadlock.
         try:
             await self.evaluate_alert_conditions()
         except Exception as exc:  # pragma: no cover - defensive
@@ -184,19 +169,15 @@ class MetricsCollector:
         """Remove entries older than the window size."""
         cutoff = now - self.window_size
 
-        # Clean api_calls
         while self.api_calls and self.api_calls[0][0] < cutoff:
             self.api_calls.popleft()
 
-        # Clean errors
         while self.errors and self.errors[0][0] < cutoff:
             self.errors.popleft()
 
-        # Clean response_times
         while self.response_times and self.response_times[0][0] < cutoff:
             self.response_times.popleft()
 
-        # Clean tool_usage
         for tool_calls in self.tool_usage.values():
             while tool_calls and tool_calls[0][0] < cutoff:
                 tool_calls.popleft()
@@ -204,7 +185,6 @@ class MetricsCollector:
         for t in empty_tools:
             del self.tool_usage[t]
 
-        # Clean per-tool response times
         for tool_durations in self.tool_response_times.values():
             while tool_durations and tool_durations[0][0] < cutoff:
                 tool_durations.popleft()
@@ -217,7 +197,6 @@ class MetricsCollector:
         ):
             self.broker_operations.popleft()
 
-        # Clean alert deduplication map
         dedup_cutoff = now - self._alert_dedup_window
         signals_to_remove = [
             signal
@@ -251,7 +230,6 @@ class MetricsCollector:
             now = datetime.now()
             self._clean_old_entries(now)
 
-            # Calculate metrics
             total_calls_window = len(self.api_calls)
             total_errors_window = len(self.errors)
             error_rate = (
@@ -260,14 +238,12 @@ class MetricsCollector:
                 else 0
             )
 
-            # Calculate average response time
             avg_response_time = 0.0
             if self.response_times:
                 avg_response_time = sum(t[1] for t in self.response_times) / len(
                     self.response_times
                 )
 
-            # Calculate percentiles
             response_times_sorted = (
                 sorted(t[1] for t in self.response_times) if self.response_times else []
             )
@@ -275,7 +251,6 @@ class MetricsCollector:
             p95 = self._percentile(response_times_sorted, 0.95)
             p99 = self._percentile(response_times_sorted, 0.99)
 
-            # Tool usage stats
             tool_stats = {}
             for tool, calls in self.tool_usage.items():
                 successful = sum(1 for _, success in calls if success)
@@ -468,7 +443,6 @@ class MetricsCollector:
         """
         metrics = await self.get_metrics()
 
-        # Define health thresholds
         error_rate = metrics["error_rate_percent"]
         avg_response_time = metrics["avg_response_time_ms"]
 
@@ -575,14 +549,12 @@ class MetricsCollector:
                 )
             )
 
-        # Clear resolved signals from active_alerts
         active_signals = {e.signal for e in candidates}
         for signal in list(self._active_alerts.keys()):
             if signal not in active_signals:
                 del self._active_alerts[signal]
 
         if not self._alerts_enabled:
-            # Still update active alerts state, but skip sink delivery
             for event in candidates:
                 self._active_alerts[event.signal] = event
             return
@@ -603,7 +575,6 @@ class MetricsCollector:
                 logger.warning(f"Alert sink delivery failed for {event.signal}: {exc}")
 
 
-# Global metrics collector instance
 _metrics_collector: MetricsCollector | None = None
 
 
@@ -615,7 +586,6 @@ def get_metrics_collector() -> MetricsCollector:
     """
     global _metrics_collector
     if _metrics_collector is None:
-        # Local import to avoid circular dependency at module load.
         from open_stocks_mcp.config import load_config
 
         alerts = load_config().alerts
@@ -670,7 +640,6 @@ class MonitoredTool:
             try:
                 result = await func(*args, **kwargs)
 
-                # Check if result indicates success
                 if isinstance(result, dict) and "result" in result:
                     status = result["result"].get("status", "success")
                     success = status != "error"
@@ -691,7 +660,6 @@ class MonitoredTool:
                     self.tool_name, duration, success, error_type
                 )
 
-                # Log slow calls
                 if duration > 5.0:
                     logger.warning(f"Slow call to {self.tool_name}: {duration:.2f}s")
 

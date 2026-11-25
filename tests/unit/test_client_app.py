@@ -19,22 +19,18 @@ async def test_call_tool_initializes_stdio_session_and_returns_text():
     arguments = {"arg1": "val1"}
     expected_text = "tool response"
 
-    # Mock TextContent
     mock_content = TextContent(type="text", text=expected_text)
     mock_result = MagicMock(spec=CallToolResult)
     mock_result.content = [mock_content]
 
-    # Mock Session
     mock_session = AsyncMock()
     mock_session.initialize = AsyncMock()
     mock_session.call_tool = AsyncMock(return_value=mock_result)
 
-    # Mock stdio_client context manager
     mock_stdio_cm = MagicMock()
     mock_stdio_cm.__aenter__ = AsyncMock(return_value=(MagicMock(), MagicMock()))
     mock_stdio_cm.__aexit__ = AsyncMock()
 
-    # Mock ClientSession context manager
     mock_session_cm = MagicMock()
     mock_session_cm.__aenter__ = AsyncMock(return_value=mock_session)
     mock_session_cm.__aexit__ = AsyncMock()
@@ -146,8 +142,6 @@ def test_main_splits_argument_values_once_and_ignores_non_key_tokens():
     ) as mock_call:
         mock_call.return_value = "ok"
 
-        # query=foo=bar should result in key='query', value='foo=bar'
-        # ignored-token should be ignored
         runner.invoke(main, ["search query=foo=bar ignored-token"])
 
         mock_call.assert_awaited_once_with("search", {"query": "foo=bar"})

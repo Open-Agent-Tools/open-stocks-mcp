@@ -142,16 +142,14 @@ class TestNotifications:
             {"id": "notif_1", "title": "Read Notification", "read": True},
             {"id": "notif_2", "title": "Unread Notification", "read": False},
             {"id": "notif_3", "title": "Default Read", "read": True},
-            {"id": "notif_4", "title": "Missing Read Field"},  # No read field
+            {"id": "notif_4", "title": "Missing Read Field"},
         ]
 
         result = await get_notifications()
 
         assert "result" in result
         assert result["result"]["total_notifications"] == 4
-        assert (
-            result["result"]["unread_count"] == 1
-        )  # Only the False one (missing defaults to True)
+        assert result["result"]["unread_count"] == 1
         assert result["result"]["status"] == "success"
 
 
@@ -326,7 +324,7 @@ class TestMarginCalls:
 
         assert "result" in result
         assert result["result"]["total_calls"] == 3
-        assert result["result"]["total_amount_due"] == "1000.00"  # Only valid amount
+        assert result["result"]["total_amount_due"] == "1000.00"
         assert result["result"]["has_active_calls"] is True
         assert result["result"]["status"] == "success"
 
@@ -367,8 +365,8 @@ class TestMarginInterest:
 
         assert "result" in result
         assert result["result"]["charges_count"] == 3
-        assert result["result"]["total_charges"] == "46.50"  # 12.50 + 15.75 + 18.25
-        assert result["result"]["current_rate"] == "2.5%"  # From first charge
+        assert result["result"]["total_charges"] == "46.50"
+        assert result["result"]["current_rate"] == "2.5%"
         assert len(result["result"]["interest_charges"]) == 3
         assert result["result"]["status"] == "success"
 
@@ -421,7 +419,7 @@ class TestMarginInterest:
 
         assert "result" in result
         assert result["result"]["charges_count"] == 2
-        assert result["result"]["total_charges"] == "10.00"  # Only valid amount
+        assert result["result"]["total_charges"] == "10.00"
         assert result["result"]["current_rate"] == "2.5%"
         assert result["result"]["status"] == "success"
 
@@ -513,7 +511,7 @@ class TestSubscriptionFees:
         assert "result" in result
         assert result["result"]["fees_count"] == 1
         assert result["result"]["total_fees"] == "1.00"
-        assert result["result"]["monthly_fee"] == "0.00"  # No gold subscription
+        assert result["result"]["monthly_fee"] == "0.00"
         assert result["result"]["is_gold_member"] is False
         assert result["result"]["status"] == "success"
 
@@ -564,7 +562,7 @@ class TestReferrals:
         assert "result" in result
         assert result["result"]["total_referrals"] == 3
         assert result["result"]["completed_referrals"] == 2
-        assert result["result"]["total_rewards"] == "25.00"  # 10.00 + 15.00
+        assert result["result"]["total_rewards"] == "25.00"
         assert result["result"]["referral_code"] == "ABC123"
         assert len(result["result"]["referrals"]) == 3
         assert result["result"]["status"] == "success"
@@ -602,7 +600,7 @@ class TestReferrals:
         assert result["result"]["total_referrals"] == 2
         assert result["result"]["completed_referrals"] == 2
         assert result["result"]["total_rewards"] == "25.00"
-        assert result["result"]["referral_code"] is None  # No code in list format
+        assert result["result"]["referral_code"] is None
         assert result["result"]["status"] == "success"
 
     @pytest.mark.exception_test
@@ -659,9 +657,7 @@ class TestReferrals:
         assert "result" in result
         assert result["result"]["total_referrals"] == 3
         assert result["result"]["completed_referrals"] == 2
-        assert (
-            result["result"]["total_rewards"] == "10.00"
-        )  # Only valid completed reward
+        assert result["result"]["total_rewards"] == "10.00"
         assert result["result"]["status"] == "success"
 
 
@@ -802,7 +798,6 @@ class TestAccountFeatures:
         features = result["result"]["features"]
         assert features["gold_membership"]["is_member"] is False
         assert features["referrals"]["total_referrals"] == 2
-        # margin and notifications should be missing due to errors
 
 
 class TestAccountSettings:
@@ -899,10 +894,10 @@ class TestAccountSettings:
 
         settings = result["result"]["settings"]
         assert settings["instant_settlement"] is False
-        assert settings["margin_enabled"] is False  # No margin_balances
-        assert settings["options_enabled"] is False  # option_level is "0"
-        assert settings["crypto_enabled"] is False  # Default value
-        assert settings["dividend_reinvestment"] is False  # Default value
+        assert settings["margin_enabled"] is False
+        assert settings["options_enabled"] is False
+        assert settings["crypto_enabled"] is False
+        assert settings["dividend_reinvestment"] is False
 
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")

@@ -55,9 +55,7 @@ async def test_install_is_idempotent(slow_mcp_server: MCPServer) -> None:
     assert result.is_error is True
     content_text = result.content[0].text
     data = json.loads(content_text)
-    # Exactly one timeout error, not a nested/doubled result
     assert data["error_type"] == "ToolExecutionTimeout"
-    # The text should parse as flat dict, not nested
     assert "content" not in data
 
 
@@ -88,5 +86,6 @@ async def test_fast_tool_completes_normally() -> None:
 
     result = await server.call_tool("account_info", {})
 
-    # Fast tool returns the normal call_tool result (not a timeout CallToolResult)
-    assert not (isinstance(result, mcp.types.CallToolResult) and result.is_error is True)
+    assert not (
+        isinstance(result, mcp.types.CallToolResult) and result.is_error is True
+    )

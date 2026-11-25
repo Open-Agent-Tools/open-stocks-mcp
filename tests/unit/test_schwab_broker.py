@@ -16,7 +16,6 @@ class TestSchwabBroker:
     @pytest.fixture
     def schwab_broker(self) -> SchwabBroker:
         """Create a Schwab broker instance for testing."""
-        # Use a path under ~/.tokens to satisfy validation
         token_path = str(Path.home() / ".tokens" / "test_schwab_token.json")
         return SchwabBroker(
             api_key="test_api_key",
@@ -38,7 +37,6 @@ class TestSchwabBroker:
         self, schwab_broker: SchwabBroker, tmp_path: Path
     ) -> None:
         """Test authentication with existing token file."""
-        # Create a temporary token file under ~/.tokens
         token_dir = Path.home() / ".tokens"
         token_dir.mkdir(parents=True, exist_ok=True)
         token_file = token_dir / "schwab_token_test.json"
@@ -46,7 +44,6 @@ class TestSchwabBroker:
         schwab_broker.token_path = str(token_file)
 
         try:
-            # Mock the schwab auth module
             with patch("schwab.auth.client_from_token_file") as mock_client_from_token:
                 mock_client = MagicMock()
                 mock_client_from_token.return_value = mock_client
@@ -67,7 +64,6 @@ class TestSchwabBroker:
         self, schwab_broker: SchwabBroker
     ) -> None:
         """Test authentication using easy_client (no existing token)."""
-        # Mock easy_client and isatty
         with (
             patch("schwab.auth.easy_client") as mock_easy_client,
             patch("os.isatty", return_value=True),
@@ -91,7 +87,6 @@ class TestSchwabBroker:
     @pytest.mark.asyncio
     async def test_authenticate_failure(self, schwab_broker: SchwabBroker) -> None:
         """Test authentication failure."""
-        # Mock authentication failure and isatty
         with (
             patch("schwab.auth.easy_client", side_effect=Exception("OAuth failed")),
             patch("os.isatty", return_value=True),
@@ -113,7 +108,7 @@ class TestSchwabBroker:
             patch.dict(
                 "os.environ", {"OPEN_STOCKS_MCP_SCHWAB_REQUEST_TIMEOUT_SECONDS": "2.5"}
             ),
-            patch("open_stocks_mcp.config._global_config", None),  # Reset config
+            patch("open_stocks_mcp.config._global_config", None),
         ):
             mock_client = MagicMock()
             mock_easy_client.return_value = mock_client
@@ -146,7 +141,6 @@ class TestSchwabBroker:
     @pytest.mark.asyncio
     async def test_logout(self, schwab_broker: SchwabBroker, tmp_path: Path) -> None:
         """Test logout clears client and auth status."""
-        # Create a dummy token file to cover lines 192-193
         token_dir = Path.home() / ".tokens"
         token_dir.mkdir(parents=True, exist_ok=True)
         token_file = token_dir / "schwab_token_logout_test.json"
@@ -174,7 +168,6 @@ class TestSchwabBroker:
             side_effect=Exception("Path error"),
         ):
             await schwab_broker.logout()
-            # Should log error and return
             assert schwab_broker._auth_info.status == BrokerAuthStatus.NOT_AUTHENTICATED
 
     def test_default_token_path(self) -> None:
@@ -344,9 +337,6 @@ class TestSchwabBroker:
             return original_import(name, *args, **kwargs)
 
         with patch("builtins.__import__", side_effect=mocked_import):
-            # Clear schwab from sys.modules if it's there, to force a re-import attempt
-            # But be careful as other tests might need it.
-            # Actually, the 'from schwab import auth' is local, so it will call __import__('schwab')
             result = await schwab_broker.authenticate()
             assert result is False
             assert schwab_broker._auth_info.status == BrokerAuthStatus.AUTH_FAILED
@@ -499,7 +489,6 @@ class TestSchwabBroker:
         schwab_broker._auth_info.status = BrokerAuthStatus.AUTHENTICATED
         schwab_broker.client = MagicMock()
 
-        # Mock get_schwab_accounts called by SchwabBroker.get_portfolio_snapshot
         mock_accounts = {
             "result": {
                 "accounts": [
@@ -547,12 +536,10 @@ class TestSchwabBroker:
         ):
             summary, positions = await schwab_broker.get_portfolio_snapshot()
 
-        # Aggregated summary: liquidationValue sums 5000 + 3000 = 8000
         assert summary["market_value"] == 8000.0
         assert summary["equity"] == 8000.0
         assert summary["buying_power"] == 3000.0
 
-        # Positions from both accounts
         assert len(positions) == 2
         symbols = {p["symbol"] for p in positions}
         assert symbols == {"MSFT", "GOOGL"}
@@ -564,7 +551,7 @@ class TestSchwabBroker:
         assert msft["broker"] == "schwab"
 
         googl = next(p for p in positions if p["symbol"] == "GOOGL")
-        assert googl["quantity"] == 2.0  # 0 long + 2 short
+        assert googl["quantity"] == 2.0
         assert googl["average_buy_price"] == 140.0
         assert googl["market_value"] == 280.0
         assert googl["broker"] == "schwab"

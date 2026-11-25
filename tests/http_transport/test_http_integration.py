@@ -47,7 +47,7 @@ def mcp_server_with_tools() -> MCPServer:
     @server.tool()
     async def mock_slow_tool() -> dict[str, Any]:
         """Mock slow tool for timeout testing"""
-        await asyncio.sleep(0.1)  # Simulate slow operation
+        await asyncio.sleep(0.1)
         return {"result": {"message": "slow operation completed", "status": "success"}}
 
     @server.tool()
@@ -85,7 +85,6 @@ class TestHTTPIntegration:
         mock_http_client: httpx.AsyncClient,
     ) -> None:
         """Test full server startup and initialization sequence"""
-        # Mock all dependencies
         mock_session_manager = Mock()
         mock_session_manager.get_session_info.return_value = {
             "authenticated": True,
@@ -111,7 +110,6 @@ class TestHTTPIntegration:
         }
         mock_get_metrics_collector.return_value = mock_metrics_collector
 
-        # Test server endpoints are accessible
         health_response = await mock_http_client.get("/health")
         assert health_response.status_code == 200
 
@@ -128,12 +126,9 @@ class TestHTTPIntegration:
         self, mock_http_client: httpx.AsyncClient, mcp_server_with_tools: MCPServer
     ) -> None:
         """Test that MCP endpoints are properly mounted and accessible"""
-        # Test MCP JSON-RPC endpoint
         mcp_response = await mock_http_client.get("/mcp")
-        # Should not be 404 (mounted correctly)
         assert mcp_response.status_code != 404
 
-        # Test SSE route registration without opening the never-ending stream.
         app = create_http_server(mcp_server_with_tools)
         route_paths = {getattr(route, "path", None) for route in app.routes}
         assert "/sse" in route_paths
@@ -152,11 +147,9 @@ class TestHTTPIntegration:
                 "response_time": time.time(),
             }
 
-        # Make 5 concurrent requests
         tasks = [make_health_request(i) for i in range(5)]
         results = await asyncio.gather(*tasks)
 
-        # All requests should succeed
         assert len(results) == 5
         for result in results:
             assert result["status_code"] == 200
@@ -166,15 +159,12 @@ class TestHTTPIntegration:
         self, mock_http_client: httpx.AsyncClient
     ) -> None:
         """Test integrated error handling across the HTTP stack"""
-        # Test 404 for unknown endpoint
         response = await mock_http_client.get("/unknown-endpoint")
         assert response.status_code == 404
 
-        # Test method not allowed
         response = await mock_http_client.post("/health")
         assert response.status_code == 405
 
-        # Test invalid JSON
         response = await mock_http_client.post(
             "/session/refresh",
             content="invalid json",
@@ -184,7 +174,7 @@ class TestHTTPIntegration:
             400,
             401,
             422,
-        ]  # Bad request or validation error
+        ]
 
     async def test_security_middleware_integration(
         self, mcp_server_with_tools: MCPServer
@@ -195,13 +185,12 @@ class TestHTTPIntegration:
         app = create_http_server(mcp_server_with_tools)
         transport = ASGITransport(app=app)
 
-        # Test with malicious origin
         async with httpx.AsyncClient(
             transport=transport, base_url="http://test"
         ) as client:
             headers = {"origin": "https://malicious-site.com"}
             response = await client.get("/health", headers=headers)
-            assert response.status_code == 403  # Forbidden
+            assert response.status_code == 403
 
     @patch("open_stocks_mcp.health.get_session_manager")
     @patch("open_stocks_mcp.server.http_transport.get_session_manager")
@@ -212,7 +201,6 @@ class TestHTTPIntegration:
         mock_http_client: httpx.AsyncClient,
     ) -> None:
         """Test complete session lifecycle over HTTP"""
-        # Mock session manager for lifecycle testing
         mock_session_manager = Mock()
         mock_session_manager.get_session_info.return_value = {
             "is_authenticated": False,
@@ -222,12 +210,10 @@ class TestHTTPIntegration:
         mock_get_session_manager_transport.return_value = mock_session_manager
         mock_get_session_manager_health.return_value = mock_session_manager
 
-        # 1. Check initial session status (unauthenticated)
         response = await mock_http_client.get("/health")
         data = response.json()
         assert data["components"]["session"]["status"] == "unhealthy"
 
-        # 2. Refresh session (authenticate)
         mock_session_manager.get_session_info.return_value = {
             "is_authenticated": True,
             "session_duration": 3600,
@@ -238,7 +224,6 @@ class TestHTTPIntegration:
         data = response.json()
         assert data["status"] == "success"
 
-        # 3. Check session status after authentication
         response = await mock_http_client.get("/health")
         data = response.json()
         assert data["components"]["session"]["status"] == "healthy"
@@ -247,30 +232,24 @@ class TestHTTPIntegration:
         self, mock_http_client: httpx.AsyncClient
     ) -> None:
         """Test tool execution through HTTP transport"""
-        # Test that tools endpoint returns available tools
         response = await mock_http_client.get("/tools")
         assert response.status_code == 200
 
         data = response.json()
         assert "result" in data
-        # Should have our mock tools
         tools = data["result"].get("tools", [])
         [tool.get("name", "") for tool in tools]
 
-        # May include our mock tools or real tools depending on mocking
         assert len(tools) > 0
 
     async def test_timeout_handling_integration(
         self, mock_http_client: httpx.AsyncClient
     ) -> None:
         """Test timeout handling in integrated environment"""
-        # Test with very short timeout
         try:
-            response = await mock_http_client.get("/health", timeout=0.001)  # 1ms
-            # If this succeeds, server is very fast
+            response = await mock_http_client.get("/health", timeout=0.001)
             assert response.status_code == 200
         except httpx.TimeoutException:
-            # Expected for very short timeout
             pass
 
 
@@ -283,21 +262,17 @@ class TestHTTPTransportReliability:
         self, mock_http_client: httpx.AsyncClient
     ) -> None:
         """Test that errors are returned gracefully"""
-        # Test various error scenarios
         error_scenarios = [
             ("/nonexistent", 404),
-            # Add more error scenarios as needed
         ]
 
         for endpoint, expected_status in error_scenarios:
             response = await mock_http_client.get(endpoint)
             assert response.status_code == expected_status
-            # Should return valid JSON even for errors
             try:
                 data = response.json()
                 assert isinstance(data, dict)
             except json.JSONDecodeError:
-                # Some errors might not return JSON, which is acceptable
                 pass
 
     async def test_response_format_consistency(
@@ -311,7 +286,6 @@ class TestHTTPTransportReliability:
             if response.status_code == 200:
                 data = response.json()
                 assert isinstance(data, dict)
-                # All successful responses should be valid JSON dictionaries
 
     @patch("open_stocks_mcp.server.http_transport.get_metrics_collector")
     async def test_monitoring_integration(
@@ -332,14 +306,12 @@ class TestHTTPTransportReliability:
         }
         mock_get_metrics_collector.return_value = mock_metrics_collector
 
-        # Test health endpoint returns monitoring data
         response = await mock_http_client.get("/health")
         assert response.status_code == 200
         data = response.json()
         assert "components" in data
         assert data["components"]["metrics"]["status"] == "healthy"
 
-        # Test status endpoint returns detailed metrics
         response = await mock_http_client.get("/status")
         assert response.status_code == 200
         data = response.json()

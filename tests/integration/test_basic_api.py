@@ -12,7 +12,6 @@ from open_stocks_mcp.tools.robinhood_account_tools import (
     get_positions,
 )
 
-# Load environment variables
 load_dotenv()
 
 
@@ -62,7 +61,7 @@ class TestBasicIntegration:
         """Test getting positions."""
         result = await get_positions()
         assert "result" in result
-        assert isinstance(result["result"], dict)  # Changed from list to dict
+        assert isinstance(result["result"], dict)
 
 
 @pytest.mark.integration
@@ -72,8 +71,6 @@ class TestBasicIntegration:
 @pytest.mark.asyncio
 async def test_api_error_handling() -> None:
     """Test API error handling without authentication."""
-    # This should handle the case where we're not authenticated
     result = await get_account_info()
     assert "result" in result
-    # Should either succeed or have error info
     assert "error" in result["result"] or "username" in result["result"]

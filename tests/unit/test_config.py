@@ -344,11 +344,6 @@ def test_tool_execution_timeout_defaults_to_30(
     assert cfg.timeout.tool_execution_timeout_seconds == 30.0
 
 
-# ---------------------------------------------------------------------------
-# Broker config tests
-# ---------------------------------------------------------------------------
-
-
 @pytest.mark.unit
 @pytest.mark.journey_system
 def test_broker_config_defaults_missing_file(monkeypatch: pytest.MonkeyPatch) -> None:

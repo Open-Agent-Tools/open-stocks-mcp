@@ -17,10 +17,8 @@ from tests.conftest import MockBroker
 @pytest.fixture
 async def fresh_registry():
     """Create a fresh registry for each test."""
-    # Create new registry instance
     registry = BrokerRegistry()
 
-    # Patch the singleton to return our fresh instance
     with patch(
         "open_stocks_mcp.brokers.auth_coordinator.get_broker_registry",
         return_value=registry,
@@ -148,7 +146,6 @@ class TestAttemptBrokerLogins:
             "open_stocks_mcp.brokers.auth_coordinator.get_broker_registry",
             return_value=fresh_registry,
         ):
-            # Should not raise error even with require_at_least_one=True
             successful, total, failed = await attempt_broker_logins(
                 require_at_least_one=True
             )
@@ -300,7 +297,6 @@ class TestGetAuthenticatedBrokerOrError:
                 "test", operation="get portfolio"
             )
 
-        # Error response should reference the operation
         assert error is not None
         assert "result" in error
 
@@ -318,7 +314,6 @@ class TestGetAuthenticatedBrokerOrError:
         ):
             result_broker, error = await get_authenticated_broker_or_error(None)
 
-        # Should get the active broker
         assert result_broker is broker or error is not None
 
 
@@ -328,26 +323,22 @@ class TestAuthenticationIntegrationScenarios:
     @pytest.mark.asyncio
     async def test_complete_startup_flow_all_success(self, fresh_registry):
         """Test complete server startup with all brokers succeeding."""
-        # Setup brokers
         robinhood = MockBroker("robinhood", should_auth_succeed=True)
         schwab = MockBroker("schwab", should_auth_succeed=True)
 
         fresh_registry.register(robinhood)
         fresh_registry.register(schwab)
 
-        # Attempt logins (simulates server startup)
         with patch(
             "open_stocks_mcp.brokers.auth_coordinator.get_broker_registry",
             return_value=fresh_registry,
         ):
             successful, total, failed = await attempt_broker_logins()
 
-        # Verify startup succeeded
         assert successful == 2
         assert total == 2
         assert failed == []
 
-        # Verify tools can access brokers
         with patch(
             "open_stocks_mcp.brokers.auth_coordinator.get_broker_registry",
             return_value=fresh_registry,
@@ -363,26 +354,22 @@ class TestAuthenticationIntegrationScenarios:
     @pytest.mark.asyncio
     async def test_complete_startup_flow_partial_success(self, fresh_registry):
         """Test server startup with partial authentication (graceful degradation)."""
-        # Setup brokers - one fails
         robinhood = MockBroker("robinhood", should_auth_succeed=True)
         schwab = MockBroker("schwab", should_auth_succeed=False)
 
         fresh_registry.register(robinhood)
         fresh_registry.register(schwab)
 
-        # Attempt logins - should not crash
         with patch(
             "open_stocks_mcp.brokers.auth_coordinator.get_broker_registry",
             return_value=fresh_registry,
         ):
             successful, total, failed = await attempt_broker_logins()
 
-        # Verify partial success
         assert successful == 1
         assert total == 2
         assert failed == ["schwab"]
 
-        # Verify working broker still accessible
         with patch(
             "open_stocks_mcp.brokers.auth_coordinator.get_broker_registry",
             return_value=fresh_registry,
@@ -398,26 +385,22 @@ class TestAuthenticationIntegrationScenarios:
     @pytest.mark.asyncio
     async def test_complete_startup_flow_all_fail(self, fresh_registry):
         """Test server startup with all authentications failing (still starts)."""
-        # Setup brokers - all fail
         robinhood = MockBroker("robinhood", should_auth_succeed=False)
         schwab = MockBroker("schwab", should_auth_succeed=False)
 
         fresh_registry.register(robinhood)
         fresh_registry.register(schwab)
 
-        # Attempt logins - should not crash server
         with patch(
             "open_stocks_mcp.brokers.auth_coordinator.get_broker_registry",
             return_value=fresh_registry,
         ):
             successful, total, failed = await attempt_broker_logins()
 
-        # Verify server "started" even with no auth
         assert successful == 0
         assert total == 2
         assert failed == ["robinhood", "schwab"]
 
-        # Verify tools return appropriate errors
         with patch(
             "open_stocks_mcp.brokers.auth_coordinator.get_broker_registry",
             return_value=fresh_registry,
@@ -433,16 +416,13 @@ class TestAuthenticationIntegrationScenarios:
     @pytest.mark.asyncio
     async def test_complete_startup_flow_no_brokers(self, fresh_registry):
         """Test server startup with no brokers configured."""
-        # No brokers registered
 
-        # Attempt logins - should handle gracefully
         with patch(
             "open_stocks_mcp.brokers.auth_coordinator.get_broker_registry",
             return_value=fresh_registry,
         ):
             successful, total, failed = await attempt_broker_logins()
 
-        # Verify graceful handling
         assert successful == 0
         assert total == 0
         assert failed == []
@@ -456,7 +436,7 @@ class TestAuthFailedStructuredResponse:
         """Broker with AUTH_FAILED status returns structured response with auth_status='auth_failed'."""
         broker = MockBroker("test", should_auth_succeed=False)
         fresh_registry.register(broker)
-        await broker.authenticate()  # sets AUTH_FAILED
+        await broker.authenticate()
 
         with patch(
             "open_stocks_mcp.brokers.auth_coordinator.get_broker_registry",

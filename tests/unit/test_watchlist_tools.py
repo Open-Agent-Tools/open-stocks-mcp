@@ -63,7 +63,6 @@ class TestGetAllWatchlists:
         assert result["result"]["total_watchlists"] == 2
         assert len(result["result"]["watchlists"]) == 2
 
-        # Check that symbol_count is added
         assert result["result"]["watchlists"][0]["symbol_count"] == 3
         assert result["result"]["watchlists"][1]["symbol_count"] == 2
         assert result["result"]["watchlists"][0]["name"] == "Tech Stocks"
@@ -102,7 +101,6 @@ class TestGetAllWatchlists:
         assert "result" in result
         assert result["result"]["total_watchlists"] == 0
         assert result["result"]["watchlists"] == []
-        # Empty list is treated as no_data by the function
         assert result["result"]["status"] == "no_data"
 
     @patch("open_stocks_mcp.tools.watchlists.read.execute_with_retry")
@@ -118,7 +116,6 @@ class TestGetAllWatchlists:
                 "name": "Empty Watchlist",
                 "url": "https://robinhood.com/watchlists/999/",
                 "user": "https://robinhood.com/user/456/",
-                # No symbols field
             }
         ]
 
@@ -313,7 +310,6 @@ class TestAddSymbolsToWatchlist:
 
         assert "result" in result
         assert result["result"]["symbols_added"] == ["AAPL", "GOOGL"]
-        # Check that the execute_with_retry was called with the correct parameters
         mock_execute_with_retry.assert_called_once()
 
 

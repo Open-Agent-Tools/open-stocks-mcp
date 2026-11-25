@@ -75,7 +75,6 @@ async def test_schwab_stream_manager_handling() -> None:
     mock_broker = MagicMock()
     manager = SchwabStreamManager(mock_broker)
 
-    # Test message handling
     message = {
         "service": "LEVELONE_EQUITIES",
         "content": [{"key": "AAPL", "1": 150.0, "2": 151.0}],
@@ -97,7 +96,6 @@ async def test_schwab_stream_manager_option_quote_handling() -> None:
     mock_broker = MagicMock()
     manager = SchwabStreamManager(mock_broker)
 
-    # Test option message handling
     message = {
         "service": "LEVELONE_OPTIONS",
         "content": [{"key": "AAPL  260619C00150000", "1": 12.34, "2": 12.55}],
@@ -109,7 +107,6 @@ async def test_schwab_stream_manager_option_quote_handling() -> None:
     assert quote["1"] == 12.34
     assert quote["2"] == 12.55
 
-    # Verify equity cache is separate
     assert manager.get_latest_quote("AAPL") is None
 
 
@@ -201,7 +198,6 @@ async def test_schwab_stream_manager_start(mock_stream_client_class: MagicMock) 
 
     manager = SchwabStreamManager(mock_broker)
 
-    # Mock login to avoid actual connection
     mock_stream_client = mock_stream_client_class.return_value
 
     async def async_none() -> None:
@@ -209,8 +205,6 @@ async def test_schwab_stream_manager_start(mock_stream_client_class: MagicMock) 
 
     mock_stream_client.login = MagicMock(return_value=async_none())
 
-    # We don't want to actually start the background loop in tests usually,
-    # but we can mock it
     with patch("asyncio.create_task"):
         success = await manager.start()
         assert success is True
@@ -238,7 +232,6 @@ async def test_schwab_stream_manager_handles_account_activity() -> None:
     assert activity[0]["1"] == "OrderEntryRequest"
     assert activity[0]["2"] == "<xml/>"
 
-    # Verify equity/option caches are unaffected
     assert manager.get_latest_quote("ACT001") is None
     assert manager.get_latest_option_quote("ACT001") is None
 
@@ -270,7 +263,6 @@ async def test_schwab_stream_manager_level2_handling() -> None:
     manager._is_running = True
     manager.stream_client = AsyncMock()
 
-    # Test NASDAQ_BOOK message handling
     nasdaq_message = {
         "service": "NASDAQ_BOOK",
         "content": [
@@ -289,7 +281,6 @@ async def test_schwab_stream_manager_level2_handling() -> None:
     assert book["symbol"] == "AAPL"
     assert book["bids"][0]["PRICE"] == 150.0
 
-    # Test NYSE_BOOK message handling
     nyse_message = {
         "service": "NYSE_BOOK",
         "content": [
@@ -320,17 +311,14 @@ async def test_schwab_stream_manager_subscribe_level2() -> None:
     manager._is_running = True
     manager.stream_client = AsyncMock()
 
-    # Test NASDAQ subscription
     success = await manager.subscribe_level2("AAPL", "nasdaq")
     assert success is True
     manager.stream_client.nasdaq_book_subs.assert_awaited_once_with(["AAPL"])
 
-    # Test NYSE subscription
     success = await manager.subscribe_level2("IBM", "nyse")
     assert success is True
     manager.stream_client.nyse_book_subs.assert_awaited_once_with(["IBM"])
 
-    # Test unsupported venue
     success = await manager.subscribe_level2("AAPL", "unknown")
     assert success is False
 
@@ -370,7 +358,7 @@ async def test_schwab_stream_manager_start_handles_missing_stream_client(
     mock_broker.is_available.return_value = True
     mock_broker.client = MagicMock()
 
-    mock_stream_client_class.return_value = None  # StreamClient(...) → None
+    mock_stream_client_class.return_value = None
 
     manager = SchwabStreamManager(mock_broker)
 
@@ -398,7 +386,7 @@ async def test_schwab_stream_manager_run_loop_skips_relogin_when_stream_client_d
     async def handle_responses_then_clear() -> None:
         nonlocal call_count
         call_count += 1
-        manager.stream_client = None  # simulate client disappearing
+        manager.stream_client = None
         raise RuntimeError("connection dropped")
 
     fake_client = AsyncMock()
@@ -406,11 +394,10 @@ async def test_schwab_stream_manager_run_loop_skips_relogin_when_stream_client_d
     manager.stream_client = fake_client
 
     async def noop_sleep(_: float) -> None:
-        pass  # do not touch _is_running; the guard must clear it
+        pass
 
     with patch("asyncio.sleep", side_effect=noop_sleep):
         await manager._run_loop()
 
-    # Loop must exit cleanly — guard sets _is_running=False and breaks
     assert call_count == 1
     assert manager.is_running is False

@@ -43,14 +43,12 @@ async def get_top_movers_sp500(direction: str = "up") -> dict[str, Any]:
             }
         }
     """
-    # Validate direction parameter
     direction = direction.lower().strip()
     if direction not in ["up", "down"]:
         return create_error_response(
             ValueError("Direction must be 'up' or 'down'"), "parameter validation"
         )
 
-    # Ensure authenticated
     session_mgr = get_session_manager()
     if not await session_mgr.ensure_authenticated():
         return create_error_response(
@@ -59,7 +57,6 @@ async def get_top_movers_sp500(direction: str = "up") -> dict[str, Any]:
 
     log_api_call("get_top_movers_sp500", direction=direction)
 
-    # Get S&P 500 movers with retry logic
     movers_data = await execute_with_retry(rh.get_top_movers_sp500, direction)
 
     if not movers_data:
@@ -67,7 +64,6 @@ async def get_top_movers_sp500(direction: str = "up") -> dict[str, Any]:
             f"No S&P 500 {direction} movers found", {"direction": direction}
         )
 
-    # Filter out None values and ensure we have valid data
     movers = [mover for mover in movers_data if mover is not None]
 
     return create_success_response(
@@ -118,7 +114,6 @@ async def get_top_100() -> dict[str, Any]:
             }
         }
     """
-    # Ensure authenticated
     session_mgr = get_session_manager()
     if not await session_mgr.ensure_authenticated():
         return create_error_response(
@@ -127,13 +122,11 @@ async def get_top_100() -> dict[str, Any]:
 
     log_api_call("get_top_100")
 
-    # Get top 100 stocks with retry logic
     stocks_data = await execute_with_retry(rh.get_top_100)
 
     if not stocks_data:
         return create_no_data_response("No top 100 stocks data found", {})
 
-    # Filter out None values and ensure we have valid data
     stocks = [stock for stock in stocks_data if stock is not None]
 
     return create_success_response({"stocks": stocks, "count": len(stocks)})
@@ -182,7 +175,6 @@ async def get_top_movers() -> dict[str, Any]:
             }
         }
     """
-    # Ensure authenticated
     session_mgr = get_session_manager()
     if not await session_mgr.ensure_authenticated():
         return create_error_response(
@@ -191,13 +183,11 @@ async def get_top_movers() -> dict[str, Any]:
 
     log_api_call("get_top_movers")
 
-    # Get top movers with retry logic
     movers_data = await execute_with_retry(rh.get_top_movers)
 
     if not movers_data:
         return create_no_data_response("No top movers data found", {})
 
-    # Filter out None values and ensure we have valid data
     movers = [mover for mover in movers_data if mover is not None]
 
     return create_success_response({"movers": movers, "count": len(movers)})
@@ -229,7 +219,6 @@ async def get_stocks_by_tag(tag: str) -> dict[str, Any]:
             }
         }
     """
-    # Validate tag parameter
     if not tag or not isinstance(tag, str):
         return create_error_response(
             ValueError("Tag parameter is required and must be a string"),
@@ -238,7 +227,6 @@ async def get_stocks_by_tag(tag: str) -> dict[str, Any]:
 
     tag = tag.strip().lower()
 
-    # Ensure authenticated
     session_mgr = get_session_manager()
     if not await session_mgr.ensure_authenticated():
         return create_error_response(
@@ -247,13 +235,11 @@ async def get_stocks_by_tag(tag: str) -> dict[str, Any]:
 
     log_api_call("get_stocks_by_tag", tag=tag)
 
-    # Get stocks by tag with retry logic
     stocks_data = await execute_with_retry(rh.get_all_stocks_from_market_tag, tag)
 
     if not stocks_data or stocks_data == [None]:
         return create_no_data_response(f"No stocks found for tag: {tag}", {"tag": tag})
 
-    # Filter out None values and ensure we have valid data
     stocks = [stock for stock in stocks_data if stock is not None]
 
     return create_success_response({"tag": tag, "stocks": stocks, "count": len(stocks)})

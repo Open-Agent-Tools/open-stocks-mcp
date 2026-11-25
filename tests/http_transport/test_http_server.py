@@ -28,7 +28,6 @@ def mcp_server() -> MCPServer:
     """Create a test MCP server instance"""
     server = MCPServer("Test Open Stocks MCP")
 
-    # Use production tool names so tests exercise the HTTP authorization policy.
     @server.tool()
     async def account_info() -> dict[str, Any]:
         """A simple read-only test tool"""
@@ -91,11 +90,9 @@ async def http_client(mcp_server: MCPServer) -> Any:
     """Create an HTTP client for testing"""
     from httpx import ASGITransport
 
-    # Ensure a clean collector state for each HTTP test.
     with patch("open_stocks_mcp.monitoring._metrics_collector", None):
         app = create_http_server(mcp_server)
 
-        # Configure test client with ASGI transport
         transport = ASGITransport(app=app)
         async with httpx.AsyncClient(
             transport=transport, base_url="http://test"
@@ -212,7 +209,6 @@ class TestHTTPEndpoints:
         assert data["components"]["broker:robinhood"]["status"] == "healthy"
         assert data["components"]["broker:schwab"]["status"] == "unhealthy"
         assert data["components"]["broker:schwab"]["error_message"] == "not configured"
-        # Assert legacy keys are gone
         assert "session" not in data
         assert "health" not in data
 
@@ -221,8 +217,6 @@ class TestHTTPEndpoints:
         self, mock_get_health_service: Mock, http_client: httpx.AsyncClient
     ) -> None:
         """HTTP /health endpoint must not trigger live broker API calls."""
-        # This test ensures HealthService is used correctly (it should return cached state).
-        # We mock a HealthService that would return some component statuses.
         mock_health_service = AsyncMock()
         mock_health_service.get_status.return_value = {
             "status": "healthy",
@@ -233,14 +227,6 @@ class TestHTTPEndpoints:
         }
         mock_get_health_service.return_value = mock_health_service
 
-        # To verify NO live calls, we need to know what those live calls would be.
-        # The implementation plan says: authenticate, is_authenticated, get_account_info,
-        # get_portfolio, get_positions, get_stock_quote, get_stock_price.
-        # Since we are mocking get_health_service().get_status(), if the route ONLY
-        # calls that, then it shouldn't be calling any broker methods directly.
-
-        # Let's also mock the broker registry and brokers to be sure if they were
-        # accidentally used.
         mock_robinhood = AsyncMock()
         mock_schwab = AsyncMock()
 
@@ -425,12 +411,9 @@ class TestHTTPEndpoints:
 
     async def test_cors_headers(self, http_client: httpx.AsyncClient) -> None:
         """Test CORS headers are present"""
-        # Test CORS with a GET request instead of OPTIONS
         response = await http_client.get("/health")
         assert response.status_code == 200
-        # CORS headers may not be present in test environment with ASGI transport
-        # This is expected behavior for test clients
-        assert response.status_code == 200  # Just verify endpoint works
+        assert response.status_code == 200
 
     async def test_security_headers(self, http_client: httpx.AsyncClient) -> None:
         """Test security headers are present"""
@@ -450,9 +433,7 @@ class TestMCPIntegration:
 
     async def test_mcp_jsonrpc_endpoint(self, http_client: httpx.AsyncClient) -> None:
         """Test MCP JSON-RPC endpoint is accessible"""
-        # Test that the MCP endpoint is mounted
         response = await http_client.get("/mcp")
-        # Should get a method not allowed or proper response, not 404
         assert response.status_code != 404
 
     @pytest.mark.anyio
@@ -802,7 +783,6 @@ class TestErrorHandling:
 
         app = create_http_server(mcp_server)
 
-        # Test with invalid origin header
         transport = ASGITransport(app=app)
         async with httpx.AsyncClient(
             transport=transport, base_url="http://test"
@@ -822,16 +802,13 @@ class TestLiveHTTPServer:
         """Test that HTTP server starts up correctly"""
         from open_stocks_mcp.server.http_transport import run_http_server
 
-        # Start server in background
         server_task = asyncio.create_task(
             run_http_server(mcp_server, host="127.0.0.1", port=8888)
         )
 
-        # Give server time to start
         await asyncio.sleep(0.5)
 
         try:
-            # Test connection
             async with httpx.AsyncClient() as client:
                 response = await client.get("http://127.0.0.1:8888/health", timeout=5.0)
                 assert response.status_code == 200
@@ -839,7 +816,6 @@ class TestLiveHTTPServer:
                 data = response.json()
                 assert data["status"] in {"healthy", "degraded", "unhealthy"}
         finally:
-            # Clean up
             server_task.cancel()
             with contextlib.suppress(asyncio.CancelledError):
                 await server_task
@@ -855,7 +831,6 @@ class TestSessionManagement:
     ) -> None:
         """Test session refresh endpoint"""
         response = await http_client.post("/session/refresh")
-        # Should either succeed or fail with auth error, not crash
         assert response.status_code in [200, 401, 500]
 
     @patch("open_stocks_mcp.server.http_transport.get_session_manager")

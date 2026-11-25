@@ -56,8 +56,8 @@ class TestStockMarketTools:
         assert "result" in result
         assert result["result"]["symbol"] == "AAPL"
         assert result["result"]["price"] == 150.25
-        assert result["result"]["change"] == 1.75  # 150.25 - 148.50
-        assert result["result"]["change_percent"] == 1.18  # rounded
+        assert result["result"]["change"] == 1.75
+        assert result["result"]["change_percent"] == 1.18
         assert result["result"]["previous_close"] == 148.50
         assert result["result"]["volume"] == 1000000
         assert result["result"]["status"] == "success"
@@ -79,12 +79,10 @@ class TestStockMarketTools:
         mock_latest_price.return_value = [mock_robinhood_quote["last_trade_price"]]
         mock_quotes.return_value = [mock_robinhood_quote]
 
-        # First call
         res1 = await get_stock_price("AAPL")
         assert mock_latest_price.call_count == 1
         assert mock_quotes.call_count == 1
 
-        # Second call - should hit cache
         res2 = await get_stock_price("AAPL")
         assert res2 == res1
         assert mock_latest_price.call_count == 1
@@ -111,11 +109,9 @@ class TestStockMarketTools:
         mock_latest_price.return_value = [mock_robinhood_quote["last_trade_price"]]
         mock_quotes.return_value = [mock_robinhood_quote]
 
-        # First call
         await get_stock_price("AAPL")
         assert mock_latest_price.call_count == 1
 
-        # Second call - should NOT hit cache
         await get_stock_price("AAPL")
         assert mock_latest_price.call_count == 2
 
@@ -165,7 +161,7 @@ class TestStockMarketTools:
         mock_latest_price.return_value = None
         mock_quotes.return_value = None
 
-        result = await get_stock_price("AAPL")  # Use valid symbol format
+        result = await get_stock_price("AAPL")
 
         assert "result" in result
         assert result["result"]["status"] == "no_data"
@@ -229,7 +225,7 @@ class TestStockMarketTools:
         mock_fundamentals.return_value = None
         mock_instruments.return_value = None
 
-        result = await get_stock_info("AAPL")  # Use valid symbol format
+        result = await get_stock_info("AAPL")
 
         assert "result" in result
         assert result["result"]["status"] == "no_data"
@@ -295,7 +291,6 @@ class TestStockMarketTools:
     ) -> None:
         """Concurrent instrument lookups should be batched into one API call."""
 
-        # Setup mock to return results for requested symbols
         def side_effect(symbols):
             return [
                 {**robinhood_instrument_payload, "symbol": s}
@@ -304,19 +299,15 @@ class TestStockMarketTools:
 
         mock_get_instruments.side_effect = side_effect
 
-        # Trigger concurrent calls
-        # We need to ensure they arrive within the batching window
         results = await asyncio.gather(
             get_instruments_by_symbols(["AAPL", "MSFT"]),
             get_instruments_by_symbols(["GOOGL"]),
         )
 
-        # Verify each tool call got its expected results
         assert len(results) == 2
         assert len(results[0]["result"]["instruments"]) == 2
         assert len(results[1]["result"]["instruments"]) == 1
 
-        # Verify only ONE API call was made for all three symbols
         assert mock_get_instruments.call_count == 1
         called_symbols = mock_get_instruments.call_args[0][0]
         assert set(called_symbols) == {"AAPL", "MSFT", "GOOGL"}
@@ -371,7 +362,6 @@ class TestStockMarketTools:
         assert results[0]["result"]["symbol"] == "AAPL"
         assert results[1]["result"]["symbol"] == "MSFT"
 
-        # Verify only ONE instrument API call was made for both symbols
         assert mock_get_instruments.call_count == 1
         called_symbols = mock_get_instruments.call_args[0][0]
         assert set(called_symbols) == {"AAPL", "MSFT"}
@@ -443,7 +433,7 @@ class TestStockMarketTools:
         """Test price history when no data is available."""
         mock_historicals.return_value = None
 
-        result = await get_price_history("AAPL", "week")  # Use valid symbol format
+        result = await get_price_history("AAPL", "week")
 
         assert "result" in result
         assert result["result"]["status"] == "no_data"
@@ -468,10 +458,8 @@ class TestStockMarketTools:
     @pytest.mark.asyncio
     async def test_list_available_tools_success(self) -> None:
         """Test successful tools listing."""
-        # Create a mock MCPServer instance
         mock_mcp = AsyncMock()
 
-        # Create mock tool objects
         mock_tool1 = MagicMock()
         mock_tool1.name = "stock_price"
         mock_tool1.description = "Get current stock price and basic metrics"
@@ -504,7 +492,6 @@ class TestServerTools:
     @pytest.mark.asyncio
     async def test_session_status_success(self, mock_get_session_manager: Any) -> None:
         """Test successful session status retrieval."""
-        # We need to import these from the server app where they're defined
         from open_stocks_mcp.server.app import session_status
 
         mock_session_manager = MagicMock()

@@ -18,20 +18,15 @@ class TestRateLimiterQueueing:
     @pytest.mark.asyncio
     async def test_acquire_queues_when_limit_reached(self, mock_sleep, mock_time):
         """Second caller should queue when limit is 1 per minute."""
-        # Setup: 1 call per minute, 10 per hour, burst 1
         limiter = RateLimiter(calls_per_minute=1, calls_per_hour=10, burst_size=1)
 
-        # First call at T=1000
         mock_time.return_value = 1000.0
         await limiter.acquire()
         assert len(limiter.call_times) == 1
         mock_sleep.assert_not_called()
 
-        # Second call immediately after
-        # It should sleep until T=1060 (1000 + 60)
         mock_time.return_value = 1000.1
 
-        # We need to simulate time passing during sleep
         async def side_effect(delay):
             mock_time.return_value += delay
 
@@ -39,9 +34,6 @@ class TestRateLimiterQueueing:
 
         await limiter.acquire()
 
-        # Should have slept for roughly 60s (1000 + 60 - 1000.1 = 59.9)
-        # Note: the exact sleep call depends on implementation.
-        # If it's the current recursive implementation, it sleeps 59.9.
         assert mock_sleep.called
         assert len(limiter.call_times) == 2
         assert limiter.call_times[-1] >= 1060.0
@@ -53,11 +45,9 @@ class TestRateLimiterQueueing:
         """Should raise error if max_wait is exceeded."""
         limiter = RateLimiter(calls_per_minute=1, calls_per_hour=10, burst_size=1)
 
-        # First call fills the minute
         mock_time.return_value = 1000.0
         await limiter.acquire()
 
-        # Second call with max_wait=1.0 (but needs 60s)
         mock_time.return_value = 1000.1
 
         from open_stocks_mcp.tools.exceptions import RateLimitError
@@ -91,7 +81,6 @@ class TestBatchingHelper:
         """Concurrent requests within window should be coalesced."""
         from open_stocks_mcp.tools.rate_limiter import get_batcher
 
-        # Use a fresh batcher for testing
         batcher = get_batcher("test-batcher", batch_size=3, queue_max_wait=0.1)
 
         fetch_many = MagicMock()
@@ -105,6 +94,5 @@ class TestBatchingHelper:
 
         assert results == ["data-AAPL", "data-MSFT", "data-GOOGL"]
         assert fetch_many.call_count == 1
-        # Symbols should be uppercased and passed as a list
         called_symbols = fetch_many.call_args[0][0]
         assert set(called_symbols) == {"AAPL", "MSFT", "GOOGL"}

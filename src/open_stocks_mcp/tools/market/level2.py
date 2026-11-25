@@ -46,7 +46,6 @@ async def get_stock_level2_data(symbol: str) -> dict[str, Any]:
         }
     """
     try:
-        # Input validation
         if not validate_symbol(symbol):
             return create_error_response(
                 ValueError(f"Invalid symbol format: {symbol}"), "symbol validation"
@@ -54,7 +53,6 @@ async def get_stock_level2_data(symbol: str) -> dict[str, Any]:
 
         symbol = symbol.strip().upper()
 
-        # Ensure authenticated
         session_mgr = get_session_manager()
         if not await session_mgr.ensure_authenticated():
             return create_error_response(
@@ -63,7 +61,6 @@ async def get_stock_level2_data(symbol: str) -> dict[str, Any]:
 
         log_api_call("get_stock_level2_data", symbol=symbol)
 
-        # Get Level II data with retry logic
         level2_data = await execute_with_retry(rh.get_pricebook_by_symbol, symbol)
 
         if not level2_data:
@@ -72,7 +69,6 @@ async def get_stock_level2_data(symbol: str) -> dict[str, Any]:
                 {"symbol": symbol},
             )
 
-        # Add symbol to response for consistency
         level2_data["symbol"] = symbol
 
         return create_success_response(level2_data)

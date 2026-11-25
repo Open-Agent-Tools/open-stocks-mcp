@@ -310,10 +310,8 @@ def test_logout_docstring_contract() -> None:
     """Assert that logout() documents its fail-hard and finally-cleanup contract."""
     doc = SessionManager.logout.__doc__
     assert doc is not None
-    # Contract: Exceptions are logged and re-raised
     assert "logged" in doc.lower()
     assert "re-raised" in doc.lower()
-    # Contract: Session state is reset in finally block
     assert "finally" in doc.lower()
     assert "session state" in doc.lower()
 

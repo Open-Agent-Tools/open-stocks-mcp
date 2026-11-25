@@ -64,7 +64,6 @@ class SchwabStreamManager:
 
             self.stream_client = StreamClient(self.broker.client)
 
-            # Define core handler
             def _core_handler(message: dict[str, Any]) -> None:
                 self._handle_message(message)
                 for handler in self._handlers:
@@ -73,7 +72,6 @@ class SchwabStreamManager:
                     except Exception as e:
                         logger.error(f"Error in Schwab stream custom handler: {e}")
 
-            # Register handlers for Level One, Level 2 and account activity
             if self.stream_client is None:
                 logger.error(
                     "Schwab StreamClient unexpectedly None after construction;"
@@ -91,7 +89,6 @@ class SchwabStreamManager:
             self._is_running = True
             logger.info("Schwab streaming client logged in and started")
 
-            # Start background task to handle responses
             self._task = asyncio.create_task(self._run_loop())
 
             return True
@@ -114,8 +111,6 @@ class SchwabStreamManager:
             self._task = None
 
         if self.stream_client:
-            # schwab-py StreamClient doesn't have an explicit logout/close,
-            # it closes when the connection drops.
             self.stream_client = None
 
         logger.info("Schwab streaming client stopped")
@@ -132,9 +127,8 @@ class SchwabStreamManager:
                 break
             except Exception as e:
                 logger.error(f"Error in Schwab stream loop: {e}")
-                await asyncio.sleep(5)  # Wait before retry
+                await asyncio.sleep(5)
                 if self._is_running:
-                    # Attempt re-login
                     if self.stream_client is None:
                         logger.error(
                             "Schwab stream_client is None before re-login;"
@@ -170,7 +164,6 @@ class SchwabStreamManager:
                     self._latest_option_quotes[symbol].update(item)
         elif service in ("NASDAQ_BOOK", "NYSE_BOOK"):
             for item in content:
-                # Level 2 messages might use 'SYMBOL' or 'key'
                 symbol = item.get("SYMBOL") or item.get("key")
                 if not symbol:
                     continue
@@ -186,7 +179,6 @@ class SchwabStreamManager:
         elif service == "ACCT_ACTIVITY":
             for item in content:
                 self._latest_activity.append(item)
-            # Cap to most recent 100 entries to bound memory
             if len(self._latest_activity) > 100:
                 self._latest_activity = self._latest_activity[-100:]
 
@@ -196,13 +188,10 @@ class SchwabStreamManager:
             return False
 
         try:
-            # Split into equities and options based on symbol format
             equities = []
             options = []
             for s in symbols:
-                if (
-                    " " in s or len(s) > 10
-                ):  # Simple heuristic for Schwab option symbols
+                if " " in s or len(s) > 10:
                     options.append(s.upper())
                 else:
                     equities.append(s.upper())
@@ -233,7 +222,6 @@ class SchwabStreamManager:
             return False
 
         try:
-            # Uppercase all symbols to ensure consistency
             symbols = [s.upper() for s in symbols]
             await self.stream_client.level_one_option_subs(symbols)
             logger.info(f"Subscribed to Schwab option quotes: {symbols}")

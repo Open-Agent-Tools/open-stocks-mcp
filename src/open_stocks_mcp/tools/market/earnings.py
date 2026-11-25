@@ -52,7 +52,6 @@ async def get_stock_earnings(symbol: str) -> dict[str, Any]:
         }
     """
     try:
-        # Input validation
         if not validate_symbol(symbol):
             return create_error_response(
                 ValueError(f"Invalid symbol format: {symbol}"), "symbol validation"
@@ -60,7 +59,6 @@ async def get_stock_earnings(symbol: str) -> dict[str, Any]:
 
         symbol = symbol.strip().upper()
 
-        # Ensure authenticated
         session_mgr = get_session_manager()
         if not await session_mgr.ensure_authenticated():
             return create_error_response(
@@ -69,7 +67,6 @@ async def get_stock_earnings(symbol: str) -> dict[str, Any]:
 
         log_api_call("get_stock_earnings", symbol=symbol)
 
-        # Get earnings with retry logic
         earnings_data = await execute_with_retry(rh.get_earnings, symbol)
 
         if not earnings_data:
@@ -112,7 +109,6 @@ async def get_stock_splits(symbol: str) -> dict[str, Any]:
         }
     """
     try:
-        # Input validation
         if not validate_symbol(symbol):
             return create_error_response(
                 ValueError(f"Invalid symbol format: {symbol}"), "symbol validation"
@@ -120,7 +116,6 @@ async def get_stock_splits(symbol: str) -> dict[str, Any]:
 
         symbol = symbol.strip().upper()
 
-        # Ensure authenticated
         session_mgr = get_session_manager()
         if not await session_mgr.ensure_authenticated():
             return create_error_response(
@@ -129,7 +124,6 @@ async def get_stock_splits(symbol: str) -> dict[str, Any]:
 
         log_api_call("get_stock_splits", symbol=symbol)
 
-        # Get splits with retry logic
         splits_data = await execute_with_retry(rh.get_splits, symbol)
 
         if not splits_data:
@@ -175,7 +169,6 @@ async def get_stock_events(symbol: str) -> dict[str, Any]:
         }
     """
     try:
-        # Input validation
         if not validate_symbol(symbol):
             return create_error_response(
                 ValueError(f"Invalid symbol format: {symbol}"), "symbol validation"
@@ -183,7 +176,6 @@ async def get_stock_events(symbol: str) -> dict[str, Any]:
 
         symbol = symbol.strip().upper()
 
-        # Ensure authenticated
         session_mgr = get_session_manager()
         if not await session_mgr.ensure_authenticated():
             return create_error_response(
@@ -192,7 +184,6 @@ async def get_stock_events(symbol: str) -> dict[str, Any]:
 
         log_api_call("get_stock_events", symbol=symbol)
 
-        # Get events with retry logic
         events_data = await execute_with_retry(rh.get_events, symbol)
 
         if not events_data:

@@ -46,7 +46,6 @@ async def _collect_robinhood_comparison(
         },
     }
 
-    # 1. Pricing
     if symbols:
         for symbol in symbols:
             price_result = await get_stock_price(symbol)
@@ -58,7 +57,6 @@ async def _collect_robinhood_comparison(
                     "change_percent": _safe_float(price_data.get("change_percent")),
                 }
 
-    # 2. Summary & Holdings
     portfolio_result = await get_portfolio()
     portfolio_data = portfolio_result.get("result", {})
     if "error" not in portfolio_data:
@@ -78,7 +76,6 @@ async def _collect_robinhood_comparison(
                     "average_buy_price": _safe_float(pos.get("average_buy_price")),
                 }
 
-    # 3. Orders
     if include_orders:
         orders_result = await get_stock_orders()
         orders_data = orders_result.get("result", {})
@@ -122,7 +119,6 @@ async def _collect_schwab_comparison(
         },
     }
 
-    # Schwab needs an account hash for many calls
     accounts_result = await get_schwab_account_numbers()
     accounts_data = accounts_result.get("result", {})
     if "error" in accounts_data or not accounts_data.get("accounts"):
@@ -132,7 +128,6 @@ async def _collect_schwab_comparison(
 
     account_hash = accounts_data["accounts"][0]["hash_value"]
 
-    # 1. Pricing
     if symbols:
         for symbol in symbols:
             quote_result = await get_schwab_quote(symbol)
@@ -144,7 +139,6 @@ async def _collect_schwab_comparison(
                     "change_percent": _safe_float(quote_data.get("change_percent")),
                 }
 
-    # 2. Summary & Holdings
     balances_result = await get_schwab_account_balances(account_hash)
     balances_data = balances_result.get("result", {})
     if "error" not in balances_data:
@@ -163,7 +157,6 @@ async def _collect_schwab_comparison(
                     "average_buy_price": _safe_float(pos.get("average_price")),
                 }
 
-    # 3. Orders
     if include_orders:
         orders_result = await get_schwab_orders(
             account_hash, max_results=max_orders * 2
@@ -174,10 +167,6 @@ async def _collect_schwab_comparison(
             for o in schwab_orders:
                 if len(data["orders"]) >= max_orders:
                     break
-
-                # Schwab order structure is complex, extracting basic fields
-                # This depends on how get_schwab_orders formats them
-                # Based on schwab_trading_tools.py, it returns raw response.json()
 
                 legs = o.get("orderLegCollection", [])
                 if not legs:
@@ -270,7 +259,6 @@ async def get_broker_comparison(
             availability_notes[name] = str(exc)
             partial_failure = True
 
-    # Build comparison summary
     comparison: dict[str, Any] = {
         "symbols": symbols if symbols else [],
         "metrics": ["pricing", "holdings", "orders"],

@@ -58,8 +58,6 @@ class SessionManager:
     def update_last_successful_call(self) -> None:
         self.last_successful_call = datetime.now()
 
-    # -- Delegate pickle operations to SessionPickleManager --
-
     def _get_tokens_dir(self):  # type: ignore[no-untyped-def]
         return self._pickle._get_tokens_dir()
 
@@ -87,15 +85,11 @@ class SessionManager:
     def should_block_auth_retries(self) -> bool:
         return self._pickle.should_block_auth_retries()
 
-    # -- Delegate MFA operations to session_mfa module --
-
     def _resolve_mfa_code(self) -> str:
         return resolve_mfa_code()
 
     def _handle_login_prompt(self, prompt: str = "") -> str:
         return handle_login_prompt(prompt)
-
-    # -- Failed-attempt tracking --
 
     def _increment_failed_attempts(self) -> None:
         self._failed_login_attempts += 1
@@ -122,8 +116,6 @@ class SessionManager:
                 f"Resetting failed login attempts (was {self._failed_login_attempts})"
             )
             self._failed_login_attempts = 0
-
-    # -- Authentication --
 
     async def ensure_authenticated(self) -> bool:
         async with self._lock:
@@ -262,7 +254,6 @@ class SessionManager:
             return await self._authenticate()
 
 
-# Global session manager instance
 _session_manager: SessionManager | None = None
 
 

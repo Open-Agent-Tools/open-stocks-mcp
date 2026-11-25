@@ -45,7 +45,6 @@ class TestOptionsChains:
     @pytest.mark.asyncio
     async def test_get_options_chains_success(self, mock_chains: Any) -> None:
         """Test successful options chains retrieval."""
-        # Mock data for option chains
         mock_chains.return_value = [
             {
                 "expiration_date": "2024-01-19",
@@ -99,8 +98,6 @@ class TestOptionsChains:
         result = await get_options_chains("123INVALID")
 
         assert "result" in result
-        # Function doesn't validate symbol format upfront, so it tries the API call
-        # and may get no data rather than an error
         assert result["result"]["status"] in ["error", "no_data"]
 
 
@@ -175,8 +172,6 @@ class TestFindOptions:
         result = await find_tradable_options("AAPL", "01/19/2024", "call")
 
         assert "result" in result
-        # The function may not validate date format upfront and still try the API call
-        # which could return no data or an error depending on Robin Stocks behavior
         assert result["result"]["status"] in ["error", "no_data"]
 
 
@@ -319,7 +314,6 @@ class TestOptionHistoricals:
         )
 
         assert "result" in result
-        # Invalid interval doesn't cause error, just succeeds with no useful data
         assert result["result"]["status"] == "success"
         assert result["result"]["interval"] == "invalid"
 
@@ -418,8 +412,8 @@ class TestOptionPositions:
         assert "result" in result
         assert result["result"]["total_positions"] == 2
         assert len(result["result"]["positions"]) == 2
-        assert result["result"]["open_positions"] == 1  # Based on quantity > 0
-        assert result["result"]["closed_positions"] == 1  # Based on quantity <= 0
+        assert result["result"]["open_positions"] == 1
+        assert result["result"]["closed_positions"] == 1
         assert result["result"]["status"] == "success"
 
     @patch(
@@ -487,7 +481,6 @@ class TestOptionPositions:
         self, mock_open_positions: Any, mock_instrument_data: Any
     ) -> None:
         """Test successful open option positions with details retrieval."""
-        # Mock position data
         mock_open_positions.return_value = [
             {
                 "id": "position123",
@@ -501,7 +494,6 @@ class TestOptionPositions:
             }
         ]
 
-        # Mock option instrument data
         mock_instrument_data.return_value = {
             "type": "call",
             "strike_price": "150.0000",
@@ -520,7 +512,6 @@ class TestOptionPositions:
         assert result["result"]["enrichment_success_rate"] == "100%"
         assert result["result"]["status"] == "success"
 
-        # Check enriched position data
         position = result["result"]["positions"][0]
         assert position["option_type"] == "call"
         assert position["strike_price"] == "150.0000"
@@ -529,7 +520,6 @@ class TestOptionPositions:
         assert position["state"] == "active"
         assert position["underlying_symbol"] == "AAPL"
 
-        # Verify API calls
         mock_open_positions.assert_called_once()
         mock_instrument_data.assert_called_once_with("option456")
 

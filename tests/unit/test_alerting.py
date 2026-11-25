@@ -83,7 +83,6 @@ async def test_webhook_alerter_reuses_client_across_sends() -> None:
         await sink.send(event)
         await sink.send(event)
 
-    # Constructor called once; post called twice with the same client
     mock_client_class.assert_called_once()
     assert mock_instance.post.await_count == 2
 
@@ -115,14 +114,11 @@ async def test_alert_manager_aclose_closes_closeable_sinks() -> None:
 
 
 def test_webhook_sink_url_validation() -> None:
-    # Valid
     WebhookAlertSink("https://example.com/alert")
 
-    # Invalid scheme
     with pytest.raises(ValueError, match="Webhook URL must use http or https"):
         WebhookAlertSink("ftp://example.com/alert")
 
-    # localhost
     with pytest.raises(ValueError, match="Webhook URL cannot target localhost"):
         WebhookAlertSink("https://localhost/alert")
     with pytest.raises(ValueError, match="Webhook URL cannot target localhost"):

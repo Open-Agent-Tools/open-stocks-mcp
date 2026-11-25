@@ -48,7 +48,6 @@ class BrokerRegistry:
         self._brokers[broker.name] = broker
         self._authentication_attempts[broker.name] = 0
 
-        # Set as active if first broker or none set
         if self._active_broker is None:
             self._active_broker = broker.name
             logger.info(f"Set active broker: {broker.name}")
@@ -221,14 +220,12 @@ class BrokerRegistry:
                         break
 
             except Exception as e:
-                # Catch any unexpected exceptions from broker.authenticate()
                 logger.error(
                     f"✗ {name} authentication raised exception: {e}",
                     exc_info=True,
                 )
                 results[name] = False
 
-                # Update broker status
                 broker._auth_info.status = BrokerAuthStatus.AUTH_FAILED
                 broker._auth_info.error_message = str(e)
 
@@ -236,7 +233,6 @@ class BrokerRegistry:
                     logger.error("Fail-fast enabled, stopping authentication")
                     break
 
-        # Log summary
         successful = sum(1 for success in results.values() if success)
         total = len(results)
         logger.info(
@@ -406,7 +402,6 @@ class BrokerRegistry:
         )
 
 
-# Global registry instance
 _registry: BrokerRegistry | None = None
 _registry_lock = asyncio.Lock()
 

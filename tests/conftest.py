@@ -504,9 +504,6 @@ def reset_tool_state() -> None:
     reset_batchers()
 
 
-# Journey-specific fixtures
-
-
 @pytest.fixture
 def journey_account_data() -> dict[str, Any]:
     """Account management journey fixture data."""

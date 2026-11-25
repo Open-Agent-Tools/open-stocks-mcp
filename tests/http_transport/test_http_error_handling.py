@@ -30,7 +30,7 @@ def mcp_server() -> MCPServer:
     @server.tool()
     async def timeout_tool() -> dict[str, Any]:
         """A tool that simulates timeout"""
-        await asyncio.sleep(5.0)  # Longer than typical timeout
+        await asyncio.sleep(5.0)
         return {"result": {"message": "completed after delay", "status": "success"}}
 
     return server
@@ -57,32 +57,27 @@ class TestHTTPErrorHandling:
         response = await http_client.get("/nonexistent-endpoint")
         assert response.status_code == 404
 
-        # Check if response includes error details
         if response.headers.get("content-type", "").startswith("application/json"):
             data = response.json()
             assert "detail" in data or "error" in data
 
     async def test_405_method_not_allowed(self, http_client: httpx.AsyncClient) -> None:
         """Test Method Not Allowed error handling"""
-        # Try POST on GET-only endpoint
         response = await http_client.post("/health")
         assert response.status_code == 405
 
-        # Check Allow header is present
         assert "allow" in response.headers
 
     async def test_400_bad_request_handling(
         self, http_client: httpx.AsyncClient
     ) -> None:
         """Test bad request handling"""
-        # Send malformed JSON
         response = await http_client.post(
             "/session/refresh",
-            content="{'invalid': json}",  # Invalid JSON
+            content="{'invalid': json}",
             headers={"content-type": "application/json"},
         )
         assert response.status_code in [400, 401, 422]
-        # Bad Request or Unprocessable Entity
 
     async def test_invalid_content_type(self, http_client: httpx.AsyncClient) -> None:
         """Test handling of invalid content types"""
@@ -91,20 +86,18 @@ class TestHTTPErrorHandling:
             content="some data",
             headers={"content-type": "text/plain"},
         )
-        # Should handle gracefully
         assert response.status_code in [
             400,
             401,
             415,
             422,
-        ]  # Various acceptable error codes
+        ]
 
     @patch("open_stocks_mcp.server.http_transport.get_health_service")
     async def test_503_service_unavailable(
         self, mock_get_health_service: Mock, http_client: httpx.AsyncClient
     ) -> None:
         """Test service unavailable error handling"""
-        # Mock health service failure
         mock_health_service = AsyncMock()
         mock_health_service.get_status.side_effect = Exception("Service down")
         mock_get_health_service.return_value = mock_health_service
@@ -121,7 +114,6 @@ class TestHTTPErrorHandling:
         self, mock_get_session_manager: Mock, http_client: httpx.AsyncClient
     ) -> None:
         """Test internal server error handling"""
-        # Mock session manager failure
         mock_session_manager = Mock()
         mock_session_manager.ensure_authenticated = AsyncMock(
             side_effect=Exception("Database connection failed")
@@ -177,13 +169,10 @@ class TestTimeoutHandling:
         self, http_client: httpx.AsyncClient
     ) -> None:
         """Test request timeout simulation"""
-        # Test with very short timeout
         try:
-            response = await http_client.get("/health", timeout=0.001)  # 1ms timeout
-            # If this succeeds, the operation was very fast
+            response = await http_client.get("/health", timeout=0.001)
             assert response.status_code == 200
         except httpx.TimeoutException:
-            # This is expected for very short timeouts
             pass
 
     async def test_concurrent_timeout_handling(
@@ -194,9 +183,7 @@ class TestTimeoutHandling:
         async def make_request_with_timeout(request_id: int) -> dict[str, Any]:
             """Make a request with timeout"""
             try:
-                response = await http_client.get(
-                    "/health", timeout=0.01
-                )  # 10ms timeout
+                response = await http_client.get("/health", timeout=0.01)
                 return {
                     "request_id": request_id,
                     "status": "success",
@@ -209,21 +196,18 @@ class TestTimeoutHandling:
                     "status_code": 408,
                 }
 
-        # Make multiple concurrent requests with short timeouts
         tasks = [make_request_with_timeout(i) for i in range(5)]
         results = await asyncio.gather(*tasks)
 
-        # All requests should complete (either success or timeout)
         assert len(results) == 5
         for result in results:
             assert result["status"] in ["success", "timeout"]
 
     def test_timeout_configuration(self) -> None:
         """Test timeout configuration values"""
-        # Test timeout configuration is reasonable
-        default_timeout = 120.0  # 2 minutes
-        max_timeout = 300.0  # 5 minutes
-        min_timeout = 1.0  # 1 second
+        default_timeout = 120.0
+        max_timeout = 300.0
+        min_timeout = 1.0
 
         assert default_timeout > min_timeout
         assert max_timeout > default_timeout
@@ -237,13 +221,11 @@ class TestConnectionHandling:
 
     async def test_connection_reuse(self, http_client: httpx.AsyncClient) -> None:
         """Test connection reuse for multiple requests"""
-        # Make multiple requests to test connection reuse
         responses = []
         for _i in range(3):
             response = await http_client.get("/health")
             responses.append(response.status_code)
 
-        # All requests should succeed
         assert all(status == 200 for status in responses)
 
     async def test_concurrent_connection_limits(
@@ -256,25 +238,20 @@ class TestConnectionHandling:
             response = await http_client.get("/health")
             return response.status_code
 
-        # Make many concurrent requests
         tasks = [make_request(i) for i in range(10)]
         results = await asyncio.gather(*tasks)
 
-        # All should succeed (no connection limit errors)
         assert all(status == 200 for status in results)
 
     async def test_malformed_requests(self, http_client: httpx.AsyncClient) -> None:
         """Test handling of malformed requests"""
-        # Test various malformed request scenarios
         malformed_scenarios = [
-            # Missing content-type header with JSON body
             {
                 "method": "POST",
                 "url": "/session/refresh",
                 "content": '{"test": "data"}',
                 "headers": {},
             },
-            # Invalid JSON with correct content-type
             {
                 "method": "POST",
                 "url": "/session/refresh",
@@ -292,7 +269,6 @@ class TestConnectionHandling:
                 content=str(scenario["content"]),
                 headers=headers_dict,
             )
-            # Should handle gracefully with appropriate error code
             assert response.status_code in [400, 401, 415, 422, 500]
 
 
@@ -311,7 +287,6 @@ class TestSecurityErrorHandling:
         async with httpx.AsyncClient(
             transport=transport, base_url="http://test"
         ) as client:
-            # Test with blocked origin
             headers = {"origin": "https://malicious-site.com"}
             response = await client.get("/health", headers=headers)
             assert response.status_code == 403
@@ -323,26 +298,22 @@ class TestSecurityErrorHandling:
         self, http_client: httpx.AsyncClient
     ) -> None:
         """Test handling of requests with missing required headers"""
-        # Test POST request without content-type
         response = await http_client.post(
             "/session/refresh", content='{"test": "data"}'
         )
-        # Should handle gracefully
         assert response.status_code in [400, 401, 415, 422]
 
     async def test_oversized_request_handling(
         self, http_client: httpx.AsyncClient
     ) -> None:
         """Test handling of oversized requests"""
-        # Create a large request body
-        large_data = json.dumps({"data": "x" * 10000})  # 10KB of data
+        large_data = json.dumps({"data": "x" * 10000})
 
         response = await http_client.post(
             "/session/refresh",
             content=large_data,
             headers={"content-type": "application/json"},
         )
-        # Should handle without crashing
         assert response.status_code in [200, 400, 401, 413, 422, 500]
 
 
@@ -364,7 +335,6 @@ class TestListToolsErrorHandling:
         assert response.status_code == 500
         data = response.json()
         assert "detail" in data
-        # Must not expose any internal error details to the client
         assert "DB connection" not in data["detail"]
         assert "postgres" not in data["detail"]
 
@@ -409,7 +379,6 @@ class TestRecoveryMechanisms:
         """Test service recovery after temporary errors"""
         mock_session_manager = Mock()
 
-        # First call fails
         mock_session_manager.ensure_authenticated = AsyncMock(
             side_effect=Exception("Temporary failure")
         )
@@ -418,7 +387,6 @@ class TestRecoveryMechanisms:
         response1 = await http_client.post("/session/refresh")
         assert response1.status_code == 500
 
-        # Second call succeeds (recovery)
         mock_session_manager.ensure_authenticated.side_effect = None
         mock_session_manager.ensure_authenticated.return_value = True
         mock_session_manager.get_session_info.return_value = {
@@ -431,7 +399,6 @@ class TestRecoveryMechanisms:
 
     async def test_graceful_degradation(self, http_client: httpx.AsyncClient) -> None:
         """Test graceful degradation when optional services fail"""
-        # Even if some services fail, basic endpoints should still work
         response = await http_client.get("/")
         assert response.status_code == 200
 
@@ -441,7 +408,6 @@ class TestRecoveryMechanisms:
 
     def test_error_message_format(self) -> None:
         """Test error message format consistency"""
-        # Standard error response format
         error_response = {
             "error": "Authentication failed",
             "status": "error",

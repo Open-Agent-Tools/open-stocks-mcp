@@ -33,14 +33,13 @@ async def get_schwab_account_numbers() -> dict[str, Any]:
         return error
 
     try:
-        # Execute in thread pool since schwab-py is synchronous
+
         def _get_account_numbers() -> Any:
             response = broker.client.get_account_numbers()
             return response.json()
 
         result = await execute_broker_request(_get_account_numbers, retry_safe=True)
 
-        # Extract account hashes
         accounts = []
         for account in result:
             accounts.append(
@@ -82,12 +81,10 @@ async def get_schwab_account(
         return error
 
     try:
-        # Determine fields to request
         fields = None
         if include_positions:
             fields = Client.Account.Fields.POSITIONS
 
-        # Execute in thread pool
         def _get_account() -> Any:
             response = broker.client.get_account(account_hash, fields=fields)
             return response.json()
@@ -118,12 +115,10 @@ async def get_schwab_accounts(include_positions: bool = True) -> dict[str, Any]:
         return error
 
     try:
-        # Determine fields to request
         fields = None
         if include_positions:
             fields = Client.Account.Fields.POSITIONS
 
-        # Execute in thread pool
         def _get_accounts() -> Any:
             response = broker.client.get_accounts(fields=fields)
             return response.json()
@@ -161,7 +156,6 @@ async def get_schwab_portfolio(account_hash: str) -> dict[str, Any]:
         return error
 
     try:
-        # Get account with positions
         from schwab.client import Client
 
         def _get_account() -> Any:
@@ -172,11 +166,9 @@ async def get_schwab_portfolio(account_hash: str) -> dict[str, Any]:
 
         account_data = await execute_broker_request(_get_account, retry_safe=True)
 
-        # Extract positions
         securities_account = account_data.get("securitiesAccount", {})
         positions = securities_account.get("positions", [])
 
-        # Format positions
         formatted_positions = []
         for position in positions:
             instrument = position.get("instrument", {})
@@ -223,13 +215,11 @@ async def get_schwab_account_balances(account_hash: str) -> dict[str, Any]:
     try:
 
         def _get_account() -> Any:
-            # Get account without positions for faster response
             response = broker.client.get_account(account_hash)
             return response.json()
 
         account_data = await execute_broker_request(_get_account, retry_safe=True)
 
-        # Extract balances
         securities_account = account_data.get("securitiesAccount", {})
         current_balances = securities_account.get("currentBalances", {})
         initial_balances = securities_account.get("initialBalances", {})
@@ -279,7 +269,6 @@ async def schwab_check_margin_status(account_hash: str) -> dict[str, Any]:
         maintenance_requirement = float(
             current_balances.get("maintenanceRequirement", 0.0) or 0.0
         )
-        # Schwab has no direct margin-call endpoint, so infer status from equity vs maintenance requirement.
         margin_call = maintenance_requirement > 0 and equity <= maintenance_requirement
         deficit = max(0.0, maintenance_requirement - equity)
 
@@ -399,19 +388,17 @@ async def get_schwab_all_account_data() -> dict[str, Any]:
         return error
 
     try:
-        # 1. Get User Preferences
+
         def _get_prefs() -> Any:
             return broker.client.get_user_preferences().json()
 
         user_preferences = await execute_broker_request(_get_prefs, retry_safe=True)
 
-        # 2. Get Account Numbers
         def _get_numbers() -> Any:
             return broker.client.get_account_numbers().json()
 
         account_numbers = await execute_broker_request(_get_numbers, retry_safe=True)
 
-        # 3. Get All Accounts with Positions
         def _get_accounts() -> Any:
             return broker.client.get_accounts(
                 fields=Client.Account.Fields.POSITIONS
@@ -447,7 +434,7 @@ async def build_schwab_user_profile() -> dict[str, Any]:
         return error
 
     try:
-        # Fetch required data
+
         def _get_prefs() -> Any:
             return broker.client.get_user_preferences().json()
 
@@ -460,7 +447,6 @@ async def build_schwab_user_profile() -> dict[str, Any]:
 
         accounts_data = await execute_broker_request(_get_accounts, retry_safe=True)
 
-        # Normalize data
         accounts = []
         total_equity = 0.0
         total_cash = 0.0

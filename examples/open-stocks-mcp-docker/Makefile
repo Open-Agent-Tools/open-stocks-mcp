@@ -1,10 +1,6 @@
-# Makefile for Open Stocks MCP Docker Example
-# 
-# This Makefile provides convenient commands for managing the Docker deployment
 
 .PHONY: help build up down logs shell test clean setup
 
-# Default target
 help: ## Show this help message
 	@echo "Open Stocks MCP Docker Commands:"
 	@echo "================================"
@@ -66,7 +62,6 @@ rebuild: ## Clean build and restart
 	$(MAKE) build
 	$(MAKE) up-d
 
-# Development targets
 dev-build: ## Build image with no cache (for development)
 	docker build --no-cache -t open-stocks-mcp-base:latest .
 
@@ -76,7 +71,6 @@ dev-logs: ## View logs with timestamps
 dev-inspect: ## Inspect the running container
 	docker inspect open-stocks-mcp-server
 
-# Debugging targets
 debug: ## Start container with debug logging
 	@echo "LOG_LEVEL=DEBUG" >> .env
 	$(MAKE) down
@@ -85,7 +79,6 @@ debug: ## Start container with debug logging
 debug-shell: ## Start a debug shell with the image
 	docker run --rm -it --env-file .env open-stocks-mcp-base:latest bash
 
-# Quick commands
 start: up-d ## Alias for up-d
 stop: down ## Alias for down
 restart: down up-d ## Restart the services

@@ -22,7 +22,6 @@ async def schwab_stream_option_quotes(symbols: list[str]) -> dict[str, Any]:
     if error:
         return error
 
-    # Check streaming capability
     health = broker.get_health_status()
     if not health.get("capabilities", {}).get("streaming_quotes"):
         return create_success_response(
@@ -33,7 +32,6 @@ async def schwab_stream_option_quotes(symbols: list[str]) -> dict[str, Any]:
             }
         )
 
-    # Check stream manager readiness
     manager = getattr(broker, "stream_manager", None)
     if manager is None:
         return create_success_response(
@@ -53,7 +51,6 @@ async def schwab_stream_option_quotes(symbols: list[str]) -> dict[str, Any]:
             }
         )
 
-    # Subscribe to option symbols
     sub_success = await manager.subscribe_option_quotes(symbols)
     if not sub_success:
         return create_success_response(
@@ -64,7 +61,6 @@ async def schwab_stream_option_quotes(symbols: list[str]) -> dict[str, Any]:
             }
         )
 
-    # Retrieve cached snapshots
     quotes = {}
     for symbol in symbols:
         quote = manager.get_latest_option_quote(symbol)
@@ -261,7 +257,6 @@ async def schwab_stream_account_activity() -> dict[str, Any]:
     if error:
         return error
 
-    # Check streaming capability
     health = broker.get_health_status()
     if not health.get("capabilities", {}).get("streaming_quotes"):
         return create_success_response(
@@ -271,7 +266,6 @@ async def schwab_stream_account_activity() -> dict[str, Any]:
             }
         )
 
-    # Check stream manager readiness
     manager = getattr(broker, "stream_manager", None)
     if manager is None:
         return create_success_response(
@@ -289,7 +283,6 @@ async def schwab_stream_account_activity() -> dict[str, Any]:
             }
         )
 
-    # Subscribe to account activity
     sub_success = await manager.subscribe_account_activity()
     if not sub_success:
         return create_success_response(

@@ -40,7 +40,6 @@ class MockBroker(BaseBroker):
         self._auth_info.status = BrokerAuthStatus.NOT_AUTHENTICATED
         self._auth_info.error_message = None
 
-    # Placeholder implementations for abstract methods
     async def get_account_info(self):
         return {"result": {"mock": "account_info"}}
 
@@ -135,16 +134,13 @@ class TestBaseBroker:
         broker = MockBroker()
         broker._should_auth_succeed = True
 
-        # Before authentication
         assert not broker.is_available()
         assert broker.auth_info.status == BrokerAuthStatus.NOT_CONFIGURED
 
-        # Authenticate
         success = await broker.authenticate()
         assert success is True
         assert broker._auth_call_count == 1
 
-        # After authentication
         assert broker.is_available()
         assert broker.auth_info.status == BrokerAuthStatus.AUTHENTICATED
         assert broker.auth_info.last_auth_attempt is not None
@@ -157,12 +153,10 @@ class TestBaseBroker:
         broker = MockBroker()
         broker._should_auth_succeed = False
 
-        # Authenticate
         success = await broker.authenticate()
         assert success is False
         assert broker._auth_call_count == 1
 
-        # Check state
         assert not broker.is_available()
         assert broker.auth_info.status == BrokerAuthStatus.AUTH_FAILED
         assert broker.auth_info.last_auth_attempt is not None
@@ -175,11 +169,9 @@ class TestBaseBroker:
         broker = MockBroker()
         broker._should_auth_succeed = True
 
-        # Authenticate first
         await broker.authenticate()
         assert broker.is_available()
 
-        # Logout
         await broker.logout()
         assert not broker.is_available()
         assert broker.auth_info.status == BrokerAuthStatus.NOT_AUTHENTICATED
@@ -240,7 +232,7 @@ class TestBaseBroker:
         assert result["status"] == "broker_unavailable"
         assert result["broker"] == "testbroker"
         assert result["auth_status"] == "not_configured"
-        assert result["requires_setup"] is False  # No setup instructions trigger
+        assert result["requires_setup"] is False
 
     @pytest.mark.asyncio
     async def test_create_unavailable_response_auth_failed(self):
@@ -279,7 +271,6 @@ class TestBaseBroker:
         assert isinstance(auth_info, BrokerAuthInfo)
         assert auth_info.status == BrokerAuthStatus.NOT_CONFIGURED
 
-        # Modify state and check property reflects changes
         broker._auth_info.status = BrokerAuthStatus.AUTHENTICATED
         assert broker.auth_info.status == BrokerAuthStatus.AUTHENTICATED
 
@@ -288,14 +279,12 @@ class TestBaseBroker:
         """Test multiple authentication attempts update state correctly."""
         broker = MockBroker()
 
-        # First attempt - fail
         broker._should_auth_succeed = False
         success1 = await broker.authenticate()
         assert success1 is False
         assert broker._auth_call_count == 1
         first_attempt_time = broker.auth_info.last_auth_attempt
 
-        # Second attempt - succeed
         broker._should_auth_succeed = True
         success2 = await broker.authenticate()
         assert success2 is True

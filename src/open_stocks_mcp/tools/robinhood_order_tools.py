@@ -24,7 +24,6 @@ async def get_stock_orders() -> dict[str, Any]:
     """
     log_api_call("get_stock_orders")
 
-    # Get stock orders with retry logic
     orders = await execute_with_retry(rh.get_all_stock_orders)
 
     if not orders:
@@ -32,10 +31,8 @@ async def get_stock_orders() -> dict[str, Any]:
             {"orders": [], "message": "No recent stock orders found.", "count": 0}
         )
 
-    # Limit to the 5 most recent orders and handle potential missing data
     order_list = []
     for order in orders[:5]:
-        # Sanitize order data
         order = sanitize_api_response(order)
 
         instrument_url = order.get("instrument")
@@ -75,7 +72,6 @@ async def get_options_orders() -> dict[str, Any]:
     log_api_call("get_options_orders")
 
     try:
-        # Try to get options orders with retry logic
         orders = await execute_with_retry(rh.get_all_option_orders)
 
         if not orders:
@@ -83,10 +79,8 @@ async def get_options_orders() -> dict[str, Any]:
                 {"orders": [], "message": "No recent options orders found.", "count": 0}
             )
 
-        # Limit to the 5 most recent orders
         order_list = []
         for order in orders[:5]:
-            # Sanitize order data
             order = sanitize_api_response(order)
 
             order_data = {
@@ -104,7 +98,6 @@ async def get_options_orders() -> dict[str, Any]:
         return create_success_response({"orders": order_list, "count": len(order_list)})
 
     except Exception as e:
-        # If options orders API is not available or not implemented
         if "not found" in str(e).lower() or "not implemented" in str(e).lower():
             logger.info(
                 "Options orders retrieval not yet implemented or not available."
@@ -117,5 +110,4 @@ async def get_options_orders() -> dict[str, Any]:
                     "count": 0,
                 }
             )
-        # Re-raise other errors to be handled by the decorator
         raise

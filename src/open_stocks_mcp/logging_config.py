@@ -14,7 +14,7 @@ def get_default_log_dir() -> Path:
     """Get the default log directory based on OS standards"""
     system = platform.system().lower()
 
-    if system == "darwin":  # macOS
+    if system == "darwin":
         return Path.home() / "Library" / "Logs" / "mcp-servers"
     elif system == "linux":
         if os.geteuid() == 0:
@@ -29,7 +29,6 @@ def get_default_log_dir() -> Path:
 
 def setup_logging(server_config: ServerConfig | None = None) -> None:
     """Configure logging for the Open Stocks MCP MCP server"""
-    # Get log level from server config, environment, or default to INFO
     log_level = "INFO"
     if server_config and hasattr(server_config, "log_level"):
         log_level = server_config.log_level.upper()
@@ -45,21 +44,18 @@ def setup_logging(server_config: ServerConfig | None = None) -> None:
     }
     effective_level = valid_levels.get(log_level, logging.INFO)
 
-    # Configure basic logging first
     logging.basicConfig(
         level=effective_level,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-        handlers=[],  # We'll add handlers explicitly
+        handlers=[],
     )
 
-    # Get all relevant loggers
     project_logger = logging.getLogger("open_stocks_mcp")
-    mcp_logger = logging.getLogger("mcp")  # Capture all MCP logs
+    mcp_logger = logging.getLogger("mcp")
     mcp_server_logger = logging.getLogger("mcp.server")
     uvicorn_logger = logging.getLogger("uvicorn")
     root_logger = logging.getLogger()
 
-    # Remove any existing handlers to avoid duplicates
     for logger in [
         project_logger,
         mcp_logger,
@@ -70,21 +66,17 @@ def setup_logging(server_config: ServerConfig | None = None) -> None:
         for handler in logger.handlers[:]:
             logger.removeHandler(handler)
 
-    # Create formatter
     formatter = logging.Formatter(
         "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
 
-    # Add stderr handler
     stderr_handler = logging.StreamHandler(sys.stderr)
     stderr_handler.setLevel(effective_level)
     stderr_handler.setFormatter(formatter)
     root_logger.addHandler(stderr_handler)
 
-    # Set up file logging with secure permissions (0o700)
     log_path = get_default_log_dir()
     log_path.mkdir(mode=0o700, parents=True, exist_ok=True)
-    # Ensure correct mode if dir already existed
     if os.name != "nt":
         try:
             os.chmod(log_path, 0o700)
@@ -94,7 +86,6 @@ def setup_logging(server_config: ServerConfig | None = None) -> None:
             )
     log_file = log_path / "open_stocks_mcp.log"
 
-    # Add rotating file handler (10MB files, keep 5 backups)
     file_handler = logging.handlers.RotatingFileHandler(
         log_file, maxBytes=10_000_000, backupCount=5, encoding="utf-8"
     )
@@ -102,7 +93,6 @@ def setup_logging(server_config: ServerConfig | None = None) -> None:
     file_handler.setFormatter(formatter)
     root_logger.addHandler(file_handler)
 
-    # Set levels for all loggers
     for logger in [
         project_logger,
         mcp_logger,
@@ -110,10 +100,8 @@ def setup_logging(server_config: ServerConfig | None = None) -> None:
         uvicorn_logger,
     ]:
         logger.setLevel(effective_level)
-        # Ensure propagation is enabled
         logger.propagate = True
 
-    # Log startup information
     project_logger.info(f"Log File: {log_file}")
     project_logger.info("Logging Enabled for:")
     project_logger.info(f"- {project_logger.name} (Project Logger)")
@@ -122,5 +110,4 @@ def setup_logging(server_config: ServerConfig | None = None) -> None:
     project_logger.info(f"Log Level: {log_level}")
 
 
-# Export the logger for use in other modules
 logger = logging.getLogger("open_stocks_mcp")

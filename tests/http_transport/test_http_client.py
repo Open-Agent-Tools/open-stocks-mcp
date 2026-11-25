@@ -19,18 +19,14 @@ class TestMCPHTTPClient:
 
     async def test_jsonrpc_request_format(self, http_client: httpx.AsyncClient) -> None:
         """Test JSON-RPC 2.0 request format"""
-        # Example JSON-RPC 2.0 request for MCP
         request_data = {"jsonrpc": "2.0", "method": "tools/list", "id": 1}
 
-        # This would be tested against a live server
-        # For now, just verify the request format is correct
         assert request_data["jsonrpc"] == "2.0"
         assert "method" in request_data
         assert "id" in request_data
 
     async def test_mcp_tool_call_format(self, http_client: httpx.AsyncClient) -> None:
         """Test MCP tool call request format"""
-        # Example tool call request
         request_data = {
             "jsonrpc": "2.0",
             "method": "tools/call",
@@ -129,18 +125,15 @@ class TestHTTPTransportFeatures:
             except Exception as e:
                 return {"id": request_id, "error": str(e)}
 
-        # Make multiple concurrent requests
         async with httpx.AsyncClient() as client:
             try:
                 tasks = [make_request(client, i) for i in range(5)]
                 results = await asyncio.gather(*tasks)
 
-                # Check that all requests completed
                 assert len(results) == 5
 
-                # Check for successful responses (if server is running)
                 successful = [r for r in results if r.get("status") == 200]
-                if successful:  # If any succeeded, server is running
+                if successful:
                     assert len(successful) >= 1
 
             except Exception:
@@ -150,15 +143,12 @@ class TestHTTPTransportFeatures:
         """Test request timeout handling"""
         async with httpx.AsyncClient() as client:
             try:
-                # Test with very short timeout
                 response = await client.get(
                     "http://localhost:3000/health",
-                    timeout=0.001,  # 1ms timeout
+                    timeout=0.001,
                 )
-                # If this succeeds, server is very fast
                 assert response.status_code == 200
             except httpx.TimeoutException:
-                # Expected for very short timeout
                 pass
             except httpx.ConnectError:
                 pytest.skip("HTTP server not running")
@@ -167,16 +157,13 @@ class TestHTTPTransportFeatures:
         """Test error response format"""
         async with httpx.AsyncClient() as client:
             try:
-                # Request non-existent endpoint
                 response = await client.get("http://localhost:3000/nonexistent")
                 assert response.status_code == 404
 
-                # Check error response format
                 if response.headers.get("content-type", "").startswith(
                     "application/json"
                 ):
                     data = response.json()
-                    # Should have proper error structure
                     assert isinstance(data, dict)
 
             except httpx.ConnectError:

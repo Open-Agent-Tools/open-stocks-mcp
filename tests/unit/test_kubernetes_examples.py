@@ -58,13 +58,11 @@ def test_secret_example_content():
     text = SECRET_EXAMPLE.read_text(encoding="utf-8")
     assert "ROBINHOOD_USERNAME" in text
     assert "ROBINHOOD_PASSWORD" in text
-    # Must not contain real-looking credential values
     assert (
         "your_email@example.com" not in text
         or "placeholder" in text.lower()
         or "example" in text.lower()
     )
-    # Should not have real passwords
     for suspicious in ["my_password", "secretpassword123", "hunter2"]:
         assert suspicious not in text
 

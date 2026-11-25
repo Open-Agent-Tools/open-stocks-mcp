@@ -204,7 +204,6 @@ class TestRobinhoodLogout:
         rb = RobinhoodBroker(session_manager=session_mgr)
         rb._auth_info.status = BrokerAuthStatus.AUTHENTICATED
 
-        # Must not raise
         await rb.logout()
 
 

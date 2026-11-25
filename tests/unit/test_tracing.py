@@ -15,11 +15,6 @@ def reset_tracer_provider(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(tracing_module, "_tracer_provider", None)
 
 
-# ---------------------------------------------------------------------------
-# Task 1: disabled-by-default behaviour
-# ---------------------------------------------------------------------------
-
-
 def test_otel_disabled_by_default_returns_none() -> None:
     """When OTEL_ENABLED is not set, setup_tracing returns None."""
     config = load_config()
@@ -88,11 +83,6 @@ async def test_trace_tool_call_propagates_exception_when_disabled() -> None:
     with pytest.raises(ValueError, match="boom"):
         async with trace_tool_call("dummy_tool"):
             raise ValueError("boom")
-
-
-# ---------------------------------------------------------------------------
-# Task 2: enabled tracing with in-memory exporter (requires opentelemetry-sdk)
-# ---------------------------------------------------------------------------
 
 
 def _require_otel() -> None:
@@ -201,7 +191,6 @@ def test_setup_tracing_missing_sdk_raises(monkeypatch: pytest.MonkeyPatch) -> No
         return real_import(name, *args, **kwargs)  # type: ignore[arg-type]
 
     monkeypatch.setenv("OTEL_ENABLED", "true")
-    # Remove cached modules so our mock import fires
     cached = [k for k in sys.modules if k.startswith("opentelemetry")]
     for key in cached:
         monkeypatch.delitem(sys.modules, key, raising=False)

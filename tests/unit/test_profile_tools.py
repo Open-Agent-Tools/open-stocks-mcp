@@ -184,7 +184,6 @@ class TestBasicProfile:
             "first_name": "Jane",
             "last_name": "Smith",
             "email": "jane.smith@example.com",
-            # Missing phone, address, employment
         }
 
         result = await get_basic_profile()
@@ -602,15 +601,15 @@ class TestCompleteProfile:
         result = await get_complete_profile()
 
         assert "result" in result
-        assert result["result"]["profiles_loaded"] == 3  # Only 3 successful
+        assert result["result"]["profiles_loaded"] == 3
         assert result["result"]["status"] == "success"
 
         complete = result["result"]["complete_profile"]
         assert "user_info" in complete
         assert "account_profile" in complete
         assert "security_profile" in complete
-        assert "basic_profile" not in complete  # Failed to load
-        assert "investment_profile" not in complete  # Failed to load
+        assert "basic_profile" not in complete
+        assert "investment_profile" not in complete
 
     @pytest.mark.exception_test
     @pytest.mark.skip(reason="Slow exception test - run with pytest -m exception_test")
@@ -643,7 +642,7 @@ class TestCompleteProfile:
         result = await get_complete_profile()
 
         assert "result" in result
-        assert result["result"]["profiles_loaded"] == 1  # Only user profile succeeded
+        assert result["result"]["profiles_loaded"] == 1
         assert result["result"]["status"] == "partial_success"
         assert "Error loading complete profile" in result["result"]["error"]
 
@@ -690,5 +689,5 @@ class TestCompleteProfile:
 
         assert "result" in result
         assert result["result"]["profiles_loaded"] == 0
-        assert result["result"]["status"] == "success"  # Still success with 0 profiles
+        assert result["result"]["status"] == "success"
         assert result["result"]["complete_profile"] == {}

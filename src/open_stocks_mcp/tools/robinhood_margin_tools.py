@@ -43,7 +43,6 @@ async def get_margin_calls() -> dict[str, Any]:
     """
     logger.info("Getting margin call information")
 
-    # Get margin calls
     margin_calls_data = await execute_with_retry(
         func=rh.get_margin_calls, func_name="get_margin_calls", max_retries=3
     )
@@ -61,7 +60,6 @@ async def get_margin_calls() -> dict[str, Any]:
             }
         }
 
-    # Process margin calls
     processed_calls = []
     total_amount_due = 0.0
     has_active_calls = False
@@ -71,13 +69,11 @@ async def get_margin_calls() -> dict[str, Any]:
             if isinstance(call, dict):
                 processed_calls.append(call)
 
-                # Calculate total amount due
                 amount = call.get("amount", "0")
                 if amount:
                     with contextlib.suppress(ValueError, TypeError):
                         total_amount_due += float(amount)
 
-                # Check if call is active
                 if call.get("status") == "active":
                     has_active_calls = True
 
@@ -128,7 +124,6 @@ async def get_margin_interest() -> dict[str, Any]:
     """
     logger.info("Getting margin interest information")
 
-    # Get margin interest
     interest_data = await execute_with_retry(
         func=rh.get_margin_interest, func_name="get_margin_interest", max_retries=3
     )
@@ -146,7 +141,6 @@ async def get_margin_interest() -> dict[str, Any]:
             }
         }
 
-    # Process interest charges
     processed_charges = []
     total_charges = 0.0
     current_rate = "N/A"
@@ -156,13 +150,11 @@ async def get_margin_interest() -> dict[str, Any]:
             if isinstance(charge, dict):
                 processed_charges.append(charge)
 
-                # Sum total charges
                 amount = charge.get("amount", "0")
                 if amount:
                     with contextlib.suppress(ValueError, TypeError):
                         total_charges += float(amount)
 
-                # Get current rate from latest charge
                 if not current_rate or current_rate == "N/A":
                     rate = charge.get("rate")
                     if rate:

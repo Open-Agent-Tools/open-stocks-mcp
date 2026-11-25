@@ -11,13 +11,13 @@ from typing import Any
 class BrokerAuthStatus(Enum):
     """Authentication status for a broker."""
 
-    NOT_CONFIGURED = "not_configured"  # No credentials provided
-    NOT_AUTHENTICATED = "not_authenticated"  # Has creds, not logged in
-    AUTHENTICATING = "authenticating"  # Login in progress
-    AUTHENTICATED = "authenticated"  # Successfully logged in
-    AUTH_FAILED = "auth_failed"  # Login failed
-    TOKEN_EXPIRED = "token_expired"  # Session/token expired
-    MFA_REQUIRED = "mfa_required"  # Waiting for MFA input
+    NOT_CONFIGURED = "not_configured"
+    NOT_AUTHENTICATED = "not_authenticated"
+    AUTHENTICATING = "authenticating"
+    AUTHENTICATED = "authenticated"
+    AUTH_FAILED = "auth_failed"
+    TOKEN_EXPIRED = "token_expired"
+    MFA_REQUIRED = "mfa_required"
 
 
 @dataclass
@@ -29,7 +29,7 @@ class BrokerAuthInfo:
     last_auth_attempt: datetime | None = None
     last_successful_auth: datetime | None = None
     error_message: str | None = None
-    requires_setup: bool = False  # True if needs OAuth setup, API keys, etc.
+    requires_setup: bool = False
     setup_instructions: str | None = None
 
 
@@ -166,7 +166,6 @@ class BaseBroker(ABC):
         status = self._auth_info.status
         broker = self.name
 
-        # Build appropriate error message
         if status == BrokerAuthStatus.NOT_CONFIGURED:
             message = (
                 f"{broker.title()} is not configured. "
@@ -206,9 +205,6 @@ class BaseBroker(ABC):
                 "requires_setup": self._auth_info.requires_setup,
             }
         }
-
-    # Abstract methods for common operations
-    # Subclasses implement these using their specific broker APIs
 
     @abstractmethod
     async def get_account_info(self) -> dict[str, Any]:
@@ -347,6 +343,3 @@ class BaseBroker(ABC):
             return float(value)
         except (TypeError, ValueError):
             return default
-
-    # Add more abstract methods as needed for common operations
-    # Each broker implements these according to their API

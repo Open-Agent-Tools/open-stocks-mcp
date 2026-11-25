@@ -332,7 +332,6 @@ class TestGetAggregatedPortfolio:
         data = result["result"]
         aggregated = data["aggregated"]
 
-        # RH: market_value=10000, buying_power=3000; Schwab: market_value=5000, buying_power=2000
         assert aggregated["total_market_value"] == pytest.approx(15000.0)
         assert aggregated["total_buying_power"] == pytest.approx(5000.0)
 
@@ -400,7 +399,6 @@ class TestGetAggregatedPortfolio:
         assert "AAPL" in symbols
         assert "MSFT" in symbols
 
-        # Each position tagged with source broker
         for pos in data["aggregated"]["positions"]:
             assert "broker" in pos
 
@@ -476,12 +474,10 @@ class TestGetAggregatedPortfolio:
             rh_broker if name == "robinhood" else schwab_broker
         )
 
-        # Robinhood raises an exception during portfolio collection
         rh_broker.get_portfolio_snapshot = AsyncMock(
             side_effect=RuntimeError("rh boom")
         )
 
-        # Schwab returns valid data with one MSFT position
         schwab_broker.get_portfolio_snapshot = AsyncMock(
             return_value=(
                 {
@@ -511,18 +507,14 @@ class TestGetAggregatedPortfolio:
 
         data = result["result"]
 
-        # Robinhood should show as error
         assert data["brokers"]["robinhood"]["status"] == "error"
         assert "rh boom" in data["brokers"]["robinhood"]["error"]
 
-        # Schwab should still be available
         assert data["brokers"]["schwab"]["status"] == "available"
 
-        # Aggregated data should include Schwab's MSFT position
         symbols = {p["symbol"] for p in data["aggregated"]["positions"]}
         assert "MSFT" in symbols
 
-        # Robinhood should be in unavailable_brokers and partial_failure should be True
         assert "robinhood" in data["unavailable_brokers"]
         assert data["partial_failure"] is True
 
@@ -537,7 +529,6 @@ class TestGetAggregatedPortfolio:
         mock_registry.list_brokers.return_value = ["paper"]
 
         paper_broker = MockBroker("paper", authenticated=True)
-        # We'll use get_portfolio_snapshot which we are about to add
         paper_broker.get_portfolio_snapshot = AsyncMock(
             return_value=(
                 {
