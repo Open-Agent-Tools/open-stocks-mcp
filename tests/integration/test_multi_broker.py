@@ -30,7 +30,6 @@ class TestMultiBrokerIntegration:
     @pytest.fixture
     def registry(self) -> BrokerRegistry:
         """Create a fresh broker registry for testing."""
-        # Create new registry instance
         registry = BrokerRegistry()
         return registry
 
@@ -101,14 +100,11 @@ class TestMultiBrokerIntegration:
         registry.register(robinhood_broker)
         registry.register(schwab_broker)
 
-        # Default is first registered (robinhood)
         assert registry.get_broker().name == "robinhood"
 
-        # Switch to schwab
         registry.set_active_broker("schwab")
         assert registry.get_broker().name == "schwab"
 
-        # Switch back to robinhood
         registry.set_active_broker("robinhood")
         assert registry.get_broker().name == "robinhood"
 
@@ -122,7 +118,6 @@ class TestMultiBrokerIntegration:
         registry: BrokerRegistry,
     ) -> None:
         """Test authenticating all brokers simultaneously."""
-        # Mock Robinhood authentication
         mock_session = MagicMock()
         mock_session.ensure_authenticated = AsyncMock(return_value=True)
         mock_session_manager.return_value = mock_session
@@ -132,7 +127,6 @@ class TestMultiBrokerIntegration:
             password="test_password",
         )
 
-        # Mock Schwab authentication
         mock_schwab_client = MagicMock()
         mock_schwab_auth.easy_client.return_value = mock_schwab_client
 
@@ -141,7 +135,6 @@ class TestMultiBrokerIntegration:
             app_secret="test_app_secret",
         )
 
-        # Mock tty check to allow interactive auth mock
         with patch("os.isatty", return_value=True):
             registry.register(robinhood_broker)
             registry.register(schwab_broker)
@@ -161,7 +154,6 @@ class TestMultiBrokerIntegration:
         registry: BrokerRegistry,
     ) -> None:
         """Test handling when some brokers authenticate and others fail."""
-        # Mock Robinhood authentication success
         mock_session = MagicMock()
         mock_session.ensure_authenticated = AsyncMock(return_value=True)
         mock_session_manager.return_value = mock_session
@@ -171,7 +163,6 @@ class TestMultiBrokerIntegration:
             password="test_password",
         )
 
-        # Mock Schwab authentication failure
         mock_schwab_auth.easy_client.side_effect = Exception("OAuth failed")
 
         schwab_broker = SchwabBroker(
@@ -179,7 +170,6 @@ class TestMultiBrokerIntegration:
             app_secret="test_app_secret",
         )
 
-        # Mock tty check to allow interactive auth mock
         with patch("os.isatty", return_value=True):
             registry.register(robinhood_broker)
             registry.register(schwab_broker)
@@ -208,7 +198,6 @@ class TestMultiBrokerIntegration:
         registry: BrokerRegistry,
     ) -> None:
         """Test that broker authentication status is tracked correctly."""
-        # Mock authentication
         mock_session = MagicMock()
         mock_session.ensure_authenticated = AsyncMock(return_value=True)
         mock_session.logout = AsyncMock()
@@ -221,14 +210,11 @@ class TestMultiBrokerIntegration:
 
         registry.register(robinhood_broker)
 
-        # Initially unauthenticated
         assert robinhood_broker.auth_info.status == BrokerAuthStatus.NOT_AUTHENTICATED
 
-        # After authentication
         await robinhood_broker.authenticate()
         assert robinhood_broker.auth_info.status == BrokerAuthStatus.AUTHENTICATED
 
-        # After logout
         await robinhood_broker.logout()
         assert robinhood_broker.auth_info.status == BrokerAuthStatus.NOT_AUTHENTICATED
 
@@ -242,11 +228,9 @@ class TestMultiBrokerIntegration:
         registry: BrokerRegistry,
     ) -> None:
         """Test that multiple brokers can operate independently."""
-        # Mock Robinhood
         mock_rh_session = MagicMock()
         mock_rh_session.ensure_authenticated = AsyncMock(return_value=True)
 
-        # Track session validity state
         session_state = {"valid": True}
 
         def get_valid():
@@ -264,7 +248,6 @@ class TestMultiBrokerIntegration:
             password="test_password",
         )
 
-        # Mock Schwab
         mock_schwab_client = MagicMock()
         mock_schwab_auth.easy_client.return_value = mock_schwab_client
 
@@ -273,22 +256,18 @@ class TestMultiBrokerIntegration:
             app_secret="test_app_secret",
         )
 
-        # Mock tty check to allow interactive auth mock
         with patch("os.isatty", return_value=True):
             registry.register(robinhood_broker)
             registry.register(schwab_broker)
 
-            # Authenticate both
             await registry.authenticate_all()
 
-        # Verify both are authenticated
         rh = registry.get_broker("robinhood")
         assert await rh.is_authenticated()
 
         schwab = registry.get_broker("schwab")
         assert await schwab.is_authenticated()
 
-        # Logout one, verify other still authenticated
         await rh.logout()
         assert not await rh.is_authenticated()
         assert await schwab.is_authenticated()
@@ -299,7 +278,6 @@ class TestMultiBrokerIntegration:
         registry1 = await get_broker_registry()
         registry2 = await get_broker_registry()
 
-        # Should be the same instance
         assert registry1 is registry2
 
     @pytest.mark.asyncio
@@ -308,21 +286,17 @@ class TestMultiBrokerIntegration:
         self, mock_schwab_auth: MagicMock, schwab_broker: SchwabBroker, tmp_path
     ) -> None:
         """Test that Schwab tokens persist across sessions."""
-        # Create token file
         token_file = tmp_path / "schwab_token.json"
         token_file.write_text('{"access_token": "test_token"}')
         schwab_broker.token_path = str(token_file)
 
-        # Mock client from token file
         mock_client = MagicMock()
         mock_schwab_auth.client_from_token_file.return_value = mock_client
 
-        # Authenticate
         result = await schwab_broker.authenticate()
 
         assert result is True
         assert schwab_broker.client is not None
-        # Should use existing token, not easy_client
         mock_schwab_auth.client_from_token_file.assert_called_once()
         mock_schwab_auth.easy_client.assert_not_called()
 

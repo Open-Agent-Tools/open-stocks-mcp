@@ -36,7 +36,6 @@ class TestSchwabMarketTools:
         mock_schwab_quote: dict[str, Any],
     ) -> None:
         """Test successful stock quote retrieval."""
-        # Mock broker
         mock_broker = MagicMock()
         mock_get_broker.return_value = (mock_broker, None)
 
@@ -82,7 +81,6 @@ class TestSchwabMarketTools:
         schwab_quotes_payload: dict[str, Any],
     ) -> None:
         """Test successful multiple quotes retrieval."""
-        # Mock broker
         mock_broker = MagicMock()
         mock_get_broker.return_value = (mock_broker, None)
 
@@ -112,11 +110,9 @@ class TestSchwabMarketTools:
         schwab_price_history_payload: dict[str, Any],
     ) -> None:
         """Test successful price history retrieval."""
-        # Mock broker
         mock_broker = MagicMock()
         mock_get_broker.return_value = (mock_broker, None)
 
-        # Mock Client enums
         mock_client.PriceHistory.PeriodType.DAY = "day"
         mock_client.PriceHistory.FrequencyType.MINUTE = "minute"
 
@@ -140,7 +136,6 @@ class TestSchwabMarketTools:
         self, mock_get_broker: AsyncMock
     ) -> None:
         """Test price history with invalid period type."""
-        # Mock broker
         mock_broker = MagicMock()
         mock_get_broker.return_value = (mock_broker, None)
 
@@ -166,7 +161,6 @@ class TestSchwabMarketTools:
         mock_schwab_instrument: dict[str, Any],
     ) -> None:
         """Test successful instrument retrieval."""
-        # Mock broker
         mock_broker = MagicMock()
         mock_get_broker.return_value = (mock_broker, None)
 
@@ -193,7 +187,6 @@ class TestSchwabMarketTools:
         mock_schwab_instrument_search: dict[str, Any],
     ) -> None:
         """Test successful instrument search."""
-        # Mock broker
         mock_broker = MagicMock()
         mock_get_broker.return_value = (mock_broker, None)
 
@@ -218,11 +211,9 @@ class TestSchwabMarketTools:
         self, mock_to_thread: AsyncMock, mock_get_broker: AsyncMock
     ) -> None:
         """Test quote retrieval error handling."""
-        # Mock broker
         mock_broker = MagicMock()
         mock_get_broker.return_value = (mock_broker, None)
 
-        # Mock API error
         mock_to_thread.side_effect = Exception("API Error")
 
         result = await get_schwab_quote("AAPL")
@@ -261,7 +252,6 @@ class TestSchwabMarketTools:
 
         result = await function(*args)
         assert result["result"]["status"] == "error"
-        # Search has a custom error message, so we just check status
         if function.__name__ != "search_schwab_instruments":
             assert "API Error" in result["result"]["error"]
 
@@ -317,10 +307,9 @@ class TestSchwabMarketHours:
 
         await get_schwab_market_hours("equity", "2026-05-20")
 
-        # Grab the callable passed to execute_broker_request and call it
         call_args = mock_execute.call_args
         inner_fn = call_args[0][0]
-        inner_fn()  # Triggers broker.client.get_market_hours(...)
+        inner_fn()
         _, kwargs = mock_broker.client.get_market_hours.call_args
         assert kwargs["date"] == datetime.date(2026, 5, 20)
 

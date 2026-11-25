@@ -47,7 +47,6 @@ class TestAlertTriggerEvaluation:
         collector = MetricsCollector(alert_sink=sink)
         now = datetime.now()
 
-        # 10 calls, 3 errors = 30% error rate (> 25% threshold -> unhealthy)
         collector.api_calls.extend([(now, "tool", True)] * 7)
         collector.api_calls.extend([(now, "tool", False)] * 3)
         collector.errors.extend([(now, "tool", "err")] * 3)
@@ -66,9 +65,8 @@ class TestAlertTriggerEvaluation:
         collector = MetricsCollector(alert_sink=sink)
         now = datetime.now()
 
-        # avg response time > 5s (degraded) or > 10s (unhealthy)
         collector.api_calls.extend([(now, "tool", True)] * 5)
-        collector.response_times.extend([(now, 12.0)] * 5)  # 12s avg -> unhealthy
+        collector.response_times.extend([(now, 12.0)] * 5)
 
         await collector.evaluate_alert_conditions()
 
@@ -83,7 +81,6 @@ class TestAlertTriggerEvaluation:
         collector = MetricsCollector(alert_sink=sink)
         now = datetime.now()
 
-        # 10 calls, 0 errors, fast responses
         collector.api_calls.extend([(now, "tool", True)] * 10)
         collector.response_times.extend([(now, 0.1)] * 10)
 
@@ -97,7 +94,6 @@ class TestAlertTriggerEvaluation:
         collector = MetricsCollector(alert_sink=sink, alerts_enabled=False)
         now = datetime.now()
 
-        # Trigger conditions that would normally emit
         collector.api_calls.extend([(now, "tool", False)] * 10)
         collector.errors.extend([(now, "tool", "err")] * 10)
         collector.response_times.extend([(now, 12.0)] * 10)
@@ -130,7 +126,6 @@ class TestAlertDeduplication:
         collector = MetricsCollector(alert_sink=sink)
         now = datetime.now()
 
-        # 50 rapid calls to evaluate_alert_conditions with same error rate condition
         collector.api_calls.extend([(now, "tool", False)] * 30)
         collector.api_calls.extend([(now, "tool", True)] * 10)
         collector.errors.extend([(now, "tool", "err")] * 30)
@@ -139,7 +134,6 @@ class TestAlertDeduplication:
         for _ in range(50):
             await collector.evaluate_alert_conditions()
 
-        # Only one alert should have been emitted for the same signal
         error_rate_alerts = [e for e in sink.calls if e.signal == "error_rate_percent"]
         assert len(error_rate_alerts) == 1
 
@@ -149,11 +143,10 @@ class TestAlertDeduplication:
         sink = FakeAlertSink()
         collector = MetricsCollector(
             alert_sink=sink,
-            alert_dedup_window_seconds=0,  # zero-second window for testing
+            alert_dedup_window_seconds=0,
         )
         now = datetime.now()
 
-        # First trigger
         collector.api_calls.extend([(now, "tool", False)] * 10)
         collector.errors.extend([(now, "tool", "err")] * 10)
         collector.response_times.extend([(now, 0.1)] * 10)
@@ -161,7 +154,6 @@ class TestAlertDeduplication:
         first_count = len([e for e in sink.calls if e.signal == "error_rate_percent"])
         assert first_count == 1
 
-        # Second trigger after dedup window expires (window=0 so immediate)
         await collector.evaluate_alert_conditions()
         second_count = len([e for e in sink.calls if e.signal == "error_rate_percent"])
         assert second_count == 2
@@ -180,7 +172,6 @@ class TestSinkErrorHandling:
         collector.errors.extend([(now, "tool", "err")] * 10)
         collector.response_times.extend([(now, 0.1)] * 10)
 
-        # Should not raise
         await collector.evaluate_alert_conditions()
 
         assert sink.calls_attempted > 0
@@ -196,7 +187,6 @@ class TestSinkErrorHandling:
         collector.errors.extend([(now, "tool", "err")] * 10)
         collector.response_times.extend([(now, 0.1)] * 10)
 
-        # Must not raise even if sink raises
         try:
             await collector.evaluate_alert_conditions()
         except Exception as e:

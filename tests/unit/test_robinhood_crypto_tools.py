@@ -9,7 +9,6 @@ import pytest
 @pytest.mark.unit
 @pytest.mark.journey_system
 def test_crypto_placeholder_module_is_absent() -> None:
-    # Anchor to the project root to avoid false positives if run from a subdirectory
     project_root = Path(__file__).parent.parent.parent
     crypto_module_path = (
         project_root / "src/open_stocks_mcp/tools/robinhood_crypto_tools.py"
@@ -19,7 +18,6 @@ def test_crypto_placeholder_module_is_absent() -> None:
         f"Crypto placeholder module must stay deleted at {crypto_module_path}"
     )
 
-    # Idiomatic check for module absence
     spec = importlib.util.find_spec("open_stocks_mcp.tools.robinhood_crypto_tools")
     assert spec is None, "robinhood_crypto_tools should not be importable"
 

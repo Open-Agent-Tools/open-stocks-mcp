@@ -16,7 +16,6 @@ class TestServerLoginFlow:
     @pytest.fixture(autouse=True)
     def load_env_credentials(self) -> None:
         """Load real credentials from .env file for testing."""
-        # Find project root by looking for pyproject.toml
         current_path = Path(__file__).resolve()
         for parent in current_path.parents:
             env_file = parent / ".env"

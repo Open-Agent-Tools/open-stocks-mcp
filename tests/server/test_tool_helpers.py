@@ -1,4 +1,4 @@
-"""Tests for server.tool_helpers extracted system-tool helpers."""
+"""Tests for server.tool_helpers system-tool helpers."""
 
 from unittest.mock import MagicMock, patch
 

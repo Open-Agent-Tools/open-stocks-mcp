@@ -161,8 +161,6 @@ class HealthService:
                 component_states.append(broker_component.status)
                 broker_states.append(broker_component.status)
 
-        # Overall status aggregation. Unhealthy if any core component (metrics/session)
-        # is unhealthy, or if all configured brokers are unhealthy.
         overall = ComponentStatus.HEALTHY
         core_states = [metrics_component.status, session_component.status]
 

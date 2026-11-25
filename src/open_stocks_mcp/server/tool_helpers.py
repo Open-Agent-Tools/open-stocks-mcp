@@ -1,8 +1,6 @@
 """Helper functions implementing the bodies of server-app system tools.
 
-These helpers exist so `server/app.py` can stay focused on `@mcp.tool()`
-registration. Each helper returns the same `{"result": {...}}` shape its
-corresponding `@mcp.tool()` wrapper used to return inline.
+Each helper returns a `{"result": {...}}` payload.
 """
 
 from typing import Any
@@ -124,7 +122,6 @@ async def get_rate_limit_status_data() -> dict[str, Any]:
     try:
         rate_limiter = get_rate_limiter("robinhood")
     except RegistryNotInitializedError:
-        # Early startup can hit this before broker registry lifespan init.
         rate_limiter = get_rate_limiter()
         fallback_note = (
             "broker registry not initialized; using global rate limiter fallback"

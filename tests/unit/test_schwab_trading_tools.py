@@ -46,14 +46,11 @@ class TestSchwabTradingTools:
         mock_get_broker: AsyncMock,
     ) -> None:
         """Test successful market buy order."""
-        # Mock broker
         mock_broker = MagicMock()
         mock_get_broker.return_value = (mock_broker, None)
 
-        # Mock order spec
         mock_equity_buy_market.return_value = {"orderType": "MARKET"}
 
-        # Mock response
         mock_response = MagicMock()
         mock_response.status_code = 201
         mock_response.headers = {"Location": "/orders/12345"}
@@ -77,7 +74,6 @@ class TestSchwabTradingTools:
     )
     async def test_buy_market_auth_error(self, mock_get_broker: AsyncMock) -> None:
         """Test market buy when authentication fails."""
-        # Mock authentication error
         error_response = {"result": {"error": "Not authenticated", "status": "error"}}
         mock_get_broker.return_value = (None, error_response)
 
@@ -100,14 +96,11 @@ class TestSchwabTradingTools:
         mock_get_broker: AsyncMock,
     ) -> None:
         """Test successful market sell order."""
-        # Mock broker
         mock_broker = MagicMock()
         mock_get_broker.return_value = (mock_broker, None)
 
-        # Mock order spec
         mock_equity_sell_market.return_value = {"orderType": "MARKET"}
 
-        # Mock response
         mock_response = MagicMock()
         mock_response.status_code = 200
         mock_response.headers = {"Location": "/orders/67890"}
@@ -137,14 +130,11 @@ class TestSchwabTradingTools:
         mock_get_broker: AsyncMock,
     ) -> None:
         """Test successful limit buy order."""
-        # Mock broker
         mock_broker = MagicMock()
         mock_get_broker.return_value = (mock_broker, None)
 
-        # Mock order spec
         mock_equity_buy_limit.return_value = {"orderType": "LIMIT"}
 
-        # Mock response
         mock_response = MagicMock()
         mock_response.status_code = 201
         mock_response.headers = {"Location": "/orders/11111"}
@@ -173,14 +163,11 @@ class TestSchwabTradingTools:
         mock_get_broker: AsyncMock,
     ) -> None:
         """Test successful limit sell order."""
-        # Mock broker
         mock_broker = MagicMock()
         mock_get_broker.return_value = (mock_broker, None)
 
-        # Mock order spec
         mock_equity_sell_limit.return_value = {"orderType": "LIMIT"}
 
-        # Mock response
         mock_response = MagicMock()
         mock_response.status_code = 200
         mock_response.headers = {"Location": "/orders/22222"}
@@ -205,11 +192,9 @@ class TestSchwabTradingTools:
         self, mock_to_thread: AsyncMock, mock_get_broker: AsyncMock
     ) -> None:
         """Test successful orders retrieval."""
-        # Mock broker
         mock_broker = MagicMock()
         mock_get_broker.return_value = (mock_broker, None)
 
-        # Mock response
         mock_to_thread.return_value = [
             {
                 "orderId": 12345,
@@ -246,11 +231,9 @@ class TestSchwabTradingTools:
         self, mock_to_thread: AsyncMock, mock_get_broker: AsyncMock
     ) -> None:
         """Test successful order cancellation."""
-        # Mock broker
         mock_broker = MagicMock()
         mock_get_broker.return_value = (mock_broker, None)
 
-        # Mock response
         mock_response = MagicMock()
         mock_response.status_code = 200
         mock_to_thread.return_value = mock_response
@@ -273,11 +256,9 @@ class TestSchwabTradingTools:
         self, mock_to_thread: AsyncMock, mock_get_broker: AsyncMock
     ) -> None:
         """Test successful order retrieval by ID."""
-        # Mock broker
         mock_broker = MagicMock()
         mock_get_broker.return_value = (mock_broker, None)
 
-        # Mock response
         mock_to_thread.return_value = {
             "orderId": 12345,
             "orderType": "MARKET",
@@ -430,11 +411,9 @@ class TestSchwabTradingTools:
         self, mock_to_thread: AsyncMock, mock_get_broker: AsyncMock
     ) -> None:
         """Test successful generic order placement."""
-        # Mock broker
         mock_broker = MagicMock()
         mock_get_broker.return_value = (mock_broker, None)
 
-        # Mock response
         mock_response = MagicMock()
         mock_response.status_code = 201
         mock_response.headers = {"Location": "/orders/99999"}
@@ -463,14 +442,11 @@ class TestSchwabTradingTools:
         mock_get_broker: AsyncMock,
     ) -> None:
         """Test market buy order API failure (non-201 status)."""
-        # Mock broker
         mock_broker = MagicMock()
         mock_get_broker.return_value = (mock_broker, None)
 
-        # Mock order spec
         mock_equity_buy_market.return_value = {"orderType": "MARKET"}
 
-        # Mock response with error status
         mock_response = MagicMock()
         mock_response.status_code = 400
         mock_response.text = "Invalid order"
@@ -494,11 +470,9 @@ class TestSchwabTradingTools:
         self, mock_to_thread: AsyncMock, mock_get_broker: AsyncMock
     ) -> None:
         """Test order cancellation API failure."""
-        # Mock broker
         mock_broker = MagicMock()
         mock_get_broker.return_value = (mock_broker, None)
 
-        # Mock response with error status
         mock_response = MagicMock()
         mock_response.status_code = 404
         mock_response.text = "Order not found"
@@ -527,14 +501,11 @@ class TestSchwabTradingTools:
         mock_get_broker: AsyncMock,
     ) -> None:
         """Test market buy order error handling."""
-        # Mock broker
         mock_broker = MagicMock()
         mock_get_broker.return_value = (mock_broker, None)
 
-        # Mock order spec
         mock_equity_buy_market.return_value = {"orderType": "MARKET"}
 
-        # Mock API error
         mock_to_thread.side_effect = Exception("API Error")
 
         result = await schwab_buy_market("abc123", "AAPL", 10)
@@ -571,7 +542,6 @@ class TestSchwabTradingTools:
         mock_broker = MagicMock()
         mock_get_broker.return_value = (mock_broker, None)
 
-        # Using side_effect covers both status-checking and non-status-checking functions
         mock_to_thread.side_effect = Exception("Internal Server Error")
 
         result = await function(*args)
@@ -677,11 +647,6 @@ class TestSchwabTradingTools:
             assert result is expected_payload
 
 
-# ============================================================
-# New tools from Issue #196
-# ============================================================
-
-
 class TestSchwabOrderSellStop:
     """Tests for schwab_order_sell_stop."""
 
@@ -774,7 +739,6 @@ class TestSchwabGetOpenStockOrders:
         mock_get_broker.return_value = (mock_broker, None)
 
         orders = [
-            # Open equity order — should be included
             {
                 "orderId": "1",
                 "status": "WORKING",
@@ -782,7 +746,6 @@ class TestSchwabGetOpenStockOrders:
                     {"instrument": {"assetType": "EQUITY", "symbol": "AAPL"}}
                 ],
             },
-            # Filled equity order — excluded
             {
                 "orderId": "2",
                 "status": "FILLED",
@@ -790,7 +753,6 @@ class TestSchwabGetOpenStockOrders:
                     {"instrument": {"assetType": "EQUITY", "symbol": "MSFT"}}
                 ],
             },
-            # Open option order — excluded (not equity)
             {
                 "orderId": "3",
                 "status": "WORKING",
@@ -873,9 +835,9 @@ class TestSchwabCancelAllStockOrders:
         cancel_response.status_code = 200
 
         mock_execute.side_effect = [
-            open_orders_response,  # get open orders
-            cancel_response,  # cancel order 10
-            cancel_response,  # cancel order 11
+            open_orders_response,
+            cancel_response,
+            cancel_response,
         ]
 
         from open_stocks_mcp.tools.schwab_trading_tools import (
@@ -1168,7 +1130,6 @@ class TestSchwabCancelAllOptionOrders:
         mock_get_broker.return_value = (mock_broker, None)
 
         all_orders = [
-            # Open option order — should be cancelled
             {
                 "orderId": "opt1",
                 "status": "WORKING",
@@ -1181,7 +1142,6 @@ class TestSchwabCancelAllOptionOrders:
                     }
                 ],
             },
-            # Open equity order — should be skipped
             {
                 "orderId": "eq1",
                 "status": "WORKING",
@@ -1189,7 +1149,6 @@ class TestSchwabCancelAllOptionOrders:
                     {"instrument": {"assetType": "EQUITY", "symbol": "AAPL"}}
                 ],
             },
-            # Filled option — excluded
             {
                 "orderId": "opt2",
                 "status": "FILLED",
@@ -1270,8 +1229,8 @@ class TestSchwabOrderOptionCreditSpread:
         result = await schwab_order_option_credit_spread(
             "acct1",
             "CALL",
-            "AAPL  251219C00150000",  # short (sell)
-            "AAPL  251219C00155000",  # long (buy/hedge)
+            "AAPL  251219C00150000",
+            "AAPL  251219C00155000",
             1,
             "2.00",
         )
@@ -1305,8 +1264,8 @@ class TestSchwabOrderOptionCreditSpread:
         result = await schwab_order_option_credit_spread(
             "acct1",
             "PUT",
-            "AAPL  251219P00150000",  # short (sell)
-            "AAPL  251219P00145000",  # long (buy/hedge)
+            "AAPL  251219P00150000",
+            "AAPL  251219P00145000",
             1,
             "1.50",
         )
@@ -1425,8 +1384,8 @@ class TestSchwabOrderOptionDebitSpread:
         result = await schwab_order_option_debit_spread(
             "acct1",
             "CALL",
-            "AAPL  251219C00150000",  # long (buy)
-            "AAPL  251219C00155000",  # short (sell/hedge)
+            "AAPL  251219C00150000",
+            "AAPL  251219C00155000",
             1,
             "3.00",
         )
@@ -1460,8 +1419,8 @@ class TestSchwabOrderOptionDebitSpread:
         result = await schwab_order_option_debit_spread(
             "acct1",
             "PUT",
-            "AAPL  251219P00155000",  # long (buy, higher strike for bear put)
-            "AAPL  251219P00150000",  # short (sell/hedge)
+            "AAPL  251219P00155000",
+            "AAPL  251219P00150000",
             1,
             "2.50",
         )

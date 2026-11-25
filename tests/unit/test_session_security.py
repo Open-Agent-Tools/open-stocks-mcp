@@ -40,7 +40,6 @@ class TestTokensDirectoryPermissions:
     def test_existing_directory_permissions_are_hardened(
         self, manager: SessionPickleManager, tmp_tokens_dir: Path
     ) -> None:
-        # Create directory with looser permissions first
         tmp_tokens_dir.mkdir(mode=0o755, parents=True, exist_ok=True)
         manager._get_tokens_dir()
         mode = stat.S_IMODE(tmp_tokens_dir.stat().st_mode)
@@ -73,7 +72,6 @@ class TestFernetKeyManagement:
 
     def test_valid_fernet_key_generated(self, manager: SessionPickleManager) -> None:
         key = manager._get_or_create_fernet_key()
-        # Fernet key must be usable — if it's invalid Fernet() raises ValueError
         fernet = Fernet(key)
         ciphertext = fernet.encrypt(b"test")
         assert fernet.decrypt(ciphertext) == b"test"
@@ -119,7 +117,7 @@ class TestPickleEncryption:
     def test_encrypt_no_op_when_no_plaintext(
         self, manager: SessionPickleManager, tmp_tokens_dir: Path
     ) -> None:
-        manager._encrypt_pickle_if_exists()  # Should not raise
+        manager._encrypt_pickle_if_exists()
         enc_path = tmp_tokens_dir / "robinhood.pickle.enc"
         assert not enc_path.exists()
 

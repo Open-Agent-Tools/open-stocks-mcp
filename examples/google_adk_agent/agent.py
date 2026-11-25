@@ -20,8 +20,6 @@ from google.adk.tools.mcp_tool.mcp_toolset import (
 
 from .prompts import agent_instruction
 
-# Initialize environment and logging
-# Load .env from project root (two levels up from this file)
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 dotenv_path = os.path.join(project_root, ".env")
 load_dotenv(dotenv_path)
@@ -37,7 +35,6 @@ def create_agent() -> Agent:
         Agent: Configured Stock Trading agent with HTTP transport to MCP server.
     """
 
-    # Use HTTP transport - server must be running separately
     http_url = os.environ.get("MCP_HTTP_URL", "http://localhost:3001/mcp")
     agent_tools = [
         MCPToolset(
@@ -56,5 +53,4 @@ def create_agent() -> Agent:
     )
 
 
-# Configure specialized Stock Trading operations agent
 root_agent = create_agent()

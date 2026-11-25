@@ -45,12 +45,11 @@ async def get_notifications(count: int | None = 20) -> dict[str, Any]:
     """
     logger.info(f"Getting {count} account notifications")
 
-    # Get notifications
     notifications_data = await execute_with_retry(
         func=rh.get_notifications,
         func_name="get_notifications",
         max_retries=3,
-        info=None,  # Get all fields
+        info=None,
     )
 
     if not notifications_data:
@@ -65,19 +64,16 @@ async def get_notifications(count: int | None = 20) -> dict[str, Any]:
             }
         }
 
-    # Process notifications and count unread
     processed_notifications = []
     unread_count = 0
 
     if isinstance(notifications_data, list):
-        # Limit to requested count
         limited_notifications = (
             notifications_data[:count] if count else notifications_data
         )
 
         for notification in limited_notifications:
             if isinstance(notification, dict):
-                # Check if notification is unread
                 if not notification.get("read", True):
                     unread_count += 1
 
@@ -125,7 +121,6 @@ async def get_latest_notification() -> dict[str, Any]:
     """
     logger.info("Getting latest notification")
 
-    # Get latest notification
     notification_data = await execute_with_retry(
         func=rh.get_latest_notification,
         func_name="get_latest_notification",

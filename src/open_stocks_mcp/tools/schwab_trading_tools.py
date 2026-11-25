@@ -66,9 +66,7 @@ async def place_schwab_order(
 
         response = await execute_broker_request(_place_order, retry_safe=False)
 
-        # Check response status
         if response.status_code in (200, 201):
-            # Extract order ID from Location header if available
             location = response.headers.get("Location", "")
             order_id = location.split("/")[-1] if location else None
 
@@ -112,7 +110,6 @@ async def schwab_buy_market(
         return error
 
     try:
-        # Create order spec
         order_spec = equity_buy_market(symbol.upper(), quantity)
 
         def _place_order() -> Any:
@@ -121,7 +118,6 @@ async def schwab_buy_market(
 
         response = await execute_broker_request(_place_order, retry_safe=False)
 
-        # Check response status
         if response.status_code in (200, 201):
             location = response.headers.get("Location", "")
             order_id = location.split("/")[-1] if location else None
@@ -169,7 +165,6 @@ async def schwab_sell_market(
         return error
 
     try:
-        # Create order spec
         order_spec = equity_sell_market(symbol.upper(), quantity)
 
         def _place_order() -> Any:
@@ -178,7 +173,6 @@ async def schwab_sell_market(
 
         response = await execute_broker_request(_place_order, retry_safe=False)
 
-        # Check response status
         if response.status_code in (200, 201):
             location = response.headers.get("Location", "")
             order_id = location.split("/")[-1] if location else None
@@ -227,7 +221,6 @@ async def schwab_buy_limit(
         return error
 
     try:
-        # Create order spec
         order_spec = equity_buy_limit(symbol.upper(), quantity, price)
 
         def _place_order() -> Any:
@@ -236,7 +229,6 @@ async def schwab_buy_limit(
 
         response = await execute_broker_request(_place_order, retry_safe=False)
 
-        # Check response status
         if response.status_code in (200, 201):
             location = response.headers.get("Location", "")
             order_id = location.split("/")[-1] if location else None
@@ -286,7 +278,6 @@ async def schwab_sell_limit(
         return error
 
     try:
-        # Create order spec
         order_spec = equity_sell_limit(symbol.upper(), quantity, price)
 
         def _place_order() -> Any:
@@ -295,7 +286,6 @@ async def schwab_sell_limit(
 
         response = await execute_broker_request(_place_order, retry_safe=False)
 
-        # Check response status
         if response.status_code in (200, 201):
             location = response.headers.get("Location", "")
             order_id = location.split("/")[-1] if location else None
@@ -387,7 +377,6 @@ async def cancel_schwab_order(account_hash: str, order_id: str) -> dict[str, Any
 
         response = await execute_broker_request(_cancel_order, retry_safe=False)
 
-        # Check response status
         if response.status_code in (200, 204):
             return create_success_response(
                 {
@@ -536,7 +525,6 @@ async def get_schwab_transaction(
         return create_error_response(e)
 
 
-# Open/cancellable order statuses for equity orders
 _OPEN_EQUITY_STATUSES = frozenset(
     {
         "WORKING",

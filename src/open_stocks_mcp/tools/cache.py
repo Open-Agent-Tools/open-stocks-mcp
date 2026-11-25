@@ -21,8 +21,6 @@ from open_stocks_mcp.monitoring import get_metrics_collector
 
 T = TypeVar("T")
 
-# Module-level registry so clear_caches() can reset every wrapped function's
-# state — tests in particular rely on this to avoid leaking across cases.
 _CACHE_REGISTRY: list[tuple[str, Any, asyncio.Lock | None]] = []
 
 
@@ -67,9 +65,6 @@ def cached_async(
     else:
         cache = LRUCache(maxsize=max_size)
 
-    # We use a dictionary to store locks per event loop to ensure they are
-    # always bound to the currently running loop. This prevents hangs and
-    # "attached to a different loop" errors during testing.
     locks: dict[asyncio.AbstractEventLoop, asyncio.Lock] = {}
 
     _CACHE_REGISTRY.append((name, cache, None))
@@ -80,7 +75,6 @@ def cached_async(
             if not get_cache_config().enabled:
                 return await func(*args, **kwargs)
 
-            # Get or create lock for the current event loop
             loop = asyncio.get_running_loop()
             if loop not in locks:
                 locks[loop] = asyncio.Lock()

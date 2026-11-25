@@ -44,24 +44,19 @@ async def get_dividends() -> dict[str, Any]:
         }
     """
     try:
-        # Ensure authenticated
         session_mgr = get_session_manager()
         if not await session_mgr.ensure_authenticated():
             return {"result": {"error": "Authentication required", "status": "error"}}
 
-        # Get dividend data
         dividends = await execute_with_retry(rh.account.get_dividends)
 
-        # Validate response
         if not dividends or not isinstance(dividends, list):
             dividends = []
 
-        # Process dividend data
         processed_dividends = []
         total_amount = 0.0
 
         for dividend in dividends:
-            # Extract relevant fields
             processed = {
                 "id": dividend.get("id"),
                 "amount": dividend.get("amount"),
@@ -76,7 +71,6 @@ async def get_dividends() -> dict[str, Any]:
                 "payable_date": dividend.get("payable_date"),
             }
 
-            # Get symbol from instrument URL if available
             instrument_url = dividend.get("instrument")
             if instrument_url:
                 try:
@@ -89,7 +83,6 @@ async def get_dividends() -> dict[str, Any]:
                 except Exception as e:
                     logger.warning(f"Failed to get instrument data: {e}")
 
-            # Calculate total for paid dividends
             if dividend.get("state") == "paid" and dividend.get("amount"):
                 with contextlib.suppress(ValueError, TypeError):
                     total_amount += float(dividend["amount"])
@@ -135,18 +128,14 @@ async def get_total_dividends() -> dict[str, Any]:
         }
     """
     try:
-        # Ensure authenticated
         session_mgr = get_session_manager()
         if not await session_mgr.ensure_authenticated():
             return {"result": {"error": "Authentication required", "status": "error"}}
 
-        # Use robin_stocks built-in function
         total = await execute_with_retry(rh.account.get_total_dividends)
 
-        # Also get detailed dividends for additional stats
         dividends = await execute_with_retry(rh.account.get_dividends)
 
-        # Calculate additional statistics
         by_year: dict[str, float] = {}
         first_date = None
         last_date = None
@@ -163,13 +152,11 @@ async def get_total_dividends() -> dict[str, Any]:
                         amount = float(dividend.get("amount", 0))
                         by_year[year] = by_year.get(year, 0) + amount
 
-                    # Track date range
                     if not first_date or paid_date < first_date:
                         first_date = paid_date
                     if not last_date or paid_date > last_date:
                         last_date = paid_date
 
-        # Format by_year totals
         by_year_formatted = {
             year: f"{amount:.2f}"
             for year, amount in sorted(by_year.items(), reverse=True)
@@ -217,7 +204,6 @@ async def get_dividends_by_instrument(symbol: str) -> dict[str, Any]:
         }
     """
     try:
-        # Validate input
         if not symbol or not isinstance(symbol, str):
             return {
                 "result": {"error": "Symbol parameter is required", "status": "error"}
@@ -225,17 +211,14 @@ async def get_dividends_by_instrument(symbol: str) -> dict[str, Any]:
 
         symbol = symbol.upper().strip()
 
-        # Ensure authenticated
         session_mgr = get_session_manager()
         if not await session_mgr.ensure_authenticated():
             return {"result": {"error": "Authentication required", "status": "error"}}
 
-        # Get dividends by instrument
         dividends = await execute_with_retry(
             rh.account.get_dividends_by_instrument, symbol
         )
 
-        # Process dividend data
         processed_dividends = []
         total_amount = 0.0
 
@@ -253,7 +236,6 @@ async def get_dividends_by_instrument(symbol: str) -> dict[str, Any]:
                     "payable_date": dividend.get("payable_date"),
                 }
 
-                # Calculate total for paid dividends
                 if dividend.get("state") == "paid" and dividend.get("amount"):
                     with contextlib.suppress(ValueError, TypeError):
                         total_amount += float(dividend["amount"])
@@ -302,15 +284,12 @@ async def get_interest_payments() -> dict[str, Any]:
         }
     """
     try:
-        # Ensure authenticated
         session_mgr = get_session_manager()
         if not await session_mgr.ensure_authenticated():
             return {"result": {"error": "Authentication required", "status": "error"}}
 
-        # Get interest payments
         interest_payments = await execute_with_retry(rh.account.get_interest_payments)
 
-        # Process interest payment data
         processed_payments = []
         total_amount = 0.0
 
@@ -326,7 +305,6 @@ async def get_interest_payments() -> dict[str, Any]:
                     "created_at": payment.get("created_at"),
                 }
 
-                # Calculate total for paid interest
                 if payment.get("state") == "paid" and payment.get("amount"):
                     with contextlib.suppress(ValueError, TypeError):
                         total_amount += float(payment["amount"])
@@ -372,15 +350,12 @@ async def get_stock_loan_payments() -> dict[str, Any]:
         }
     """
     try:
-        # Ensure authenticated
         session_mgr = get_session_manager()
         if not await session_mgr.ensure_authenticated():
             return {"result": {"error": "Authentication required", "status": "error"}}
 
-        # Get stock loan payments
         loan_payments = await execute_with_retry(rh.account.get_stock_loan_payments)
 
-        # Process loan payment data
         processed_payments = []
         total_amount = 0.0
 
@@ -397,7 +372,6 @@ async def get_stock_loan_payments() -> dict[str, Any]:
                     "created_at": payment.get("created_at"),
                 }
 
-                # Get symbol from instrument URL if available
                 instrument_url = payment.get("instrument")
                 if instrument_url:
                     try:
@@ -410,7 +384,6 @@ async def get_stock_loan_payments() -> dict[str, Any]:
                     except Exception as e:
                         logger.warning(f"Failed to get instrument data: {e}")
 
-                # Calculate total for paid loans
                 if payment.get("state") == "paid" and payment.get("amount"):
                     with contextlib.suppress(ValueError, TypeError):
                         total_amount += float(payment["amount"])

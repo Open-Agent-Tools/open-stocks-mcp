@@ -13,7 +13,6 @@ class TestMCPProtocolCompliance:
 
     def test_jsonrpc_request_structure(self) -> None:
         """Test that JSON-RPC 2.0 request structure is correct"""
-        # Test basic structure
         request = {
             "jsonrpc": "2.0",
             "method": "initialize",
@@ -52,11 +51,9 @@ class TestMCPProtocolCompliance:
 
         assert request["method"] == "tools/list"
         assert "id" in request
-        # No params required for list tools
 
     def test_response_structure(self) -> None:
         """Test JSON-RPC 2.0 response structure"""
-        # Success response
         success_response = {
             "jsonrpc": "2.0",
             "result": {"data": "some result"},
@@ -68,7 +65,6 @@ class TestMCPProtocolCompliance:
         assert success_response["id"] == 1
         assert "error" not in success_response
 
-        # Error response
         error_response = {
             "jsonrpc": "2.0",
             "error": {"code": -32601, "message": "Method not found"},
@@ -91,14 +87,11 @@ class TestHTTPTransportReliability:
 
     async def test_concurrent_connection_handling(self) -> None:
         """Test handling of concurrent connections"""
-        # This would test with a real server instance
-        # For now, verify the test structure
 
         async def make_request(session_id: int) -> dict[str, Any]:
             """Simulate a concurrent request"""
             return {"session_id": session_id, "status": "completed"}
 
-        # Simulate concurrent requests
         tasks = [make_request(i) for i in range(5)]
         results = await asyncio.gather(*tasks)
 
@@ -110,32 +103,26 @@ class TestHTTPTransportReliability:
     async def test_timeout_handling(self) -> None:
         """Test request timeout handling"""
 
-        # Test timeout behavior
         async def slow_operation() -> str:
-            await asyncio.sleep(0.1)  # Simulate slow operation
+            await asyncio.sleep(0.1)
             return "completed"
 
-        # Test with timeout
         try:
             result = await asyncio.wait_for(slow_operation(), timeout=0.05)
-            # If this succeeds, operation was faster than expected
             assert result == "completed"
         except TimeoutError:
-            # Expected for timeout scenario
             pass
 
     def test_session_id_generation(self) -> None:
         """Test session ID generation and uniqueness"""
         import uuid
 
-        # Test session ID format
         session_id = str(uuid.uuid4())
-        assert len(session_id) == 36  # Standard UUID length
-        assert session_id.count("-") == 4  # Standard UUID format
+        assert len(session_id) == 36
+        assert session_id.count("-") == 4
 
-        # Test uniqueness
         session_ids = [str(uuid.uuid4()) for _ in range(100)]
-        assert len(set(session_ids)) == 100  # All unique
+        assert len(set(session_ids)) == 100
 
     def test_error_code_mapping(self) -> None:
         """Test JSON-RPC error code mapping"""
@@ -148,11 +135,9 @@ class TestHTTPTransportReliability:
             "forbidden_tool": -32001,
         }
 
-        # Verify standard error codes
         assert error_codes["parse_error"] == -32700
         assert error_codes["method_not_found"] == -32601
         assert error_codes["internal_error"] == -32603
-        # Verify server-defined error codes
         assert error_codes["forbidden_tool"] == -32001
 
 
@@ -175,7 +160,6 @@ class TestHTTPTransportFeatures:
 
     def test_sse_event_format(self) -> None:
         """Test Server-Sent Events format"""
-        # SSE event format
         event_data = {
             "event": "tool_result",
             "data": json.dumps(
@@ -192,7 +176,6 @@ class TestHTTPTransportFeatures:
         assert "data" in event_data
         assert "id" in event_data
 
-        # Parse data to verify JSON-RPC structure
         data = json.loads(event_data["data"])
         assert data["jsonrpc"] == "2.0"
         assert "result" in data
@@ -212,7 +195,6 @@ class TestHTTPTransportFeatures:
             "service_unavailable": 503,
         }
 
-        # Verify standard codes are used correctly
         assert status_codes["success"] == 200
         assert status_codes["unauthorized"] == 401
         assert status_codes["not_found"] == 404

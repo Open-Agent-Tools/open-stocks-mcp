@@ -102,11 +102,9 @@ class TestAccountTools:
             "buying_power": "100.00",
         }
 
-        # First call
         res1 = await get_portfolio()
         assert mock_portfolio.call_count == 1
 
-        # Second call - should hit cache
         res2 = await get_portfolio()
         assert res2 == res1
         assert mock_portfolio.call_count == 1
@@ -129,11 +127,9 @@ class TestAccountTools:
             "buying_power": "100.00",
         }
 
-        # First call
         await get_portfolio()
         assert mock_portfolio.call_count == 1
 
-        # Second call - should NOT hit cache
         await get_portfolio()
         assert mock_portfolio.call_count == 2
 
@@ -151,7 +147,6 @@ class TestAccountTools:
         """Test successful positions retrieval."""
         mock_positions.return_value = robinhood_positions_payload
 
-        # Mock symbol lookup for each instrument URL
         mock_symbol.side_effect = ["AAPL", "GOOGL"]
 
         result = await get_positions()
@@ -368,7 +363,6 @@ class TestAccountTools:
             },
         ]
 
-        # Mock symbol lookup for each instrument URL
         mock_symbol.side_effect = ["AAPL", "GOOGL"]
 
         result = await get_stock_orders()

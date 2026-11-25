@@ -47,7 +47,6 @@ async def get_stock_ratings(symbol: str) -> dict[str, Any]:
         }
     """
     try:
-        # Input validation
         if not validate_symbol(symbol):
             return create_error_response(
                 ValueError(f"Invalid symbol format: {symbol}"), "symbol validation"
@@ -55,7 +54,6 @@ async def get_stock_ratings(symbol: str) -> dict[str, Any]:
 
         symbol = symbol.strip().upper()
 
-        # Ensure authenticated
         session_mgr = get_session_manager()
         if not await session_mgr.ensure_authenticated():
             return create_error_response(
@@ -64,7 +62,6 @@ async def get_stock_ratings(symbol: str) -> dict[str, Any]:
 
         log_api_call("get_stock_ratings", symbol=symbol)
 
-        # Get ratings with retry logic
         ratings_data = await execute_with_retry(rh.get_ratings, symbol)
 
         if not ratings_data:
@@ -72,7 +69,6 @@ async def get_stock_ratings(symbol: str) -> dict[str, Any]:
                 f"No ratings data found for symbol: {symbol}", {"symbol": symbol}
             )
 
-        # Add symbol to response for consistency
         ratings_data["symbol"] = symbol
 
         return create_success_response(ratings_data)

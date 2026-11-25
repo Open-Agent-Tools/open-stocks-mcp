@@ -1,8 +1,4 @@
-"""Parent-level acceptance tests for Phase 8 operations, docs, and configuration roadmap (#139).
-
-Verifies that the four decomposed child slices (#163-#166) left the repository
-with all artifacts discoverable from committed files.
-"""
+"""Acceptance tests for discoverable operations, documentation, and configuration artifacts."""
 
 from __future__ import annotations
 

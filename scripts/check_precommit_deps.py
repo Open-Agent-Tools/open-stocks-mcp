@@ -51,7 +51,7 @@ def main() -> int:
     errors: list[str] = []
     for name, pyproject_constraint in pyproject.items():
         if name not in precommit:
-            continue  # package not listed in pre-commit (e.g. not needed for mypy)
+            continue
         pc_constraint = precommit[name]
         if pc_constraint != pyproject_constraint:
             errors.append(

@@ -127,7 +127,6 @@ async def test_get_metrics_cleans_stale_tool_samples() -> None:
 
     assert metrics["calls_in_window"] == 1
     assert metrics["tool_usage"]["new_tool"]["calls"] == 1
-    # Pruning removes the key entirely once its deque empties
     assert "old_tool" not in metrics["tool_usage"]
 
 
@@ -235,13 +234,10 @@ async def test_alert_dedup_cleanup_avoids_memory_growth() -> None:
     collector = MetricsCollector(alert_dedup_window_seconds=0.1)
     now = datetime.now()
 
-    # Record an alert
     collector._last_alert_at["test_signal"] = now - timedelta(seconds=1)
 
-    # Run cleanup via private method
     collector._clean_old_entries(now)
 
-    # Map should be empty since 1s > 0.1s
     assert "test_signal" not in collector._last_alert_at
 
 
@@ -252,13 +248,9 @@ def test_percentile_uses_ceil_rank_for_short_and_even_lists() -> None:
 
     assert p([10.0], 0.50) == 10.0
 
-    # 2-element list: ceil-rank gives index 0 (10.0);
-    # old truncated-index int(2*0.5)=1 would give 20.0
     assert p([10.0, 20.0], 0.50) == 10.0
     assert p([10.0, 20.0], 0.95) == 20.0
 
-    # 4-element list at p50: ceil(4*0.5)=2 → index 1 → 20.0;
-    # old int(4*0.5)=2 → index 2 → 30.0 (key divergence)
     assert p([10.0, 20.0, 30.0, 40.0], 0.50) == 20.0
     assert p([10.0, 20.0, 30.0, 40.0], 0.95) == 40.0
     assert p([10.0, 20.0, 30.0, 40.0], 0.99) == 40.0
@@ -273,25 +265,20 @@ async def test_clean_old_entries_prunes_empty_deques() -> None:
     now = datetime.now()
     stale = now - timedelta(minutes=2)
 
-    # Insert stale entries for old_tool
     collector.tool_usage["old_tool"].append((stale, True))
     collector.tool_response_times["old_tool"].append((stale, 0.5))
-    # Insert current entries for recent_tool
     collector.tool_usage["recent_tool"].append((now, True))
     collector.tool_response_times["recent_tool"].append((now, 0.1))
 
     collector._clean_old_entries(now)
 
-    # old_tool's deques are now empty — keys should be pruned
     assert "old_tool" not in collector.tool_usage
     assert "old_tool" not in collector.tool_response_times
-    # recent_tool should still be present with data intact
     assert "recent_tool" in collector.tool_usage
     assert len(collector.tool_usage["recent_tool"]) == 1
     assert "recent_tool" in collector.tool_response_times
     assert len(collector.tool_response_times["recent_tool"]) == 1
 
-    # record_api_call must be able to re-create a pruned key via defaultdict
     await collector.record_api_call("old_tool", 0.05, True)
     assert "old_tool" in collector.tool_usage
 

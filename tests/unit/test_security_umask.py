@@ -10,51 +10,40 @@ from open_stocks_mcp.logging_config import setup_logging
 
 def test_schwab_tokens_directory_permissions(tmp_path):
     """Verify that .tokens directory is created with secure permissions by SchwabBroker."""
-    # Mock Path.home() to return our tmp_path
     with patch("pathlib.Path.home", return_value=tmp_path):
-        # Initialize SchwabBroker which triggers mkdir
         SchwabBroker(api_key="test", app_secret="test")
 
         token_dir = tmp_path / ".tokens"
         assert token_dir.exists()
 
-        # Check permissions
         mode = os.stat(token_dir).st_mode & 0o777
         assert mode == 0o700, f"Expected mode 0o700, got {oct(mode)}"
 
 
 def test_session_manager_tokens_directory_permissions(tmp_path):
     """Verify that .tokens directory is created with secure permissions by SessionManager."""
-    # Mock Path.home() to return our tmp_path
     with patch("pathlib.Path.home", return_value=tmp_path):
-        # Initialize SessionManager
         manager = SessionManager()
-        # Trigger _get_pickle_file_path
         manager._get_pickle_file_path()
 
         token_dir = tmp_path / ".tokens"
         assert token_dir.exists()
 
-        # Check permissions
         mode = os.stat(token_dir).st_mode & 0o777
         assert mode == 0o700, f"Expected mode 0o700, got {oct(mode)}"
 
 
 def test_session_manager_fixes_existing_permissions(tmp_path):
     """Verify that SessionManager fixes existing insecure permissions."""
-    # Mock Path.home() to return our tmp_path
     with patch("pathlib.Path.home", return_value=tmp_path):
         token_dir = tmp_path / ".tokens"
-        # Create directory with insecure permissions
         token_dir.mkdir(mode=0o755, exist_ok=True)
         os.chmod(token_dir, 0o755)
         assert (os.stat(token_dir).st_mode & 0o777) == 0o755
 
-        # Initialize SessionManager and trigger _get_pickle_file_path
         manager = SessionManager()
         manager._get_pickle_file_path()
 
-        # Check permissions - should be fixed to 0o700
         mode = os.stat(token_dir).st_mode & 0o777
         assert mode == 0o700, f"Expected mode 0o700, got {oct(mode)}"
 

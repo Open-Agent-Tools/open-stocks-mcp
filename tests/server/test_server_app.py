@@ -69,7 +69,6 @@ class TestMarketToolRegistration:
     @pytest.mark.asyncio
     async def test_market_research_tools_are_registered(self) -> None:
         """Test that all 10 market/research tools are registered on the mcp server."""
-        # Get the list of registered tools via list_tools method
         tools_list = await mcp.list_tools()
         tool_names = [tool.name for tool in tools_list]
 
@@ -113,7 +112,6 @@ class TestAttemptLogin:
             ) as mock_run,
             patch("open_stocks_mcp.server.app.logger") as mock_logger,
         ):
-            # Should not raise any exception
             attempt_login("testuser", "testpass")
 
             mock_session_manager.set_credentials.assert_called_once_with(
@@ -180,7 +178,6 @@ class TestToolRegistration:
     @pytest.mark.asyncio
     async def test_tools_are_registered(self) -> None:
         """Test that all expected tools are registered on the mcp server."""
-        # Get the list of registered tools via list_tools method
         tools_list = await mcp.list_tools()
         tool_names = [tool.name for tool in tools_list]
 
@@ -483,7 +480,6 @@ class TestSetupBrokers:
         ):
             await setup_brokers("user", "pass")
 
-        # Current behavior (and desired default): registers Robinhood if creds provided
         mock_registry.register.assert_called_once()
 
     @pytest.mark.asyncio
@@ -506,7 +502,6 @@ class TestSetupBrokers:
         ):
             await setup_brokers("user", "pass")
 
-        # Should NOT register Robinhood
         mock_registry.register.assert_not_called()
 
     @pytest.mark.asyncio
@@ -547,7 +542,6 @@ class TestSetupBrokers:
         ):
             await setup_brokers("user", "pass")
 
-        # Robinhood should be registered
         mock_registry.register.assert_called_once()
 
     @pytest.mark.asyncio
@@ -575,7 +569,6 @@ class TestSetupBrokers:
             await setup_brokers("user", "pass")
 
         assert "bogus" in caplog.text
-        # Robinhood should still be registered
         mock_registry.register.assert_called_once()
 
     @pytest.mark.asyncio

@@ -65,7 +65,6 @@ async def get_schwab_option_chain(
         return error
 
     try:
-        # Map contract type string to enum
         contract_type_map = {
             "call": Client.Options.ContractType.CALL,
             "put": Client.Options.ContractType.PUT,
@@ -125,7 +124,6 @@ async def get_schwab_option_chain_by_expiration(
         return error
 
     try:
-        # Map contract type string to enum
         contract_type_map = {
             "call": Client.Options.ContractType.CALL,
             "put": Client.Options.ContractType.PUT,
@@ -136,7 +134,6 @@ async def get_schwab_option_chain_by_expiration(
         if contract_type:
             ct = contract_type_map.get(contract_type.lower())
 
-        # Parse dates
         from_dt = None
         to_dt = None
         if from_date:
@@ -189,7 +186,6 @@ async def get_schwab_option_expirations(symbol: str) -> dict[str, Any]:
             _get_option_chain, retry_safe=True
         )
 
-        # Extract expiration dates
         expirations = expiration_data.get("expirationList", [])
 
         return create_success_response(
@@ -231,11 +227,9 @@ async def get_schwab_options_positions(account_hash: str) -> dict[str, Any]:
 
         account_data = await execute_broker_request(_get_account, retry_safe=True)
 
-        # Extract options positions
         securities_account = account_data.get("securitiesAccount", {})
         all_positions = securities_account.get("positions", [])
 
-        # Filter for options
         options_positions = []
         for position in all_positions:
             instrument = position.get("instrument", {})
@@ -456,7 +450,6 @@ async def schwab_get_option_quote(
         strike_key = f"{strike:.1f}"
 
         for exp_chain_key, strikes_map in exp_map.items():
-            # Schwab keys have DTE suffix: "YYYY-MM-DD:N"
             if not exp_chain_key.startswith(expiration_date):
                 continue
             contracts = strikes_map.get(strike_key)
@@ -506,12 +499,10 @@ async def schwab_option_buy_to_open(
         return error
 
     try:
-        # Create option symbol (simplified - may need adjustment for Schwab format)
         option_symbol = (
             f"{symbol.upper()}_{expiration}_{option_type[0].upper()}{strike}"
         )
 
-        # Create order spec
         order_spec = option_buy_to_open_market(option_symbol, quantity)
 
         def _place_order() -> Any:
@@ -520,7 +511,6 @@ async def schwab_option_buy_to_open(
 
         response = await execute_broker_request(_place_order, retry_safe=False)
 
-        # Check response status
         if response.status_code in (200, 201):
             location = response.headers.get("Location", "")
             order_id = location.split("/")[-1] if location else None
@@ -582,7 +572,6 @@ async def schwab_find_tradable_options(
                 )
             )
 
-        # Map to Schwab SDK contract type enum so the API call is scoped when possible
         contract_type_map = {
             "call": Client.Options.ContractType.CALL,
             "put": Client.Options.ContractType.PUT,
@@ -604,7 +593,6 @@ async def schwab_find_tradable_options(
 
         chain_data = await execute_broker_request(_get_option_chain, retry_safe=True)
 
-        # Flatten callExpDateMap and putExpDateMap into a single list of contracts
         options: list[dict[str, Any]] = []
 
         maps_to_scan: list[tuple[str, dict[str, Any]]] = []
@@ -615,7 +603,6 @@ async def schwab_find_tradable_options(
 
         for _side, exp_map in maps_to_scan:
             for exp_key, strikes_map in exp_map.items():
-                # Schwab keys may carry a DTE suffix: "YYYY-MM-DD:DTE"
                 exp_prefix = exp_key.split(":")[0]
                 if expiration_date and exp_prefix != expiration_date:
                     continue
@@ -672,12 +659,10 @@ async def schwab_option_sell_to_close(
         return error
 
     try:
-        # Create option symbol (simplified - may need adjustment for Schwab format)
         option_symbol = (
             f"{symbol.upper()}_{expiration}_{option_type[0].upper()}{strike}"
         )
 
-        # Create order spec
         order_spec = option_sell_to_close_market(option_symbol, quantity)
 
         def _place_order() -> Any:
@@ -686,7 +671,6 @@ async def schwab_option_sell_to_close(
 
         response = await execute_broker_request(_place_order, retry_safe=False)
 
-        # Check response status
         if response.status_code in (200, 201):
             location = response.headers.get("Location", "")
             order_id = location.split("/")[-1] if location else None

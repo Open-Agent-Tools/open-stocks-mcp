@@ -71,8 +71,6 @@ async def schwab_get_dividends(
             datetime.date.fromisoformat(end_date) if end_date is not None else None
         )
 
-        # We hard-code transaction_types to DIVIDEND_OR_INTEREST for this tool
-        # but _classify_transaction will filter out interest.
         response = await asyncio.to_thread(
             broker.client.get_transactions,
             account_hash,
@@ -87,7 +85,6 @@ async def schwab_get_dividends(
         if not isinstance(transactions, list):
             transactions = []
 
-        # Filter for dividends and calculate total
         dividends = []
         total_amount = Decimal("0.00")
 

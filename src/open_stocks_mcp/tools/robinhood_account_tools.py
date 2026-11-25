@@ -29,13 +29,11 @@ async def get_account_info() -> dict[str, Any]:
     """
     log_api_call("get_account_info")
 
-    # Get account info with retry logic
     account_info = await execute_with_retry(rh.load_user_profile)
 
     if not account_info:
         return create_no_data_response("Account information not available")
 
-    # Sanitize sensitive data
     account_info = sanitize_api_response(account_info)
 
     logger.info("Successfully retrieved account info.")
@@ -63,13 +61,11 @@ async def get_portfolio() -> dict[str, Any]:
     """
     log_api_call("get_portfolio")
 
-    # Get portfolio data with retry logic
     portfolio = await execute_with_retry(rh.load_portfolio_profile)
 
     if not portfolio:
         return create_no_data_response("Portfolio data not available")
 
-    # Sanitize sensitive data
     portfolio = sanitize_api_response(portfolio)
 
     logger.info("Successfully retrieved portfolio overview.")
@@ -146,19 +142,15 @@ async def get_account_details() -> dict[str, Any]:
     """
     log_api_call("get_account_details")
 
-    # Get account data with retry logic
     account_response = await execute_with_retry(rh.load_phoenix_account)
 
     if not account_response or not account_response.get("results"):
         return create_no_data_response("No account data found")
 
-    # Extract account data from results (it's a list with first element containing data)
     account_data = account_response["results"][0] if account_response["results"] else {}
 
-    # Sanitize sensitive data
     account_data = sanitize_api_response(account_data)
 
-    # Helper function to extract amount from currency objects
     def get_currency_amount(field_data: Any) -> str:
         if isinstance(field_data, dict) and "amount" in field_data:
             return str(field_data["amount"])
@@ -205,7 +197,6 @@ async def get_positions() -> dict[str, Any]:
     """
     log_api_call("get_positions")
 
-    # Get positions with retry logic
     positions = await execute_with_retry(rh.get_open_stock_positions)
 
     if not positions:
@@ -215,7 +206,6 @@ async def get_positions() -> dict[str, Any]:
 
     position_list = []
     for position in positions:
-        # Get symbol from instrument URL with retry logic
         instrument_url = position.get("instrument")
         symbol = "N/A"
         if instrument_url:
@@ -228,7 +218,6 @@ async def get_positions() -> dict[str, Any]:
 
         quantity = position.get("quantity", "0")
 
-        # Only include positions with non-zero quantity
         if float(quantity) > 0:
             position_data = {
                 "symbol": symbol,

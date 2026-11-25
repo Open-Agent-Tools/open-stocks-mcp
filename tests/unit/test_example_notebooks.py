@@ -26,7 +26,6 @@ async def get_registered_tool_names() -> set[str]:
 async def test_notebook_structure(notebook_path: Path) -> None:
     assert notebook_path.exists(), f"Notebook {notebook_path} does not exist"
 
-    # 1. Parses as nbformat v4
     try:
         nb = nbformat.read(notebook_path, as_version=4)
     except Exception as e:
@@ -35,7 +34,6 @@ async def test_notebook_structure(notebook_path: Path) -> None:
     markdown_cells = [cell for cell in nb.cells if cell.cell_type == "markdown"]
     code_cells = [cell for cell in nb.cells if cell.cell_type == "code"]
 
-    # 2. Contains markdown credential guidance mentioning both ROBINHOOD_USERNAME and ROBINHOOD_PASSWORD
     has_credentials_guidance = False
     for cell in markdown_cells:
         source = cell.source
@@ -47,12 +45,10 @@ async def test_notebook_structure(notebook_path: Path) -> None:
         f"Notebook {notebook_path} missing markdown cell with ROBINHOOD_USERNAME and ROBINHOOD_PASSWORD"
     )
 
-    # 3. Contains at least three code cells
     assert len(code_cells) >= 3, (
         f"Notebook {notebook_path} must contain at least three code cells"
     )
 
-    # 4. Has at least one code cell whose source references a registered MCP tool name
     registered_tools = await get_registered_tool_names()
     has_registered_tool = False
 
@@ -91,7 +87,6 @@ async def test_notebook_no_bare_tool_calls(notebook_path: Path) -> None:
     code_cells = [cell for cell in nb.cells if cell.cell_type == "code"]
 
     for cell in code_cells:
-        # Notebooks may store newlines as literal \n or as actual newlines; handle both.
         lines = re.split(r"\\n|\n", cell.source)
         for line in lines:
             stripped = line.strip()

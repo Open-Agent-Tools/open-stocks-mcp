@@ -62,9 +62,8 @@ class TestBrokerRegistry:
         broker2 = MockBroker("duplicate")
 
         registry.register(broker1)
-        registry.register(broker2)  # Should overwrite
+        registry.register(broker2)
 
-        # Should have the second broker
         assert registry.get_broker("duplicate") is broker2
 
     @pytest.mark.asyncio
@@ -95,7 +94,6 @@ class TestBrokerRegistry:
         results = await registry.authenticate_all()
 
         assert len(results) == 2
-        # Results dict values should all be True after auth succeeds
         assert all(results.values())
         assert broker1._auth_call_count >= 1
         assert broker2._auth_call_count >= 1
@@ -114,9 +112,8 @@ class TestBrokerRegistry:
         results = await registry.authenticate_all()
 
         assert len(results) == 3
-        # Check that we have mix of success and failure
         successes = sum(1 for v in results.values() if v)
-        assert successes == 2  # Two should succeed
+        assert successes == 2
 
     @pytest.mark.asyncio
     async def test_authenticate_all_all_fail(self, registry):
@@ -284,9 +281,7 @@ class TestBrokerRegistry:
 
         assert "broker1" in status
         assert "broker2" in status
-        # broker1 should be authenticated after successful auth
         assert status["broker1"]["is_available"] is True
-        # broker2 should have failed auth
         assert status["broker2"]["is_available"] is False
 
     @pytest.mark.asyncio
@@ -313,15 +308,12 @@ class TestBrokerRegistry:
         registry.register(broker1)
         registry.register(broker2)
 
-        # Set active broker
         result = registry.set_active_broker("broker1")
         assert result is True
 
-        # Verify active broker
-        active = registry.get_broker(None)  # None gets active
+        active = registry.get_broker(None)
         assert active is broker1
 
-        # Change active broker
         result = registry.set_active_broker("broker2")
         assert result is True
         active = registry.get_broker(None)
@@ -486,7 +478,6 @@ class TestBrokerRegistrySingleton:
         """Test get_broker_registry_sync raises RegistryNotInitializedError when uninitialized."""
         import open_stocks_mcp.brokers.registry as registry_mod
 
-        # Ensure it's uninitialized for this test
         original_registry = registry_mod._registry
         registry_mod._registry = None
 
@@ -494,5 +485,4 @@ class TestBrokerRegistrySingleton:
             with pytest.raises(RegistryNotInitializedError):
                 get_broker_registry_sync()
         finally:
-            # Restore original state
             registry_mod._registry = original_registry

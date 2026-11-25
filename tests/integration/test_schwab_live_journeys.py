@@ -29,10 +29,6 @@ import pytest
 
 from tests.integration.live_market_harness import assert_live_schwab_read_only
 
-# ---------------------------------------------------------------------------
-# Account journey
-# ---------------------------------------------------------------------------
-
 
 @pytest.mark.integration
 @pytest.mark.live_market
@@ -115,7 +111,6 @@ def test_get_schwab_account_balances(live_schwab_broker: Any) -> None:
     assert isinstance(result, dict)
     assert "result" in result
     inner = result["result"]
-    # Accept either shape; just verify it's a non-error dict
     assert isinstance(inner, dict), "'result' must be a dict"
     assert inner.get("status") != "error", f"Unexpected error response: {inner}"
 
@@ -147,13 +142,7 @@ def test_get_schwab_portfolio(live_schwab_broker: Any) -> None:
     inner = result["result"]
     assert isinstance(inner, dict)
     assert inner.get("status") != "error", f"Unexpected error response: {inner}"
-    # Either positions key or an explicit empty-portfolio indicator is acceptable
     assert "positions" in inner or "count" in inner or "account_hash" in inner
-
-
-# ---------------------------------------------------------------------------
-# Market data journey
-# ---------------------------------------------------------------------------
 
 
 @pytest.mark.integration
@@ -173,7 +162,6 @@ def test_get_schwab_quote(live_schwab_broker: Any) -> None:
     inner = result["result"]
     assert inner.get("status") != "error", f"Unexpected error response: {inner}"
     assert isinstance(inner, dict)
-    # Symbol should be present and match
     returned_symbol = inner.get("symbol") or inner.get("AAPL", {})
     assert returned_symbol or "AAPL" in str(inner), "Quote response must reference AAPL"
 
@@ -197,7 +185,6 @@ def test_get_schwab_quotes(live_schwab_broker: Any) -> None:
     inner = result["result"]
     assert inner.get("status") != "error", f"Unexpected error response: {inner}"
     assert isinstance(inner, dict)
-    # Should contain quote data — at minimum one of the requested symbols
     payload_str = str(inner)
     assert "AAPL" in payload_str or "MSFT" in payload_str, (
         "Multi-quote response must contain at least one requested symbol"
@@ -225,7 +212,6 @@ def test_get_schwab_price_history(live_schwab_broker: Any) -> None:
     inner = result["result"]
     assert inner.get("status") != "error", f"Unexpected error response: {inner}"
     assert isinstance(inner, dict)
-    # Expect candle list or count field
     assert "candles" in inner or "count" in inner or "symbol" in inner, (
         "Price history response must contain candles, count, or symbol"
     )
@@ -260,15 +246,9 @@ def test_search_schwab_instruments(live_schwab_broker: Any) -> None:
     inner = result["result"]
     assert inner.get("status") != "error", f"Unexpected error response: {inner}"
     assert isinstance(inner, dict)
-    # Results list or instruments key
     assert "instruments" in inner or "results" in inner or "count" in inner, (
         "Instrument search must return instruments, results, or count"
     )
-
-
-# ---------------------------------------------------------------------------
-# Options journey
-# ---------------------------------------------------------------------------
 
 
 @pytest.mark.integration
@@ -317,7 +297,6 @@ def test_get_schwab_option_chain(live_schwab_broker: Any) -> None:
     inner = result["result"]
     assert inner.get("status") != "error", f"Unexpected error response: {inner}"
     assert isinstance(inner, dict)
-    # Option chain must reference the requested symbol
     assert "AAPL" in str(inner), "Option chain response must reference AAPL"
 
 
@@ -346,16 +325,10 @@ def test_get_schwab_options_positions(live_schwab_broker: Any) -> None:
     inner = result["result"]
     assert inner.get("status") != "error", f"Unexpected error response: {inner}"
     assert isinstance(inner, dict)
-    # positions list may be empty; validate shape
     if "positions" in inner:
         assert isinstance(inner["positions"], list)
     if "count" in inner:
         assert isinstance(inner["count"], int)
-
-
-# ---------------------------------------------------------------------------
-# Trading-safe (read-only) journey
-# ---------------------------------------------------------------------------
 
 
 @pytest.mark.integration
@@ -453,11 +426,6 @@ def test_schwab_get_transactions_by_date(live_schwab_broker: Any) -> None:
         assert isinstance(inner["transactions"], list)
     if "count" in inner:
         assert isinstance(inner["count"], int)
-
-
-# ---------------------------------------------------------------------------
-# Read-only safety guard tests (no live credentials needed)
-# ---------------------------------------------------------------------------
 
 
 class TestSchwabReadOnlyGuard:

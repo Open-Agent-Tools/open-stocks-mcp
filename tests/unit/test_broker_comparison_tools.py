@@ -53,7 +53,6 @@ class MockBroker(BaseBroker):
 @pytest.mark.unit
 async def test_get_broker_comparison_success():
     """Test successful broker comparison with both brokers available."""
-    # We need to import it here because it doesn't exist yet
     from open_stocks_mcp.tools.broker_comparison_tools import get_broker_comparison
 
     mock_registry = MagicMock()
@@ -65,7 +64,6 @@ async def test_get_broker_comparison_success():
         rh_broker if name == "robinhood" else schwab_broker
     )
 
-    # Mock Robinhood responses
     mock_rh_price = AsyncMock(
         return_value={"result": {"symbol": "AAPL", "price": 150.0, "status": "success"}}
     )
@@ -93,7 +91,6 @@ async def test_get_broker_comparison_success():
         }
     )
 
-    # Mock Schwab responses
     mock_schwab_quote = AsyncMock(
         return_value={
             "result": {"symbol": "AAPL", "last_price": 150.5, "status": "success"}
@@ -191,14 +188,12 @@ async def test_get_broker_comparison_success():
     assert "brokers" in data
     assert "comparison" in data
 
-    # Check Robinhood data normalization
     rh_data = data["brokers"]["robinhood"]
     assert rh_data["available"] is True
     assert rh_data["pricing"]["AAPL"]["price"] == 150.0
     assert rh_data["holdings"]["AAPL"]["quantity"] == 10
     assert rh_data["orders"][0]["symbol"] == "AAPL"
 
-    # Check Schwab data normalization
     schwab_data = data["brokers"]["schwab"]
     assert schwab_data["available"] is True
     assert schwab_data["pricing"]["AAPL"]["price"] == 150.5
@@ -216,12 +211,11 @@ async def test_get_broker_comparison_partial_failure():
     mock_registry.list_brokers.return_value = ["robinhood", "schwab"]
 
     rh_broker = MockBroker("robinhood", authenticated=True)
-    schwab_broker = MockBroker("schwab", authenticated=False)  # Schwab down
+    schwab_broker = MockBroker("schwab", authenticated=False)
     mock_registry.get_broker.side_effect = lambda name: (
         rh_broker if name == "robinhood" else schwab_broker
     )
 
-    # Mock Robinhood responses
     mock_rh_price = AsyncMock(
         return_value={"result": {"symbol": "AAPL", "price": 150.0, "status": "success"}}
     )

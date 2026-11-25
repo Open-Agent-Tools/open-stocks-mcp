@@ -45,7 +45,6 @@ async def get_referrals() -> dict[str, Any]:
     """
     logger.info("Getting referral information")
 
-    # Get referrals
     referrals_data = await execute_with_retry(
         func=rh.get_referrals, func_name="get_referrals", max_retries=3
     )
@@ -64,14 +63,12 @@ async def get_referrals() -> dict[str, Any]:
             }
         }
 
-    # Process referrals
     processed_referrals = []
     completed_referrals = 0
     total_rewards = 0.0
     referral_code = None
 
     if isinstance(referrals_data, dict):
-        # Handle case where referrals_data is a dict with referral info
         referral_code = referrals_data.get("referral_code")
         referrals_list = referrals_data.get("referrals", [])
 
@@ -80,27 +77,22 @@ async def get_referrals() -> dict[str, Any]:
                 if isinstance(referral, dict):
                     processed_referrals.append(referral)
 
-                    # Count completed referrals
                     if referral.get("status") == "completed":
                         completed_referrals += 1
 
-                        # Sum rewards
                         reward = referral.get("reward", "0")
                         if reward:
                             with contextlib.suppress(ValueError, TypeError):
                                 total_rewards += float(reward)
 
     elif isinstance(referrals_data, list):
-        # Handle case where referrals_data is directly a list
         for referral in referrals_data:
             if isinstance(referral, dict):
                 processed_referrals.append(referral)
 
-                # Count completed referrals
                 if referral.get("status") == "completed":
                     completed_referrals += 1
 
-                    # Sum rewards
                     reward = referral.get("reward", "0")
                     if reward:
                         with contextlib.suppress(ValueError, TypeError):

@@ -38,7 +38,6 @@ def install_robinhood_request_timeout(
             )
             return
 
-    # Check if already installed
     if getattr(session.request, "_is_timeout_wrapper", False) is True:
         session._robinhood_timeout = timeout_seconds
         return
@@ -78,11 +77,6 @@ async def execute_broker_request(
 
         policy = get_config().broker_requests
 
-    # max_retries: int
-    # initial_delay: float
-    # backoff_factor: float
-    # deadline: float | None
-
     max_retries = int(policy.retry_max_retries) if retry_safe else 0
     initial_delay = float(policy.retry_initial_delay)
     backoff_factor = float(policy.retry_backoff_factor)
@@ -108,17 +102,14 @@ async def execute_broker_request(
 
         try:
             await rate_limiter.acquire()
-            # Run sync function in thread pool to avoid blocking the event loop
             return await asyncio.to_thread(func, *args, **kwargs)
         except Exception as e:
             last_exception = e
             if attempt == max_retries:
                 raise e
 
-            # Calculate delay for next retry
             delay = initial_delay * (backoff_factor**attempt)
 
-            # Check if next attempt would likely exceed the deadline
             if deadline is not None:
                 elapsed = time.time() - start_time
                 if elapsed + delay >= deadline:

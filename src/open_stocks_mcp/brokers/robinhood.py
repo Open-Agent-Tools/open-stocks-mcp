@@ -47,27 +47,22 @@ class RobinhoodBroker(BaseBroker):
         """
         super().__init__("robinhood")
 
-        # Install request timeout policy
         config = get_config()
         install_robinhood_request_timeout(
             config.broker_requests.robinhood_timeout_seconds
         )
 
-        # Use provided session manager or create new one
         self.session_manager = session_manager or SessionManager()
 
-        # Configure credentials if provided
         if username and password:
             self.session_manager.set_credentials(username, password)
             self._auth_info.status = BrokerAuthStatus.NOT_AUTHENTICATED
         elif username or password:
-            # Only one credential provided - error
             self._auth_info.status = BrokerAuthStatus.NOT_CONFIGURED
             self._auth_info.error_message = (
                 "Both username and password required for Robinhood"
             )
         else:
-            # No credentials provided
             self._auth_info.status = BrokerAuthStatus.NOT_CONFIGURED
             self._auth_info.setup_instructions = (
                 "Set ROBINHOOD_USERNAME and ROBINHOOD_PASSWORD environment variables"
@@ -85,7 +80,6 @@ class RobinhoodBroker(BaseBroker):
 
             logger.info("Authenticating with Robinhood...")
 
-            # Use existing SessionManager logic
             success = await self.session_manager.ensure_authenticated()
 
             if success:
@@ -116,7 +110,6 @@ class RobinhoodBroker(BaseBroker):
         """
         is_valid = self.session_manager.is_session_valid()
 
-        # Update status if session expired
         if not is_valid and self._auth_info.status == BrokerAuthStatus.AUTHENTICATED:
             self._auth_info.status = BrokerAuthStatus.TOKEN_EXPIRED
             self._auth_info.error_message = "Session expired"
@@ -206,7 +199,6 @@ class RobinhoodBroker(BaseBroker):
                         if quote is None:
                             continue
 
-                        # Calculate market value = price * quantity, only set if result is finite
                         price = self._safe_float(
                             quote.get("last_trade_price"), default=float("nan")
                         )

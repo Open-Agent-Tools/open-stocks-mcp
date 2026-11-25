@@ -1,24 +1,19 @@
 #!/bin/bash
 
-# open-stocks-mcp-docker Setup Validation Script for Open Stocks MCP v0.4.0
-# This script validates the open-stocks-mcp-docker setup and HTTP transport functionality
 
 set -e
 
-# Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
-# Configuration
 CONTAINER_NAME="open-stocks-mcp-validator"
 TEST_PORT="3001"
 BASE_URL="http://localhost:${TEST_PORT}"
 ENV_FILE=".env"
 
-# Function to print colored output
 print_status() {
     echo -e "${GREEN}[✓]${NC} $1"
 }
@@ -35,25 +30,21 @@ print_error() {
     echo -e "${RED}[✗]${NC} $1"
 }
 
-# Function to check prerequisites
 check_prerequisites() {
     print_info "Checking prerequisites..."
     
-    # Check open-stocks-mcp-docker
     if ! command -v docker &> /dev/null; then
         print_error "Docker is not installed"
         exit 1
     fi
     print_status "Docker is installed: $(docker --version)"
     
-    # Check open-stocks-mcp-docker Compose
     if ! command -v docker-compose &> /dev/null && ! docker compose version &> /dev/null; then
         print_error "Docker Compose is not installed"
         exit 1
     fi
     print_status "Docker Compose is available"
     
-    # Check environment file
     if [[ ! -f "$ENV_FILE" ]]; then
         print_error "Environment file '$ENV_FILE' not found"
         print_info "Create it by copying from .env.example and adding your credentials"
@@ -61,14 +52,12 @@ check_prerequisites() {
     fi
     print_status "Environment file found: $ENV_FILE"
     
-    # Check curl
     if ! command -v curl &> /dev/null; then
         print_error "curl is not installed (required for testing)"
         exit 1
     fi
     print_status "curl is available"
     
-    # Check jq (optional but helpful)
     if command -v jq &> /dev/null; then
         print_status "jq is available (JSON parsing enabled)"
         JQ_AVAILABLE=true
@@ -78,11 +67,9 @@ check_prerequisites() {
     fi
 }
 
-# Function to validate environment file
 validate_env_file() {
     print_info "Validating environment file..."
     
-    # Check for required variables
     if ! grep -q "ROBINHOOD_USERNAME=" "$ENV_FILE"; then
         print_error "ROBINHOOD_USERNAME not found in $ENV_FILE"
         exit 1
@@ -93,7 +80,6 @@ validate_env_file() {
         exit 1
     fi
     
-    # Check that values are not empty
     if grep -q "ROBINHOOD_USERNAME=$" "$ENV_FILE" || grep -q "ROBINHOOD_USERNAME=\"\"" "$ENV_FILE"; then
         print_error "ROBINHOOD_USERNAME is empty in $ENV_FILE"
         exit 1
@@ -107,7 +93,6 @@ validate_env_file() {
     print_status "Environment file validation passed"
 }
 
-# Function to build open-stocks-mcp-docker image
 build_image() {
     print_info "Building Docker image..."
     
@@ -119,15 +104,12 @@ build_image() {
     fi
 }
 
-# Function to start container
 start_container() {
     print_info "Starting container for testing..."
     
-    # Stop any existing container
     docker stop "$CONTAINER_NAME" 2>/dev/null || true
     docker rm "$CONTAINER_NAME" 2>/dev/null || true
     
-    # Start new container
     if docker run --rm -d \
         --name "$CONTAINER_NAME" \
         -p "${TEST_PORT}:3000" \
@@ -139,7 +121,6 @@ start_container() {
         exit 1
     fi
     
-    # Wait for container to be ready
     print_info "Waiting for container to initialize..."
     for i in {1..30}; do
         if docker ps --filter "name=$CONTAINER_NAME" --filter "status=running" | grep -q "$CONTAINER_NAME"; then
@@ -154,7 +135,6 @@ start_container() {
         sleep 1
     done
     
-    # Additional wait for HTTP server to be ready
     print_info "Waiting for HTTP server to be ready..."
     for i in {1..60}; do
         if curl -s "$BASE_URL/health" > /dev/null 2>&1; then
@@ -170,11 +150,9 @@ start_container() {
     done
 }
 
-# Function to test HTTP endpoints
 test_endpoints() {
     print_info "Testing HTTP endpoints..."
     
-    # Test health endpoint
     print_info "Testing health endpoint..."
     response=$(curl -s "$BASE_URL/health")
     if echo "$response" | grep -q '"status":"healthy"'; then
@@ -188,7 +166,6 @@ test_endpoints() {
         exit 1
     fi
     
-    # Test root endpoint
     print_info "Testing root endpoint..."
     response=$(curl -s "$BASE_URL/")
     if echo "$response" | grep -q '"name":"Open Stocks MCP Server"'; then
@@ -198,7 +175,6 @@ test_endpoints() {
         exit 1
     fi
     
-    # Test status endpoint
     print_info "Testing status endpoint..."
     response=$(curl -s "$BASE_URL/status")
     if echo "$response" | grep -q '"status":"running"'; then
@@ -208,7 +184,6 @@ test_endpoints() {
         exit 1
     fi
     
-    # Test tools endpoint
     print_info "Testing tools endpoint..."
     response=$(curl -s "$BASE_URL/tools")
     if echo "$response" | grep -q '"result"'; then
@@ -222,7 +197,6 @@ test_endpoints() {
         exit 1
     fi
     
-    # Test security headers
     print_info "Testing security headers..."
     headers=$(curl -I -s "$BASE_URL/health")
     if echo "$headers" | grep -q "x-content-type-options: nosniff"; then
@@ -232,11 +206,9 @@ test_endpoints() {
     fi
 }
 
-# Function to test open-stocks-mcp-docker health checks
 test_docker_health() {
     print_info "Testing Docker health checks..."
     
-    # Wait for health check to run
     sleep 15
     
     health_status=$(docker inspect "$CONTAINER_NAME" --format='{{.State.Health.Status}}' 2>/dev/null || echo "none")
@@ -245,7 +217,6 @@ test_docker_health() {
         print_status "Docker health check is passing"
     elif [[ "$health_status" == "starting" ]]; then
         print_info "Docker health check is still starting..."
-        # Wait a bit more
         sleep 15
         health_status=$(docker inspect "$CONTAINER_NAME" --format='{{.State.Health.Status}}' 2>/dev/null || echo "none")
         if [[ "$health_status" == "healthy" ]]; then
@@ -258,7 +229,6 @@ test_docker_health() {
     fi
 }
 
-# Function to test container logs
 test_container_logs() {
     print_info "Checking container logs for errors..."
     
@@ -278,7 +248,6 @@ test_container_logs() {
     fi
 }
 
-# Function to cleanup
 cleanup() {
     print_info "Cleaning up test container..."
     docker stop "$CONTAINER_NAME" 2>/dev/null || true
@@ -286,7 +255,6 @@ cleanup() {
     print_status "Cleanup completed"
 }
 
-# Function to show summary
 show_summary() {
     echo
     echo "=================================="
@@ -314,14 +282,12 @@ show_summary() {
     echo "  docker-compose down"
 }
 
-# Main execution
 main() {
     echo "========================================"
     echo "Open Stocks MCP Docker Validation v0.4.0"
     echo "========================================"
     echo
     
-    # Set trap to cleanup on exit
     trap cleanup EXIT
     
     check_prerequisites
@@ -334,5 +300,4 @@ main() {
     show_summary
 }
 
-# Run main function
 main "$@"

@@ -51,21 +51,18 @@ class SchwabBroker(BaseBroker):
 
         token_dir = Path.home() / ".tokens"
         token_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
-        # Ensure correct mode if dir already existed
         if os.name != "nt":
             try:
                 os.chmod(token_dir, 0o700)
             except OSError as e:
                 logger.warning(f"Could not set secure permissions on {token_dir}: {e}")
 
-        # Default token path
         if token_path is None:
             self.token_path = str(token_dir / "schwab_token.json")
         else:
             self.token_path = str(
                 self._validate_token_path(token_path=token_path, allowed_root=token_dir)
             )
-            # Ensure token directory exists with secure permissions
             token_parent = Path(self.token_path).parent
             token_parent.mkdir(mode=0o700, parents=True, exist_ok=True)
             if os.name != "nt":
@@ -79,7 +76,6 @@ class SchwabBroker(BaseBroker):
         self.client = None
         self.stream_manager: SchwabStreamManager | None = None
 
-        # Configure auth status based on credentials
         if not api_key or not app_secret:
             self._auth_info.status = BrokerAuthStatus.NOT_CONFIGURED
             self._auth_info.setup_instructions = (
@@ -123,7 +119,6 @@ class SchwabBroker(BaseBroker):
             return False
 
         try:
-            # Import here to avoid dependency issues if schwab-py not installed
             from schwab import auth
 
             self._auth_info.last_auth_attempt = datetime.now()
@@ -131,17 +126,14 @@ class SchwabBroker(BaseBroker):
 
             logger.info("Authenticating with Schwab (OAuth 2.0)...")
 
-            # Check if token file exists
             token_exists = Path(self.token_path).exists()
 
             if token_exists:
                 logger.info(f"Found existing token at {self.token_path}")
                 try:
-                    # Try to load existing token
                     self.client = auth.client_from_token_file(
                         self.token_path, self.api_key, self.app_secret
                     )
-                    # Apply configured timeout
                     assert self.client is not None
                     self.client.set_timeout(
                         get_config().broker_requests.schwab_timeout_seconds
@@ -154,14 +146,11 @@ class SchwabBroker(BaseBroker):
                     return True
                 except Exception as e:
                     logger.warning(f"Existing token invalid, creating new: {e}")
-                    # Fall through to create new token
 
-            # Need interactive authentication
             logger.info("No valid token found - interactive authentication required")
             logger.info("This will open a browser window for Schwab OAuth login")
 
-            # Check if we're in a non-interactive environment
-            if not os.isatty(0):  # stdin is not a terminal
+            if not os.isatty(0):
                 self._auth_info.status = BrokerAuthStatus.AUTH_FAILED
                 self._auth_info.error_message = (
                     "Interactive authentication required but not available. "
@@ -172,14 +161,12 @@ class SchwabBroker(BaseBroker):
                 )
                 return False
 
-            # Use easy_client for interactive authentication
             self.client = auth.easy_client(
                 api_key=self.api_key,
                 app_secret=self.app_secret,
                 callback_url=self.callback_url,
                 token_path=self.token_path,
             )
-            # Apply configured timeout
             assert self.client is not None
             self.client.set_timeout(get_config().broker_requests.schwab_timeout_seconds)
 
@@ -213,8 +200,6 @@ class SchwabBroker(BaseBroker):
         if self.client is None:
             return False
 
-        # Check if token still valid
-        # schwab-py automatically handles token refresh
         return self._auth_info.status == BrokerAuthStatus.AUTHENTICATED
 
     async def logout(self) -> None:
@@ -224,7 +209,6 @@ class SchwabBroker(BaseBroker):
             self._auth_info.status = BrokerAuthStatus.NOT_AUTHENTICATED
             self._auth_info.error_message = None
 
-            # Optionally remove token file
             if Path(self.token_path).exists():
                 logger.info(f"Token file still exists at {self.token_path}")
                 logger.info("Delete manually if you want to fully logout")

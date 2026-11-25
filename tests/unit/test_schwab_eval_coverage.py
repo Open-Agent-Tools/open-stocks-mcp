@@ -14,19 +14,12 @@ import pytest
 
 EVAL_DIR = Path(__file__).parent.parent / "evals"
 
-# Tools excluded from eval coverage with documented justification.
-# Streaming tools: real-time WebSocket subscriptions don't fit the ADK
-#   request/response eval model — there is no stable final_response to assert.
-# Trading mutation tools: require live credentials AND execute real market orders
-#   or destructive cancellations; covered by integration journey tests instead.
 EVAL_OMISSION_ALLOWLIST: frozenset[str] = frozenset(
     [
-        # --- Streaming (real-time subscriptions, no request/response eval model) ---
         "schwab_stream_account_activity",
         "schwab_stream_level2",
         "schwab_stream_option_quotes",
         "schwab_stream_quotes",
-        # --- Trading mutations (execute real orders or destructive cancellations) ---
         "schwab_buy_stock_market",
         "schwab_sell_stock_market",
         "schwab_buy_stock_limit",

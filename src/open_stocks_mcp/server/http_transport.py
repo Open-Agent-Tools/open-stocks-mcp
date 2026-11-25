@@ -29,12 +29,10 @@ from open_stocks_mcp.server.tool_docs import (
 from open_stocks_mcp.tools.circuit_breaker import get_broker_circuit_breaker
 from open_stocks_mcp.tools.rate_limiter import get_rate_limiter
 
-MAX_MCP_REQUEST_BODY_SIZE = 1024 * 1024  # 1 MiB
+MAX_MCP_REQUEST_BODY_SIZE = 1024 * 1024
 
 LOOPBACK_HOSTS = frozenset({"localhost", "127.0.0.1", "::1"})
 
-# Endpoints that may invoke tools, mutate session state, or stream tool output.
-# Health/status/root remain open so container orchestrators can probe liveness.
 PROTECTED_PATHS = frozenset({"/mcp", "/sse", "/session/refresh", "/tools"})
 
 READ_ONLY_HTTP_TOOL_NAMES = frozenset(
@@ -274,7 +272,6 @@ class SecurityMiddleware(BaseHTTPMiddleware):
         ]
 
     async def dispatch(self, request: Request, call_next: Any) -> Response:
-        # Origin validation for non-local requests
         origin = request.headers.get("origin")
         if origin and not self._is_allowed_origin(origin):
             logger.warning(f"Blocked request from unauthorized origin: {origin}")
@@ -285,7 +282,6 @@ class SecurityMiddleware(BaseHTTPMiddleware):
 
         response = await call_next(request)
 
-        # Add security headers
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-XSS-Protection"] = "1; mode=block"
@@ -294,7 +290,6 @@ class SecurityMiddleware(BaseHTTPMiddleware):
 
     def _is_allowed_origin(self, origin: str) -> bool:
         """Check if origin is allowed"""
-        # For local development, allow localhost origins
         if "localhost" in origin or "127.0.0.1" in origin:
             return True
 
@@ -334,7 +329,6 @@ def create_http_server(
         """Lifespan context manager for startup/shutdown"""
         logger.info("Starting HTTP MCP server")
 
-        # Initialize rate limiter and session manager
         get_rate_limiter()
         get_session_manager()
         app.state.tool_docs_payload = await build_tool_docs_payload(mcp_server)
@@ -342,7 +336,6 @@ def create_http_server(
         yield
 
         logger.info("Shutting down HTTP MCP server")
-        # Cleanup session manager
         session_manager = get_session_manager()
         if session_manager is not None:
             try:
@@ -351,7 +344,6 @@ def create_http_server(
                 logger.warning(
                     "Logout failed during shutdown; session state already cleared"
                 )
-        # Close metrics collector (releases WebhookAlertSink HTTP connection pool)
         try:
             await get_metrics_collector().aclose()
         except Exception:
@@ -377,7 +369,6 @@ def create_http_server(
         app.openapi_schema = schema
         return schema
 
-    # Add middleware
     app.add_middleware(
         CORSMiddleware,
         allow_origins=[
@@ -400,7 +391,6 @@ def create_http_server(
     app.add_middleware(SecurityMiddleware)
     app.add_middleware(BearerAuthMiddleware, api_key=api_key)
 
-    # Health check endpoints
     @app.get("/health")
     async def health_check() -> dict[str, Any]:
         """Health check endpoint"""
@@ -411,8 +401,6 @@ def create_http_server(
             health_status = await health_service.get_status()
             metrics = await metrics_collector.get_metrics()
 
-            # The health service snapshot provides status, components, and timestamp.
-            # We preserve HTTP metadata: version and transport.
             return {
                 "status": health_status["status"],
                 "components": health_status["components"],
@@ -485,7 +473,6 @@ def create_http_server(
         """Info endpoint (alias for root)"""
         return await root()
 
-    # Session management endpoints
     @app.post("/session/refresh")
     async def refresh_session() -> dict[str, Any]:
         """Refresh authentication session"""
@@ -508,7 +495,6 @@ def create_http_server(
     async def list_tools() -> dict[str, Any]:
         """List available MCP tools"""
         try:
-            # Import here to avoid circular imports
             from open_stocks_mcp.tools.robinhood_tools import list_available_tools
 
             tools = await list_available_tools(mcp_server)
@@ -560,13 +546,10 @@ def create_http_server(
                 status_code=500, detail="Failed to render metrics"
             ) from e
 
-    # Mount the MCP HTTP endpoints
-    # Create a simple MCP endpoint that handles JSON-RPC directly
     @app.post("/mcp")
     async def mcp_endpoint(request: Request) -> Response:
         """Handle MCP JSON-RPC requests directly"""
         try:
-            # Get the request body
             body = await request.body()
 
             if len(body) > MAX_MCP_REQUEST_BODY_SIZE:
@@ -587,7 +570,6 @@ def create_http_server(
                     error_type="body_too_large",
                 )
 
-            # Parse the JSON-RPC request
             try:
                 json_request = json.loads(body.decode())
             except json.JSONDecodeError:
@@ -605,7 +587,6 @@ def create_http_server(
                     error_type="parse_error",
                 )
 
-            # Handle different MCP methods
             method = json_request.get("method")
             request_id = json_request.get("id")
             params = json_request.get("params", {})
@@ -634,7 +615,6 @@ def create_http_server(
             try:
                 result: dict[str, Any]
                 if method == "initialize":
-                    # Return server capabilities
                     result = {
                         "protocolVersion": "2024-11-05",
                         "capabilities": {
@@ -649,13 +629,10 @@ def create_http_server(
                         },
                     }
                 elif method == "tools/list":
-                    # Use MCPServer's built-in list_tools method
                     tools_list = await mcp_server.list_tools()
 
-                    # Convert Tool objects to MCP protocol format
                     serialized_tools = []
                     for tool in tools_list:
-                        # Convert Tool object to dictionary format expected by MCP
                         tool_dict = {
                             "name": tool.name,
                             "description": tool.description,
@@ -670,7 +647,6 @@ def create_http_server(
                     result = {"tools": serialized_tools}
 
                 elif method == "tools/call":
-                    # Use MCPServer's built-in call_tool method
                     tool_name = params.get("name")
                     arguments = params.get("arguments", {})
 
@@ -713,7 +689,6 @@ def create_http_server(
                             error_type="forbidden_tool",
                         )
 
-                    # Record duration and success/failure for tool calls only.
                     start = time.perf_counter()
                     metrics_collector = _require_metrics_collector()
                     try:
@@ -728,9 +703,7 @@ def create_http_server(
                         )
                         raise
 
-                    # Convert CallToolResult to MCP protocol format
                     if hasattr(tool_result, "content"):
-                        # Convert content objects to dictionaries
                         content_list = []
                         for content_item in tool_result.content:
                             if hasattr(content_item, "model_dump"):
@@ -745,18 +718,15 @@ def create_http_server(
                                     }
                                 )
                             else:
-                                # Fallback to string representation
                                 content_list.append(
                                     {"type": "text", "text": str(content_item)}
                                 )
 
                         result = {"content": content_list}
 
-                        # Add isError if present
                         if hasattr(tool_result, "is_error"):
                             result["isError"] = tool_result.is_error
                     else:
-                        # Fallback to string representation
                         result = {
                             "content": [
                                 {
@@ -779,7 +749,6 @@ def create_http_server(
                     )
 
                 elif method == "notifications/initialized":
-                    # Handle initialization notification (no response needed for notifications)
                     logger.info("Client initialization notification received")
                     if logger.isEnabledFor(logging.DEBUG):
                         logger.debug(
@@ -814,7 +783,6 @@ def create_http_server(
                         error_type="method_not_found",
                     )
 
-                # Return successful response
                 response_data = {"jsonrpc": "2.0", "result": result, "id": request_id}
 
                 return _mcp_json_response(
@@ -863,7 +831,6 @@ def create_http_server(
                 error_type=type(e).__name__,
             )
 
-    # SSE endpoint for server-sent events
     @app.get("/sse")
     async def sse_endpoint(request: Request) -> Response:
         """Server-Sent Events endpoint for MCP streaming"""
@@ -872,7 +839,6 @@ def create_http_server(
         async def event_generator() -> AsyncGenerator[dict[str, Any], None]:
             """Generate SSE events"""
             try:
-                # Send initial connection event
                 yield {
                     "event": "connected",
                     "data": {
@@ -882,13 +848,11 @@ def create_http_server(
                     },
                 }
 
-                # Keep connection alive with periodic heartbeat
                 while True:
                     if await request.is_disconnected():
                         logger.info("SSE client disconnected")
                         break
 
-                    # Send heartbeat every 30 seconds
                     yield {
                         "event": "heartbeat",
                         "data": {"timestamp": time.time()},
@@ -936,7 +900,6 @@ async def run_http_server(
             "/mcp endpoint."
         )
 
-    # Create the FastAPI app with our enhancements
     app = create_http_server(
         mcp_server,
         api_key=api_key,
@@ -958,7 +921,6 @@ async def run_http_server(
         "full access" if allow_trading else "read-only allow-list",
     )
 
-    # Configure uvicorn
     config = uvicorn.Config(
         app,
         host=host,

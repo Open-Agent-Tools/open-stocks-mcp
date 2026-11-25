@@ -274,7 +274,6 @@ class TestDecorators:
         sig = inspect.signature(decorated)
         assert sig.parameters["symbol"].annotation is str
         assert sig.parameters["count"].annotation is int
-        # functools.wraps preserves the original return annotation at runtime
         assert sig.return_annotation is str
 
     def test_sync_decorator_preserves_typed_annotations_runtime(self) -> None:
@@ -287,7 +286,6 @@ class TestDecorators:
         sig = inspect.signature(decorated)
         assert sig.parameters["symbol"].annotation is str
         assert sig.parameters["count"].annotation is int
-        # functools.wraps preserves the original return annotation at runtime
         assert sig.return_annotation is str
 
 
@@ -920,9 +918,6 @@ def test_log_api_call_excludes_all_sensitive_kwargs(
     assert "token" not in message
     assert "secret" not in message
     assert "key" not in message
-
-
-# --- Failure-mode regression tests ---
 
 
 def test_classify_timeout_error_as_network_error() -> None:

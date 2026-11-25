@@ -30,7 +30,6 @@ class TestMarketTools:
 
         assert "result" in result
         assert isinstance(result["result"], dict)
-        # The actual structure depends on how the tool processes the data
 
     @pytest.mark.journey_market_data
     @pytest.mark.journey_market_intelligence

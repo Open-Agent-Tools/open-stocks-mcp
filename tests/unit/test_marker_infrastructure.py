@@ -15,11 +15,6 @@ def _load_pytest_config() -> dict:
         return tomllib.load(fh)["tool"]["pytest"]["ini_options"]
 
 
-# ---------------------------------------------------------------------------
-# Marker registration
-# ---------------------------------------------------------------------------
-
-
 def test_required_markers_registered():
     cfg = _load_pytest_config()
     registered = {m.split(":")[0].strip() for m in cfg["markers"]}
@@ -49,11 +44,6 @@ def test_auth_required_marker_description():
     cfg = _load_pytest_config()
     auth = next(m for m in cfg["markers"] if m.startswith("auth_required"))
     assert "auth" in auth.lower()
-
-
-# ---------------------------------------------------------------------------
-# Default addopts exclusions
-# ---------------------------------------------------------------------------
 
 
 def test_addopts_leaves_rate_limited_to_conftest_hook():
@@ -92,11 +82,6 @@ def test_addopts_has_strict_markers():
     assert "--strict-markers" in addopts_str
 
 
-# ---------------------------------------------------------------------------
-# Marker taxonomy completeness
-# ---------------------------------------------------------------------------
-
-
 def test_all_default_excluded_markers_have_descriptions():
     cfg = _load_pytest_config()
     registered = {m.split(":")[0].strip(): m for m in cfg["markers"]}
@@ -105,12 +90,6 @@ def test_all_default_excluded_markers_have_descriptions():
         assert ":" in registered[marker], (
             f"Marker '{marker}' must have a description (use 'name: description' format)"
         )
-
-
-# ---------------------------------------------------------------------------
-# Sample tests demonstrating marker behaviour
-# (These will be collected only when explicitly requested)
-# ---------------------------------------------------------------------------
 
 
 @pytest.mark.rate_limited

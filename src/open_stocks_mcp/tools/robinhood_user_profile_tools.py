@@ -51,7 +51,6 @@ async def get_account_profile() -> dict[str, Any]:
     """
     logger.info("Getting account profile")
 
-    # Get account profile
     profile_data = await execute_with_retry(
         func=rh.load_account_profile, func_name="load_account_profile", max_retries=3
     )
@@ -106,7 +105,6 @@ async def get_basic_profile() -> dict[str, Any]:
     """
     logger.info("Getting basic profile")
 
-    # Get basic profile
     profile_data = await execute_with_retry(
         func=rh.load_basic_profile, func_name="load_basic_profile", max_retries=3
     )
@@ -157,7 +155,6 @@ async def get_investment_profile() -> dict[str, Any]:
     """
     logger.info("Getting investment profile")
 
-    # Get investment profile
     profile_data = await execute_with_retry(
         func=rh.load_investment_profile,
         func_name="load_investment_profile",
@@ -208,7 +205,6 @@ async def get_security_profile() -> dict[str, Any]:
     """
     logger.info("Getting security profile")
 
-    # Get security profile
     profile_data = await execute_with_retry(
         func=rh.load_security_profile, func_name="load_security_profile", max_retries=3
     )
@@ -257,7 +253,6 @@ async def get_user_profile() -> dict[str, Any]:
     """
     logger.info("Getting user profile")
 
-    # Get user profile
     profile_data = await execute_with_retry(
         func=rh.load_user_profile, func_name="load_user_profile", max_retries=3
     )
@@ -307,19 +302,16 @@ async def get_complete_profile() -> dict[str, Any]:
     profiles_loaded = 0
 
     try:
-        # Get user profile
         user_result = await get_user_profile()
         if user_result["result"]["status"] == "success":
             complete_profile["user_info"] = user_result["result"]["user_profile"]
             profiles_loaded += 1
 
-        # Get basic profile
         basic_result = await get_basic_profile()
         if basic_result["result"]["status"] == "success":
             complete_profile["basic_profile"] = basic_result["result"]["basic_profile"]
             profiles_loaded += 1
 
-        # Get account profile
         account_result = await get_account_profile()
         if account_result["result"]["status"] == "success":
             complete_profile["account_profile"] = account_result["result"][
@@ -327,7 +319,6 @@ async def get_complete_profile() -> dict[str, Any]:
             ]
             profiles_loaded += 1
 
-        # Get investment profile
         investment_result = await get_investment_profile()
         if investment_result["result"]["status"] == "success":
             complete_profile["investment_profile"] = investment_result["result"][
@@ -335,7 +326,6 @@ async def get_complete_profile() -> dict[str, Any]:
             ]
             profiles_loaded += 1
 
-        # Get security profile
         security_result = await get_security_profile()
         if security_result["result"]["status"] == "success":
             complete_profile["security_profile"] = security_result["result"][
@@ -396,7 +386,6 @@ async def get_account_settings() -> dict[str, Any]:
     logger.info("Getting account settings")
 
     try:
-        # Get account profile which contains most settings
         account_result = await get_account_profile()
 
         if account_result["result"]["status"] != "success":
@@ -410,7 +399,6 @@ async def get_account_settings() -> dict[str, Any]:
 
         account_data = account_result["result"]["account_profile"]
 
-        # Extract settings from account data
         settings = {
             "instant_settlement": account_data.get("instant_eligibility", False),
             "margin_enabled": "margin_balances" in account_data,

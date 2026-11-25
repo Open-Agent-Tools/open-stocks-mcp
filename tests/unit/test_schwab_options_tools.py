@@ -123,16 +123,13 @@ class TestSchwabOptionsTools:
         mock_get_broker: AsyncMock,
     ) -> None:
         """Test successful option chain retrieval."""
-        # Mock broker
         mock_broker = MagicMock()
         mock_get_broker.return_value = (mock_broker, None)
 
-        # Mock Client enums
         mock_client.Options.ContractType.CALL = "CALL"
         mock_client.Options.ContractType.PUT = "PUT"
         mock_client.Options.ContractType.ALL = "ALL"
 
-        # Mock response
         mock_to_thread.return_value = {
             "symbol": "AAPL",
             "status": "SUCCESS",
@@ -169,7 +166,6 @@ class TestSchwabOptionsTools:
         self, mock_get_broker: AsyncMock
     ) -> None:
         """Test option chain when authentication fails."""
-        # Mock authentication error
         error_response = {"result": {"error": "Not authenticated", "status": "error"}}
         mock_get_broker.return_value = (None, error_response)
 
@@ -187,7 +183,6 @@ class TestSchwabOptionsTools:
         self, mock_get_broker: AsyncMock
     ) -> None:
         """Test option chain with invalid contract type."""
-        # Mock broker
         mock_broker = MagicMock()
         mock_get_broker.return_value = (mock_broker, None)
 
@@ -212,14 +207,11 @@ class TestSchwabOptionsTools:
         mock_get_broker: AsyncMock,
     ) -> None:
         """Test successful option chain by expiration retrieval."""
-        # Mock broker
         mock_broker = MagicMock()
         mock_get_broker.return_value = (mock_broker, None)
 
-        # Mock Client enums
         mock_client.Options.ContractType.CALL = "CALL"
 
-        # Mock response
         mock_to_thread.return_value = {
             "symbol": "AAPL",
             "status": "SUCCESS",
@@ -244,11 +236,9 @@ class TestSchwabOptionsTools:
         self, mock_to_thread: AsyncMock, mock_get_broker: AsyncMock
     ) -> None:
         """Test successful option expirations retrieval."""
-        # Mock broker
         mock_broker = MagicMock()
         mock_get_broker.return_value = (mock_broker, None)
 
-        # Mock response
         mock_to_thread.return_value = {
             "expirationList": [
                 {"expirationDate": "2024-01-19"},
@@ -339,14 +329,11 @@ class TestSchwabOptionsTools:
         mock_get_broker: AsyncMock,
     ) -> None:
         """Test successful options positions retrieval."""
-        # Mock broker
         mock_broker = MagicMock()
         mock_get_broker.return_value = (mock_broker, None)
 
-        # Mock Client.Account.Fields
         mock_client.Account.Fields.POSITIONS = "positions"
 
-        # Mock response
         mock_to_thread.return_value = {
             "securitiesAccount": {
                 "positions": [
@@ -384,7 +371,7 @@ class TestSchwabOptionsTools:
 
         assert "result" in result
         assert "positions" in result["result"]
-        assert len(result["result"]["positions"]) == 1  # Only options
+        assert len(result["result"]["positions"]) == 1
         assert result["result"]["positions"][0]["symbol"] == "AAPL_011924C170"
         assert result["result"]["positions"][0]["option_type"] == "CALL"
 
@@ -403,14 +390,11 @@ class TestSchwabOptionsTools:
         mock_get_broker: AsyncMock,
     ) -> None:
         """Test successful option buy to open order."""
-        # Mock broker
         mock_broker = MagicMock()
         mock_get_broker.return_value = (mock_broker, None)
 
-        # Mock order template
         mock_order_template.return_value = {"orderType": "MARKET"}
 
-        # Mock response
         mock_response = MagicMock()
         mock_response.status_code = 201
         mock_response.headers = {"Location": "/orders/12345"}
@@ -442,14 +426,11 @@ class TestSchwabOptionsTools:
         mock_get_broker: AsyncMock,
     ) -> None:
         """Test successful option sell to close order."""
-        # Mock broker
         mock_broker = MagicMock()
         mock_get_broker.return_value = (mock_broker, None)
 
-        # Mock order template
         mock_order_template.return_value = {"orderType": "MARKET"}
 
-        # Mock response
         mock_response = MagicMock()
         mock_response.status_code = 200
         mock_response.headers = {"Location": "/orders/67890"}
@@ -482,14 +463,11 @@ class TestSchwabOptionsTools:
         mock_get_broker: AsyncMock,
     ) -> None:
         """Test option chain error handling."""
-        # Mock broker
         mock_broker = MagicMock()
         mock_get_broker.return_value = (mock_broker, None)
 
-        # Mock Client enums
         mock_client.Options.ContractType.CALL = "CALL"
 
-        # Mock API error
         mock_to_thread.side_effect = Exception("API Error")
 
         result = await get_schwab_option_chain("AAPL", contract_type="call")
@@ -801,10 +779,6 @@ async def test_find_tradable_options_filters_by_type_and_expiration(
     mock_broker = MagicMock()
     mock_get_broker.return_value = (mock_broker, None)
 
-    # Synthetic chain with calls and puts; only the AAPL_011924C170 call at 2024-01-19
-    # should survive the filter for option_type="call", expiration_date="2024-01-19",
-    # strike=170.0.  The put at the same expiration and the call at a different
-    # expiration must be excluded.
     mock_execute.return_value = {
         "callExpDateMap": {
             "2024-01-19:30": {
@@ -887,7 +861,6 @@ async def test_get_open_option_orders_filters_to_working_status(
     mock_get_broker.return_value = (mock_broker, None)
 
     mock_execute.return_value = [
-        # OPTION + WORKING → included
         {
             "status": "WORKING",
             "orderLegCollection": [
@@ -897,7 +870,6 @@ async def test_get_open_option_orders_filters_to_working_status(
                 }
             ],
         },
-        # OPTION + FILLED → excluded (closed status)
         {
             "status": "FILLED",
             "orderLegCollection": [
@@ -907,7 +879,6 @@ async def test_get_open_option_orders_filters_to_working_status(
                 }
             ],
         },
-        # EQUITY + WORKING → excluded (no option leg)
         {
             "status": "WORKING",
             "orderLegCollection": [

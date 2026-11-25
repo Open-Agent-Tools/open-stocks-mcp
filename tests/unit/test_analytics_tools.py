@@ -167,7 +167,6 @@ class TestBuildUserProfile:
         mock_build_user_profile.return_value = {
             "equity": "25000.00",
             "cash": "1000.00",
-            # Missing some fields like dividend_total
         }
 
         result = await get_build_user_profile()
@@ -201,7 +200,7 @@ class TestDayTrades:
 
         assert "result" in result
         assert result["result"]["day_trade_count"] == 2
-        assert result["result"]["remaining_day_trades"] == 1  # 3 - 2
+        assert result["result"]["remaining_day_trades"] == 1
         assert result["result"]["pattern_day_trader"] is False
         assert result["result"]["day_trade_buying_power"] == "25000.00"
         assert result["result"]["overnight_buying_power"] == "12500.00"
@@ -227,7 +226,7 @@ class TestDayTrades:
 
         assert "result" in result
         assert result["result"]["day_trade_count"] == 5
-        assert result["result"]["remaining_day_trades"] == 0  # max(0, 3-5)
+        assert result["result"]["remaining_day_trades"] == 0
         assert result["result"]["pattern_day_trader"] is True
         assert result["result"]["day_trade_buying_power"] == "100000.00"
         assert result["result"]["status"] == "success"
@@ -259,16 +258,15 @@ class TestDayTrades:
     async def test_day_trades_missing_fields(self, mock_load_account: Any) -> None:
         """Test day trading info with missing fields."""
         mock_load_account.return_value = {
-            # Missing some fields
             "day_trade_buying_power": "15000.00",
         }
 
         result = await get_day_trades()
 
         assert "result" in result
-        assert result["result"]["day_trade_count"] == 0  # Default
-        assert result["result"]["remaining_day_trades"] == 3  # 3 - 0
-        assert result["result"]["pattern_day_trader"] is False  # Default
+        assert result["result"]["day_trade_count"] == 0
+        assert result["result"]["remaining_day_trades"] == 3
+        assert result["result"]["pattern_day_trader"] is False
         assert result["result"]["day_trade_buying_power"] == "15000.00"
         assert result["result"]["status"] == "success"
 
@@ -310,7 +308,6 @@ class TestInterestPayments:
             },
         ]
 
-        # Mock session manager
         mock_session_instance = AsyncMock()
         mock_session_instance.ensure_authenticated.return_value = True
         mock_session_manager.return_value = mock_session_instance
@@ -320,7 +317,7 @@ class TestInterestPayments:
         assert "result" in result
         assert result["result"]["count"] == 2
         assert len(result["result"]["interest_payments"]) == 2
-        assert result["result"]["total_interest"] == "2.21"  # 1.23 + 0.98
+        assert result["result"]["total_interest"] == "2.21"
         assert result["result"]["interest_payments"][0]["amount"] == "1.23"
         assert result["result"]["interest_payments"][0]["type"] == "cash_management"
         assert result["result"]["status"] == "success"
@@ -342,7 +339,6 @@ class TestInterestPayments:
         """Test interest payments when no data is available."""
         mock_interest_payments.return_value = None
 
-        # Mock session manager
         mock_session_instance = AsyncMock()
         mock_session_instance.ensure_authenticated.return_value = True
         mock_session_manager.return_value = mock_session_instance
@@ -404,7 +400,6 @@ class TestStockLoanPayments:
             {"symbol": "GME", "simple_name": "GameStop Corp"},
         ]
 
-        # Mock session manager
         mock_session_instance = AsyncMock()
         mock_session_instance.ensure_authenticated.return_value = True
         mock_session_manager.return_value = mock_session_instance
@@ -414,7 +409,7 @@ class TestStockLoanPayments:
         assert "result" in result
         assert result["result"]["count"] == 2
         assert len(result["result"]["loan_payments"]) == 2
-        assert result["result"]["total_loan_income"] == "1.34"  # 0.45 + 0.89
+        assert result["result"]["total_loan_income"] == "1.34"
         assert result["result"]["enrolled"] is True
         assert result["result"]["loan_payments"][0]["symbol"] == "AMC"
         assert result["result"]["loan_payments"][0]["shares_loaned"] == "100"
@@ -436,7 +431,6 @@ class TestStockLoanPayments:
         """Test stock loan payments when no data is available."""
         mock_loan_payments.return_value = None
 
-        # Mock session manager
         mock_session_instance = AsyncMock()
         mock_session_instance.ensure_authenticated.return_value = True
         mock_session_manager.return_value = mock_session_instance
@@ -462,7 +456,6 @@ class TestServerMetrics:
         self, mock_get_metrics_collector: Any
     ) -> None:
         """Test successful metrics summary retrieval."""
-        # We need to import the function from the server app
         from open_stocks_mcp.server.app import metrics_summary
 
         mock_metrics_collector = AsyncMock()

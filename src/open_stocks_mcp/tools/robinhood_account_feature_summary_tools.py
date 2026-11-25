@@ -48,12 +48,10 @@ async def get_account_features() -> dict[str, Any]:
     """
     logger.info("Getting comprehensive account features")
 
-    # Gather data from multiple sources
     features_data = {}
 
     errors = []
 
-    # Get subscription info
     try:
         subscription_result = await get_subscription_fees()
         if subscription_result["result"]["status"] == "success":
@@ -68,7 +66,6 @@ async def get_account_features() -> dict[str, Any]:
         logger.error(f"Error gathering subscription features: {e}")
         errors.append(f"subscription: {e}")
 
-    # Get margin info
     try:
         margin_result = await get_margin_interest()
         if margin_result["result"]["status"] == "success":
@@ -81,7 +78,6 @@ async def get_account_features() -> dict[str, Any]:
         logger.error(f"Error gathering margin features: {e}")
         errors.append(f"margin: {e}")
 
-    # Get notifications info
     try:
         notifications_result = await get_notifications(count=5)
         if notifications_result["result"]["status"] == "success":
@@ -96,7 +92,6 @@ async def get_account_features() -> dict[str, Any]:
         logger.error(f"Error gathering notifications features: {e}")
         errors.append(f"notifications: {e}")
 
-    # Get referrals info
     try:
         referrals_result = await get_referrals()
         if referrals_result["result"]["status"] == "success":

@@ -41,7 +41,6 @@ async def get_schwab_quote(symbol: str) -> dict[str, Any]:
 
         quote_data = await execute_broker_request(_get_quote, retry_safe=True)
 
-        # Extract quote from response
         quote = quote_data.get(symbol.upper(), {}).get("quote", {})
 
         return create_success_response(
@@ -89,7 +88,6 @@ async def get_schwab_quotes(symbols: list[str]) -> dict[str, Any]:
         return error
 
     try:
-        # Convert to uppercase
         symbols_upper = [s.upper() for s in symbols]
 
         def _get_quotes() -> Any:
@@ -98,7 +96,6 @@ async def get_schwab_quotes(symbols: list[str]) -> dict[str, Any]:
 
         quotes_data = await execute_broker_request(_get_quotes, retry_safe=True)
 
-        # Format quotes
         quotes = {}
         for symbol in symbols_upper:
             quote_info = quotes_data.get(symbol, {})
@@ -152,8 +149,6 @@ async def get_schwab_price_history(
         return error
 
     try:
-        # Map period type to enum
-
         period_type_map = {
             "day": Client.PriceHistory.PeriodType.DAY,
             "month": Client.PriceHistory.PeriodType.MONTH,
@@ -161,7 +156,6 @@ async def get_schwab_price_history(
             "ytd": Client.PriceHistory.PeriodType.YEAR_TO_DATE,
         }
 
-        # Map frequency types
         frequency_type_map = {
             "minute": Client.PriceHistory.FrequencyType.MINUTE,
             "daily": Client.PriceHistory.FrequencyType.DAILY,
@@ -226,7 +220,7 @@ async def get_schwab_instrument(symbol: str) -> dict[str, Any]:
         return error
 
     try:
-        # Use quote to get instrument info
+
         def _get_quote() -> Any:
             response = broker.client.get_quote(symbol.upper())
             return response.json()
@@ -272,7 +266,7 @@ async def search_schwab_instruments(query: str) -> dict[str, Any]:
         return error
 
     try:
-        # Try to get quote for the query (assuming it's a symbol)
+
         def _get_quote() -> Any:
             response = broker.client.get_quote(query.upper())
             return response.json()

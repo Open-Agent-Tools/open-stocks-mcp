@@ -23,8 +23,8 @@ class TestSimpleRateLimiter:
         """Test that rate limiter can be created."""
         limiter = RateLimiter(calls_per_minute=60)
         assert limiter.calls_per_minute == 60
-        assert limiter.calls_per_hour == 1800  # default
-        assert limiter.burst_size == 10  # default
+        assert limiter.calls_per_hour == 1800
+        assert limiter.burst_size == 10
 
     @pytest.mark.journey_system
     @pytest.mark.unit
@@ -59,7 +59,6 @@ class TestSimpleRateLimiter:
         limiter = get_rate_limiter()
         assert isinstance(limiter, RateLimiter)
 
-        # Should return same instance (singleton pattern)
         limiter2 = get_rate_limiter()
         assert limiter is limiter2
 
@@ -76,7 +75,6 @@ class TestSimpleRateLimiter:
             reset_global_rate_limiter,
         )
 
-        # Check values
         assert SECONDS_PER_MINUTE == 60
         assert SECONDS_PER_HOUR == 3600
         assert BURST_WINDOW_SECONDS == 1
@@ -84,7 +82,6 @@ class TestSimpleRateLimiter:
         assert DEFAULT_CALLS_PER_HOUR == 1000
         assert DEFAULT_BURST_SIZE == 5
 
-        # Reset and check get_rate_limiter defaults
         reset_global_rate_limiter()
         limiter = get_rate_limiter()
         assert limiter.calls_per_minute == DEFAULT_CALLS_PER_MINUTE
@@ -103,11 +100,9 @@ class TestSimpleRateLimiter:
 
         limiter = RateLimiter(calls_per_minute=60)
 
-        # Should not sleep on first call
         await limiter.acquire()
         mock_sleep.assert_not_called()
 
-        # Should have recorded the call
         assert len(limiter.call_times) == 1
 
     @patch("open_stocks_mcp.tools.rate_limiter.time.time")

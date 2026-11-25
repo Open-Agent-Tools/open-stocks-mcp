@@ -75,7 +75,6 @@ async def get_option_market_data(option_id: str) -> dict[str, Any]:
     if not option_id:
         return {"result": {"error": "Option ID is required", "status": "error"}}
 
-    # Get option market data by ID
     market_data = await execute_with_retry(
         rh.options.get_option_market_data_by_id,
         option_id,
@@ -157,7 +156,6 @@ async def get_option_historicals(
         f"Getting historical data for {symbol} {strike_price} {option_type} exp: {expiration_date}"
     )
 
-    # Validate inputs
     symbol = symbol.upper().strip()
     if not symbol:
         return {"result": {"error": "Symbol is required", "status": "error"}}
@@ -179,7 +177,6 @@ async def get_option_historicals(
             }
         }
 
-    # Get historical option data
     historical_data = await execute_with_retry(
         rh.options.get_option_historicals,
         symbol,

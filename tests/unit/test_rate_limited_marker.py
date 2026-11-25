@@ -191,16 +191,13 @@ def test_rate_limited_collection_nodeids() -> None:
 
     assert result.returncode == 0, result.stderr
 
-    # Check for presence of expected tests
     assert "test_get_account_info" in result.stdout
     assert "test_get_portfolio" in result.stdout
     assert "test_get_positions" in result.stdout
     assert "test_placeholder" in result.stdout
 
-    # Check for absence of excluded tests
     assert "test_api_error_handling" not in result.stdout
 
-    # Also check count to be sure no extra tests are selected
     count = sum(
         1
         for line in result.stdout.splitlines()

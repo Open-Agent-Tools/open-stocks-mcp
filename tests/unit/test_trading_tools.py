@@ -30,10 +30,6 @@ from open_stocks_mcp.tools.trading.orders_stock import (
     order_sell_stop_loss,
 )
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
 MOCK_QUOTE = [{"last_trade_price": "150.00", "symbol": "AAPL"}]
 MOCK_ACCOUNT = {"buying_power": "10000.00"}
 MOCK_POSITION = [{"symbol": "AAPL", "quantity": "10"}]
@@ -102,11 +98,6 @@ def test_trading_tools_do_not_keep_local_exception_response_boilerplate() -> Non
     assert offenders == []
 
 
-# ---------------------------------------------------------------------------
-# order_buy_market
-# ---------------------------------------------------------------------------
-
-
 class TestOrderBuyMarket:
     """Tests for order_buy_market."""
 
@@ -127,8 +118,6 @@ class TestOrderBuyMarket:
         assert result["result"]["side"] == "buy"
         assert result["result"]["order_type"] == "market"
 
-        # The third call must pass rh.order_buy_market as the callable with the
-        # correct symbol/quantity positional args and timeInForce='gfd' kwarg.
         order_call = mock_execute.call_args_list[2]
         assert order_call.args[0] is rh.order_buy_market
         assert order_call.args[1] == "AAPL"
@@ -196,7 +185,7 @@ class TestOrderBuyMarket:
         self, mock_execute: AsyncMock
     ) -> None:
         """Quote lookup returning empty list yields a symbol-not-found error."""
-        mock_execute.return_value = [{}]  # no last_trade_price
+        mock_execute.return_value = [{}]
 
         result = await order_buy_market("FAKE", 1)
 
@@ -213,20 +202,14 @@ class TestOrderBuyMarket:
         """Insufficient buying power returns an error without placing an order."""
         mock_execute.side_effect = [
             MOCK_QUOTE,
-            {"buying_power": "1.00"},  # way too low
+            {"buying_power": "1.00"},
         ]
 
         result = await order_buy_market("AAPL", 100)
 
         assert result["result"]["status"] == "error"
         assert "buying power" in result["result"]["error"].lower()
-        # Ensure the order was NOT placed (only 2 calls made)
         assert mock_execute.call_count == 2
-
-
-# ---------------------------------------------------------------------------
-# order_sell_market
-# ---------------------------------------------------------------------------
 
 
 class TestOrderSellMarket:
@@ -248,9 +231,6 @@ class TestOrderSellMarket:
         assert result["result"]["side"] == "sell"
         assert result["result"]["order_type"] == "market"
 
-        # Second call (order placement) must pass rh.order_sell_market as the
-        # callable with the correct symbol/quantity positional args and
-        # timeInForce='gfd' kwarg.
         order_call = mock_execute.call_args_list[1]
         assert order_call.args[0] is rh.order_sell_market
         assert order_call.args[1] == "AAPL"
@@ -311,7 +291,7 @@ class TestOrderSellMarket:
     @patch("open_stocks_mcp.tools.trading.orders_stock.execute_with_retry")
     async def test_no_position_returns_error(self, mock_execute: AsyncMock) -> None:
         """Selling with no open position returns error without placing order."""
-        mock_execute.return_value = []  # empty positions
+        mock_execute.return_value = []
 
         result = await order_sell_market("AAPL", 5)
 
@@ -333,11 +313,6 @@ class TestOrderSellMarket:
 
         assert result["result"]["status"] == "error"
         assert "shares" in result["result"]["error"].lower()
-
-
-# ---------------------------------------------------------------------------
-# order_buy_limit
-# ---------------------------------------------------------------------------
 
 
 class TestOrderBuyLimit:
@@ -387,11 +362,11 @@ class TestOrderBuyLimit:
         """Limit price >150% of current price is rejected before placing order."""
         mock_execute.return_value = [{"last_trade_price": "100.00"}]
 
-        result = await order_buy_limit("AAPL", 5, 200.00)  # >150% of 100
+        result = await order_buy_limit("AAPL", 5, 200.00)
 
         assert result["result"]["status"] == "error"
         assert "too high" in result["result"]["error"].lower()
-        assert mock_execute.call_count == 1  # only quote lookup, no order placed
+        assert mock_execute.call_count == 1
 
     @pytest.mark.journey_trading
     @pytest.mark.unit
@@ -421,11 +396,6 @@ class TestOrderBuyLimit:
         result = await order_buy_limit("AAPL", 5, 140.00)
 
         assert_decorator_error_response(result, "order_buy_limit")
-
-
-# ---------------------------------------------------------------------------
-# order_sell_limit
-# ---------------------------------------------------------------------------
 
 
 class TestOrderSellLimit:
@@ -498,11 +468,6 @@ class TestOrderSellLimit:
         assert_decorator_error_response(result, "order_sell_limit")
 
 
-# ---------------------------------------------------------------------------
-# order_buy_stop_loss / order_sell_stop_loss
-# ---------------------------------------------------------------------------
-
-
 class TestOrderStopLoss:
     """Smoke tests for stop loss orders."""
 
@@ -526,7 +491,7 @@ class TestOrderStopLoss:
         """Stop buy price below current market price is rejected."""
         mock_execute.return_value = [{"last_trade_price": "150.00"}]
 
-        result = await order_buy_stop_loss("AAPL", 5, 100.00)  # below current
+        result = await order_buy_stop_loss("AAPL", 5, 100.00)
 
         assert result["result"]["status"] == "error"
         assert "above" in result["result"]["error"].lower()
@@ -538,7 +503,7 @@ class TestOrderStopLoss:
     async def test_buy_stop_loss_success(self, mock_execute: AsyncMock) -> None:
         """Valid stop buy order succeeds."""
         mock_execute.side_effect = [
-            [{"last_trade_price": "100.00"}],  # quote (stop must be above)
+            [{"last_trade_price": "100.00"}],
             MOCK_ORDER,
         ]
 
@@ -555,11 +520,6 @@ class TestOrderStopLoss:
         result = await order_sell_stop_loss("AAPL", 0, 100.00)
 
         assert result["result"]["status"] == "error"
-
-
-# ---------------------------------------------------------------------------
-# cancel_stock_order
-# ---------------------------------------------------------------------------
 
 
 class TestCancelStockOrder:
@@ -601,11 +561,6 @@ class TestCancelStockOrder:
         assert result["result"]["status"] == "error"
 
 
-# ---------------------------------------------------------------------------
-# cancel_option_order
-# ---------------------------------------------------------------------------
-
-
 class TestCancelOptionOrder:
     """Tests for cancel_option_order."""
 
@@ -631,11 +586,6 @@ class TestCancelOptionOrder:
         assert result["result"]["status"] == "cancelled"
 
 
-# ---------------------------------------------------------------------------
-# cancel_all_stock_orders
-# ---------------------------------------------------------------------------
-
-
 class TestCancelAllStockOrders:
     """Tests for cancel_all_stock_orders."""
 
@@ -658,7 +608,6 @@ class TestCancelAllStockOrders:
     async def test_cancels_multiple_orders(self, mock_execute: AsyncMock) -> None:
         """All open orders are cancelled and count is correct."""
         open_orders = [{"id": "o1"}, {"id": "o2"}, {"id": "o3"}]
-        # First call fetches open orders, subsequent calls cancel them
         mock_execute.side_effect = [open_orders, None, None, None]
 
         result = await cancel_all_stock_orders()
@@ -677,11 +626,6 @@ class TestCancelAllStockOrders:
         result = await cancel_all_stock_orders()
 
         assert_decorator_error_response(result, "cancel_all_stock_orders")
-
-
-# ---------------------------------------------------------------------------
-# cancel_all_option_orders
-# ---------------------------------------------------------------------------
 
 
 class TestCancelAllOptionOrders:
@@ -713,11 +657,6 @@ class TestCancelAllOptionOrders:
         result = await cancel_all_option_orders()
 
         assert result["result"]["cancelled_count"] == 2
-
-
-# ---------------------------------------------------------------------------
-# get_all_open_stock_orders / get_all_open_option_orders
-# ---------------------------------------------------------------------------
 
 
 class TestGetOpenOrders:

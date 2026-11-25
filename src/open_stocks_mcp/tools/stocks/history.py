@@ -29,7 +29,6 @@ async def get_price_history(symbol: str, period: str = "week") -> dict[str, Any]
     Returns:
         A JSON object containing historical price data in the result field.
     """
-    # Input validation
     if not validate_symbol(symbol):
         return create_error_response(
             ValueError(f"Invalid symbol format: {symbol}"), "symbol validation"
@@ -46,7 +45,6 @@ async def get_price_history(symbol: str, period: str = "week") -> dict[str, Any]
     symbol = symbol.strip().upper()
     log_api_call("get_price_history", symbol=symbol, period=period)
 
-    # Map period to interval for better data granularity
     interval_map = {
         "day": "5minute",
         "week": "hour",
@@ -58,7 +56,6 @@ async def get_price_history(symbol: str, period: str = "week") -> dict[str, Any]
 
     interval = interval_map.get(period, "day")
 
-    # Get historical data with retry logic
     historical_data = await execute_with_retry(
         rh.get_stock_historicals, symbol, interval, period, "regular"
     )
@@ -69,7 +66,6 @@ async def get_price_history(symbol: str, period: str = "week") -> dict[str, Any]
             {"symbol": symbol, "period": period},
         )
 
-    # Process historical data (show last 20 points max for performance)
     price_points = []
     for data_point in historical_data[-20:]:
         if data_point and data_point.get("close_price"):

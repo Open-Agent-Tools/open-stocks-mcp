@@ -43,7 +43,6 @@ async def get_subscription_fees() -> dict[str, Any]:
     """
     logger.info("Getting subscription fees")
 
-    # Get subscription fees
     fees_data = await execute_with_retry(
         func=rh.get_subscription_fees, func_name="get_subscription_fees", max_retries=3
     )
@@ -62,7 +61,6 @@ async def get_subscription_fees() -> dict[str, Any]:
             }
         }
 
-    # Process subscription fees
     processed_fees = []
     total_fees = 0.0
     monthly_fee = "0.00"
@@ -73,13 +71,11 @@ async def get_subscription_fees() -> dict[str, Any]:
             if isinstance(fee, dict):
                 processed_fees.append(fee)
 
-                # Sum total fees
                 amount = fee.get("amount", "0")
                 if amount:
                     with contextlib.suppress(ValueError, TypeError):
                         total_fees += float(amount)
 
-                # Check if user is Gold member
                 if fee.get("type") == "gold_subscription":
                     is_gold_member = True
                     if not monthly_fee or monthly_fee == "0.00":

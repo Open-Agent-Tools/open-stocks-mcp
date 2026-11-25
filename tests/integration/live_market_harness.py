@@ -228,7 +228,6 @@ def live_schwab_broker(request: Any) -> Generator[Any, None, None]:
     registry = BrokerRegistry()
     registry.register(broker)
 
-    # Replace the function reference tools use via broker_utils
     import open_stocks_mcp.tools.broker_utils as broker_utils_module
     from open_stocks_mcp.brokers import registry as registry_module
 
@@ -237,6 +236,5 @@ def live_schwab_broker(request: Any) -> Generator[Any, None, None]:
 
     yield broker
 
-    # Restore original global registry state
     registry_module._registry = None  # type: ignore[attr-defined]
     broker_utils_module.__dict__.pop("_patched_registry_active", None)

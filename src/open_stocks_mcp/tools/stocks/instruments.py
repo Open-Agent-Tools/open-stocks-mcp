@@ -40,24 +40,20 @@ async def get_instruments_by_symbols(symbols: list[str]) -> dict[str, Any]:
     Returns:
         A JSON object containing instrument metadata for each symbol in the result field.
     """
-    # Input validation
     if not symbols:
         return create_error_response(
             ValueError("Symbol list cannot be empty"), "symbol list validation"
         )
 
-    # Validate each symbol
     for symbol in symbols:
         if not validate_symbol(symbol):
             return create_error_response(
                 ValueError(f"Invalid symbol format: {symbol}"), "symbol validation"
             )
 
-    # Clean and uppercase symbols
     clean_symbols = [symbol.strip().upper() for symbol in symbols]
     log_api_call("get_instruments_by_symbols", symbols=clean_symbols)
 
-    # Use batching for instruments lookup
     cfg = get_config()
     batcher = get_batcher(
         "robinhood_instruments",
@@ -75,7 +71,6 @@ async def get_instruments_by_symbols(symbols: list[str]) -> dict[str, Any]:
             {"symbols": clean_symbols},
         )
 
-    # Process instruments data
     processed_instruments = []
     for instrument in instruments_data:
         if instrument:
@@ -129,7 +124,6 @@ async def find_instrument_data(query: str) -> dict[str, Any]:
     Returns:
         A JSON object containing matching instruments in the result field.
     """
-    # Input validation
     if not query or not query.strip():
         return create_error_response(
             ValueError("Query cannot be empty"), "query validation"
@@ -138,7 +132,6 @@ async def find_instrument_data(query: str) -> dict[str, Any]:
     query = query.strip()
     log_api_call("find_instrument_data", query=query)
 
-    # Search for instruments with retry logic
     instruments_data = await execute_with_retry(rh.find_instrument_data, query)
 
     if not instruments_data:
@@ -146,7 +139,6 @@ async def find_instrument_data(query: str) -> dict[str, Any]:
             f"No instrument data found for query: {query}", {"query": query}
         )
 
-    # Process instruments data (limit to first 10 results for performance)
     processed_instruments = []
     for instrument in instruments_data[:10]:
         if instrument:
@@ -196,7 +188,6 @@ async def search_stocks(query: str) -> dict[str, Any]:
     Returns:
         A JSON object containing search results in the result field.
     """
-    # Input validation
     if not query or not isinstance(query, str) or len(query.strip()) == 0:
         return create_error_response(
             ValueError("Search query cannot be empty"), "query validation"
@@ -205,7 +196,6 @@ async def search_stocks(query: str) -> dict[str, Any]:
     query = query.strip()
     log_api_call("search_stocks", query=query)
 
-    # Search for instruments matching the query with retry logic
     search_results = await execute_with_retry(rh.find_instrument_data, query)
 
     if not search_results:
@@ -218,11 +208,10 @@ async def search_stocks(query: str) -> dict[str, Any]:
             }
         )
 
-    # Process search results (limit to 10 for performance)
     results = []
     for item in search_results[:10]:
         symbol = item.get("symbol", "")
-        if symbol:  # Only include results with valid symbols
+        if symbol:
             results.append(
                 {
                     "symbol": symbol.upper(),

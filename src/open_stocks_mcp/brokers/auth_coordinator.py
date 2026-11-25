@@ -28,7 +28,6 @@ async def attempt_broker_logins(
 
     registry = await get_broker_registry()
 
-    # Check if any brokers are registered
     brokers = registry.list_brokers()
     if not brokers:
         logger.warning(
@@ -38,17 +37,14 @@ async def attempt_broker_logins(
 
     logger.info(f"Registered brokers: {', '.join(brokers)}")
 
-    # Attempt authentication for all brokers
     start_time = datetime.now()
     results = await registry.authenticate_all(fail_fast=False)
     elapsed = (datetime.now() - start_time).total_seconds()
 
-    # Count results
     successful = sum(1 for success in results.values() if success)
     total = len(results)
     failed = [name for name, success in results.items() if not success]
 
-    # Log summary
     logger.info("=" * 60)
     logger.info(f"Authentication Summary ({elapsed:.1f}s)")
     logger.info("=" * 60)
@@ -71,7 +67,6 @@ async def attempt_broker_logins(
 
     logger.info("=" * 60)
 
-    # Overall status
     if successful == total and total > 0:
         logger.info(f"✅ All {total} broker(s) authenticated successfully")
     elif successful > 0:

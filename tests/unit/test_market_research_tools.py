@@ -34,11 +34,9 @@ class TestTopMoversSP500:
         mock_execute_with_retry: Any,
     ) -> None:
         """Test successful retrieval of S&P 500 up movers."""
-        # Mock authentication - make it async
         mock_session = mock_session_manager.return_value
         mock_session.ensure_authenticated = AsyncMock(return_value=True)
 
-        # Mock API response
         mock_execute_with_retry.return_value = [
             {
                 "symbol": "AAPL",
@@ -87,11 +85,9 @@ class TestTopMoversSP500:
         mock_execute_with_retry: Any,
     ) -> None:
         """Test successful retrieval of S&P 500 down movers."""
-        # Mock authentication
         mock_session = mock_session_manager.return_value
         mock_session.ensure_authenticated = AsyncMock(return_value=True)
 
-        # Mock API response
         mock_execute_with_retry.return_value = [
             {
                 "symbol": "TSLA",
@@ -143,7 +139,6 @@ class TestTopMoversSP500:
         mock_execute_with_retry: Any,
     ) -> None:
         """Test when no movers data is available."""
-        # Mock authentication
         mock_session = mock_session_manager.return_value
         mock_session.ensure_authenticated = AsyncMock(return_value=True)
 
@@ -194,11 +189,9 @@ class TestStockRatings:
         mock_execute_with_retry: Any,
     ) -> None:
         """Test successful stock ratings retrieval."""
-        # Mock authentication
         mock_session = mock_session_manager.return_value
         mock_session.ensure_authenticated = AsyncMock(return_value=True)
 
-        # Mock API response
         mock_execute_with_retry.return_value = {
             "summary": {
                 "num_buy_ratings": 15,
@@ -257,7 +250,6 @@ class TestStockRatings:
         mock_execute_with_retry: Any,
     ) -> None:
         """Test when no ratings data is available."""
-        # Mock authentication
         mock_session = mock_session_manager.return_value
         mock_session.ensure_authenticated = AsyncMock(return_value=True)
 
@@ -287,11 +279,9 @@ class TestStockEarnings:
         mock_execute_with_retry: Any,
     ) -> None:
         """Test successful stock earnings retrieval."""
-        # Mock authentication
         mock_session = mock_session_manager.return_value
         mock_session.ensure_authenticated = AsyncMock(return_value=True)
 
-        # Mock API response
         mock_execute_with_retry.return_value = [
             {
                 "year": 2024,
@@ -356,7 +346,6 @@ class TestStockEarnings:
         mock_execute_with_retry: Any,
     ) -> None:
         """Test when no earnings data is available."""
-        # Mock authentication
         mock_session = mock_session_manager.return_value
         mock_session.ensure_authenticated = AsyncMock(return_value=True)
 
@@ -384,11 +373,9 @@ class TestStockNews:
         mock_execute_with_retry: Any,
     ) -> None:
         """Test successful stock news retrieval."""
-        # Mock authentication
         mock_session = mock_session_manager.return_value
         mock_session.ensure_authenticated = AsyncMock(return_value=True)
 
-        # Mock API response
         mock_execute_with_retry.return_value = [
             {
                 "title": "Apple Reports Strong Q2 Results",
@@ -451,7 +438,6 @@ class TestStockNews:
         mock_execute_with_retry: Any,
     ) -> None:
         """Test when no news data is available."""
-        # Mock authentication
         mock_session = mock_session_manager.return_value
         mock_session.ensure_authenticated = AsyncMock(return_value=True)
 
@@ -479,11 +465,9 @@ class TestStockSplits:
         mock_execute_with_retry: Any,
     ) -> None:
         """Test successful stock splits retrieval."""
-        # Mock authentication
         mock_session = mock_session_manager.return_value
         mock_session.ensure_authenticated = AsyncMock(return_value=True)
 
-        # Mock API response
         mock_execute_with_retry.return_value = [
             {
                 "execution_date": "2020-08-31",
@@ -538,7 +522,6 @@ class TestStockSplits:
         mock_execute_with_retry: Any,
     ) -> None:
         """Test when no splits data is available."""
-        # Mock authentication
         mock_session = mock_session_manager.return_value
         mock_session.ensure_authenticated = AsyncMock(return_value=True)
 
@@ -566,11 +549,9 @@ class TestStockEvents:
         mock_execute_with_retry: Any,
     ) -> None:
         """Test successful stock events retrieval."""
-        # Mock authentication
         mock_session = mock_session_manager.return_value
         mock_session.ensure_authenticated = AsyncMock(return_value=True)
 
-        # Mock API response
         mock_execute_with_retry.return_value = [
             {
                 "type": "stock_split",
@@ -621,7 +602,6 @@ class TestStockEvents:
         mock_execute_with_retry: Any,
     ) -> None:
         """Test when no events data is available."""
-        # Mock authentication
         mock_session = mock_session_manager.return_value
         mock_session.ensure_authenticated = AsyncMock(return_value=True)
 
@@ -650,11 +630,9 @@ class TestStockLevel2Data:
         mock_execute_with_retry: Any,
     ) -> None:
         """Test successful Level II data retrieval."""
-        # Mock authentication
         mock_session = mock_session_manager.return_value
         mock_session.ensure_authenticated = AsyncMock(return_value=True)
 
-        # Mock API response
         mock_execute_with_retry.return_value = {
             "asks": [
                 {"price": "150.10", "quantity": "100"},
@@ -706,7 +684,6 @@ class TestStockLevel2Data:
         mock_execute_with_retry: Any,
     ) -> None:
         """Test when no Level II data is available (Gold subscription required)."""
-        # Mock authentication
         mock_session = mock_session_manager.return_value
         mock_session.ensure_authenticated = AsyncMock(return_value=True)
 
@@ -733,7 +710,6 @@ class TestStockLevel2Data:
         mock_execute_with_retry: Any,
     ) -> None:
         """Test API error handling for Level II data."""
-        # Mock authentication
         mock_session = mock_session_manager.return_value
         mock_session.ensure_authenticated = AsyncMock(return_value=True)
 

@@ -89,7 +89,6 @@ class TestCachedAsyncDecorator:
             return call_count
 
         first = await fetch()
-        # Advance clock past the TTL
         clock["value"] += 6
         second = await fetch()
 
@@ -113,17 +112,13 @@ class TestCachedAsyncDecorator:
 
         a1 = await fetch("a")
         b1 = await fetch("b")
-        # Touch "a" to make "b" the LRU
         await fetch("a")
-        # Insert "c" — should evict "b"
         await fetch("c")
 
-        # Re-fetching "a" should still hit cache (no new call)
         before = call_count
         await fetch("a")
         assert call_count == before, "fetch('a') should be a cache hit"
 
-        # Re-fetching "b" should miss and re-invoke
         b2 = await fetch("b")
         assert b2 != b1
         assert a1 == "a-1"
@@ -145,7 +140,7 @@ class TestCachedAsyncDecorator:
         await fetch(1)
         await fetch(2)
         await fetch(1, mode="x")
-        await fetch(1, mode="x")  # repeat, cache hit
+        await fetch(1, mode="x")
         await fetch(1, mode="y")
 
         assert call_count == 4
@@ -181,10 +176,10 @@ class TestCachedAsyncDecorator:
         async def fetch(x: int) -> int:
             return x
 
-        await fetch(1)  # miss
-        await fetch(1)  # hit
-        await fetch(2)  # miss
-        await fetch(1)  # hit
+        await fetch(1)
+        await fetch(1)
+        await fetch(2)
+        await fetch(1)
 
         metrics = await get_metrics_collector().get_metrics()
 
@@ -338,11 +333,9 @@ class TestToolIntegration:
 
         assert first["result"]["price"] == 101.0
         assert second["result"]["price"] == 101.0
-        # Cached: underlying API called exactly once across two invocations
         assert mock_price.call_count == 1
         assert mock_quote.call_count == 1
 
-        # Distinct symbol bypasses cache
         await get_stock_price("MSFT")
         assert mock_price.call_count == 2
 
@@ -371,13 +364,10 @@ class TestToolIntegration:
         from open_stocks_mcp.tools import cache
         from open_stocks_mcp.tools.stocks import quote as stock_quote_mod
 
-        # Replace the real clock for the wrapped cache entry
         clock = {"value": time.monotonic()}
         cache.clear_caches()
 
         original = stock_quote_mod.get_stock_price
-        # Walk past every existing decorator down to the raw coroutine, so the
-        # fresh test wrapper isn't shadowed by the production cache.
         raw = original
         while hasattr(raw, "__wrapped__"):
             raw = raw.__wrapped__

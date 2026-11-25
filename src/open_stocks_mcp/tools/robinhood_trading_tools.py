@@ -13,8 +13,6 @@ from open_stocks_mcp.tools.error_handling import (
     sanitize_api_response,
 )
 
-# Options Order Placement Tools
-
 
 @handle_robin_stocks_errors
 async def order_buy_option_limit(
@@ -31,9 +29,7 @@ async def order_buy_option_limit(
     Returns:
         A JSON object containing order confirmation in the result field.
     """
-    # Will log with actual symbol after instrument lookup
 
-    # Validation
     if not instrument_id or not isinstance(instrument_id, str):
         return create_success_response(
             {"error": "Invalid instrument_id provided", "status": "error"}
@@ -49,7 +45,6 @@ async def order_buy_option_limit(
             {"error": "Limit price must be a positive number", "status": "error"}
         )
 
-    # Validate instrument exists and is tradeable
     instrument = await execute_with_retry(
         rh.get_option_instrument_data_by_id, instrument_id
     )
@@ -66,10 +61,9 @@ async def order_buy_option_limit(
             {"error": "Option instrument is not tradeable", "status": "error"}
         )
 
-    # Check buying power
     account = await execute_with_retry(rh.load_account_profile)
     buying_power = float(account.get("buying_power", 0))
-    estimated_cost = limit_price * quantity * 100  # Options are in contracts of 100
+    estimated_cost = limit_price * quantity * 100
 
     if buying_power < estimated_cost:
         return create_success_response(
@@ -79,13 +73,11 @@ async def order_buy_option_limit(
             }
         )
 
-    # Extract parameters needed for Robin Stocks API
     symbol = instrument.get("chain_symbol", "")
-    expiration_date = instrument.get("expiration_date", "")  # Keep YYYY-MM-DD format
+    expiration_date = instrument.get("expiration_date", "")
     strike_price = float(instrument.get("strike_price", 0))
     option_type = instrument.get("type", "")
 
-    # Log the API call with correct parameters
     log_api_call(
         "order_buy_option_limit",
         symbol,
@@ -96,18 +88,16 @@ async def order_buy_option_limit(
         limit_price=limit_price,
     )
 
-    # Place order using correct Robin Stocks API parameters
-    # Signature: order_buy_option_limit(positionEffect, creditOrDebit, price, symbol, quantity, expirationDate, strike, optionType)
     order_result = await execute_with_retry(
         rh.order_buy_option_limit,
-        "open",  # positionEffect
-        "debit",  # creditOrDebit - buying = paying debit
-        limit_price,  # price
-        symbol,  # symbol (e.g., 'F')
-        quantity,  # quantity
-        expiration_date,  # expirationDate (YYYY-MM-DD)
-        strike_price,  # strike
-        option_type,  # optionType ('call' or 'put')
+        "open",
+        "debit",
+        limit_price,
+        symbol,
+        quantity,
+        expiration_date,
+        strike_price,
+        option_type,
     )
 
     if not order_result:
@@ -151,9 +141,7 @@ async def order_sell_option_limit(
     Returns:
         A JSON object containing order confirmation in the result field.
     """
-    # Will log with actual symbol after instrument lookup
 
-    # Validation
     if not instrument_id or not isinstance(instrument_id, str):
         return create_success_response(
             {"error": "Invalid instrument_id provided", "status": "error"}
@@ -169,7 +157,6 @@ async def order_sell_option_limit(
             {"error": "Limit price must be a positive number", "status": "error"}
         )
 
-    # Validate instrument exists and is tradeable
     instrument = await execute_with_retry(
         rh.get_option_instrument_data_by_id, instrument_id
     )
@@ -186,7 +173,6 @@ async def order_sell_option_limit(
             {"error": "Option instrument is not tradeable", "status": "error"}
         )
 
-    # Check if we have position (for closing) or allow naked selling with margin
     try:
         positions = await execute_with_retry(rh.get_open_option_positions)
         position_quantity = 0.0
@@ -210,13 +196,11 @@ async def order_sell_option_limit(
         logger.warning(f"Failed to check position, assuming naked sell: {e}")
         position_effect = "open"
 
-    # Extract parameters needed for Robin Stocks API
     symbol = instrument.get("chain_symbol", "")
-    expiration_date = instrument.get("expiration_date", "")  # Keep YYYY-MM-DD format
+    expiration_date = instrument.get("expiration_date", "")
     strike_price = float(instrument.get("strike_price", 0))
     option_type = instrument.get("type", "")
 
-    # Log the API call with correct parameters
     log_api_call(
         "order_sell_option_limit",
         symbol,
@@ -227,18 +211,16 @@ async def order_sell_option_limit(
         limit_price=limit_price,
     )
 
-    # Place order using correct Robin Stocks API parameters
-    # Signature: order_sell_option_limit(positionEffect, creditOrDebit, price, symbol, quantity, expirationDate, strike, optionType)
     order_result = await execute_with_retry(
         rh.order_sell_option_limit,
-        position_effect,  # 'open' or 'close'
-        "credit",  # creditOrDebit - selling = receiving credit
-        limit_price,  # price
-        symbol,  # symbol (e.g., 'F')
-        quantity,  # quantity
-        expiration_date,  # expirationDate (YYYY-MM-DD)
-        strike_price,  # strike
-        option_type,  # optionType ('call' or 'put')
+        position_effect,
+        "credit",
+        limit_price,
+        symbol,
+        quantity,
+        expiration_date,
+        strike_price,
+        option_type,
     )
 
     if not order_result:
@@ -294,7 +276,6 @@ async def order_option_credit_spread(
         credit_price=credit_price,
     )
 
-    # Validation
     if not short_instrument_id or not isinstance(short_instrument_id, str):
         return create_success_response(
             {"error": "Invalid short_instrument_id provided", "status": "error"}
@@ -315,7 +296,6 @@ async def order_option_credit_spread(
             {"error": "Credit price must be a positive number", "status": "error"}
         )
 
-    # Validate both instruments exist and form a valid spread
     short_instrument = await execute_with_retry(
         rh.get_option_instrument_data_by_id, short_instrument_id
     )
@@ -328,7 +308,6 @@ async def order_option_credit_spread(
             {"error": "One or both option instruments not found", "status": "error"}
         )
 
-    # Basic validation - both should be same underlying and type
     if short_instrument.get("chain_symbol") != long_instrument.get("chain_symbol"):
         return create_success_response(
             {
@@ -342,13 +321,10 @@ async def order_option_credit_spread(
             {"error": "Options must be same type (call or put)", "status": "error"}
         )
 
-    # Calculate margin requirements (simplified)
     account = await execute_with_retry(rh.load_account_profile)
     buying_power = float(account.get("buying_power", 0))
 
-    # For credit spreads, margin requirement is typically the width of strikes minus credit received
-    # This is a simplified calculation
-    estimated_margin = credit_price * quantity * 100  # Minimum margin estimate
+    estimated_margin = credit_price * quantity * 100
 
     if buying_power < estimated_margin:
         return create_success_response(
@@ -358,32 +334,29 @@ async def order_option_credit_spread(
             }
         )
 
-    # Place spread order
     symbol = short_instrument.get("chain_symbol")
     if not symbol:
         return create_success_response(
             {"error": "Could not extract symbol from instrument", "status": "error"}
         )
 
-    # Create spread array with correct Robin Stocks format
     spread = [
         {
             "expirationDate": short_instrument.get("expiration_date"),
             "strike": short_instrument.get("strike_price"),
             "optionType": short_instrument.get("type"),
             "effect": "open",
-            "action": "sell",  # Short leg = sell
+            "action": "sell",
         },
         {
             "expirationDate": long_instrument.get("expiration_date"),
             "strike": long_instrument.get("strike_price"),
             "optionType": long_instrument.get("type"),
             "effect": "open",
-            "action": "buy",  # Long leg = buy
+            "action": "buy",
         },
     ]
 
-    # Use correct Robin Stocks API: order_option_credit_spread(price, symbol, quantity, spread, timeInForce='gtc')
     order_result = await execute_with_retry(
         rh.order_option_credit_spread,
         credit_price,
@@ -398,7 +371,6 @@ async def order_option_credit_spread(
             {"error": "Spread order placement failed", "status": "error"}
         )
 
-    # Check for API error responses
     if isinstance(order_result, dict) and "non_field_errors" in order_result:
         error_msgs = order_result["non_field_errors"]
         return create_success_response(
@@ -449,7 +421,6 @@ async def order_option_debit_spread(
         debit_price=debit_price,
     )
 
-    # Validation
     if not short_instrument_id or not isinstance(short_instrument_id, str):
         return create_success_response(
             {"error": "Invalid short_instrument_id provided", "status": "error"}
@@ -470,7 +441,6 @@ async def order_option_debit_spread(
             {"error": "Debit price must be a positive number", "status": "error"}
         )
 
-    # Validate both instruments exist and form a valid spread
     short_instrument = await execute_with_retry(
         rh.get_option_instrument_data_by_id, short_instrument_id
     )
@@ -483,7 +453,6 @@ async def order_option_debit_spread(
             {"error": "One or both option instruments not found", "status": "error"}
         )
 
-    # Basic validation - both should be same underlying and type
     if short_instrument.get("chain_symbol") != long_instrument.get("chain_symbol"):
         return create_success_response(
             {
@@ -497,10 +466,9 @@ async def order_option_debit_spread(
             {"error": "Options must be same type (call or put)", "status": "error"}
         )
 
-    # Check buying power for net debit
     account = await execute_with_retry(rh.load_account_profile)
     buying_power = float(account.get("buying_power", 0))
-    total_debit = debit_price * quantity * 100  # Total cost
+    total_debit = debit_price * quantity * 100
 
     if buying_power < total_debit:
         return create_success_response(
@@ -510,32 +478,29 @@ async def order_option_debit_spread(
             }
         )
 
-    # Place spread order
     symbol = short_instrument.get("chain_symbol")
     if not symbol:
         return create_success_response(
             {"error": "Could not extract symbol from instrument", "status": "error"}
         )
 
-    # Create spread array with correct Robin Stocks format
     spread = [
         {
             "expirationDate": short_instrument.get("expiration_date"),
             "strike": short_instrument.get("strike_price"),
             "optionType": short_instrument.get("type"),
             "effect": "open",
-            "action": "sell",  # Short leg = sell
+            "action": "sell",
         },
         {
             "expirationDate": long_instrument.get("expiration_date"),
             "strike": long_instrument.get("strike_price"),
             "optionType": long_instrument.get("type"),
             "effect": "open",
-            "action": "buy",  # Long leg = buy
+            "action": "buy",
         },
     ]
 
-    # Use correct Robin Stocks API: order_option_debit_spread(price, symbol, quantity, spread, timeInForce='gtc')
     order_result = await execute_with_retry(
         rh.order_option_debit_spread,
         debit_price,
@@ -550,7 +515,6 @@ async def order_option_debit_spread(
             {"error": "Spread order placement failed", "status": "error"}
         )
 
-    # Check for API error responses
     if isinstance(order_result, dict) and "non_field_errors" in order_result:
         error_msgs = order_result["non_field_errors"]
         return create_success_response(
@@ -577,9 +541,6 @@ async def order_option_debit_spread(
     )
 
 
-# Order Management Tools
-
-
 @handle_robin_stocks_errors
 async def cancel_stock_order(order_id: str) -> dict[str, Any]:
     """
@@ -593,13 +554,11 @@ async def cancel_stock_order(order_id: str) -> dict[str, Any]:
     """
     log_api_call("cancel_stock_order", order_id)
 
-    # Validation
     if not order_id or not isinstance(order_id, str):
         return create_success_response(
             {"error": "Invalid order_id provided", "status": "error"}
         )
 
-    # Cancel order
     cancel_result = await execute_with_retry(rh.cancel_stock_order, order_id)
 
     if not cancel_result:
@@ -633,13 +592,11 @@ async def cancel_option_order(order_id: str) -> dict[str, Any]:
     """
     log_api_call("cancel_option_order", order_id)
 
-    # Validation
     if not order_id or not isinstance(order_id, str):
         return create_success_response(
             {"error": "Invalid order_id provided", "status": "error"}
         )
 
-    # Cancel order
     cancel_result = await execute_with_retry(rh.cancel_option_order, order_id)
 
     if not cancel_result:
@@ -680,7 +637,6 @@ async def cancel_all_stock_orders() -> dict[str, Any]:
     cancelled_count = 0
     failed_orders = []
 
-    # Cancel each order
     for order in orders:
         try:
             order_id = order.get("id")
@@ -723,7 +679,6 @@ async def cancel_all_option_orders() -> dict[str, Any]:
     cancelled_count = 0
     failed_orders = []
 
-    # Cancel each order
     for order in orders:
         try:
             order_id = order.get("id")
@@ -767,7 +722,6 @@ async def get_all_open_stock_orders() -> dict[str, Any]:
     for order in orders:
         order = sanitize_api_response(order)
 
-        # Get symbol from instrument URL
         instrument_url = order.get("instrument")
         symbol = "N/A"
         if instrument_url:

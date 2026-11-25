@@ -311,9 +311,6 @@ async def test_schwab_get_interest_payments_auth_error(mock_to_thread, mock_get_
     mock_to_thread.assert_not_called()
 
 
-# ---- schwab_get_total_dividends tests ----
-
-
 @pytest.mark.asyncio
 @patch("open_stocks_mcp.tools.schwab_payment_tools.get_authenticated_broker_or_error")
 @patch("open_stocks_mcp.tools.schwab_payment_tools.asyncio.to_thread")
@@ -378,7 +375,6 @@ async def test_schwab_get_total_dividends_groups_by_year(
     by_year = result["result"]["by_year"]
     assert by_year["2026"] == "10.00"
     assert by_year["2025"] == "15.00"
-    # descending order
     assert list(by_year.keys()) == ["2026", "2025"]
 
 
@@ -459,9 +455,6 @@ async def test_schwab_get_total_dividends_empty_returns_zero(
     assert result["result"]["by_year"] == {}
     assert result["result"]["first_payment_date"] is None
     assert result["result"]["last_payment_date"] is None
-
-
-# --- schwab_get_stock_loan_payments tests ---
 
 
 @pytest.mark.unit

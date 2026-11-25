@@ -25,8 +25,6 @@ from open_stocks_mcp.server.tool_helpers import (
     get_rate_limit_status_data,
     get_session_status_data,
 )
-
-# Cross-Broker Tools
 from open_stocks_mcp.tools.broker_comparison_tools import get_broker_comparison
 from open_stocks_mcp.tools.cross_broker_tools import get_aggregated_portfolio
 from open_stocks_mcp.tools.market.earnings import (
@@ -91,8 +89,6 @@ from open_stocks_mcp.tools.robinhood_order_tools import (
 )
 from open_stocks_mcp.tools.robinhood_referral_tools import get_referrals
 from open_stocks_mcp.tools.robinhood_subscription_tools import get_subscription_fees
-
-# Phase 7: Trading Capabilities Tools
 from open_stocks_mcp.tools.robinhood_trading_tools import (
     cancel_all_option_orders,
     cancel_all_stock_orders,
@@ -114,8 +110,6 @@ from open_stocks_mcp.tools.robinhood_user_profile_tools import (
     get_security_profile,
     get_user_profile,
 )
-
-# Schwab Tools
 from open_stocks_mcp.tools.schwab_account_tools import (
     build_schwab_user_profile,
     get_schwab_account,
@@ -280,14 +274,11 @@ from open_stocks_mcp.tracing import (
     trace_tool_call,
 )
 
-# Load environment variables from .env file
 load_dotenv()
 
-# Create global MCP server instance for Inspector
 mcp = MCPServer("Open Stocks MCP")
 
 
-# Register tools at module level for Inspector
 @mcp.tool()
 async def list_tools() -> dict[str, Any]:
     """Provides a list of available tools and their descriptions."""
@@ -330,7 +321,6 @@ async def positions() -> dict[str, Any]:
     return await get_positions()
 
 
-# Advanced Portfolio Analytics Tools
 @mcp.tool()
 async def build_holdings() -> dict[str, Any]:
     """Builds comprehensive holdings with dividend information and performance metrics.
@@ -358,7 +348,6 @@ async def day_trades() -> dict[str, Any]:
     return await get_day_trades()
 
 
-# Session Management Tools
 @mcp.tool()
 async def session_status() -> dict[str, Any]:
     """Gets current session status and authentication information."""
@@ -394,7 +383,6 @@ async def rate_limit_status() -> dict[str, Any]:
     return await get_rate_limit_status_data()
 
 
-# Monitoring Tools
 @mcp.tool()
 async def metrics_summary() -> dict[str, Any]:
     """Gets comprehensive metrics summary for monitoring."""
@@ -408,7 +396,6 @@ async def health_check() -> dict[str, Any]:
     return await get_health_check_data()
 
 
-# Market Data Tools
 @mcp.tool()
 async def stock_price(symbol: str) -> dict[str, Any]:
     """Gets current stock price and basic metrics.
@@ -456,7 +443,6 @@ async def price_history(symbol: str, period: str = "week") -> dict[str, Any]:
     return await get_price_history(symbol, period)
 
 
-# Phase 6: Advanced Instrument Data Tools
 @mcp.tool()
 async def instruments_by_symbols(symbols: list[str]) -> dict[str, Any]:
     """Gets detailed instrument metadata for multiple symbols.
@@ -497,7 +483,6 @@ async def pricebook_by_symbol(symbol: str) -> dict[str, Any]:
     return await get_pricebook_by_symbol(symbol)
 
 
-# Dividend & Income Tools
 @mcp.tool()
 async def dividends() -> dict[str, Any]:
     """Gets all dividend payment history for the account."""
@@ -532,7 +517,6 @@ async def stock_loan_payments() -> dict[str, Any]:
     return await get_stock_loan_payments()
 
 
-# Advanced Market Data Tools
 @mcp.tool()
 async def top_movers_sp500(direction: str = "up") -> dict[str, Any]:
     """Gets top S&P 500 movers for the day.
@@ -625,7 +609,6 @@ async def stock_level2_data(symbol: str) -> dict[str, Any]:
     return await get_stock_level2_data(symbol)
 
 
-# Phase 3: Options Trading Tools
 @mcp.tool()
 async def options_chains(symbol: str) -> dict[str, Any]:
     """Gets complete option chains for a stock symbol.
@@ -721,7 +704,6 @@ async def open_option_positions_with_details() -> dict[str, Any]:
     return await get_open_option_positions_with_details()
 
 
-# Phase 3: Watchlist Management Tools
 @mcp.tool()
 async def all_watchlists() -> dict[str, Any]:
     """Gets all user-created watchlists."""
@@ -772,7 +754,6 @@ async def watchlist_performance(watchlist_name: str) -> dict[str, Any]:
     return await get_watchlist_performance(watchlist_name)
 
 
-# Unified Watchlist Tools
 @mcp.tool()
 async def unified_watchlists(brokers: list[str] | None = None) -> dict[str, Any]:
     """Gets all watchlists aggregated across supported brokers.
@@ -824,7 +805,6 @@ async def unified_remove_from_watchlist(
     return await remove_symbols_from_unified_watchlist(watchlist_name, symbols, brokers)
 
 
-# Phase 3: Account Features & Notifications Tools
 @mcp.tool()
 async def notifications(count: int = 20) -> dict[str, Any]:
     """Gets account notifications and alerts.
@@ -871,7 +851,6 @@ async def account_features() -> dict[str, Any]:
     return await get_account_features()
 
 
-# Phase 3: User Profile Tools
 @mcp.tool()
 async def account_profile() -> dict[str, Any]:
     """Gets trading account profile and configuration."""
@@ -914,10 +893,6 @@ async def account_settings() -> dict[str, Any]:
     return await get_account_settings()
 
 
-# Phase 7: Trading Capabilities Tools
-
-
-# Stock Order Placement Tools
 @mcp.tool()
 async def buy_stock_market(symbol: str, quantity: int) -> dict[str, Any]:
     """Places a market buy order for a stock.
@@ -968,23 +943,6 @@ async def sell_stock_limit(
     return await order_sell_limit(symbol, quantity, limit_price)
 
 
-# DEPRECATED: buy_stock_stop_loss removed - uncommon use case for most traders
-# Buy stop-loss orders are primarily used for short covering or breakout trading
-# which are advanced strategies not commonly used by typical retail investors
-# @mcp.tool()
-# async def buy_stock_stop_loss(
-#     symbol: str, quantity: int, stop_price: float
-# ) -> dict[str, Any]:
-#     """Places a stop loss buy order for a stock.
-#
-#     Args:
-#         symbol: The stock symbol to buy (e.g., "AAPL")
-#         quantity: The number of shares to buy
-#         stop_price: The stop price that triggers the order
-#     """
-#     return await order_buy_stop_loss(symbol, quantity, stop_price)  # type: ignore[no-any-return]
-
-
 @mcp.tool()
 async def sell_stock_stop_loss(
     symbol: str, quantity: int, stop_price: float
@@ -999,55 +957,6 @@ async def sell_stock_stop_loss(
     return await order_sell_stop_loss(symbol, quantity, stop_price)
 
 
-# DEPRECATED: buy_stock_trailing_stop removed - uncommon use case for most traders
-# Trailing stop buy orders are advanced trading strategies primarily used for breakout trading
-# which are not commonly used by typical retail investors
-# @mcp.tool()
-# async def buy_stock_trailing_stop(
-#     symbol: str, quantity: int, trail_amount: float
-# ) -> dict[str, Any]:
-#     """Places a trailing stop buy order for a stock.
-#
-#     Args:
-#         symbol: The stock symbol to buy (e.g., "AAPL")
-#         quantity: The number of shares to buy
-#         trail_amount: The trailing amount (percentage or dollar amount)
-#     """
-#     return await order_buy_trailing_stop(symbol, quantity, trail_amount)  # type: ignore[no-any-return]
-
-
-# DEPRECATED: sell_stock_trailing_stop removed - uncommon use case for most traders
-# Trailing stop sell orders are advanced trading strategies that require careful market timing
-# and are not commonly used by typical retail investors
-# @mcp.tool()
-# async def sell_stock_trailing_stop(
-#     symbol: str, quantity: int, trail_amount: float
-# ) -> dict[str, Any]:
-#     """Places a trailing stop sell order for a stock.
-#
-#     Args:
-#         symbol: The stock symbol to sell (e.g., "AAPL")
-#         quantity: The number of shares to sell
-#         trail_amount: The trailing amount (percentage or dollar amount)
-#     """
-#     return await order_sell_trailing_stop(symbol, quantity, trail_amount)  # type: ignore[no-any-return]
-
-
-# DEPRECATED: buy_fractional_stock removed - uncommon use case for most traders
-# Fractional share trading is useful but represents a small subset of trading activity
-# and most retail traders prefer whole share purchases for clearer position management
-# @mcp.tool()
-# async def buy_fractional_stock(symbol: str, amount_in_dollars: float) -> dict[str, Any]:
-#     """Places a fractional share buy order using dollar amount.
-#
-#     Args:
-#         symbol: The stock symbol to buy (e.g., "AAPL")
-#         amount_in_dollars: The dollar amount to invest
-#     """
-#     return await order_buy_fractional_by_price(symbol, amount_in_dollars)  # type: ignore[no-any-return]
-
-
-# Options Order Placement Tools
 @mcp.tool()
 async def buy_option_limit(
     instrument_id: str, quantity: int, limit_price: float
@@ -1115,7 +1024,6 @@ async def option_debit_spread(
     return result
 
 
-# Order Management Tools
 @mcp.tool()
 async def cancel_stock_order_by_id(order_id: str) -> dict[str, Any]:
     """Cancels a specific stock order.
@@ -1160,7 +1068,6 @@ async def open_option_orders() -> dict[str, Any]:
     return await get_all_open_option_orders()
 
 
-# Schwab Account Tools
 @mcp.tool()
 async def schwab_account_numbers() -> dict[str, Any]:
     """Get Schwab account numbers and their hashes."""
@@ -1252,7 +1159,6 @@ async def schwab_build_user_profile() -> dict[str, Any]:
     return await build_schwab_user_profile()
 
 
-# Cross-Broker Tools
 @mcp.tool()
 async def aggregated_portfolio() -> dict[str, Any]:
     """Get a unified portfolio view aggregated across all registered brokers.
@@ -1282,7 +1188,6 @@ async def broker_comparison(
     return await get_broker_comparison(symbols, include_orders, max_orders)
 
 
-# Schwab Market Data Tools
 @mcp.tool()
 async def schwab_quote(symbol: str) -> dict[str, Any]:
     """Get current quote for a stock symbol from Schwab.
@@ -1402,7 +1307,6 @@ async def schwab_get_instrument_by_cusip(cusip: str) -> dict[str, Any]:
     return await get_schwab_instrument_by_cusip(cusip)
 
 
-# Schwab Trading Tools
 @mcp.tool()
 async def schwab_buy_stock_market(
     account_hash: str, symbol: str, quantity: int
@@ -1803,7 +1707,6 @@ async def schwab_replace_order(
     return await _schwab_replace_order(account_hash, order_id, order_spec)
 
 
-# Schwab Options Tools
 @mcp.tool()
 async def schwab_option_chain(
     symbol: str,
@@ -1995,7 +1898,6 @@ async def schwab_open_option_orders(
     return await schwab_get_open_option_orders(account_hash, max_results)
 
 
-# Schwab Streaming Tools
 @mcp.tool()
 async def schwab_stream_level2(symbol: str, venue: str = "nasdaq") -> dict[str, Any]:
     """Get a Level 2 snapshot from Schwab streaming cache for a symbol."""
@@ -2107,15 +2009,11 @@ async def setup_brokers(
 
     logger.info("Setting up broker integrations...")
 
-    # Get the global registry
     registry = await get_broker_registry()
 
-    # Use centralized broker config for enabled brokers
     enabled = config.brokers.enabled_brokers
 
-    # Setup Robinhood broker if enabled
     if "robinhood" in enabled:
-        # CLI credentials override configured credentials
         rh_username = username or config.brokers.robinhood.username
         rh_password = password or config.brokers.robinhood.password
         if rh_username and rh_password:
@@ -2140,7 +2038,6 @@ async def setup_brokers(
             "Robinhood credentials supplied but Robinhood is disabled via ENABLED_BROKERS"
         )
 
-    # Setup Schwab broker if enabled
     if "schwab" in enabled:
         sc = config.brokers.schwab
         if sc.api_key and sc.app_secret:
@@ -2158,7 +2055,6 @@ async def setup_brokers(
                 "Schwab enablement gate honored, but Schwab registration is tracked in #54"
             )
 
-    # Apply default broker from centralized config
     default = config.brokers.default_broker
     if default:
         registered = registry.list_brokers()
@@ -2169,7 +2065,6 @@ async def setup_brokers(
                 f"⚠️  DEFAULT_BROKER '{default}' not in registered brokers: {registered}"
             )
 
-    # Attempt to authenticate all registered brokers
     await attempt_broker_logins(require_at_least_one=False)
 
 
@@ -2189,11 +2084,9 @@ def attempt_login(username: str, password: str) -> None:
     try:
         logger.info(f"Attempting login for user: {username}")
 
-        # Set credentials in session manager
         session_manager = get_session_manager()
         session_manager.set_credentials(username, password)
 
-        # Use asyncio to run the async authentication
         async def do_auth() -> bool:
             return await session_manager.ensure_authenticated()
 
@@ -2201,18 +2094,15 @@ def attempt_login(username: str, password: str) -> None:
 
         if success:
             logger.info(f"✅ Successfully logged into Robinhood for user: {username}")
-            # Verify by getting session info
             session_info = session_manager.get_session_info()
             logger.info(f"Session info: {session_info}")
         else:
-            # DON'T exit - let server start anyway
             logger.error("❌ Login failed: Could not authenticate with Robinhood.")
             logger.warning(
                 "   Server will start but Robinhood tools will be unavailable"
             )
 
     except Exception as e:
-        # DON'T exit - let server start anyway
         logger.error(f"❌ An unexpected error occurred during login: {e}")
         logger.warning("   Server will start but Robinhood tools will be unavailable")
 
@@ -2271,8 +2161,6 @@ def main(
     broker authentication fails. Tools will return appropriate errors
     when accessed without authentication.
     """
-    # Prompt for credentials if not provided (interactive mode)
-    # In non-interactive mode (Docker, systemd), credentials come from env vars
     if not username and not password and sys.stdin.isatty():
         logger.info("No credentials provided - prompting for Robinhood credentials")
         logger.info("(Press Ctrl+C to skip and start without Robinhood)")
@@ -2289,17 +2177,14 @@ def main(
             username = None
             password = None
 
-    # Create MCP server
     config = load_config()
     if debug:
         config.log_level = "DEBUG"
     server = create_mcp_server(config)
 
-    # Setup broker authentication (non-blocking)
     logger.info("Initializing broker authentication...")
     asyncio.run(setup_brokers(username, password, config=config))
 
-    # Start server regardless of authentication status
     try:
         if transport == "stdio":
             logger.info("Starting MCP server with STDIO transport")
@@ -2308,7 +2193,6 @@ def main(
             )
             asyncio.run(server.run_stdio_async())
         else:
-            # Use our enhanced HTTP transport
             from open_stocks_mcp.server.http_transport import run_http_server
 
             logger.info(f"Starting MCP server with HTTP transport on {host}:{port}")
@@ -2327,7 +2211,6 @@ def main(
         return 0
     except KeyboardInterrupt:
         logger.info("\nServer stopped by user")
-        # Logout all brokers
         from open_stocks_mcp.brokers.registry import (
             RegistryNotInitializedError,
             get_broker_registry_sync,
@@ -2337,7 +2220,6 @@ def main(
             registry = get_broker_registry_sync()
             asyncio.run(registry.logout_all())
         except RegistryNotInitializedError:
-            # Registry not initialized - no brokers to logout
             pass
         return 0
     except Exception as e:

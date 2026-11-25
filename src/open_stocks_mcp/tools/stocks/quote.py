@@ -37,7 +37,6 @@ async def get_stock_price(symbol: str) -> dict[str, Any]:
     Returns:
         A JSON object containing stock price data in the result field.
     """
-    # Input validation
     if not validate_symbol(symbol):
         return create_error_response(
             ValueError(f"Invalid symbol format: {symbol}"), "symbol validation"
@@ -46,8 +45,6 @@ async def get_stock_price(symbol: str) -> dict[str, Any]:
     symbol = symbol.strip().upper()
     log_api_call("get_stock_price", symbol=symbol)
 
-    # Get latest price and quote data with retry logic; coalesce_key deduplicates
-    # concurrent calls for the same symbol while cache is cold.
     price_data = await execute_with_retry(
         rh.get_latest_price,
         symbol,
@@ -68,7 +65,6 @@ async def get_stock_price(symbol: str) -> dict[str, Any]:
     quote = quote_data[0] if quote_data else {}
     current_price = float(price_data[0]) if price_data and price_data[0] else 0.0
 
-    # Calculate change and change percent
     previous_close = float(quote.get("previous_close", 0))
     change = current_price - previous_close if previous_close else 0.0
     change_percent = (change / previous_close * 100) if previous_close else 0.0
@@ -100,7 +96,6 @@ async def get_stock_quote_by_id(instrument_id: str) -> dict[str, Any]:
     Returns:
         A JSON object containing the stock quote in the result field.
     """
-    # Input validation
     if not instrument_id or not instrument_id.strip():
         return create_error_response(
             ValueError("Instrument ID cannot be empty"), "instrument_id validation"
@@ -109,7 +104,6 @@ async def get_stock_quote_by_id(instrument_id: str) -> dict[str, Any]:
     instrument_id = instrument_id.strip()
     log_api_call("get_stock_quote_by_id", instrument_id=instrument_id)
 
-    # Get quote by ID with retry logic
     quote_data = await execute_with_retry(rh.get_stock_quote_by_id, instrument_id)
 
     if not quote_data:
@@ -118,12 +112,10 @@ async def get_stock_quote_by_id(instrument_id: str) -> dict[str, Any]:
             {"instrument_id": instrument_id},
         )
 
-    # Process quote data
     try:
         last_trade_price = float(quote_data.get("last_trade_price", 0))
         previous_close = float(quote_data.get("previous_close", 0))
 
-        # Calculate change and percentage change
         change = last_trade_price - previous_close if previous_close else 0
         change_percent = (change / previous_close * 100) if previous_close else 0
 
@@ -169,7 +161,6 @@ async def get_pricebook_by_symbol(symbol: str) -> dict[str, Any]:
     Returns:
         A JSON object containing Level II order book data in the result field.
     """
-    # Input validation
     if not validate_symbol(symbol):
         return create_error_response(
             ValueError(f"Invalid symbol format: {symbol}"), "symbol validation"
@@ -178,7 +169,6 @@ async def get_pricebook_by_symbol(symbol: str) -> dict[str, Any]:
     symbol = symbol.strip().upper()
     log_api_call("get_pricebook_by_symbol", symbol=symbol)
 
-    # Get pricebook data with retry logic
     pricebook_data = await execute_with_retry(rh.get_pricebook_by_symbol, symbol)
 
     if not pricebook_data:
@@ -187,12 +177,10 @@ async def get_pricebook_by_symbol(symbol: str) -> dict[str, Any]:
             {"symbol": symbol},
         )
 
-    # Process pricebook data
     try:
         processed_asks = []
         processed_bids = []
 
-        # Process asks (sell orders)
         if pricebook_data.get("asks"):
             for ask in pricebook_data["asks"]:
                 if ask:
@@ -204,7 +192,6 @@ async def get_pricebook_by_symbol(symbol: str) -> dict[str, Any]:
                         }
                     )
 
-        # Process bids (buy orders)
         if pricebook_data.get("bids"):
             for bid in pricebook_data["bids"]:
                 if bid:
@@ -216,7 +203,6 @@ async def get_pricebook_by_symbol(symbol: str) -> dict[str, Any]:
                         }
                     )
 
-        # Sort asks by price (ascending) and bids by price (descending)
         processed_asks.sort(key=lambda x: x["price"])  # type: ignore[arg-type,return-value]
         processed_bids.sort(key=lambda x: x["price"], reverse=True)  # type: ignore[arg-type,return-value]
 

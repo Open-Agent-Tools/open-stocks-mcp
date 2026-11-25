@@ -13,8 +13,6 @@ from open_stocks_mcp.tools.error_handling import (
     sanitize_api_response,
 )
 
-# Stock Order Placement Tools
-
 
 @handle_robin_stocks_errors
 async def order_buy_market(symbol: str, quantity: int) -> dict[str, Any]:
@@ -30,7 +28,6 @@ async def order_buy_market(symbol: str, quantity: int) -> dict[str, Any]:
     """
     log_api_call("order_buy_market", symbol, quantity=quantity)
 
-    # Validation
     if not symbol or not isinstance(symbol, str):
         return create_success_response(
             {"error": "Invalid symbol provided", "status": "error"}
@@ -41,7 +38,6 @@ async def order_buy_market(symbol: str, quantity: int) -> dict[str, Any]:
             {"error": "Quantity must be a positive integer", "status": "error"}
         )
 
-    # Check if symbol exists and get quote
     quote_data = await execute_with_retry(rh.get_quotes, symbol)
     if not quote_data or not quote_data[0].get("last_trade_price"):
         return create_success_response(
@@ -49,7 +45,6 @@ async def order_buy_market(symbol: str, quantity: int) -> dict[str, Any]:
         )
     quote = quote_data[0]
 
-    # Check buying power
     account = await execute_with_retry(rh.load_account_profile)
     buying_power = float(account.get("buying_power", 0))
     estimated_cost = float(quote["last_trade_price"]) * quantity
@@ -62,7 +57,6 @@ async def order_buy_market(symbol: str, quantity: int) -> dict[str, Any]:
             }
         )
 
-    # Place order
     order_result = await execute_with_retry(
         rh.order_buy_market, symbol, quantity, timeInForce="gfd"
     )
@@ -72,7 +66,6 @@ async def order_buy_market(symbol: str, quantity: int) -> dict[str, Any]:
             {"error": "Order placement failed", "status": "error"}
         )
 
-    # Check for Robin Stocks API errors
     if isinstance(order_result, dict) and "non_field_errors" in order_result:
         error_msgs = order_result["non_field_errors"]
         return create_success_response(
@@ -87,7 +80,7 @@ async def order_buy_market(symbol: str, quantity: int) -> dict[str, Any]:
             "order_id": order_result.get("id"),
             "symbol": symbol,
             "quantity": quantity,
-            "price": None,  # Market orders have no set price
+            "price": None,
             "order_type": "market",
             "side": "buy",
             "state": order_result.get("state"),
@@ -111,7 +104,6 @@ async def order_sell_market(symbol: str, quantity: int) -> dict[str, Any]:
     """
     log_api_call("order_sell_market", symbol, quantity=quantity)
 
-    # Validation
     if not symbol or not isinstance(symbol, str):
         return create_success_response(
             {"error": "Invalid symbol provided", "status": "error"}
@@ -122,7 +114,6 @@ async def order_sell_market(symbol: str, quantity: int) -> dict[str, Any]:
             {"error": "Quantity must be a positive integer", "status": "error"}
         )
 
-    # Check position
     positions = await execute_with_retry(rh.get_open_stock_positions)
     position = None
     for pos in positions:
@@ -144,7 +135,6 @@ async def order_sell_market(symbol: str, quantity: int) -> dict[str, Any]:
             }
         )
 
-    # Place order
     order_result = await execute_with_retry(
         rh.order_sell_market, symbol, quantity, timeInForce="gfd"
     )
@@ -154,7 +144,6 @@ async def order_sell_market(symbol: str, quantity: int) -> dict[str, Any]:
             {"error": "Order placement failed", "status": "error"}
         )
 
-    # Check for Robin Stocks API errors
     if isinstance(order_result, dict) and "non_field_errors" in order_result:
         error_msgs = order_result["non_field_errors"]
         return create_success_response(
@@ -169,7 +158,7 @@ async def order_sell_market(symbol: str, quantity: int) -> dict[str, Any]:
             "order_id": order_result.get("id"),
             "symbol": symbol,
             "quantity": quantity,
-            "price": None,  # Market orders have no set price
+            "price": None,
             "order_type": "market",
             "side": "sell",
             "state": order_result.get("state"),
@@ -196,7 +185,6 @@ async def order_buy_limit(
     """
     log_api_call("order_buy_limit", symbol, quantity=quantity, limit_price=limit_price)
 
-    # Validation
     if not symbol or not isinstance(symbol, str):
         return create_success_response(
             {"error": "Invalid symbol provided", "status": "error"}
@@ -212,7 +200,6 @@ async def order_buy_limit(
             {"error": "Limit price must be a positive number", "status": "error"}
         )
 
-    # Check if symbol exists and validate limit price
     quote_data = await execute_with_retry(rh.get_quotes, symbol)
     if not quote_data or not quote_data[0].get("last_trade_price"):
         return create_success_response(
@@ -220,9 +207,7 @@ async def order_buy_limit(
         )
     quote = quote_data[0]
     current_price = float(quote["last_trade_price"])
-    if (
-        limit_price > current_price * 1.5
-    ):  # Sanity check: limit price shouldn't be >50% above current
+    if limit_price > current_price * 1.5:
         return create_success_response(
             {
                 "error": f"Limit price ${limit_price:.2f} too high compared to current price ${current_price:.2f}",
@@ -230,7 +215,6 @@ async def order_buy_limit(
             }
         )
 
-    # Check buying power
     account = await execute_with_retry(rh.load_account_profile)
     buying_power = float(account.get("buying_power", 0))
     estimated_cost = limit_price * quantity
@@ -243,7 +227,6 @@ async def order_buy_limit(
             }
         )
 
-    # Place order
     order_result = await execute_with_retry(
         rh.order_buy_limit, symbol, quantity, limit_price
     )
@@ -253,7 +236,6 @@ async def order_buy_limit(
             {"error": "Order placement failed", "status": "error"}
         )
 
-    # Check for Robin Stocks API errors
     if isinstance(order_result, dict) and "non_field_errors" in order_result:
         error_msgs = order_result["non_field_errors"]
         return create_success_response(
@@ -270,7 +252,7 @@ async def order_buy_limit(
             "order_id": order_result.get("id"),
             "symbol": symbol,
             "quantity": quantity,
-            "price": limit_price,  # Limit orders have set price
+            "price": limit_price,
             "order_type": "limit",
             "side": "buy",
             "state": order_result.get("state"),
@@ -297,7 +279,6 @@ async def order_sell_limit(
     """
     log_api_call("order_sell_limit", symbol, quantity=quantity, limit_price=limit_price)
 
-    # Validation
     if not symbol or not isinstance(symbol, str):
         return create_success_response(
             {"error": "Invalid symbol provided", "status": "error"}
@@ -313,7 +294,6 @@ async def order_sell_limit(
             {"error": "Limit price must be a positive number", "status": "error"}
         )
 
-    # Check position
     positions = await execute_with_retry(rh.get_open_stock_positions)
     position = None
     for pos in positions:
@@ -335,12 +315,10 @@ async def order_sell_limit(
             }
         )
 
-    # Place order
     order_result = await execute_with_retry(
         rh.order_sell_limit, symbol, quantity, limit_price
     )
 
-    # Debug: Log the actual response
     logger.info(f"DEBUG: Raw limit sell order_result = {order_result}")
     logger.info(f"DEBUG: order_result type = {type(order_result)}")
 
@@ -349,7 +327,6 @@ async def order_sell_limit(
             {"error": "Order placement failed", "status": "error"}
         )
 
-    # Check for Robin Stocks API errors
     if isinstance(order_result, dict) and "non_field_errors" in order_result:
         error_msgs = order_result["non_field_errors"]
         return create_success_response(
@@ -367,7 +344,7 @@ async def order_sell_limit(
             "order_id": order_result.get("id"),
             "symbol": symbol,
             "quantity": quantity,
-            "price": limit_price,  # Limit orders have set price
+            "price": limit_price,
             "order_type": "limit",
             "side": "sell",
             "state": order_result.get("state"),
@@ -396,7 +373,6 @@ async def order_buy_stop_loss(
         "order_buy_stop_loss", symbol, quantity=quantity, stop_price=stop_price
     )
 
-    # Validation
     if not symbol or not isinstance(symbol, str):
         return create_success_response(
             {"error": "Invalid symbol provided", "status": "error"}
@@ -412,7 +388,6 @@ async def order_buy_stop_loss(
             {"error": "Stop price must be a positive number", "status": "error"}
         )
 
-    # Check if symbol exists and validate stop price
     quote_data = await execute_with_retry(rh.get_quotes, symbol)
     if not quote_data or not quote_data[0].get("last_trade_price"):
         return create_success_response(
@@ -428,7 +403,6 @@ async def order_buy_stop_loss(
             }
         )
 
-    # Place order
     order_result = await execute_with_retry(
         rh.order_buy_stop_loss, symbol, quantity, stop_price
     )
@@ -477,7 +451,6 @@ async def order_sell_stop_loss(
         "order_sell_stop_loss", symbol, quantity=quantity, stop_price=stop_price
     )
 
-    # Validation
     if not symbol or not isinstance(symbol, str):
         return create_success_response(
             {"error": "Invalid symbol provided", "status": "error"}
@@ -493,7 +466,6 @@ async def order_sell_stop_loss(
             {"error": "Stop price must be a positive number", "status": "error"}
         )
 
-    # Check position and validate stop price
     positions = await execute_with_retry(rh.get_open_stock_positions)
     position = None
     for pos in positions:
@@ -515,7 +487,6 @@ async def order_sell_stop_loss(
             }
         )
 
-    # Validate stop price
     quote_data = await execute_with_retry(rh.get_quotes, symbol)
     quote = quote_data[0]
     current_price = float(quote["last_trade_price"])
@@ -527,7 +498,6 @@ async def order_sell_stop_loss(
             }
         )
 
-    # Place order
     order_result = await execute_with_retry(
         rh.order_sell_stop_loss, symbol, quantity, stop_price
     )
@@ -576,7 +546,6 @@ async def order_buy_trailing_stop(
         "order_buy_trailing_stop", symbol, quantity=quantity, trail_amount=trail_amount
     )
 
-    # Validation
     if not symbol or not isinstance(symbol, str):
         return create_success_response(
             {"error": "Invalid symbol provided", "status": "error"}
@@ -592,19 +561,17 @@ async def order_buy_trailing_stop(
             {"error": "Trail amount must be a positive number", "status": "error"}
         )
 
-    if trail_amount > 50:  # Sanity check for percentage
+    if trail_amount > 50:
         return create_success_response(
             {"error": "Trail amount too high (max 50%)", "status": "error"}
         )
 
-    # Check if symbol exists
     quote_data = await execute_with_retry(rh.get_quotes, symbol)
     if not quote_data or not quote_data[0].get("last_trade_price"):
         return create_success_response(
             {"error": f"Symbol {symbol} not found", "status": "error"}
         )
 
-    # Place order
     order_result = await execute_with_retry(
         rh.order_buy_trailing_stop, symbol, quantity, trail_amount
     )
@@ -653,7 +620,6 @@ async def order_sell_trailing_stop(
         "order_sell_trailing_stop", symbol, quantity=quantity, trail_amount=trail_amount
     )
 
-    # Validation
     if not symbol or not isinstance(symbol, str):
         return create_success_response(
             {"error": "Invalid symbol provided", "status": "error"}
@@ -669,12 +635,11 @@ async def order_sell_trailing_stop(
             {"error": "Trail amount must be a positive number", "status": "error"}
         )
 
-    if trail_amount > 50:  # Sanity check for percentage
+    if trail_amount > 50:
         return create_success_response(
             {"error": "Trail amount too high (max 50%)", "status": "error"}
         )
 
-    # Check position
     positions = await execute_with_retry(rh.get_open_stock_positions)
     position = None
     for pos in positions:
@@ -696,7 +661,6 @@ async def order_sell_trailing_stop(
             }
         )
 
-    # Place order
     order_result = await execute_with_retry(
         rh.order_sell_trailing_stop, symbol, quantity, trail_amount
     )
@@ -744,7 +708,6 @@ async def order_buy_fractional_by_price(
         "order_buy_fractional_by_price", symbol, amount_in_dollars=amount_in_dollars
     )
 
-    # Validation
     if not symbol or not isinstance(symbol, str):
         return create_success_response(
             {"error": "Invalid symbol provided", "status": "error"}
@@ -755,14 +718,12 @@ async def order_buy_fractional_by_price(
             {"error": "Amount must be a positive number", "status": "error"}
         )
 
-    # Check if symbol exists
     quote_data = await execute_with_retry(rh.get_quotes, symbol)
     if not quote_data or not quote_data[0].get("last_trade_price"):
         return create_success_response(
             {"error": f"Symbol {symbol} not found", "status": "error"}
         )
 
-    # Check buying power
     account = await execute_with_retry(rh.load_account_profile)
     buying_power = float(account.get("buying_power", 0))
 
@@ -774,7 +735,6 @@ async def order_buy_fractional_by_price(
             }
         )
 
-    # Place order
     order_result = await execute_with_retry(
         rh.order_buy_fractional_by_price, symbol, amount_in_dollars
     )

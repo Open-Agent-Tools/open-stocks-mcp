@@ -74,7 +74,6 @@ async def get_aggregate_positions() -> dict[str, Any]:
     """
     logger.info("Getting aggregated option positions")
 
-    # Get aggregated positions
     positions_data = await execute_with_retry(
         rh.options.get_aggregate_positions,
     )
@@ -91,7 +90,6 @@ async def get_aggregate_positions() -> dict[str, Any]:
             }
         }
 
-    # Calculate totals
     total_symbols = len(positions_data) if isinstance(positions_data, dict) else 0
     total_contracts = 0
 
@@ -169,7 +167,6 @@ async def get_all_option_positions() -> dict[str, Any]:
     """
     logger.info("Getting all option positions")
 
-    # Get all option positions
     positions_data = await execute_with_retry(
         rh.options.get_all_option_positions,
     )
@@ -187,7 +184,6 @@ async def get_all_option_positions() -> dict[str, Any]:
             }
         }
 
-    # Calculate position counts
     total_positions = len(positions_data) if isinstance(positions_data, list) else 0
     open_positions = 0
     closed_positions = 0
@@ -195,7 +191,6 @@ async def get_all_option_positions() -> dict[str, Any]:
     if isinstance(positions_data, list):
         for position in positions_data:
             if isinstance(position, dict):
-                # Check if position is open based on quantity
                 quantity = position.get("quantity", "0")
                 if quantity and float(quantity) > 0:
                     open_positions += 1
@@ -273,7 +268,6 @@ async def get_open_option_positions() -> dict[str, Any]:
     """
     logger.info("Getting open option positions")
 
-    # Get open option positions
     positions_data = await execute_with_retry(
         rh.options.get_open_option_positions,
     )
@@ -291,7 +285,6 @@ async def get_open_option_positions() -> dict[str, Any]:
             }
         }
 
-    # Calculate totals
     total_open_positions = (
         len(positions_data) if isinstance(positions_data, list) else 0
     )
@@ -373,7 +366,6 @@ async def get_open_option_positions_with_details() -> dict[str, Any]:
     """
     logger.info("Getting open option positions with detailed option information")
 
-    # Step 1: Get base open option positions
     positions_data = await execute_with_retry(
         rh.options.get_open_option_positions,
     )
@@ -392,7 +384,6 @@ async def get_open_option_positions_with_details() -> dict[str, Any]:
             }
         }
 
-    # Step 2: Enrich each position with option instrument details
     enriched_positions = []
     enrichment_successes = 0
     total_positions = len(positions_data) if isinstance(positions_data, list) else 0
@@ -403,22 +394,17 @@ async def get_open_option_positions_with_details() -> dict[str, Any]:
                 enriched_positions.append(position)
                 continue
 
-            # Extract option_id from position
             option_id = position.get("option_id")
             if not option_id:
-                # Try to extract from option URL
                 option_url = position.get("option")
                 if option_url and isinstance(option_url, str):
-                    # Extract ID from URL like "https://api.robinhood.com/options/instruments/845df489.../""
                     url_parts = option_url.rstrip("/").split("/")
                     option_id = url_parts[-1] if url_parts else None
 
-            # Create enriched position starting with original data
             enriched_position = position.copy()
 
             if option_id:
                 try:
-                    # Step 3: Fetch option instrument details
                     logger.debug(f"Fetching option details for ID: {option_id}")
                     option_details = await execute_with_retry(
                         rh.options.get_option_instrument_data_by_id,
@@ -427,7 +413,6 @@ async def get_open_option_positions_with_details() -> dict[str, Any]:
                     )
 
                     if option_details and isinstance(option_details, dict):
-                        # Step 4: Add enriched fields to position
                         enriched_position.update(
                             {
                                 "option_type": option_details.get("type", "unknown"),
@@ -469,7 +454,6 @@ async def get_open_option_positions_with_details() -> dict[str, Any]:
 
             enriched_positions.append(enriched_position)
 
-    # Calculate totals (same as original function)
     total_equity = 0.0
     total_unrealized_pnl = 0.0
 
@@ -485,7 +469,6 @@ async def get_open_option_positions_with_details() -> dict[str, Any]:
                 with contextlib.suppress(ValueError, TypeError):
                     total_unrealized_pnl += float(pnl)
 
-    # Calculate enrichment success rate
     enrichment_rate = (
         f"{(enrichment_successes / total_positions * 100):.0f}%"
         if total_positions > 0

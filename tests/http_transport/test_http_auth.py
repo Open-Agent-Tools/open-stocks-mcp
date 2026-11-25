@@ -49,7 +49,6 @@ class TestHTTPAuthentication:
         http_client: httpx.AsyncClient,
     ) -> None:
         """Test health check when session is authenticated"""
-        # Mock authenticated session
         mock_session_manager = Mock()
         mock_session_manager.get_session_info.return_value = {
             "authenticated": True,
@@ -71,8 +70,6 @@ class TestHTTPAuthentication:
         data = response.json()
         assert data["status"] == "healthy"
         assert data["components"]["session"]["status"] == "healthy"
-        # HealthService uses HealthComponent which includes more detail in 'detail' field
-        # but the test was asserting top level data["session"] which is now gone.
 
     @patch("open_stocks_mcp.server.http_transport.get_health_service")
     @patch("open_stocks_mcp.server.http_transport.get_session_manager")
@@ -83,7 +80,6 @@ class TestHTTPAuthentication:
         http_client: httpx.AsyncClient,
     ) -> None:
         """Test health check when session is not authenticated"""
-        # Mock unauthenticated session
         mock_session_manager = Mock()
         mock_session_manager.get_session_info.return_value = {
             "authenticated": False,
@@ -111,8 +107,6 @@ class TestHTTPAuthentication:
         self, mock_get_session_manager: Mock, http_client: httpx.AsyncClient
     ) -> None:
         """Test successful session refresh"""
-        # Mock successful authentication
-        # Use a regular Mock for the manager since it has both sync and async methods
         mock_session_manager = Mock()
         mock_session_manager.ensure_authenticated = AsyncMock(return_value=True)
         mock_session_manager.get_session_info.return_value = {
@@ -134,7 +128,6 @@ class TestHTTPAuthentication:
         self, mock_get_session_manager: Mock, http_client: httpx.AsyncClient
     ) -> None:
         """Test failed session refresh"""
-        # Mock failed authentication
         mock_session_manager = AsyncMock()
         mock_session_manager.ensure_authenticated.return_value = False
         mock_get_session_manager.return_value = mock_session_manager
@@ -150,7 +143,6 @@ class TestHTTPAuthentication:
         self, mock_get_session_manager: Mock, http_client: httpx.AsyncClient
     ) -> None:
         """Test session refresh with exception"""
-        # Mock authentication exception
         mock_session_manager = AsyncMock()
         mock_session_manager.ensure_authenticated.side_effect = Exception(
             "Network error"
@@ -180,7 +172,6 @@ class TestHTTPSessionStatus:
         http_client: httpx.AsyncClient,
     ) -> None:
         """Test comprehensive server status reporting"""
-        # Mock all components
         mock_session_manager = Mock()
         mock_session_manager.get_session_info.return_value = {
             "authenticated": True,
@@ -292,13 +283,12 @@ class TestHTTPSecurity:
             content="invalid json",
             headers={"content-type": "application/json"},
         )
-        # Should handle gracefully, not crash
         assert response.status_code in [
             400,
             401,
             422,
             500,
-        ]  # Various valid error responses
+        ]
 
 
 @pytest.mark.integration
@@ -419,7 +409,7 @@ class TestHTTPErrorHandling:
         mock_get_health_service.return_value = mock_health_service
 
         response = await http_client.get("/health")
-        assert response.status_code == 503  # Service Unavailable
+        assert response.status_code == 503
 
         data = response.json()
         assert "Service unhealthy" in data["detail"]
@@ -433,6 +423,5 @@ class TestHTTPErrorHandling:
 
     async def test_method_not_allowed(self, http_client: httpx.AsyncClient) -> None:
         """Test method not allowed responses"""
-        # Try POST on GET-only endpoint
         response = await http_client.post("/health")
-        assert response.status_code == 405  # Method Not Allowed
+        assert response.status_code == 405
